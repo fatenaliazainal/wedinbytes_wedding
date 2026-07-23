@@ -1,0 +1,32 @@
+kind = "web"
+previewPath = "/"
+title = "Wedding Invitation"
+version = "1.0.0"
+id = "artifacts/wedding-invite"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24366
+
+[services.development]
+run = "pnpm --filter @workspace/wedding-invite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wedding-invite", "run", "build" ]
+publicDir = "artifacts/wedding-invite/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24366"
+BASE_PATH = "/"
+VITE_R2_DOMAIN_URL="https://pub-481ad7c8cfa7476cab2b1b405062a026.r2.dev/"

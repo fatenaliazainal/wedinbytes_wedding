@@ -1,0 +1,340 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Wedding Invitation API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: invitation
+    description: Wedding invitation operations
+  - name: rsvp
+    description: RSVP operations
+  - name: design
+    description: Card design operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /invitation/{token}:
+    get:
+      operationId: getInvitation
+      tags: [invitation]
+      summary: Get wedding invitation details by unique token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Wedding invitation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "404":
+          description: Invitation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rsvp:
+    get:
+      operationId: listRsvps
+      tags: [rsvp]
+      summary: List all RSVPs
+      responses:
+        "200":
+          description: List of RSVPs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rsvp"
+    post:
+      operationId: createRsvp
+      tags: [rsvp]
+      summary: Submit RSVP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRsvpBody"
+      responses:
+        "201":
+          description: RSVP created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rsvp"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rsvp/count:
+    get:
+      operationId: getRsvpCount
+      tags: [rsvp]
+      summary: Get RSVP count summary
+      responses:
+        "200":
+          description: RSVP counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RsvpCount"
+
+  /design/active:
+    get:
+      operationId: getActiveDesign
+      tags: [design]
+      summary: Get the currently active card design
+      responses:
+        "200":
+          description: Active card design configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardDesign"
+        "404":
+          description: No active design found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /design:
+    get:
+      operationId: listDesigns
+      tags: [design]
+      summary: List all card designs
+      responses:
+        "200":
+          description: All available designs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CardDesign"
+
+  /design/{id}/activate:
+    post:
+      operationId: activateDesign
+      tags: [design]
+      summary: Set a design as active
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Design activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardDesign"
+        "404":
+          description: Design not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: integer
+        groomName:
+          type: string
+        brideName:
+          type: string
+        eventType:
+          type: string
+        eventDate:
+          type: string
+        eventDay:
+          type: string
+        eventTime:
+          type: string
+        venueName:
+          type: string
+        venueAddress:
+          type: string
+        venueCity:
+          type: string
+        venueState:
+          type: string
+        venueMapUrl:
+          type: string
+        groomParents:
+          type: string
+        brideParents:
+          type: string
+        contactPhone:
+          type: string
+        dresscode:
+          type: string
+        message:
+          type: string
+      required:
+        - id
+        - groomName
+        - brideName
+        - eventType
+        - eventDate
+        - eventDay
+        - eventTime
+        - venueName
+        - venueAddress
+        - venueCity
+        - venueState
+        - contactPhone
+
+    Rsvp:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        attending:
+          type: boolean
+        numberOfGuests:
+          type: integer
+        message:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - attending
+        - numberOfGuests
+        - createdAt
+
+    CreateRsvpBody:
+      type: object
+      properties:
+        name:
+          type: string
+        attending:
+          type: boolean
+        numberOfGuests:
+          type: integer
+        message:
+          type: string
+      required:
+        - name
+        - attending
+        - numberOfGuests
+
+    RsvpCount:
+      type: object
+      properties:
+        attending:
+          type: integer
+        notAttending:
+          type: integer
+        totalGuests:
+          type: integer
+      required:
+        - attending
+        - notAttending
+        - totalGuests
+
+    CardDesign:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        isActive:
+          type: boolean
+        designCode:
+          type: string
+        envelopeImageUrl:
+          type: string
+        cardImageUrl:
+          type: string
+        musicUrl:
+          type: string
+        musicTitle:
+          type: string
+        musicArtist:
+          type: string
+        colorPrimary:
+          type: string
+        colorSecondary:
+          type: string
+        colorAccent:
+          type: string
+        colorBackground:
+          type: string
+        colorCard:
+          type: string
+        nameFontFamily:
+          type: string
+        nameColor:
+          type: string
+        fontHeading:
+          type: string
+        fontBody:
+          type: string
+        cardMaxWidth:
+          type: string
+        openButtonText:
+          type: string
+        openingAnimation:
+          type: string
+          description: Animation pattern key e.g. "doors" or "envelope"
+      required:
+        - id
+        - name
+        - isActive
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+      required:
+        - error

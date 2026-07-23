@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /editor
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://wedinbytes.com/sitemap.xml
