@@ -133,9 +133,12 @@ export default function PriceListPage() {
   const [navOpen, setNavOpen] = useState(false);
   const { data: packages = [], isLoading, isError } = useListPricing();
 
-  function goToEditor(designCode?: string) {
-    if (designCode) navigate(`/editor?designCode=${encodeURIComponent(designCode)}`);
-    else navigate("/editor");
+  function goToEditor(packageId?: number, designCode?: string) {
+    const params = new URLSearchParams();
+    if (packageId) params.set("package", String(packageId));
+    if (designCode) params.set("designCode", designCode);
+    const qs = params.toString();
+    navigate(`/editor${qs ? `?${qs}` : ""}`);
   }
 
   const sortedPackages = [...packages].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -253,7 +256,7 @@ export default function PriceListPage() {
                     features={(pkg.features ?? []).map((f) => ({ icon: resolveIcon(f.icon), label: f.name }))}
                     badge={pkg.showBadge ? pkg.badgeText : undefined}
                     highlighted={pkg.isFeatured}
-                    onChoose={() => goToEditor()}
+                    onChoose={() => goToEditor(pkg.id)}
                   />
                 ))}
               </div>

@@ -34,6 +34,7 @@ export interface Invitation {
   contacts?: InvitationContactsItem[];
   dresscode?: string;
   message?: string;
+  packageId?: number | null;
 }
 
 export interface Rsvp {

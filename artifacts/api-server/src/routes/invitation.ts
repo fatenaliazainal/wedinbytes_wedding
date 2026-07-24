@@ -24,6 +24,8 @@ const ALLOWED_FIELDS = [
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
   "nameFontFamily","nameFontSize","nameColor",
   "bodyFontFamily",
+  // Pricing package
+  "packageId",
 ];
 
 // Create a new invitation for the logged-in buyer (idempotent — returns existing if already has one)
@@ -60,6 +62,7 @@ router.post("/invitation", async (req, res) => {
       rsvpEnabled: (body.rsvpEnabled as boolean) ?? false,
       rsvpMaxOverallGuests: (body.rsvpMaxOverallGuests as number) ?? 1000,
       rsvpMaxGuestsPerInvitation: (body.rsvpMaxGuestsPerInvitation as number) ?? 10,
+      packageId: (body.packageId as number) ?? null,
     }).returning();
     res.status(201).json(created);
   } catch (err) {

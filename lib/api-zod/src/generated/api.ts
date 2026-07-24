@@ -48,7 +48,8 @@ export const GetInvitationResponse = zod.object({
   "phone": zod.string()
 })).max(getInvitationResponseContactsMax).optional(),
   "dresscode": zod.string().optional(),
-  "message": zod.string().optional()
+  "message": zod.string().optional(),
+  "packageId": zod.number().nullish()
 })
 
 

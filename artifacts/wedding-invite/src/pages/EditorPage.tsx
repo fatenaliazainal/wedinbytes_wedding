@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2 } from "lucide-react";
 import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
+import type { PricingPackage } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
@@ -27,6 +28,17 @@ const TABS = [
   { id: "galeri", label: "GALLERY & GIFTS" },
   { id: "lain", label: "OTHER" },
 ];
+
+// Maps editor tabs to the pricing feature names that enable them.
+// Base tabs (COVER, MAIN, COLOR, INVITATION) are always visible.
+const TAB_FEATURE_MAP: Record<string, string[]> = {
+  lokasi: ["Location & Navigation", "Calendar"],
+  rsvp: ["RSVP / Wishes"],
+  hubungi: ["Contact"],
+  lagu: ["Background Music"],
+  galeri: ["Photo Gallery", "Money Gift"],
+  lain: ["Dress Code"],
+};
 
 const OPENING_ANIMS = [
   { value: "doors", label: "Doors" },
@@ -230,6 +242,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const tabsRef = useRef<HTMLDivElement>(null);
   const { data: availableDesigns = [] } = useListDesigns();
   const { data: activeDesign } = useGetActiveDesign();
+  const [packages, setPackages] = useState<PricingPackage[]>([]);
+  const [activePackageId, setActivePackageId] = useState<number | null>(null);
+
+  const activePackage = packages.find((p) => p.id === activePackageId);
+  const activeFeatureNames = useMemo(() => new Set((activePackage?.features ?? []).map((f) => f.name)), [activePackage]);
+  const visibleTabs = useMemo(() => {
+    return TABS.filter((tab) => {
+      const required = TAB_FEATURE_MAP[tab.id];
+      if (!required) return true; // base tab always visible
+      return required.some((name) => activeFeatureNames.has(name));
+    });
+  }, [activeFeatureNames]);
 
   const [inv, setInv] = useState<InvData>({
     id: 0,
@@ -291,13 +315,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     if (mode === "buyer" && !user) return;
     if (!silent) setDataLoading(true);
     try {
-      const [invRes, designRes, allDesRes] = await Promise.all([
+      const [invRes, designRes, allDesRes, pricingRes] = await Promise.all([
         mode === "demo"
           ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
           : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
+        mode === "buyer" ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
       ]);
+      const loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
+      setPackages(loadedPackages);
       // Global (active) design — fallback for colours and images
       let gd: Record<string, string> = {};
       if (designRes.ok) gd = await designRes.json();
@@ -330,8 +357,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         };
       };
 
+      let loadedInv: any = null;
       if (invRes.ok) {
-        const d = await invRes.json();
+        loadedInv = await invRes.json();
+        const d = loadedInv;
         setInv({
           id: d.id ?? 0,
           token: d.token ?? "",
@@ -429,11 +458,26 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           musicArtist:      tplFallback.musicArtist,
         }));
       }
+
+      // Determine selected package: URL param ?package= wins, then invitation.packageId, then first active package.
+      if (mode === "buyer" && loadedPackages.length > 0) {
+        const urlPackage = new URLSearchParams(window.location.search).get("package");
+        const pkgId = urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null);
+        const resolvedPkg = loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
+        setActivePackageId(resolvedPkg?.id ?? null);
+      }
     } catch { /* ignore */ }
     finally { setDataLoading(false); }
   }, [user]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // If the active tab is no longer visible after a package change, switch to the first visible tab.
+  useEffect(() => {
+    if (!visibleTabs.find((t) => t.id === activeTab)) {
+      setActiveTab(visibleTabs[0]?.id ?? "muka-depan");
+    }
+  }, [visibleTabs, activeTab]);
 
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
@@ -459,6 +503,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             venueCity: inv.venueCity || "", venueState: inv.venueState || "",
             contactPhone: inv.contactPhone || "",
             contacts: inv.contacts.length > 0 ? inv.contacts : undefined,
+            packageId: activePackageId ?? undefined,
           }),
         });
         if (!createRes.ok) {
@@ -517,6 +562,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
           rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
           rsvpTimeSlots: inv.rsvpTimeSlots || undefined,
+          packageId: activePackageId ?? undefined,
           // Buyer design overrides (stored per-invitation, does NOT affect demo)
           designCode: design.designCode != null ? design.designCode : undefined,
           openingAnimation: design.openingAnimation || undefined,
@@ -742,7 +788,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
           {/* Tabs */}
           <div ref={tabsRef} className="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-hide">
-            {TABS.map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -769,9 +815,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Package">
-                    <select className={selectCls}>
-                      <option>Premium (RM65)</option>
-                      <option>Basic (RM35)</option>
+                    <select
+                      className={selectCls}
+                      value={activePackageId ?? ""}
+                      onChange={(e) => {
+                        const id = parseInt(e.target.value, 10);
+                        if (!isNaN(id)) setActivePackageId(id);
+                      }}
+                    >
+                      {packages.length === 0 && <option value="">No packages</option>}
+                      {packages.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.name} (RM{pkg.price})
+                        </option>
+                      ))}
                     </select>
                   </Field>
                   <Field label="Language">
@@ -1204,9 +1261,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder="Selangor" />
                   </div>
                 </Field>
-                <Field label="Dress Code">
-                  <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
-                </Field>
+                {activeFeatureNames.has("Dress Code") && (
+                  <Field label="Dress Code">
+                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
+                  </Field>
+                )}
                 <Field label="Event Programme*">
                   <RichTextEditor
                     value={inv.schedule}

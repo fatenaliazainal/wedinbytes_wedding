@@ -439,6 +439,9 @@ components:
           type: string
         message:
           type: string
+        packageId:
+          type: integer
+          nullable: true
       required:
         - id
         - groomName
