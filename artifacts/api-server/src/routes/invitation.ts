@@ -12,7 +12,7 @@ const ALLOWED_FIELDS = [
   "groomParents","brideParents","contactPhone","contacts","dresscode","message",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial",
   "eventStartDateTime","eventEndDateTime",
-  "coverDateText","additionalInfo","coverTitle","hashtag","showFrontText",
+  "coverDateText","additionalInfo","coverTitle","hashtag","language","showFrontText",
   "greetingText","doaText","invitationText","hostName","hostCount",
   "venueHijriDate","schedule",
   // RSVP settings

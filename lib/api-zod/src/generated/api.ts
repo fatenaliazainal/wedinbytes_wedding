@@ -25,7 +25,7 @@ export const GetInvitationParams = zod.object({
 
 export const getInvitationResponseContactsMax = 4;
 
-
+export const getInvitationResponseLanguageDefault = `ms`;
 
 export const GetInvitationResponse = zod.object({
   "id": zod.number(),
@@ -52,6 +52,7 @@ export const GetInvitationResponse = zod.object({
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),
   "doaText": zod.string().optional(),
+  "language": zod.string().default(getInvitationResponseLanguageDefault),
   "packageId": zod.number().nullish()
 })
 

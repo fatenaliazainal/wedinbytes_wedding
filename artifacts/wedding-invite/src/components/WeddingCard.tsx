@@ -52,7 +52,7 @@ function calculateTimeLeft(targetDate: string) {
   };
 }
 
-function Countdown({ targetDate }: { targetDate: string }) {
+function Countdown({ targetDate, labels }: { targetDate: string; labels: { days: string; hours: string; minutes: string; seconds: string; started: string } }) {
   const [timeLeft, setTimeLeft] = React.useState(() => calculateTimeLeft(targetDate));
 
   React.useEffect(() => {
@@ -61,14 +61,14 @@ function Countdown({ targetDate }: { targetDate: string }) {
   }, [targetDate]);
 
   if (!timeLeft) {
-    return <p className="text-sm text-foreground/70">Majlis telah bermula</p>;
+    return <p className="text-sm text-foreground/70">{labels.started}</p>;
   }
 
   const units = [
-    { value: timeLeft.days, label: "Hari" },
-    { value: timeLeft.hours, label: "Jam" },
-    { value: timeLeft.minutes, label: "Minit" },
-    { value: timeLeft.seconds, label: "Saat" },
+    { value: timeLeft.days, label: labels.days },
+    { value: timeLeft.hours, label: labels.hours },
+    { value: timeLeft.minutes, label: labels.minutes },
+    { value: timeLeft.seconds, label: labels.seconds },
   ];
 
   return (
@@ -83,19 +83,72 @@ function Countdown({ targetDate }: { targetDate: string }) {
   );
 }
 
+const CARD_TEXT = {
+  ms: {
+    coverTitle: "RAIKAN CINTA",
+    greeting: "Assalamualaikum wbt & salam sejahtera",
+    invitation: "Dengan penuh kesyukuran, kami menjemput Dato' | Datin | Tuan | Puan | Encik | Cik ke majlis perkahwinan anakanda kami.",
+    prayer: "Ya Allah, berkatilah majlis perkahwinan kami. Satukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
+    rsvpPrompt: "Sila sahkan kehadiran anda.",
+    setDateTime: "Sila tetapkan tarikh & masa majlis.",
+    eventStarted: "Majlis telah bermula",
+    guestWishes: "Ucapan dan doa daripada tetamu akan dipaparkan di sini.",
+    dateLabel: "TARIKH",
+    dayLabel: "HARI",
+    timeLabel: "MASA",
+    locationLabel: "LOKASI",
+    programmeLabel: "ATUR CARA MAJLIS",
+    dressCodeLabel: "TEMA PAKAIAN",
+    prayerLabel: "Doa",
+    countdownLabel: "Countdown",
+    galleryLabel: "Galeri",
+    attendanceLabel: "Kehadiran",
+    wishesLabel: "Ucapan",
+    days: "Hari",
+    hours: "Jam",
+    minutes: "Minit",
+    seconds: "Saat",
+  },
+  en: {
+    coverTitle: "Wedding Reception",
+    greeting: "Assalamualaikum & warm greetings",
+    invitation: "With heartfelt gratitude, we joyfully invite Dato' | Datin | Tuan | Puan | Mr. | Ms. to the wedding of our beloved children.",
+    prayer: "O Allah, bless our wedding. Unite our hearts as You united the hearts of Adam & Hawa.",
+    rsvpPrompt: "Please confirm your attendance.",
+    setDateTime: "Please set the event date & time.",
+    eventStarted: "The event has started",
+    guestWishes: "Guest wishes and prayers will appear here.",
+    dateLabel: "DATE",
+    dayLabel: "DAY",
+    timeLabel: "TIME",
+    locationLabel: "LOCATION",
+    programmeLabel: "EVENT PROGRAMME",
+    dressCodeLabel: "DRESS CODE",
+    prayerLabel: "Prayer",
+    countdownLabel: "Countdown",
+    galleryLabel: "Gallery",
+    attendanceLabel: "RSVP",
+    wishesLabel: "Wishes",
+    days: "Days",
+    hours: "Hours",
+    minutes: "Minutes",
+    seconds: "Seconds",
+  },
+};
+
 export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
   const inv = invitation as unknown as Record<string, unknown>;
+  const lang = (inv.language as "ms" | "en") || "ms";
+  const t = CARD_TEXT[lang];
 
-  const coverTitle = (inv.coverTitle as string) || "RAIKAN CINTA";
+  const coverTitle = (inv.coverTitle as string) || t.coverTitle;
   const hashtag = (inv.hashtag as string) || "";
-  const greetingText = (inv.greetingText as string) || "Assalamualaikum & salam sejahtera";
-  const invitationText = (inv.invitationText as string) ||
-    "Dengan penuh kesyukuran, kami menjemput Dato' | Datin | Tuan | Puan | Encik | Cik ke majlis perkahwinan anakanda kami.";
-  const doaText = (inv.doaText as string) ||
-    "Ya Allah, berkatilah majlis perkahwinan kami. Satukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.";
+  const greetingText = (inv.greetingText as string) || t.greeting;
+  const invitationText = (inv.invitationText as string) || t.invitation;
+  const doaText = (inv.doaText as string) || t.prayer;
   const schedule = inv.schedule as string | undefined;
   const showFrontText = inv.showFrontText !== false && inv.showFrontText !== "false";
 
@@ -122,6 +175,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
   const panelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
 
+  const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
+
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
       {sameImage && (
@@ -134,7 +189,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         />
       )}
 
-      {/* ── PAGE 1: MUKA DEPAN ── */}
+      {/* ── PAGE 1: COVER ── */}
       <section className={sectionBase}>
         {!sameImage && (cardImageUrl ? (
           <img
@@ -149,9 +204,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         ))}
         {showFrontText && (
           <div className={panelBase}>
-            <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8">
-              {coverTitle}
-            </p>
+            <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8">{coverTitle}</p>
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{groomName}</h1>
             {(brideName && groomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
@@ -168,7 +221,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         )}
       </section>
 
-      {/* ── PAGE 2: AYAT JEMPUTAN ── */}
+      {/* ── PAGE 2: INVITATION TEXT ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
@@ -196,23 +249,23 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         </div>
       </section>
 
-      {/* ── PAGE 3: TARIKH, MASA & LOKASI ── */}
+      {/* ── PAGE 3: DATE, TIME & LOCATION ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <div className="space-y-1">
-            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">TARIKH</p>
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">{t.dateLabel}</p>
             <p className="font-bold text-sm text-foreground tracking-[0.2em] uppercase">{invitation.eventDay}</p>
             <p className="text-lg text-foreground tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
           </div>
           <OrnamentDivider />
           <div className="space-y-1">
-            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">MASA</p>
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">{t.timeLabel}</p>
             <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.eventTime}</p>
           </div>
           <OrnamentDivider />
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">LOKASI</p>
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">{t.locationLabel}</p>
             <p className="text-base italic text-primary" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
             {invitation.venueAddress && (
               <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
@@ -222,13 +275,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         </div>
       </section>
 
-      {/* ── PAGE 4: ATURCARA & TEMA PAKAIAN ── */}
+      {/* ── PAGE 4: PROGRAMME & DRESS CODE ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           {schedule && (
             <div className="space-y-2 w-full">
-              <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">ATUR CARA MAJLIS</p>
+              <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">{t.programmeLabel}</p>
               <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule }} />
             </div>
           )}
@@ -236,18 +289,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <>
               <OrnamentDivider />
               <p className="text-[10px] text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider">
-                TEMA PAKAIAN: {invitation.dresscode.toUpperCase()}
+                {t.dressCodeLabel}: {invitation.dresscode.toUpperCase()}
               </p>
             </>
           )}
         </div>
       </section>
 
-      {/* ── PAGE 5: DOA ── */}
+      {/* ── PAGE 5: PRAYER ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Doa</p>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.prayerLabel}</p>
           <OrnamentDivider />
           <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: doaText }} />
         </div>
@@ -257,43 +310,43 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Countdown</p>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.countdownLabel}</p>
           <OrnamentDivider />
           {(inv.eventStartDateTime as string) ? (
-            <Countdown targetDate={inv.eventStartDateTime as string} />
+            <Countdown targetDate={inv.eventStartDateTime as string} labels={countdownLabels} />
           ) : (
-            <p className="text-sm text-foreground/70">Sila tetapkan tarikh & masa majlis.</p>
+            <p className="text-sm text-foreground/70">{t.setDateTime}</p>
           )}
         </div>
       </section>
 
-      {/* ── PAGE 7: GALERI ── */}
+      {/* ── PAGE 7: GALLERY ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Galeri</p>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.galleryLabel}</p>
           <OrnamentDivider />
-          <p className="text-sm text-foreground/70">Galeri gambar akan dipaparkan di sini.</p>
+          <p className="text-sm text-foreground/70">{t.galleryLabel}.</p>
         </div>
       </section>
 
-      {/* ── PAGE 8: KEHADIRAN (RSVP) ── */}
+      {/* ── PAGE 8: ATTENDANCE (RSVP) ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Kehadiran</p>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.attendanceLabel}</p>
           <OrnamentDivider />
-          <p className="text-sm text-foreground/70">Sila sahkan kehadiran anda.</p>
+          <p className="text-sm text-foreground/70">{t.rsvpPrompt}</p>
         </div>
       </section>
 
-      {/* ── PAGE 9: UCAPAN ── */}
+      {/* ── PAGE 9: WISHES ── */}
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Ucapan</p>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.wishesLabel}</p>
           <OrnamentDivider />
-          <p className="text-sm text-foreground/70" dangerouslySetInnerHTML={{ __html: (inv.message as string) || "Ucapan dan doa daripada tetamu akan dipaparkan di sini." }} />
+          <p className="text-sm text-foreground/70" dangerouslySetInnerHTML={{ __html: (inv.message as string) || t.guestWishes }} />
         </div>
       </section>
     </div>

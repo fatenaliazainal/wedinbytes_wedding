@@ -17,16 +17,16 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
 const TABS = [
-  { id: "muka-depan", label: "MUKA DEPAN" },
-  { id: "ayat-undangan", label: "AYAT JEMPUTAN" },
-  { id: "tarikh-lokasi", label: "TARIKH & LOKASI" },
-  { id: "aturcara", label: "ATURCARA" },
-  { id: "doa", label: "DOA" },
+  { id: "muka-depan", label: "FRONT PAGE" },
+  { id: "ayat-undangan", label: "INVITATION TEXT" },
+  { id: "tarikh-lokasi", label: "DATE & LOCATION" },
+  { id: "aturcara", label: "PROGRAMME" },
+  { id: "doa", label: "PRAYER" },
   { id: "countdown", label: "COUNTDOWN" },
-  { id: "galeri", label: "GALERI" },
-  { id: "kehadiran", label: "KEHADIRAN" },
-  { id: "ucapan", label: "UCAPAN" },
-  { id: "reka-bentuk", label: "REKA BENTUK" },
+  { id: "galeri", label: "GALLERY" },
+  { id: "kehadiran", label: "RSVP" },
+  { id: "ucapan", label: "WISHES" },
+  { id: "reka-bentuk", label: "DESIGN" },
 ];
 
 // Tabs that need a specific pricing feature to be visible.
@@ -129,6 +129,7 @@ interface InvData {
   additionalInfo: string;
   coverTitle: string;
   hashtag: string;
+  language: "ms" | "en";
   showFrontText: boolean;
   greetingText: string;
   doaText: string;
@@ -267,7 +268,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
     groomInitial: "", brideInitial: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
-    additionalInfo: "", coverTitle: "", hashtag: "", showFrontText: true,
+    additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
@@ -387,6 +388,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           additionalInfo: d.additionalInfo ?? "",
           coverTitle: d.coverTitle ?? "",
           hashtag: d.hashtag ?? "",
+          language: (d.language as "ms" | "en") ?? "ms",
           showFrontText: d.showFrontText ?? true,
           greetingText: d.greetingText ?? "Assalamualaikum wbt & salam sejahtera",
           doaText: d.doaText ?? "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
@@ -554,6 +556,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           additionalInfo: inv.additionalInfo || undefined,
           coverTitle: inv.coverTitle || undefined,
           hashtag: inv.hashtag || undefined,
+          language: inv.language,
           showFrontText: inv.showFrontText,
           greetingText: inv.greetingText || undefined,
           doaText: inv.doaText || undefined,
@@ -698,7 +701,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             </button>
             <button
               onClick={handleLogout}
-              title="Log Keluar"
+              title="Log Out"
               className="text-gray-500 hover:text-gray-800 transition-colors"
             >
               <LogOut size={18} />
@@ -821,27 +824,27 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── MUKA DEPAN ── */}
             {activeTab === "muka-depan" && (
               <>
-                <Field label="Tajuk Majlis">
-                  <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder="RAIKAN CINTA" />
+                <Field label="Event Title">
+                  <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder="Wedding Reception" />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nama Pengantin Lelaki">
+                  <Field label="Groom's Name">
                     <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder="Harris" />
                   </Field>
-                  <Field label="Nama Pengantin Perempuan">
+                  <Field label="Bride's Name">
                     <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder="Sarah" />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Hari">
-                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="SELASA" />
+                  <Field label="Day">
+                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
                   </Field>
-                  <Field label="Tarikh">
+                  <Field label="Date">
                     <input className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} placeholder="22.09.2026" />
                   </Field>
                 </div>
                 <Field label="Hashtag">
-                  <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder="#CintaSelamanya" />
+                  <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder="#OurWedding" />
                 </Field>
                 <div className="flex items-center gap-3">
                   <input
@@ -851,7 +854,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     className="w-4 h-4 accent-gray-700 rounded"
                   />
                   <label htmlFor="showFrontText" className="text-sm text-gray-700 font-medium cursor-pointer">
-                    Papar muka depan
+                    Show front page
                   </label>
                 </div>
               </>
@@ -860,7 +863,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── AYAT JEMPUTAN ── */}
             {activeTab === "ayat-undangan" && (
               <>
-                <Field label="Ayat Jemputan 1">
+                <Field label="Greeting">
                   <RichTextEditor
                     value={inv.greetingText}
                     onChange={(v) => setI("greetingText")(v)}
@@ -869,27 +872,27 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Nama Ibu Bapa Pengantin Lelaki">
+                <Field label="Groom's Parents' Names">
                   <RichTextEditor
                     value={inv.groomParents}
                     onChange={(v) => setI("groomParents")(v)}
-                    placeholder="Rizman Bin Hj Yunus"
+                    placeholder="Mr. John Smith"
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Nama Ibu Bapa Pengantin Perempuan">
+                <Field label="Bride's Parents' Names">
                   <RichTextEditor
                     value={inv.brideParents}
                     onChange={(v) => setI("brideParents")(v)}
-                    placeholder="Fatimah Binti Daud"
+                    placeholder="Mrs. Mary Smith"
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Ayat Jemputan">
+                <Field label="Invitation Text">
                   <RichTextEditor
                     value={inv.invitationText}
                     onChange={(v) => setI("invitationText")(v)}
@@ -899,11 +902,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nama Penuh Pengantin Lelaki">
-                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder="Muhammad Harris" />
+                  <Field label="Groom's Full Name">
+                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder="John Smith" />
                   </Field>
-                  <Field label="Nama Penuh Pengantin Perempuan">
-                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder="Sarah Amani" />
+                  <Field label="Bride's Full Name">
+                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder="Sarah Lee" />
                   </Field>
                 </div>
               </>
@@ -913,20 +916,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {activeTab === "tarikh-lokasi" && (
               <>
                 <div className="grid grid-cols-3 gap-3">
-                  <Field label="Hari">
-                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="SELASA" />
+                  <Field label="Day">
+                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
                   </Field>
-                  <Field label="Tarikh">
+                  <Field label="Date">
                     <input className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} placeholder="22.09.2026" />
                   </Field>
-                  <Field label="Masa">
-                    <input className={inputCls} value={inv.eventTime} onChange={(e) => setI("eventTime")(e.target.value)} placeholder="11:00 pagi – 4:00 petang" />
+                  <Field label="Time">
+                    <input className={inputCls} value={inv.eventTime} onChange={(e) => setI("eventTime")(e.target.value)} placeholder="11:00 am – 4:00 pm" />
                   </Field>
                 </div>
-                <Field label="Nama Tempat">
-                  <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder="MyMawaddah Event Hall" />
+                <Field label="Venue Name">
+                  <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder="Grand Ballroom, Hilton" />
                 </Field>
-                <Field label="Alamat Tempat">
+                <Field label="Venue Address">
                   <RichTextEditor
                     value={inv.venueAddress}
                     onChange={(v) => setI("venueAddress")(v)}
@@ -936,13 +939,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 16, textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Bandar / Negeri">
+                <Field label="City / State">
                   <div className="grid grid-cols-2 gap-3">
-                    <input className={inputCls} value={inv.venueCity} onChange={(e) => setI("venueCity")(e.target.value)} placeholder="Batang Kali" />
+                    <input className={inputCls} value={inv.venueCity} onChange={(e) => setI("venueCity")(e.target.value)} placeholder="Cheras" />
                     <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder="Selangor" />
                   </div>
                 </Field>
-                <Field label="Pautan GPS / Google Maps">
+                <Field label="GPS / Google Maps Link">
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder="https://maps.google.com/..." />
                 </Field>
               </>
@@ -951,19 +954,19 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── ATURCARA ── */}
             {activeTab === "aturcara" && (
               <>
-                <Field label="Atur Cara Majlis">
+                <Field label="Event Programme">
                   <RichTextEditor
                     value={inv.schedule}
                     onChange={(v) => setI("schedule")(v)}
-                    placeholder={`11:00 pagi - Ketibaan Tetamu\n2:00 petang - Ketibaan Pengantin\n4:30 petang - Majlis Bersurai`}
+                    placeholder={`11:00 am - Guest Arrival\n2:00 pm - Couple Arrival\n4:30 pm - Event Ends`}
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
                 {activeFeatureNames.has("Dress Code") && (
-                  <Field label="Tema Pakaian">
-                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Berpa kain tradisional dan sopan" />
+                  <Field label="Dress Code">
+                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
                   </Field>
                 )}
               </>
@@ -971,7 +974,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── DOA ── */}
             {activeTab === "doa" && (
-              <Field label="Doa">
+              <Field label="Prayer">
                 <RichTextEditor
                   value={inv.doaText}
                   onChange={(v) => setI("doaText")(v)}
@@ -984,14 +987,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── COUNTDOWN ── */}
             {activeTab === "countdown" && (
-              <Field label="Tarikh & Masa Majlis (Untuk Countdown)">
+              <Field label="Event Date & Time (for Countdown)">
                 <input type="datetime-local" className={inputCls} value={inv.eventStartDateTime} onChange={(e) => setI("eventStartDateTime")(e.target.value)} />
               </Field>
             )}
 
             {/* ── GALERI ── */}
             {activeTab === "galeri" && (
-              <p className="text-sm text-gray-500">Galeri akan datang tidak lama lagi.</p>
+              <p className="text-sm text-gray-500">Gallery coming soon.</p>
             )}
 
             {/* ── KEHADIRAN ── */}
@@ -1007,24 +1010,24 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <option value="Tiada">Tiada</option>
                   </select>
                 </Field>
-                <Field label="Ayat RSVP">
+                <Field label="RSVP Message">
                   <RichTextEditor
                     value={inv.rsvpIntroText}
                     onChange={(v) => setInv((p) => ({ ...p, rsvpIntroText: v }))}
-                    placeholder="Sila sahkan kehadiran anda..."
+                    placeholder="Please confirm your attendance..."
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "left" }}
                   />
                 </Field>
-                <Field label="Tarikh Akhir RSVP">
+                <Field label="RSVP Deadline">
                   <input type="datetime-local" className={inputCls} value={inv.rsvpDeadline} onChange={(e) => setInv((p) => ({ ...p, rsvpDeadline: e.target.value }))} />
                 </Field>
-                <Field label="Nota RSVP">
+                <Field label="RSVP Note">
                   <RichTextEditor
                     value={inv.rsvpFormNote}
                     onChange={(v) => setInv((p) => ({ ...p, rsvpFormNote: v }))}
-                    placeholder="Nota untuk tetamu..."
+                    placeholder="Note for guests..."
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "left" }}
@@ -1035,11 +1038,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── UCAPAN ── */}
             {activeTab === "ucapan" && (
-              <Field label="Ucapan / Nota Tambahan">
+              <Field label="Wishes / Additional Note">
                 <RichTextEditor
                   value={inv.message}
                   onChange={(v) => setI("message")(v)}
-                  placeholder="Ucapan atau nota tambahan untuk tetamu..."
+                  placeholder="Wishes or additional note for guests..."
                   multiLine
                   showFontSize
                   inputStyle={{ textAlign: "left" }}
@@ -1047,11 +1050,54 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               </Field>
             )}
 
-            {/* ── REKA BENTUK ── */}
+            {/* ── DESIGN ── */}
             {activeTab === "reka-bentuk" && (
               <>
+                <Field label="Card Language">
+                  <select
+                    className={selectCls}
+                    value={inv.language}
+                    onChange={(e) => {
+                      const newLang = e.target.value as "ms" | "en";
+                      const oldLang = inv.language;
+                      const msDefaults: Record<string, string> = {
+                        coverTitle: "RAIKAN CINTA",
+                        greetingText: "Assalamualaikum wbt & salam sejahtera",
+                        invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami.",
+                        doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
+                        rsvpIntroText: "Sila sahkan kehadiran anda...",
+                        rsvpFormNote: "Nota untuk tetamu...",
+                        message: "Ucapan atau nota tambahan untuk tetamu...",
+                      };
+                      const enDefaults: Record<string, string> = {
+                        coverTitle: "Wedding Reception",
+                        greetingText: "Assalamualaikum & warm greetings",
+                        invitationText: "With heartfelt gratitude, we joyfully invite\nDato' | Datin | Tuan | Puan | Mr. | Ms.\nto the wedding of our beloved children.",
+                        doaText: "O Allah, bless our wedding.\nUnite our hearts as You united the hearts of Adam & Hawa.",
+                        rsvpIntroText: "Please confirm your attendance...",
+                        rsvpFormNote: "Note for guests...",
+                        message: "Wishes or additional note for guests...",
+                      };
+                      const oldDefaults = oldLang === "en" ? enDefaults : msDefaults;
+                      const newDefaults = newLang === "en" ? enDefaults : msDefaults;
+                      setInv((p) => {
+                        const next: InvData = { ...p, language: newLang };
+                        Object.keys(newDefaults).forEach((key) => {
+                          const k = key as keyof InvData;
+                          if (p[k] === oldDefaults[key] || (p[k] as string) === "") {
+                            (next[k] as string) = newDefaults[key];
+                          }
+                        });
+                        return next;
+                      });
+                    }}
+                  >
+                    <option value="ms">Malay</option>
+                    <option value="en">English</option>
+                  </select>
+                </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Kod Rekaan*">
+                  <Field label="Design Code*">
                     <select
                       className={selectCls}
                       value={design.designCode}
@@ -1103,7 +1149,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       ))}
                     </select>
                   </Field>
-                  <Field label="Gaya Pembuka">
+                  <Field label="Opening Style">
                     <select
                       className={selectCls}
                       value={design.openingAnimation}
@@ -1116,7 +1162,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Font Nama">
+                  <Field label="Name Font">
                     <select
                       className={selectCls}
                       value={normalizeFont(design.nameFontFamily)}
@@ -1128,7 +1174,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       ))}
                     </select>
                   </Field>
-                  <Field label="Font Badan">
+                  <Field label="Body Font">
                     <select
                       className={selectCls}
                       value={normalizeFont(design.bodyFontFamily)}
@@ -1141,7 +1187,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     </select>
                   </Field>
                 </div>
-                <Field label={`Saiz Font Nama — ${design.nameFontSize || 38}px`}>
+                <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
                   <input
                     type="range" min={20} max={70}
                     value={Number(design.nameFontSize) || 38}
@@ -1149,7 +1195,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     className="w-full accent-blue-500"
                   />
                 </Field>
-                <Field label="Saiz Font Lencana (px)">
+                <Field label="Badge Font Size (px)">
                   <input
                     className={inputCls}
                     type="number"
@@ -1160,7 +1206,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     placeholder="24"
                   />
                 </Field>
-                <Field label="Butang Buka">
+                <Field label="Open Button">
                   <RichTextEditor
                     value={design.openButtonText}
                     onChange={(v) => setDesign((p) => ({ ...p, openButtonText: v }))}
@@ -1169,7 +1215,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     showFontSize
                   />
                 </Field>
-                <Field label="Warna Font Nama">
+                <Field label="Name Font Color">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
                       <div className="absolute inset-0" style={{ background: design.nameColor ? `hsl(${design.nameColor})` : "#4a3520" }} />
@@ -1180,10 +1226,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         onChange={(e) => setDesign(p => ({ ...p, nameColor: hexToHsl(e.target.value) }))}
                       />
                     </div>
-                    <span className="text-sm text-gray-600">Nama pasangan</span>
+                    <span className="text-sm text-gray-600">Couple names</span>
                   </div>
                 </Field>
-                <Field label="Warna Butang / Aksen Utama">
+                <Field label="Button / Primary Accent">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
                       <div className="absolute inset-0" style={{ background: `hsl(${design.colorPrimary || "142 45% 35%"})` }} />
@@ -1194,10 +1240,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         onChange={(e) => setDesign(p => ({ ...p, colorPrimary: hexToHsl(e.target.value) }))}
                       />
                     </div>
-                    <span className="text-sm text-gray-600">Butang & aksen</span>
+                    <span className="text-sm text-gray-600">Button & accents</span>
                   </div>
                 </Field>
-                <Field label="Warna Kad">
+                <Field label="Card Color">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
                       <div className="absolute inset-0" style={{ background: `hsl(${design.colorCard || "0 0% 100%"})` }} />
@@ -1208,10 +1254,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         onChange={(e) => setDesign(p => ({ ...p, colorCard: hexToHsl(e.target.value) }))}
                       />
                     </div>
-                    <span className="text-sm text-gray-600">Panel dalaman</span>
+                    <span className="text-sm text-gray-600">Inner panels</span>
                   </div>
                 </Field>
-                <Field label="Warna Latar">
+                <Field label="Background Color">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
                       <div className="absolute inset-0" style={{ background: `hsl(${design.colorBackground || "142 20% 96%"})` }} />
@@ -1222,10 +1268,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         onChange={(e) => setDesign(p => ({ ...p, colorBackground: hexToHsl(e.target.value) }))}
                       />
                     </div>
-                    <span className="text-sm text-gray-600">Latar halaman</span>
+                    <span className="text-sm text-gray-600">Page background</span>
                   </div>
                 </Field>
-                <Field label="Warna Aksen">
+                <Field label="Accent Color">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
                       <div className="absolute inset-0" style={{ background: `hsl(${design.colorSecondary || "142 30% 92%"})` }} />
@@ -1236,11 +1282,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         onChange={(e) => setDesign(p => ({ ...p, colorSecondary: hexToHsl(e.target.value) }))}
                       />
                     </div>
-                    <span className="text-sm text-gray-600">Aksen lembut</span>
+                    <span className="text-sm text-gray-600">Soft accents</span>
                   </div>
                 </Field>
-                <Field label="Pautan Lagu (YouTube)">
-                  <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder="cth: https://www.youtube.com/watch?v=viW0M5R2BLo1" />
+                <Field label="Song Link (YouTube)">
+                  <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder="e.g. https://www.youtube.com/watch?v=..." />
                 </Field>
                 {design.musicUrl && design.musicUrl.includes("youtube") && (
                   <div className="rounded overflow-hidden border border-gray-200">
@@ -1254,9 +1300,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </div>
                 )}
                 <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-700 space-y-1">
-                  <p>Sokongan autoplay bergantung kepada peranti & pelayar.</p>
-                  <p><strong>Menyokong:</strong> Chrome, Safari, Firefox, Opera, Brave, Edge & UC Browser versi terkini.</p>
-                  <p><strong>Tidak Menyokong:</strong> Facebook/Instagram/Telegram Browser & pelayar kurang popular.</p>
+                  <p>Autoplay support depends on device & browser.</p>
+                  <p><strong>Supported:</strong> Chrome, Safari, Firefox, Opera, Brave, Edge & latest UC Browser.</p>
+                  <p><strong>Tidak Supported:</strong> Facebook/Instagram/Telegram Browser & less popular browsers.</p>
                 </div>
               </>
             )}

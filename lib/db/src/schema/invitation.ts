@@ -31,6 +31,7 @@ export const invitationTable = pgTable("invitation", {
   dresscode: text("dresscode"),
   message: text("message"),
   // Cover / front page fields
+  language: text("language").notNull().default("ms"),
   shortCoupleName: text("short_couple_name"),
   groomShortName: text("groom_short_name"),
   brideShortName: text("bride_short_name"),

@@ -30,5 +30,6 @@ export interface Invitation {
   coverTitle?: string;
   hashtag?: string;
   doaText?: string;
+  language?: string;
   packageId?: number | null;
 }
