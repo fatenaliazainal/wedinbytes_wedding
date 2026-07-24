@@ -310,7 +310,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
-    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "",
+    showFooter: false, footerText: "", footerUrl: "",
     socialLinks: [
       { platform: "website", url: "" },
       { platform: "tiktok", url: "" },
@@ -448,8 +448,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
-          showFooter: d.showFooter ?? true,
-          footerText: d.footerText ?? "Dapatkan kad digital anda di:",
+          showFooter: d.showFooter ?? false,
+          footerText: d.footerText ?? "",
           footerUrl: d.footerUrl ?? "",
           socialLinks: Array.isArray(d.socialLinks) ? d.socialLinks : [
             { platform: "website", url: "" },
@@ -1279,7 +1279,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder="Dapatkan kad digital anda di:" />
                 </Field>
                 <Field label="Footer URL">
-                  <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="www.mymawaddah.com" />
+                  <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="www.yourbrand.com" />
                 </Field>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Social Links</label>
