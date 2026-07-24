@@ -9,7 +9,7 @@ const router: IRouter = Router();
 const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
-  "groomParents","brideParents","contactPhone","contacts","dresscode","message",
+  "groomParents","brideParents","contactPhone","contacts","dresscode","message","galleryImages",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial",
   "eventStartDateTime","eventEndDateTime",
   "coverDateText","additionalInfo","coverTitle","hashtag","language","showFrontText",

@@ -445,6 +445,11 @@ components:
           type: string
         doaText:
           type: string
+        galleryImages:
+          type: array
+          items:
+            type: string
+          description: Array of gallery image URLs or R2 keys
         language:
           type: string
           default: ms

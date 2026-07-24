@@ -57,6 +57,8 @@ export const invitationTable = pgTable("invitation", {
   // Legacy RSVP flags — kept to avoid destructive schema prompts, not used by new flow
   rsvpShowSide: boolean("rsvp_show_side").notNull().default(false),
   rsvpMaxGuests: integer("rsvp_max_guests").notNull().default(5),
+  // Gallery images (array of R2 keys or full URLs)
+  galleryImages: jsonb("gallery_images").$type<string[]>(),
   // RSVP settings (per-invitation, independent for each card)
   rsvpEnabled: boolean("rsvp_enabled").notNull().default(false),
   rsvpAdditionalInfo: text("rsvp_additional_info"),

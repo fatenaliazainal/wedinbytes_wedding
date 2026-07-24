@@ -138,6 +138,7 @@ interface InvData {
   hostCount: number;
   venueHijriDate: string;
   schedule: string;
+  galleryImages: string[];
   // RSVP settings
   rsvpEnabled: boolean;
   rsvpAdditionalInfo: string;
@@ -272,7 +273,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     greetingText: "Assalamualaikum wbt & salam sejahtera",
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
-    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "",
+    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", galleryImages: [],
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
@@ -395,6 +396,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           invitationText: d.invitationText ?? "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
+          galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages : [],
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
           rsvpDeadline: d.rsvpDeadline ? new Date(d.rsvpDeadline).toISOString().slice(0, 16) : "",
@@ -565,6 +567,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           hostCount: inv.hostCount,
           venueHijriDate: inv.venueHijriDate || undefined,
           schedule: inv.schedule || undefined,
+          galleryImages: inv.galleryImages.length > 0 ? inv.galleryImages : undefined,
           rsvpEnabled: inv.rsvpEnabled,
           rsvpAdditionalInfo: inv.rsvpAdditionalInfo || undefined,
           rsvpDeadline: inv.rsvpDeadline || undefined,
@@ -994,7 +997,38 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── GALERI ── */}
             {activeTab === "galeri" && (
-              <p className="text-sm text-gray-500">Gallery coming soon.</p>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Add image URLs (one per line). Supports R2 keys or full URLs.
+                </p>
+                <textarea
+                  className={textareaCls}
+                  rows={6}
+                  value={inv.galleryImages.join("\n")}
+                  onChange={(e) =>
+                    setInv((p) => ({
+                      ...p,
+                      galleryImages: e.target.value
+                        .split("\n")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    }))
+                  }
+                  placeholder={`https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg`}
+                />
+                {inv.galleryImages.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {inv.galleryImages.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={resolveImageUrl(url)}
+                        alt={`Gallery preview ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded border border-gray-200"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ── KEHADIRAN ── */}
