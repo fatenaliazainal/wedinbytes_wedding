@@ -257,7 +257,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     }
   }, [user, authLoading, navigate, mode]);
   const [navOpen, setNavOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("reka-bentuk");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tab") || "reka-bentuk";
+  });
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
@@ -1151,7 +1154,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                           src={resolveImageUrl(url)}
                           alt={`Gallery preview ${idx + 1}`}
                           onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = `${BASE}/placeholder-image.svg`;
+                            (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' fill='%23f3f4f6'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='12'%3EImage not found%3C/text%3E%3C/svg%3E";
                           }}
                           className="w-full h-24 object-cover rounded border border-gray-200"
                         />

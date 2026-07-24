@@ -18,3 +18,15 @@ id = "WSku5haKu9n5kdyfa5c3x"
 uri = "file://screenshots/kadkahwinmy-preview.png"
 type = "image"
 title = "Kad Kahwin My Preview"
+
+[[outputs]]
+id = "uuM-WYi-mBd6lbW8-anwq"
+uri = "file://screenshots/editor-gallery-final.jpg"
+type = "image"
+title = "Editor gallery tab after fixes"
+
+[[outputs]]
+id = "yBac3fzlNK-lMe2MjZ4ot"
+uri = "file://screenshots/invitation-gallery-final.jpg"
+type = "image"
+title = "Public card with gallery"
