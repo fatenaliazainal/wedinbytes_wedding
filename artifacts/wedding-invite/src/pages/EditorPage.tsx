@@ -310,11 +310,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
-    showFooter: false, footerText: "", footerUrl: "",
+    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinbytesstudio.com",
     socialLinks: [
-      { platform: "website", url: "" },
-      { platform: "tiktok", url: "" },
-      { platform: "instagram", url: "" },
+      { platform: "website", url: "https://wedinbytesstudio.com" },
+      { platform: "tiktok", url: "https://tiktok.com/@wedinbytesstudio" },
+      { platform: "instagram", url: "https://instagram.com/wedinbytesstudio" },
     ],
   });
 
@@ -1279,7 +1279,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder="Dapatkan kad digital anda di:" />
                 </Field>
                 <Field label="Footer URL">
-                  <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="www.yourbrand.com" />
+                  <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="wedinbytesstudio.com" />
                 </Field>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Social Links</label>
