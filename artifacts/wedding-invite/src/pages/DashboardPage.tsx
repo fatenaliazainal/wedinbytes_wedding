@@ -125,7 +125,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const actionButtons = [
-    { icon: Edit2,  label: "Edit",  onClick: () => navigate("/editor") },
+    { icon: Edit2,  label: "Edit",  onClick: () => toast.info("Editor is admin-only.") },
     { icon: Eye,    label: "View",  onClick: () => invitation && window.open(`${BASE}/invite/${invitation.token}`, "_blank"), disabled: !invitation },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/admin") },
     { icon: Share2, label: "Share", onClick: copyLink, disabled: !invitation },
@@ -232,7 +232,7 @@ export default function DashboardPage() {
             <div className="p-4 sm:p-6">
               <div className="flex justify-end mb-5">
                 <button
-                  onClick={() => navigate("/editor")}
+                  onClick={() => toast.info("Editor is admin-only.")}
                   className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded text-xs font-bold tracking-wider hover:bg-gray-700 transition-colors"
                 >
                   <Plus size={14} />
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               ) : !invitation ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3 text-gray-400">
                   <p className="text-sm text-center">You don't have any invitation cards yet.</p>
-                  <button onClick={() => navigate("/editor")} className="text-sm text-gray-700 underline">
+                  <button onClick={() => toast.info("Editor is admin-only.")} className="text-sm text-gray-700 underline">
                     Create your first card →
                   </button>
                 </div>

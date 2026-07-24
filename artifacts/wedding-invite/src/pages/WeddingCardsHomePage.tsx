@@ -71,12 +71,7 @@ export default function WeddingCardsHomePage() {
   }
 
   function goToEditor(designCode?: string) {
-    const dest = designCode ? `/editor?designCode=${encodeURIComponent(designCode)}` : "/editor";
-    if (user) {
-      navigate(dest);
-    } else {
-      navigate(`/login?redirect=${encodeURIComponent(dest)}`);
-    }
+    toast.info("Editor is admin-only.");
   }
 
   return (

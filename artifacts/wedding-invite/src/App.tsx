@@ -42,10 +42,10 @@ function Router() {
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/demo" component={DemoEditorRoute} />
+      <Route path="/admin/editor" component={EditorRoute} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
-      <Route path="/editor" component={EditorRoute} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route component={NotFound} />
     </Switch>

@@ -73,14 +73,9 @@ export default function MarketingHomePage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
 
-  const goToEditor = useCallback((designCode?: string) => {
-    const dest = designCode ? `/editor?designCode=${encodeURIComponent(designCode)}` : "/editor";
-    if (user) {
-      navigate(dest);
-    } else {
-      navigate(`/login?redirect=${encodeURIComponent(dest)}`);
-    }
-  }, [user, navigate]);
+  const goToEditor = useCallback(() => {
+    toast.info("Editor is admin-only.");
+  }, []);
 
   const { data: designs = [], isLoading } = useListDesigns();
   const { data: demoInvitation } = useGetInvitation("demo");

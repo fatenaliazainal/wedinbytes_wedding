@@ -20,7 +20,7 @@ import { useAuth } from "@/context/AuthContext";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo";
+type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor";
 
 type RawCard = {
   id: number;
@@ -1318,11 +1318,15 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
-            onClick={() => key === "demo" ? navigate("/admin/demo") : setTab(key)}
+            onClick={() => {
+              if (key === "demo") navigate("/admin/demo");
+              else if (key === "editor") navigate("/admin/editor");
+              else setTab(key);
+            }}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
               tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}

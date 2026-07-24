@@ -200,6 +200,12 @@ const textareaCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm foc
 export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo" }) {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!authLoading && user && user.role !== "admin") {
+      navigate("/dashboard");
+    }
+  }, [user, authLoading, navigate]);
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("muka-depan");
   const [saving, setSaving] = useState(false);
