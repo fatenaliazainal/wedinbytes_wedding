@@ -1,0 +1,137 @@
+I want to clarify the editor and published invitation structure.
+
+The current editor has multiple tabs/categories such as:
+
+DESIGN
+COVER
+INVITATION TEXT
+DATE & LOCATION
+PROGRAMME
+PRAYER
+COUNTDOWN
+RSVP
+and other invitation settings.
+
+I DO NOT want to remove these editor tabs.
+
+The editor tabs are useful for organizing the editing experience and should remain.
+
+However, these tabs should NOT become separate pages in the final published wedding invitation.
+
+IMPORTANT CONCEPT:
+
+EDITOR TABS = CONTENT EDITING CATEGORIES
+
+PUBLISHED INVITATION = ONLY 2 MAIN PAGES
+
+The user can continue editing different content through separate tabs in the editor.
+
+For example:
+
+DESIGN tab:
+- Design selection
+- Card language
+- Opening style
+- Name font
+- Body font
+- Other design settings
+
+COVER tab:
+- Cover content and settings
+
+INVITATION TEXT tab:
+- Invitation text
+
+DATE & LOCATION tab:
+- Wedding date
+- Time
+- Venue
+- Location
+- Map
+
+PROGRAMME tab:
+- Event programme
+
+PRAYER tab:
+- Prayer content
+
+COUNTDOWN tab:
+- Countdown settings
+
+RSVP tab:
+- RSVP settings
+
+These editor tabs should remain separate for better editing organization.
+
+However, on the final published wedding invitation, all the content should be combined into a scrollable wedding website.
+
+FINAL PUBLISHED STRUCTURE:
+
+PAGE 1: MAIN INVITATION / COVER
+
+This page should contain:
+- Cover design
+- Couple names
+- Main invitation visual
+- Wedding date
+- Opening experience
+- Button to continue/view invitation details
+
+PAGE 2: WEDDING DETAILS
+
+This should be ONE LONG SCROLLABLE PAGE containing all relevant sections:
+
+1. Invitation Text
+2. Date & Location
+3. Programme
+4. Prayer
+5. Countdown
+6. RSVP
+7. Wishes / Guestbook
+8. Contact
+9. Other enabled invitation sections
+
+The user should scroll vertically through all these sections.
+
+IMPORTANT:
+- Do not create a separate public page for each editor tab.
+- Do not make PROGRAMME, PRAYER, COUNTDOWN, RSVP, etc. separate routes/pages.
+- These are content sections within the Wedding Details page.
+- The editor tabs are only for organizing the editing experience.
+
+The editor and published invitation should work like this:
+
+EDITOR:
+[DESIGN] [COVER] [INVITATION TEXT] [DATE & LOCATION] [PROGRAMME] [PRAYER] [COUNTDOWN] [RSVP]
+
+PUBLISHED INVITATION:
+[MAIN COVER PAGE]
+        ↓
+[SCROLL]
+        ↓
+[INVITATION TEXT]
+        ↓
+[DATE & LOCATION]
+        ↓
+[PROGRAMME]
+        ↓
+[PRAYER]
+        ↓
+[COUNTDOWN]
+        ↓
+[RSVP]
+        ↓
+[WISHES / GUESTBOOK]
+
+Please inspect the existing editor structure and published invitation rendering before making changes.
+
+Do not remove the existing editor tabs.
+Do not delete existing invitation data.
+Do not break existing features.
+
+The main goal is to separate:
+1. How content is edited in the editor
+from
+2. How content is displayed to guests in the published wedding invitation.
+
+The editor can have many tabs, but the published invitation should feel like a simple, elegant, scrollable wedding website with only 2 main pages.
