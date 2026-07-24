@@ -50,8 +50,8 @@ export const ListRsvpsResponseItem = zod.object({
   name: zod.string(),
   attending: zod.boolean(),
   numberOfGuests: zod.number(),
-  timeSlot: zod.string().optional(),
-  message: zod.string().optional(),
+  timeSlot: zod.string().nullable().optional(),
+  message: zod.string().nullable().optional(),
   createdAt: zod.string(),
 });
 export const ListRsvpsResponse = zod.array(ListRsvpsResponseItem);
@@ -64,8 +64,8 @@ export const CreateRsvpBody = zod.object({
   name: zod.string(),
   attending: zod.boolean(),
   numberOfGuests: zod.number(),
-  timeSlot: zod.string().optional(),
-  message: zod.string().optional(),
+  timeSlot: zod.string().nullable().optional(),
+  message: zod.string().nullable().optional(),
 });
 
 /**

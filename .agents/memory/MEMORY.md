@@ -1,0 +1,3 @@
+- [Vite SPA fallback for direct routes](vite-spa-fallback.md) — Vite dev server needs `historyApiFallback: true` or direct navigation to nested routes (e.g. /admin/login) returns `Cannot GET`.
+- [Drizzle Kit push prompts](drizzle-push-prompts.md) — Adding/removing columns with overlapping names triggers interactive rename prompts; keeping legacy columns and adding new ones avoids them. Unique constraints on populated tables also prompt and may need to be removed or applied manually in a TTY.
+- [R2 public domain mismatch](r2-public-domain.md) — API uses `CF_R2_PUBLIC_DOMAIN` for public URLs; frontend uses `VITE_R2_DOMAIN_URL`. Keep them in sync, otherwise `getImagePublicUrl()` falls back to the S3 endpoint or returns unreachable URLs.
