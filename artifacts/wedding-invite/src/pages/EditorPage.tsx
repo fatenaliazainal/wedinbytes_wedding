@@ -17,6 +17,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
 const TABS = [
+  { id: "reka-bentuk", label: "DESIGN" },
   { id: "muka-depan", label: "FRONT PAGE" },
   { id: "ayat-undangan", label: "INVITATION TEXT" },
   { id: "tarikh-lokasi", label: "DATE & LOCATION" },
@@ -26,7 +27,6 @@ const TABS = [
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
   { id: "ucapan", label: "WISHES" },
-  { id: "reka-bentuk", label: "DESIGN" },
 ];
 
 // Tabs that need a specific pricing feature to be visible.
@@ -235,7 +235,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     }
   }, [user, authLoading, navigate, mode]);
   const [navOpen, setNavOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("muka-depan");
+  const [activeTab, setActiveTab] = useState("reka-bentuk");
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
@@ -482,7 +482,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   // If the active tab is no longer visible after a package change, switch to the first visible tab.
   useEffect(() => {
     if (!visibleTabs.find((t) => t.id === activeTab)) {
-      setActiveTab(visibleTabs[0]?.id ?? "muka-depan");
+      setActiveTab(visibleTabs[0]?.id ?? "reka-bentuk");
     }
   }, [visibleTabs, activeTab]);
 
