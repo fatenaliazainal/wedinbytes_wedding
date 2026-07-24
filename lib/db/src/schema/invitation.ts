@@ -45,6 +45,9 @@ export const invitationTable = pgTable("invitation", {
   // Lokasi fields
   venueHijriDate: text("venue_hijri_date"),
   schedule: text("schedule"),
+  // RSVP settings
+  rsvpShowSide: boolean("rsvp_show_side").notNull().default(false),
+  rsvpMaxGuests: integer("rsvp_max_guests").notNull().default(5),
   // Buyer design overrides (per-invitation, does NOT affect demo/global design)
   designCode: text("design_code"),
   openingAnimation: text("opening_animation"),
@@ -69,6 +72,7 @@ export const rsvpTable = pgTable("rsvp", {
   name: text("name").notNull(),
   attending: boolean("attending").notNull(),
   numberOfGuests: integer("number_of_guests").notNull().default(1),
+  side: text("side"),
   message: text("message"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

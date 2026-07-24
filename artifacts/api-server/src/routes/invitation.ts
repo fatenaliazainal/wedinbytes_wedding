@@ -15,6 +15,8 @@ const ALLOWED_FIELDS = [
   "coverDateText","additionalInfo","showFrontText",
   "greetingText","invitationText","hostName","hostCount",
   "venueHijriDate","schedule",
+  // RSVP settings
+  "rsvpShowSide","rsvpMaxGuests",
   // Buyer design overrides
   "designCode","openingAnimation","openButtonText",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
@@ -52,6 +54,8 @@ router.post("/invitation", async (req, res) => {
       venueCity:    (body.venueCity    as string) || "",
       venueState:   (body.venueState   as string) || "",
       contactPhone: (body.contactPhone as string) || "",
+      rsvpShowSide: (body.rsvpShowSide as boolean) ?? false,
+      rsvpMaxGuests: (body.rsvpMaxGuests as number) ?? 5,
     }).returning();
     res.status(201).json(created);
   } catch (err) {

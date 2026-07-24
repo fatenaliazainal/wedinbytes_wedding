@@ -268,6 +268,7 @@ export default function InvitationPage() {
         isOpen={isRsvpModalOpen}
         onClose={() => setIsRsvpModalOpen(false)}
         cardFontVars={cardFontVars}
+        invitation={invitation}
       />
     </div>
   );

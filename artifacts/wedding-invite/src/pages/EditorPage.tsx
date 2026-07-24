@@ -110,6 +110,8 @@ interface InvData {
   hostCount: number;
   venueHijriDate: string;
   schedule: string;
+  rsvpShowSide: boolean;
+  rsvpMaxGuests: number;
 }
 
 interface DesignData {
@@ -217,6 +219,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     greetingText: "Undangan Majlis Perkahwinan",
     invitationText: "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
     hostName: "", hostCount: 1, venueHijriDate: "", schedule: "",
+    rsvpShowSide: false, rsvpMaxGuests: 5,
   });
 
   const [design, setDesign] = useState<DesignData>({
@@ -326,6 +329,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           invitationText: d.invitationText ?? "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
+          rsvpShowSide: d.rsvpShowSide ?? false,
+          rsvpMaxGuests: d.rsvpMaxGuests ?? 5,
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
@@ -465,6 +470,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           hostCount: inv.hostCount,
           venueHijriDate: inv.venueHijriDate || undefined,
           schedule: inv.schedule || undefined,
+          rsvpShowSide: inv.rsvpShowSide,
+          rsvpMaxGuests: inv.rsvpMaxGuests,
           // Buyer design overrides (stored per-invitation, does NOT affect demo)
           designCode: design.designCode != null ? design.designCode : undefined,
           openingAnimation: design.openingAnimation || undefined,
@@ -1170,8 +1177,33 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── RSVP / UCAPAN ── */}
             {activeTab === "rsvp" && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-sm text-gray-500">RSVP form and message settings.</p>
+
+                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Show "Dari" question</p>
+                    <p className="text-xs text-gray-500">Let guests select which side they are from.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={inv.rsvpShowSide}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpShowSide: e.target.checked }))}
+                    className="h-5 w-5 accent-rose-700"
+                  />
+                </div>
+
+                <Field label="Max guests per RSVP">
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    className={inputCls}
+                    value={inv.rsvpMaxGuests}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxGuests: Math.max(1, Math.min(20, Number(e.target.value))) }))}
+                  />
+                </Field>
+
                 <Field label="Invitation Message">
                   <RichTextEditor
                     value={inv.message}

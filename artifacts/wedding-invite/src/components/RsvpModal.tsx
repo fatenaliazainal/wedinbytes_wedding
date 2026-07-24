@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,11 +13,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getListRsvpsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import type { Invitation } from "@workspace/db";
 
 const formSchema = z.object({
   name: z.string().min(2, "Please enter your name"),
   attending: z.string(),
-  numberOfGuests: z.coerce.number().min(1).max(10),
+  side: z.string().optional(),
+  numberOfGuests: z.coerce.number().min(1),
   message: z.string().optional(),
 });
 
@@ -27,17 +29,31 @@ interface RsvpModalProps {
   isOpen: boolean;
   onClose: () => void;
   cardFontVars?: React.CSSProperties;
+  invitation?: Invitation | Record<string, unknown>;
 }
 
-export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
+export function RsvpModal({ isOpen, onClose, cardFontVars, invitation }: RsvpModalProps) {
   const queryClient = useQueryClient();
   const createRsvp = useCreateRsvp();
+  const inv = invitation as Record<string, unknown> | undefined;
+  const showSide = inv?.rsvpShowSide === true;
+  const maxGuests = Math.max(1, Math.min(20, Number(inv?.rsvpMaxGuests ?? 5)));
+  const sideOptions = [
+    { value: "groom", label: "Pihak Pengantin Lelaki" },
+    { value: "bride", label: "Pihak Pengantin Perempuan" },
+    { value: "both", label: "Kedua-dua Pihak" },
+  ];
+
+  const dynamicSchema = formSchema.extend({
+    numberOfGuests: z.coerce.number().min(1).max(maxGuests),
+  });
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(dynamicSchema),
     defaultValues: {
       name: "",
       attending: "yes",
+      side: "",
       numberOfGuests: 1,
       message: "",
     },
@@ -50,6 +66,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
           name: values.name,
           attending: values.attending === "yes",
           numberOfGuests: values.numberOfGuests,
+          side: showSide ? values.side : undefined,
           message: values.message,
         },
       },
@@ -129,15 +146,39 @@ export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
               )}
             />
 
+            {showSide && (
+              <FormField
+                control={form.control}
+                name="side"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dari</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Pilih pihak</option>
+                        {sideOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {form.watch("attending") === "yes" && (
               <FormField
                 control={form.control}
                 name="numberOfGuests"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Guests</FormLabel>
+                    <FormLabel>Bilangan Kehadiran</FormLabel>
                     <FormControl>
-                      <Input type="number" min={1} max={10} {...field} className="bg-background" />
+                      <Input type="number" min={1} max={maxGuests} {...field} className="bg-background" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,10 +191,10 @@ export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Wishes (Optional)</FormLabel>
+                  <FormLabel>Ucapan (Jika ada)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Leave a wish for the wedding couple..." 
+                      placeholder="Tinggalkan ucapan untuk pengantin..." 
                       className="resize-none bg-background" 
                       {...field} 
                     />
@@ -162,17 +203,22 @@ export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
                 </FormItem>
               )}
             />
-
-            <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6"
-              disabled={createRsvp.isPending}
-            >
-              {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={20} /> : null}
-              Submit RSVP
-            </Button>
           </form>
         </Form>
+        <DialogFooter className="gap-2 pt-2">
+          <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            Batal
+          </Button>
+          <Button 
+            type="submit" 
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            disabled={createRsvp.isPending}
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+            Hantar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

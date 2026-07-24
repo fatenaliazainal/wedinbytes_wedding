@@ -10,5 +10,6 @@ export interface CreateRsvpBody {
   name: string;
   attending: boolean;
   numberOfGuests: number;
+  side?: string;
   message?: string;
 }

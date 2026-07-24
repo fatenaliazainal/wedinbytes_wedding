@@ -33,6 +33,7 @@ router.post("/rsvp", async (req, res) => {
         set: {
           attending: body.data.attending,
           numberOfGuests: body.data.numberOfGuests,
+          side: body.data.side ?? null,
           message: body.data.message ?? null,
         },
       })

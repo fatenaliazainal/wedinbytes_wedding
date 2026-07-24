@@ -61,6 +61,7 @@ export const CreateRsvpBody = zod.object({
   name: zod.string(),
   attending: zod.boolean(),
   numberOfGuests: zod.number(),
+  side: zod.string().optional(),
   message: zod.string().optional(),
 });
 
