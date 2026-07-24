@@ -88,6 +88,11 @@ export const invitationTable = pgTable("invitation", {
   musicUrl: text("music_url"),
   musicTitle: text("music_title"),
   musicArtist: text("music_artist"),
+  // Footer / branding section
+  showFooter: boolean("show_footer").notNull().default(true),
+  footerText: text("footer_text"),
+  footerUrl: text("footer_url"),
+  socialLinks: jsonb("social_links").$type<{ platform: string; url: string }[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -28,6 +28,8 @@ const ALLOWED_FIELDS = [
   "bodyFontFamily",
   // Music
   "musicUrl","musicTitle","musicArtist",
+  // Footer / branding
+  "showFooter","footerText","footerUrl","socialLinks",
   // Pricing package
   "packageId",
 ];

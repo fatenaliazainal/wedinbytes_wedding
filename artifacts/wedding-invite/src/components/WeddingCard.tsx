@@ -187,6 +187,7 @@ const CARD_TEXT = {
     hours: "Jam",
     minutes: "Minit",
     seconds: "Saat",
+    footerTextDefault: "Dapatkan kad digital anda di:",
   },
   en: {
     coverTitle: "Wedding Reception",
@@ -216,6 +217,7 @@ const CARD_TEXT = {
     hours: "Hours",
     minutes: "Minutes",
     seconds: "Seconds",
+    footerTextDefault: "Get your digital card at:",
   },
 };
 
@@ -529,8 +531,79 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             })()}
           </div>
           </RevealOnScroll>
+
+          <RevealOnScroll>
+          {/* Footer / Branding */}
+          {inv.showFooter !== false && (
+            <div className={detailBlock}>
+              <OrnamentDivider />
+              <div className="text-center space-y-3">
+                <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>
+                  {(inv.footerText as string) || t.footerTextDefault}
+                </p>
+                {(inv.footerUrl as string) && (
+                  <a
+                    href={`https://${(inv.footerUrl as string).replace(/^https?:\/\//, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-base font-medium text-primary hover:underline"
+                    style={{ fontFamily: bodyFontFamily }}
+                  >
+                    {inv.footerUrl as string}
+                  </a>
+                )}
+                {Array.isArray(inv.socialLinks) && (inv.socialLinks as { platform: string; url: string }[]).length > 0 && (
+                  <div className="flex justify-center items-center gap-4 pt-2">
+                    {(inv.socialLinks as { platform: string; url: string }[]).map((link, idx) => (
+                      <a
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-foreground/70 hover:text-primary transition-colors"
+                        aria-label={link.platform}
+                      >
+                        <SocialIcon platform={link.platform} />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          </RevealOnScroll>
         </div>
       </section>
     </div>
   );
+}
+
+function SocialIcon({ platform }: { platform: string }) {
+  const p = platform.toLowerCase();
+  const className = "w-7 h-7";
+  if (p === "website" || p === "mymawaddah" || p.includes("m")) {
+    return (
+      <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
+        <rect x="4" y="12" width="32" height="16" rx="2" fill="currentColor" />
+        <text x="20" y="23.5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white">M</text>
+      </svg>
+    );
+  }
+  if (p === "tiktok") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.5a4.85 4.85 0 0 1-1-.1z"/>
+      </svg>
+    );
+  }
+  if (p === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+        <path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85 0 3.2-.01 3.58-.07 4.85-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07-3.2 0-3.58-.01-4.85-.07-3.26-.15-4.77-1.69-4.92-4.92-.06-1.27-.07-1.65-.07-4.85 0-3.2.01-3.58.07-4.85.15-3.23 1.66-4.77 4.92-4.92C8.42 2.17 8.8 2.16 12 2.16zm0 1.8c-3.15 0-3.52.01-4.76.07-2.48.11-3.67 1.3-3.78 3.78-.05 1.24-.06 1.6-.06 4.76s.01 3.52.06 4.76c.11 2.48 1.3 3.67 3.78 3.78 1.24.05 1.6.06 4.76.06s3.52-.01 4.76-.06c2.48-.11 3.67-1.3 3.78-3.78.05-1.24.06-1.6.06-4.76s-.01-3.52-.06-4.76c-.11-2.48-1.3-3.67-3.78-3.78C15.52 3.97 15.16 3.96 12 3.96z"/>
+        <path d="M12 7.86a4.14 4.14 0 1 0 0 8.28 4.14 4.14 0 0 0 0-8.28zm0 6.78a2.64 2.64 0 1 1 0-5.28 2.64 2.64 0 0 1 0 5.28z"/>
+        <circle cx="17.48" cy="6.52" r="1.1"/>
+      </svg>
+    );
+  }
+  return <span className={className + " flex items-center justify-center text-xs font-bold"}>{platform[0]?.toUpperCase()}</span>;
 }

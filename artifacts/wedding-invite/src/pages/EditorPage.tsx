@@ -26,6 +26,7 @@ const TABS = [
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
   { id: "ucapan", label: "WISHES" },
+  { id: "footer", label: "FOOTER" },
 ];
 
 // Tabs that need a specific pricing feature to be visible.
@@ -151,6 +152,10 @@ interface InvData {
   rsvpMaxOverallGuests: number;
   rsvpMaxGuestsPerInvitation: number;
   rsvpTimeSlots: string;
+  showFooter: boolean;
+  footerText: string;
+  footerUrl: string;
+  socialLinks: { platform: string; url: string }[];
 }
 
 interface DesignData {
@@ -305,6 +310,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
+    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "www.mymawaddah.com",
+    socialLinks: [
+      { platform: "website", url: "https://mymawaddah.com" },
+      { platform: "tiktok", url: "https://tiktok.com/@mymawaddah" },
+      { platform: "instagram", url: "https://instagram.com/mymawaddah" },
+    ],
   });
 
   const [design, setDesign] = useState<DesignData>({
@@ -437,6 +448,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
+          showFooter: d.showFooter ?? true,
+          footerText: d.footerText ?? "Dapatkan kad digital anda di:",
+          footerUrl: d.footerUrl ?? "www.mymawaddah.com",
+          socialLinks: Array.isArray(d.socialLinks) ? d.socialLinks : [
+            { platform: "website", url: "https://mymawaddah.com" },
+            { platform: "tiktok", url: "https://tiktok.com/@mymawaddah" },
+            { platform: "instagram", url: "https://instagram.com/mymawaddah" },
+          ],
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
@@ -628,6 +647,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
           rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
           rsvpTimeSlots: inv.rsvpTimeSlots || undefined,
+          showFooter: inv.showFooter,
+          footerText: inv.footerText || undefined,
+          footerUrl: inv.footerUrl || undefined,
+          socialLinks: inv.socialLinks.length > 0 ? inv.socialLinks : undefined,
           packageId: activePackageId ?? undefined,
           // Buyer design overrides (stored per-invitation, does NOT affect demo)
           designCode: design.designCode != null ? design.designCode : undefined,
@@ -1237,6 +1260,62 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   inputStyle={{ textAlign: "left" }}
                 />
               </Field>
+            )}
+
+            {/* ── FOOTER / BRANDING ── */}
+            {activeTab === "footer" && (
+              <>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="showFooter"
+                    type="checkbox"
+                    checked={inv.showFooter}
+                    onChange={(e) => setInv((p) => ({ ...p, showFooter: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="showFooter" className="text-sm font-medium text-gray-700">Show footer branding</label>
+                </div>
+                <Field label="Footer Text">
+                  <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder="Dapatkan kad digital anda di:" />
+                </Field>
+                <Field label="Footer URL">
+                  <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="www.mymawaddah.com" />
+                </Field>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Social Links</label>
+                  {(inv.socialLinks || []).map((link, idx) => (
+                    <div key={idx} className="grid grid-cols-2 gap-2 items-center">
+                      <input
+                        className={inputCls}
+                        value={link.platform}
+                        onChange={(e) => {
+                          const next = [...inv.socialLinks];
+                          next[idx] = { ...next[idx], platform: e.target.value };
+                          setInv((p) => ({ ...p, socialLinks: next }));
+                        }}
+                        placeholder="Platform (website, tiktok, instagram)"
+                      />
+                      <input
+                        className={inputCls}
+                        value={link.url}
+                        onChange={(e) => {
+                          const next = [...inv.socialLinks];
+                          next[idx] = { ...next[idx], url: e.target.value };
+                          setInv((p) => ({ ...p, socialLinks: next }));
+                        }}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setInv((p) => ({ ...p, socialLinks: [...(p.socialLinks || []), { platform: "", url: "" }] }))}
+                    className="text-xs px-3 py-1 rounded border border-gray-200 hover:bg-gray-50"
+                  >
+                    + Add social link
+                  </button>
+                </div>
+              </>
             )}
 
             {/* ── DESIGN ── */}
