@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearch } from "wouter";
 import { useGetInvitation, useListDesigns, useListRsvps, useGetRsvpCount } from "@workspace/api-client-react";
-import { InvitationRenderer } from "@/components/InvitationRenderer";
+import { EnvelopeDoors } from "@/components/EnvelopeDoors";
+import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
+import { WeddingCard } from "@/components/WeddingCard";
+import { BottomNav } from "@/components/BottomNav";
 import { RsvpModal } from "@/components/RsvpModal";
+import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesign } from "@/hooks/use-design";
-import { type TabKey } from "@/components/DetailPanel";
 
 // Legacy custom fonts that are not loaded as web fonts — map to real Google Fonts.
 const FONT_ALIASES: Record<string, string> = {
@@ -25,6 +28,8 @@ function fontFamilyStack(fontName?: string | null): string {
   return `'${normalized}', 'Dancing Script', cursive`;
 }
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
+
+import { resolveImageUrl } from "@/lib/r2-url";
 
 function extractYouTubeId(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
@@ -73,12 +78,20 @@ export default function InvitationPage() {
       : undefined
   );
 
-  const isPreviewMode = urlParams.get("preview") === "1";
-  const [isOpened, setIsOpened] = useState(isPreviewMode);
+  // Opening animation and button text — invitation override → template → global design
+  const openingAnimation = (inv?.openingAnimation as string | undefined) ?? templateDesign?.openingAnimation ?? design?.openingAnimation ?? "doors";
+  const openButtonText = (inv?.openButtonText as string | undefined) ?? "BUKA";
+
+  // Card/envelope images always come from the matched template
+  const resolvedCardImageUrl = resolveImageUrl(templateDesign?.cardImageUrl ?? design?.cardImageUrl);
+  const resolvedEnvelopeImageUrl = resolveImageUrl(templateDesign?.envelopeImageUrl ?? design?.envelopeImageUrl);
+
+  const [isOpened, setIsOpened] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
   const [isRsvpModalOpen, setIsRsvpModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [showBottomNav, setShowBottomNav] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
@@ -129,6 +142,28 @@ export default function InvitationPage() {
     setActiveTab((prev) => (prev === tab ? null : tab));
   };
 
+  useEffect(() => {
+    if (!isOpened || !cardScrollRef.current) {
+      return;
+    }
+
+    const scrollContainer = cardScrollRef.current;
+    const onScroll = () => {
+      if (scrollContainer.scrollTop > 0) {
+        setShowBottomNav(true);
+      }
+    };
+
+    scrollContainer.addEventListener("scroll", onScroll, { passive: true });
+    return () => scrollContainer.removeEventListener("scroll", onScroll);
+  }, [isOpened]);
+
+  useEffect(() => {
+    if (!isOpened) {
+      setShowBottomNav(false);
+    }
+  }, [isOpened]);
+
   if (invitationLoading || designLoading || designsLoading) {
     return (
       <div className="min-h-dvh w-full bg-background flex items-center justify-center">
@@ -137,61 +172,75 @@ export default function InvitationPage() {
     );
   }
 
+  const invitationRecord = invitation as Record<string, unknown> | undefined;
+  const shortGroom = (invitationRecord?.groomShortName as string | undefined)?.trim() || "";
+  const shortBride = (invitationRecord?.brideShortName as string | undefined)?.trim() || "";
+  const coupleNames = invitation
+    ? (shortGroom || shortBride)
+      ? `${shortGroom || invitation.groomName} & ${shortBride || invitation.brideName}`
+      : `${invitation.brideName} & ${invitation.groomName}`
+    : "A & H";
+
+  const cardFontVars = {
+    "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
+    "--name-font-size":   (inv?.nameFontSize   as string | undefined) ? `${inv?.nameFontSize}px` : undefined,
+    "--badge-font-size":  (inv?.badgeFontSize  as string | undefined) ? `${inv?.badgeFontSize}px` : undefined,
+    "--name-color":       (inv?.nameColor       as string | undefined) ? `hsl(${inv?.nameColor})` : undefined,
+    "--body-font-family": fontFamilyStack(inv?.bodyFontFamily as string | undefined),
+  } as React.CSSProperties;
+
   const guestWishes = (rsvps ?? [])
     .filter((r) => r.message && r.message.trim())
     .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  // Resolved design: invitation overrides take precedence over the template.
-  const tpl = templateDesign as Record<string, unknown> | undefined;
-  const active = design as Record<string, unknown> | undefined;
-  const resolvedDesign = {
-    designCode: templateDesign?.designCode ?? "FL001",
-    openingAnimation: (inv?.openingAnimation as string | undefined) ?? tpl?.openingAnimation as string | undefined ?? active?.openingAnimation as string | undefined ?? "doors",
-    openButtonText: (inv?.openButtonText as string | undefined) ?? tpl?.openButtonText as string | undefined ?? active?.openButtonText as string | undefined ?? "BUKA",
-    colorPrimary: (inv?.colorPrimary as string | undefined) ?? tpl?.colorPrimary as string | undefined ?? active?.colorPrimary as string | undefined ?? undefined,
-    colorSecondary: (inv?.colorSecondary as string | undefined) ?? tpl?.colorSecondary as string | undefined ?? active?.colorSecondary as string | undefined ?? undefined,
-    colorAccent: (inv?.colorAccent as string | undefined) ?? tpl?.colorAccent as string | undefined ?? active?.colorAccent as string | undefined ?? undefined,
-    colorBackground: (inv?.colorBackground as string | undefined) ?? tpl?.colorBackground as string | undefined ?? active?.colorBackground as string | undefined ?? undefined,
-    colorCard: (inv?.colorCard as string | undefined) ?? tpl?.colorCard as string | undefined ?? active?.colorCard as string | undefined ?? undefined,
-    nameColor: (inv?.nameColor as string | undefined) ?? tpl?.nameColor as string | undefined ?? active?.nameColor as string | undefined ?? undefined,
-    nameFontFamily: (inv?.nameFontFamily as string | undefined) ?? tpl?.nameFontFamily as string | undefined ?? active?.nameFontFamily as string | undefined ?? undefined,
-    nameFontSize: (inv?.nameFontSize as string | undefined) ?? tpl?.nameFontSize as string | undefined ?? active?.nameFontSize as string | undefined ?? undefined,
-    badgeFontSize: (inv?.badgeFontSize as string | undefined) ?? tpl?.badgeFontSize as string | undefined ?? active?.badgeFontSize as string | undefined ?? undefined,
-    bodyFontFamily: (inv?.bodyFontFamily as string | undefined) ?? tpl?.bodyFontFamily as string | undefined ?? active?.bodyFontFamily as string | undefined ?? undefined,
-    musicTitle: (inv?.musicTitle as string | undefined) ?? tpl?.musicTitle as string | undefined ?? active?.musicTitle as string | undefined ?? undefined,
-    musicArtist: (inv?.musicArtist as string | undefined) ?? tpl?.musicArtist as string | undefined ?? active?.musicArtist as string | undefined ?? undefined,
-    cardImageUrl: templateDesign?.cardImageUrl ?? design?.cardImageUrl ?? undefined,
-    envelopeImageUrl: templateDesign?.envelopeImageUrl ?? design?.envelopeImageUrl ?? undefined,
-    cardMaxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined,
-  };
-
-  const cardFontVars = {
-    "--name-font-family": fontFamilyStack(resolvedDesign.nameFontFamily),
-    "--name-font-size":   resolvedDesign.nameFontSize ? `${resolvedDesign.nameFontSize}px` : undefined,
-    "--badge-font-size":  resolvedDesign.badgeFontSize ? `${resolvedDesign.badgeFontSize}px` : undefined,
-    "--name-color":       resolvedDesign.nameColor ? `hsl(${resolvedDesign.nameColor})` : undefined,
-    "--body-font-family": fontFamilyStack(resolvedDesign.bodyFontFamily),
-  } as React.CSSProperties;
-
   return (
-    <div className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center">
-      <InvitationRenderer
-        key={replayKey}
-        invitation={invitation}
-        design={resolvedDesign}
-        opened={isOpened}
-        onOpen={() => setIsOpened(true)}
-        activeTab={activeTab}
-        onTabClick={handleTabClick}
-        onRsvpClick={() => setIsRsvpModalOpen(true)}
-        rsvpCount={rsvpCount ?? undefined}
-        guestWishes={guestWishes}
-        isMuted={isMuted}
-        onToggleMute={() => setIsMuted((prev) => !prev)}
-        cardScrollRef={cardScrollRef}
-        className="w-full h-auto min-h-dvh"
+    <div
+      className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center"
+      style={cardFontVars}
+    >
+      {openingAnimation === "envelope" ? (
+        <EnvelopeAnimation
+          key={replayKey}
+          isOpened={isOpened}
+          onOpen={() => setIsOpened(true)}
+          names={coupleNames}
+          openButtonText={openButtonText}
+          envelopeImageUrl={resolvedEnvelopeImageUrl}
+        />
+      ) : (
+        <EnvelopeDoors
+          key={replayKey}
+          isOpened={isOpened}
+          onOpen={() => setIsOpened(true)}
+          names={coupleNames}
+          openButtonText={openButtonText}
+          envelopeImageUrl={resolvedEnvelopeImageUrl}
+          cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
+        />
+      )}
+
+      {/* Card always rendered behind the doors so it peeks through the frosted glass */}
+      <div
+        ref={cardScrollRef}
+        className={`w-full absolute inset-0 z-10 transition-all duration-700 ${
+          isOpened ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden pointer-events-none"
+        }`}
+        style={{
+          WebkitOverflowScrolling: "touch",
+        } as React.CSSProperties}
       >
+        <WeddingCard
+          invitation={invitation}
+          cardImageUrl={resolvedCardImageUrl}
+          envelopeImageUrl={resolvedEnvelopeImageUrl}
+          cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
+          guestWishes={guestWishes}
+          rsvpCount={rsvpCount ?? undefined}
+          onRsvpClick={() => setIsRsvpModalOpen(true)}
+        />
+
+        {/* Hidden YouTube player for background music */}
         {isOpened && youtubeVideoId && (
           <iframe
             key={`yt-${youtubeVideoId}-${isMuted ? "muted" : "unmuted"}`}
@@ -202,7 +251,24 @@ export default function InvitationPage() {
             title="Background music"
           />
         )}
-      </InvitationRenderer>
+
+        {isOpened && (
+          <div
+            className="sticky bottom-0 z-50 w-full mx-auto"
+            style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+          >
+            <BottomNav
+              activeTab={activeTab}
+              isMuted={isMuted}
+              onTabClick={handleTabClick}
+              onRsvpClick={() => setIsRsvpModalOpen(true)}
+              isVisible={showBottomNav}
+              cardMaxWidth="100%"
+              showRsvp={inv?.rsvpEnabled === true}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Replay + Mute buttons — fixed top-left, only visible when card is open */}
       <AnimatePresence>
@@ -233,6 +299,18 @@ export default function InvitationPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isOpened && (
+        <DetailPanel
+          activeTab={activeTab}
+          onClose={() => setActiveTab(null)}
+          invitation={invitation}
+          isMuted={isMuted}
+          onToggleMute={() => setIsMuted((prev) => !prev)}
+          musicTitle={(inv?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
+          musicArtist={(inv?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+        />
+      )}
 
       <RsvpModal
         isOpen={isRsvpModalOpen}

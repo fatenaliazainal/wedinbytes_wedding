@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { InvitationRenderer } from "@/components/InvitationRenderer";
+import { EnvelopeDoors } from "@/components/EnvelopeDoors";
+import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
+import { WeddingCard } from "@/components/WeddingCard";
+import { BottomNav } from "@/components/BottomNav";
+import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2 } from "lucide-react";
 import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
 import type { PricingPackage } from "@workspace/api-client-react";
-import { type TabKey } from "@/components/DetailPanel";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
@@ -1621,7 +1624,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 onClick={async () => {
                   await handleSave();
                   const token = inv.token;
-                  if (token) window.open(`${BASE}/invite/${token}?preview=1`, "_blank");
+                  if (token) window.open(`${BASE}/invite/${token}`, "_blank");
                 }}
                 className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
                 disabled={saving}
@@ -1646,19 +1649,105 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               style={{
                 aspectRatio: "9/16",
                 maxHeight: "80vh",
+                "--card-viewport-height": "100%",
+                "--primary":            design.colorPrimary     || "142 45% 35%",
+                "--primary-foreground": "0 0% 100%",
+                "--secondary":          design.colorSecondary   || "142 30% 92%",
+                "--background":         design.colorBackground  || "142 20% 96%",
+                "--card":               design.colorCard        || "0 0% 100%",
+                "--popover":            design.colorCard        || "0 0% 100%",
+                "--border":             "142 20% 80%",
+                "--muted":              "142 15% 94%",
+                "--muted-foreground":   "142 10% 45%",
+                // Name styling — picked up by WeddingCard via CSS custom properties
+                "--name-font-family":   fontFamilyStack(design.nameFontFamily),
+                "--name-font-size":     `${Number(design.nameFontSize) || 38}px`,
+                "--badge-font-size":    `${Number(design.badgeFontSize) || 24}px`,
+                "--name-color":         design.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
+                // Body text styling
+                "--body-font-family":   fontFamilyStack(design.bodyFontFamily),
               } as React.CSSProperties}
             >
-              <InvitationRenderer
-                invitation={inv as any}
-                design={design}
-                opened={previewOpened}
-                onOpen={() => setPreviewOpened(true)}
-                activeTab={previewActiveTab as TabKey | null}
-                onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
-                onRsvpClick={() => toast.info("RSVP form is functional in the public card preview only.")}
-                rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
-                previewMode
-              />
+              <div
+                className={`absolute inset-0 z-10 transition-all duration-700 ${
+                  previewOpened ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden pointer-events-none"
+                }`}
+                style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+              >
+                <WeddingCard
+                  invitation={inv}
+                  cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                  envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                  cardMaxWidth={design.cardMaxWidth}
+                  rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
+                  onRsvpClick={() => toast.info("RSVP form is functional in the public card preview only.")}
+                />
+              </div>
+
+              {/* Opening animation mirrors InvitationPage, scaled to this preview frame. */}
+              {(
+                design.openingAnimation === "envelope" ? (
+                  <EnvelopeAnimation
+                    key={`env-${activeTab}-${design.designCode}`}
+                    isOpened={previewOpened}
+                    onOpen={() => setPreviewOpened(true)}
+                    names={inv.shortCoupleName || `${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`}
+                    openButtonText={design.openButtonText || "BUKA"}
+                    envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                  />
+                ) : (
+                  <EnvelopeDoors
+                    key={`doors-${activeTab}-${design.designCode}`}
+                    isOpened={previewOpened}
+                    onOpen={() => setPreviewOpened(true)}
+                    names={inv.shortCoupleName || `${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`}
+                    openButtonText={design.openButtonText || "BUKA"}
+                    envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                    cardMaxWidth={design.cardMaxWidth}
+                  />
+                )
+              )}
+
+              {/* PREVIU watermark */}
+              <div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{ transform: "rotate(-30deg)", zIndex: 40 }}
+              >
+                <span className="text-white/20 font-black tracking-[0.3em] select-none" style={{ fontSize: 52 }}>
+                  PREVIEW
+                </span>
+              </div>
+
+              {/* Bottom nav — actual component, positioned inside the preview frame */}
+              {previewOpened && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 z-50"
+                  style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)" }}
+                >
+                  <BottomNav
+                    activeTab={previewActiveTab as TabKey | null}
+                    isMuted={false}
+                    onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
+                    onRsvpClick={() => toast.info("RSVP preview only")}
+                    isVisible={true}
+                    cardMaxWidth={design.cardMaxWidth}
+                  />
+                </div>
+              )}
+
+              {/* Footer dialog / detail panel preview */}
+              {previewOpened && previewActiveTab && (
+                <DetailPanel
+                  activeTab={previewActiveTab as TabKey}
+                  onClose={() => setPreviewActiveTab(null)}
+                  invitation={inv}
+                  isMuted={false}
+                  onToggleMute={() => {}}
+                  musicTitle={design.musicTitle}
+                  musicArtist={design.musicArtist}
+                  previewMode
+                />
+              )}
             </div>
           </div>
         </div>
