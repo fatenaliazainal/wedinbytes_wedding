@@ -166,12 +166,12 @@ const CARD_TEXT = {
     setDateTime: "Sila tetapkan tarikh & masa majlis.",
     eventStarted: "Majlis telah bermula",
     guestWishes: "Ucapan dan doa daripada tetamu akan dipaparkan di sini.",
-    dateLabel: "TARIKH",
-    dayLabel: "HARI",
-    timeLabel: "MASA",
-    locationLabel: "LOKASI",
-    programmeLabel: "ATUR CARA MAJLIS",
-    dressCodeLabel: "TEMA PAKAIAN",
+    dateLabel: "Tarikh",
+    dayLabel: "Hari",
+    timeLabel: "Masa",
+    locationLabel: "Lokasi",
+    programmeLabel: "Atur Cara Majlis",
+    dressCodeLabel: "Tema Pakaian",
     prayerLabel: "Doa",
     countdownLabel: "Countdown",
     galleryLabel: "Galeri",
@@ -193,12 +193,12 @@ const CARD_TEXT = {
     setDateTime: "Please set the event date & time.",
     eventStarted: "The event has started",
     guestWishes: "Guest wishes and prayers will appear here.",
-    dateLabel: "DATE",
-    dayLabel: "DAY",
-    timeLabel: "TIME",
-    locationLabel: "LOCATION",
-    programmeLabel: "EVENT PROGRAMME",
-    dressCodeLabel: "DRESS CODE",
+    dateLabel: "Date",
+    dayLabel: "Day",
+    timeLabel: "Time",
+    locationLabel: "Location",
+    programmeLabel: "Event Programme",
+    dressCodeLabel: "Dress Code",
     prayerLabel: "Prayer",
     countdownLabel: "Countdown",
     galleryLabel: "Gallery",
@@ -251,8 +251,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
-  const sectionTitleCls = "text-lg font-semibold text-primary tracking-wide uppercase";
-  const sectionTitleStyle: React.CSSProperties = { fontFamily: bodyFontFamily };
+  const sectionTitleCls = "text-xl text-primary";
+  const sectionTitleStyle: React.CSSProperties = { fontFamily: nameStyle.fontFamily };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   const bgUrl = cardImageUrl || envelopeImageUrl;
