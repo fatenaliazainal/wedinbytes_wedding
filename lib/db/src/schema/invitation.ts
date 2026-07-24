@@ -18,6 +18,8 @@ export const invitationTable = pgTable("invitation", {
   eventDate: text("event_date").notNull(),
   eventDay: text("event_day").notNull(),
   eventTime: text("event_time").notNull(),
+  eventStartTime: text("event_start_time"),
+  eventEndTime: text("event_end_time"),
   venueName: text("venue_name").notNull(),
   venueAddress: text("venue_address").notNull(),
   venueCity: text("venue_city").notNull(),
@@ -54,6 +56,8 @@ export const invitationTable = pgTable("invitation", {
   // Lokasi fields
   venueHijriDate: text("venue_hijri_date"),
   schedule: text("schedule"),
+  // Structured programme / itinerary: array of { time, event }
+  itinerary: jsonb("itinerary").$type<{ time: string; event: string }[]>(),
   // Legacy RSVP flags — kept to avoid destructive schema prompts, not used by new flow
   rsvpShowSide: boolean("rsvp_show_side").notNull().default(false),
   rsvpMaxGuests: integer("rsvp_max_guests").notNull().default(5),

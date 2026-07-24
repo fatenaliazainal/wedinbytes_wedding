@@ -124,6 +124,8 @@ interface InvData {
   brideInitial: string;
   eventStartDateTime: string;
   eventEndDateTime: string;
+  eventStartTime: string;
+  eventEndTime: string;
   coverDateText: string;
   additionalInfo: string;
   coverTitle: string;
@@ -137,6 +139,7 @@ interface InvData {
   hostCount: number;
   venueHijriDate: string;
   schedule: string;
+  itinerary: { time: string; event: string }[];
   galleryImages: string[];
   // RSVP settings
   rsvpEnabled: boolean;
@@ -168,6 +171,25 @@ interface DesignData {
   cardImageUrl: string;
   envelopeImageUrl: string;
   cardMaxWidth: string;
+}
+
+function getDayName(dateStr: string, lang: "ms" | "en"): string {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day);
+  if (isNaN(d.getTime())) return "";
+  const ms = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+  const en = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  return lang === "ms" ? ms[d.getDay()] : en[d.getDay()];
+}
+
+function formatTime12h(time24: string): string {
+  if (!time24) return "";
+  const [h, m] = time24.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return time24;
+  const period = h >= 12 ? "petang" : "pagi";
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 function hslToHex(hslStr: string): string {
@@ -262,7 +284,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     id: 0,
     token: "",
     groomName: "", brideName: "", eventType: "Walimatul Urus",
-    eventDate: "", eventDay: "", eventTime: "11:00 am – 4:00 pm",
+    eventDate: "", eventDay: "", eventTime: "11:00 pagi – 4:00 petang",
+    eventStartTime: "11:00", eventEndTime: "16:00",
     venueName: "", venueAddress: "", venueCity: "", venueState: "",
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
@@ -273,7 +296,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     greetingText: "Assalamualaikum wbt & salam sejahtera",
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
-    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", galleryImages: [],
+    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", itinerary: [], galleryImages: [],
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
@@ -385,6 +408,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
+          eventStartTime: d.eventStartTime ?? "11:00",
+          eventEndTime: d.eventEndTime ?? "16:00",
           coverDateText: d.coverDateText ?? "",
           additionalInfo: d.additionalInfo ?? "",
           coverTitle: d.coverTitle ?? "",
@@ -396,6 +421,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           invitationText: d.invitationText ?? "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
+          itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
           galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages : [],
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
@@ -481,6 +507,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // Auto-generate day label and readable time range from date/time pickers.
+  useEffect(() => {
+    setInv((p) => {
+      const next = { ...p };
+      if (p.eventDate) {
+        next.eventDay = getDayName(p.eventDate, p.language);
+      }
+      if (p.eventStartTime && p.eventEndTime) {
+        next.eventTime = `${formatTime12h(p.eventStartTime)} – ${formatTime12h(p.eventEndTime)}`;
+      }
+      return next;
+    });
+  }, [inv.eventDate, inv.eventStartTime, inv.eventEndTime, inv.language]);
+
   // If the active tab is no longer visible after a package change, switch to the first visible tab.
   useEffect(() => {
     if (!visibleTabs.find((t) => t.id === activeTab)) {
@@ -537,6 +577,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           groomName: inv.groomName, brideName: inv.brideName,
           eventType: inv.eventType, eventDate: inv.eventDate,
           eventDay: inv.eventDay, eventTime: inv.eventTime,
+          eventStartTime: inv.eventStartTime || undefined,
+          eventEndTime: inv.eventEndTime || undefined,
           venueName: inv.venueName, venueAddress: inv.venueAddress,
           venueCity: inv.venueCity, venueState: inv.venueState,
           venueMapUrl: inv.venueMapUrl || undefined,
@@ -567,6 +609,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           hostCount: inv.hostCount,
           venueHijriDate: inv.venueHijriDate || undefined,
           schedule: inv.schedule || undefined,
+          itinerary: inv.itinerary.length > 0 ? inv.itinerary : undefined,
           galleryImages: inv.galleryImages.length > 0 ? inv.galleryImages : undefined,
           rsvpEnabled: inv.rsvpEnabled,
           rsvpAdditionalInfo: inv.rsvpAdditionalInfo || undefined,
@@ -874,14 +917,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder="Sarah" />
                   </Field>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Day">
-                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
-                  </Field>
-                  <Field label="Date">
-                    <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
-                  </Field>
-                </div>
                 <Field label="Hashtag">
                   <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder="#OurWedding" />
                 </Field>
@@ -954,17 +989,25 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── TARIKH & LOKASI ── */}
             {activeTab === "tarikh-lokasi" && (
               <>
-                <div className="grid grid-cols-3 gap-3">
-                  <Field label="Day">
-                    <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
-                  </Field>
+                <div className="grid grid-cols-2 gap-3">
                   <Field label="Date">
                     <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
                   </Field>
-                  <Field label="Time">
-                    <input className={inputCls} value={inv.eventTime} onChange={(e) => setI("eventTime")(e.target.value)} placeholder="11:00 am – 4:00 pm" />
+                  <Field label="Day (auto)">
+                    <input className={inputCls} value={inv.eventDay} readOnly placeholder="Auto from date" />
                   </Field>
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Start Time">
+                    <input type="time" className={inputCls} value={inv.eventStartTime} onChange={(e) => setI("eventStartTime")(e.target.value)} />
+                  </Field>
+                  <Field label="End Time">
+                    <input type="time" className={inputCls} value={inv.eventEndTime} onChange={(e) => setI("eventEndTime")(e.target.value)} />
+                  </Field>
+                </div>
+                <Field label="Readable Time">
+                  <input className={inputCls} value={inv.eventTime} readOnly placeholder="Auto from start/end" />
+                </Field>
                 <Field label="Venue Name">
                   <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder="Grand Ballroom, Hilton" />
                 </Field>
@@ -984,6 +1027,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder="Selangor" />
                   </div>
                 </Field>
+                <Field label="Islamic Date">
+                  <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder="5 Rabiulawal 1449H" />
+                </Field>
                 <Field label="GPS / Google Maps Link">
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder="https://maps.google.com/..." />
                 </Field>
@@ -993,16 +1039,69 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── ATURCARA ── */}
             {activeTab === "aturcara" && (
               <>
-                <Field label="Event Programme">
-                  <RichTextEditor
-                    value={inv.schedule}
-                    onChange={(v) => setI("schedule")(v)}
-                    placeholder={`11:00 am - Guest Arrival\n2:00 pm - Couple Arrival\n4:30 pm - Event Ends`}
-                    multiLine
-                    showFontSize
-                    inputStyle={{ textAlign: "center" }}
-                  />
-                </Field>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">Event Programme</label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInv((p) => ({
+                          ...p,
+                          itinerary: [...p.itinerary, { time: "", event: "" }],
+                        }))
+                      }
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:opacity-80"
+                    >
+                      <Plus size={14} /> Add item
+                    </button>
+                  </div>
+                  {inv.itinerary.length === 0 && (
+                    <p className="text-xs text-gray-400">No programme items yet. Click “Add item” to start.</p>
+                  )}
+                  <div className="space-y-2">
+                    {inv.itinerary.map((item, idx) => (
+                      <div key={idx} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                        <input
+                          type="time"
+                          className={inputCls}
+                          value={item.time}
+                          onChange={(e) =>
+                            setInv((p) => {
+                              const next = [...p.itinerary];
+                              next[idx] = { ...next[idx], time: e.target.value };
+                              return { ...p, itinerary: next };
+                            })
+                          }
+                        />
+                        <input
+                          className={inputCls}
+                          value={item.event}
+                          onChange={(e) =>
+                            setInv((p) => {
+                              const next = [...p.itinerary];
+                              next[idx] = { ...next[idx], event: e.target.value };
+                              return { ...p, itinerary: next };
+                            })
+                          }
+                          placeholder="Event name"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInv((p) => ({
+                              ...p,
+                              itinerary: p.itinerary.filter((_, i) => i !== idx),
+                            }))
+                          }
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                          title="Remove"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 {activeFeatureNames.has("Dress Code") && (
                   <Field label="Dress Code">
                     <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
@@ -1051,6 +1150,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         <img
                           src={resolveImageUrl(url)}
                           alt={`Gallery preview ${idx + 1}`}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = `${BASE}/placeholder-image.svg`;
+                          }}
                           className="w-full h-24 object-cover rounded border border-gray-200"
                         />
                         <button

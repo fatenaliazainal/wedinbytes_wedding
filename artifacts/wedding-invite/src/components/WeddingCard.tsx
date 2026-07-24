@@ -32,17 +32,22 @@ function formatDatePipes(dateStr: string): string {
   // ISO / date-picker format: YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [year, month, day] = s.split("-");
-    return `${day} | ${month} | ${year}`;
+    const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    return `${parseInt(day, 10)} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
   }
   // Display format: "15 November 2025"
   const parts = s.split(" ");
   if (parts.length === 3) {
-    const day = parts[0].padStart(2, "0");
-    const month = MONTH_MAP[parts[1]] ?? parts[1];
-    const year = parts[2];
-    return `${day} | ${month} | ${year}`;
+    return `${parseInt(parts[0], 10)} ${parts[1]} ${parts[2]}`;
   }
   return s;
+}
+
+function formatDateBlock(dateStr: string, dayStr: string, lang: "ms" | "en"): string {
+  if (!dateStr) return "";
+  const dateText = formatDatePipes(dateStr);
+  if (!dateText) return dayStr || "";
+  return dayStr ? `${dayStr}\n${dateText}` : dateText;
 }
 
 function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
@@ -106,7 +111,7 @@ function calculateTimeLeft(targetDate: string) {
   };
 }
 
-function Countdown({ targetDate, labels }: { targetDate: string; labels: { days: string; hours: string; minutes: string; seconds: string; started: string } }) {
+function Countdown({ targetDate, labels, bodyFontFamily }: { targetDate: string; labels: { days: string; hours: string; minutes: string; seconds: string; started: string }; bodyFontFamily: string }) {
   const [timeLeft, setTimeLeft] = React.useState(() => calculateTimeLeft(targetDate));
 
   React.useEffect(() => {
@@ -115,7 +120,7 @@ function Countdown({ targetDate, labels }: { targetDate: string; labels: { days:
   }, [targetDate]);
 
   if (!timeLeft) {
-    return <p className="text-sm text-foreground/70">{labels.started}</p>;
+    return <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{labels.started}</p>;
   }
 
   const units = [
@@ -126,7 +131,7 @@ function Countdown({ targetDate, labels }: { targetDate: string; labels: { days:
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-center w-full max-w-xs">
+    <div className="grid grid-cols-4 gap-2 text-center w-full max-w-xs" style={{ fontFamily: bodyFontFamily }}>
       {units.map((u) => (
         <div key={u.label} className="bg-white/50 rounded-lg p-2 border border-primary/10">
           <p className="text-xl font-bold text-primary">{u.value}</p>
@@ -273,7 +278,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         <PageBackground imageUrl={bgUrl} />
         {showFrontText && (
           <div className={coverPanelBase}>
-            <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8">{coverTitle}</p>
+            <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{groomName}</h1>
             {(brideName && groomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
@@ -337,27 +342,31 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.dateLabel}</p>
             <OrnamentDivider />
             <div className="space-y-1">
-              <p className={detailLabel}>{t.dayLabel}</p>
-              <p className="font-bold text-sm text-foreground tracking-[0.2em] uppercase">{invitation.eventDay}</p>
-              <p className="text-lg text-foreground tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
+              <p className="text-lg text-foreground whitespace-pre-line" style={{ fontFamily: bodyFontFamily }}>
+                {formatDateBlock(invitation.eventDate ?? "", invitation.eventDay ?? "", lang)}
+              </p>
+              {(inv.venueHijriDate as string) && (
+                <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{inv.venueHijriDate as string}</p>
+              )}
             </div>
             <div className="space-y-1">
-              <p className={detailLabel}>{t.timeLabel}</p>
+              <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.timeLabel}</p>
               <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.eventTime}</p>
             </div>
             <div className="space-y-1.5">
-              <p className={detailLabel}>{t.locationLabel}</p>
+              <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.locationLabel}</p>
               <p className="text-base italic text-primary" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
               {invitation.venueAddress && (
                 <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
               )}
-              <p className="text-xs text-foreground/60">{invitation.venueCity}, {invitation.venueState}</p>
+              <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
             </div>
             <a
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block py-2.5 px-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold tracking-wide shadow"
+              style={{ fontFamily: bodyFontFamily }}
             >
               {t.viewOnMap}
             </a>
@@ -366,13 +375,24 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
           <RevealOnScroll>
           {/* Programme & Dress Code */}
-          {schedule && (
+          {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? true : Boolean(schedule)) && (
             <div className={detailBlock}>
               <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.programmeLabel}</p>
               <OrnamentDivider />
-              <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule }} />
+              {Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? (
+                <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
+                  {(inv.itinerary as { time?: string; event?: string }[]).map((item, idx) => (
+                    <div key={idx} className="space-y-0.5">
+                      <p className="text-sm font-semibold text-primary">{item.time || "—"}</p>
+                      <p className="text-sm text-foreground/80">{item.event || "—"}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
+              )}
               {invitation.dresscode && (
-                <p className="text-xs text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider">
+                <p className="text-xs text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider" style={{ fontFamily: bodyFontFamily }}>
                   {t.dressCodeLabel}: {invitation.dresscode.toUpperCase()}
                 </p>
               )}
@@ -395,7 +415,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {(() => {
               const target = getCountdownTarget(invitation.eventDate ?? "", invitation.eventTime ?? "");
               return target ? (
-                <Countdown targetDate={target} labels={countdownLabels} />
+                <Countdown targetDate={target} labels={countdownLabels} bodyFontFamily={bodyFontFamily} />
               ) : (
                 <p className="text-sm text-foreground/70">{t.setDateTime}</p>
               );
@@ -408,7 +428,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <div className={detailBlock}>
             <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.attendanceLabel}</p>
             <OrnamentDivider />
-            <p className="text-sm text-foreground/70">{t.rsvpPrompt}</p>
+            <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.rsvpPrompt}</p>
           </div>
           </RevealOnScroll>
 
@@ -418,7 +438,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.wishesLabel}</p>
             <OrnamentDivider />
             {(inv.message as string) && (
-              <p className="text-sm text-foreground/70 mb-4" dangerouslySetInnerHTML={{ __html: inv.message as string }} />
+              <p className="text-sm text-foreground/70 mb-4" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: inv.message as string }} />
             )}
             {guestWishes && guestWishes.length > 0 ? (
               <div className="w-full max-w-xs">
@@ -439,7 +459,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-foreground/70">{t.guestWishes}</p>
+              <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.guestWishes}</p>
             )}
           </div>
           </RevealOnScroll>
@@ -461,6 +481,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                           <img
                             src={resolved}
                             alt={`${t.galleryLabel} ${idx + 1}`}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%23f3f4f6'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImage not found%3C/text%3E%3C/svg%3E";
+                            }}
                             className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
                             loading="lazy"
                           />
