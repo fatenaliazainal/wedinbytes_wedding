@@ -310,11 +310,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
-    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "www.mymawaddah.com",
+    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "",
     socialLinks: [
-      { platform: "website", url: "https://mymawaddah.com" },
-      { platform: "tiktok", url: "https://tiktok.com/@mymawaddah" },
-      { platform: "instagram", url: "https://instagram.com/mymawaddah" },
+      { platform: "website", url: "" },
+      { platform: "tiktok", url: "" },
+      { platform: "instagram", url: "" },
     ],
   });
 
@@ -450,11 +450,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
           showFooter: d.showFooter ?? true,
           footerText: d.footerText ?? "Dapatkan kad digital anda di:",
-          footerUrl: d.footerUrl ?? "www.mymawaddah.com",
+          footerUrl: d.footerUrl ?? "",
           socialLinks: Array.isArray(d.socialLinks) ? d.socialLinks : [
-            { platform: "website", url: "https://mymawaddah.com" },
-            { platform: "tiktok", url: "https://tiktok.com/@mymawaddah" },
-            { platform: "instagram", url: "https://instagram.com/mymawaddah" },
+            { platform: "website", url: "" },
+            { platform: "tiktok", url: "" },
+            { platform: "instagram", url: "" },
           ],
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)

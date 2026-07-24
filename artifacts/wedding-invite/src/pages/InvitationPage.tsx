@@ -55,6 +55,10 @@ export default function InvitationPage() {
     },
   });
 
+  const { data: rsvpCount } = useGetRsvpCount(
+    resolvedToken ? { invitationToken: resolvedToken } : undefined,
+  );
+
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
   const designCode = overrideDesignCode ?? (inv?.designCode as string | undefined) ?? "FL001";
@@ -189,10 +193,6 @@ export default function InvitationPage() {
     .filter((r) => r.message && r.message.trim())
     .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const { data: rsvpCount } = useGetRsvpCount(
-    resolvedToken ? { invitationToken: resolvedToken } : undefined,
-  );
 
   return (
     <div
