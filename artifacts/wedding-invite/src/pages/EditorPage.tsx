@@ -1721,17 +1721,19 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               {/* Bottom nav — actual component, positioned inside the preview frame */}
               {previewOpened && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 z-50"
+                  className="absolute bottom-0 left-0 right-0 z-50 flex justify-center"
                   style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)" }}
                 >
-                  <BottomNav
-                    activeTab={previewActiveTab as TabKey | null}
-                    isMuted={false}
-                    onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
-                    onRsvpClick={() => toast.info("RSVP preview only")}
-                    isVisible={true}
-                    cardMaxWidth={design.cardMaxWidth}
-                  />
+                  <div className="w-full mx-auto" style={{ maxWidth: design.cardMaxWidth || "420px" }}>
+                    <BottomNav
+                      activeTab={previewActiveTab as TabKey | null}
+                      isMuted={false}
+                      onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
+                      onRsvpClick={() => toast.info("RSVP preview only")}
+                      isVisible={true}
+                      cardMaxWidth="100%"
+                    />
+                  </div>
                 </div>
               )}
 
