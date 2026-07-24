@@ -439,6 +439,12 @@ components:
           type: string
         message:
           type: string
+        coverTitle:
+          type: string
+        hashtag:
+          type: string
+        doaText:
+          type: string
         packageId:
           type: integer
           nullable: true

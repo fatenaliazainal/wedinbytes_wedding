@@ -39,42 +39,75 @@ function OrnamentDivider() {
   );
 }
 
+function calculateTimeLeft(targetDate: string) {
+  const target = new Date(targetDate).getTime();
+  const now = Date.now();
+  const diff = target - now;
+  if (isNaN(target) || diff <= 0) return null;
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+  };
+}
+
+function Countdown({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = React.useState(() => calculateTimeLeft(targetDate));
+
+  React.useEffect(() => {
+    const timer = window.setInterval(() => setTimeLeft(calculateTimeLeft(targetDate)), 1000);
+    return () => window.clearInterval(timer);
+  }, [targetDate]);
+
+  if (!timeLeft) {
+    return <p className="text-sm text-foreground/70">Majlis telah bermula</p>;
+  }
+
+  const units = [
+    { value: timeLeft.days, label: "Hari" },
+    { value: timeLeft.hours, label: "Jam" },
+    { value: timeLeft.minutes, label: "Minit" },
+    { value: timeLeft.seconds, label: "Saat" },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-2 text-center w-full max-w-xs">
+      {units.map((u) => (
+        <div key={u.label} className="bg-white/50 rounded-lg p-2 border border-primary/10">
+          <p className="text-xl font-bold text-primary">{u.value}</p>
+          <p className="text-[9px] uppercase text-foreground/60">{u.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
-  // Use unknown cast so we can access fields that may not be in the generated TS type
   const inv = invitation as unknown as Record<string, unknown>;
 
-  const greetingText = (inv.greetingText as string) || "Assalamualaikum & warm greetings";
+  const coverTitle = (inv.coverTitle as string) || "RAIKAN CINTA";
+  const hashtag = (inv.hashtag as string) || "";
+  const greetingText = (inv.greetingText as string) || "Assalamualaikum & salam sejahtera";
   const invitationText = (inv.invitationText as string) ||
-    "With heartfelt gratitude, we joyfully invite\nyou to celebrate the wedding of our beloved child.";
-  const venueHijriDate = inv.venueHijriDate as string | undefined;
+    "Dengan penuh kesyukuran, kami menjemput Dato' | Datin | Tuan | Puan | Encik | Cik ke majlis perkahwinan anakanda kami.";
+  const doaText = (inv.doaText as string) ||
+    "Ya Allah, berkatilah majlis perkahwinan kami. Satukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.";
   const schedule = inv.schedule as string | undefined;
-  const additionalInfo = inv.additionalInfo as string | undefined;
-  const coverDateText = inv.coverDateText as string | undefined;
-  // showFrontText defaults to true; false only when explicitly set to boolean false
   const showFrontText = inv.showFrontText !== false && inv.showFrontText !== "false";
 
-  const pipeDate = formatDatePipes(invitation.eventDate ?? "");
-
-  // Cover names: always render as two separate lines (groom top, bride bottom).
-  // Prefer the new short-name fields; if those are empty, split the legacy
-  // shortCoupleName on " & " (legacy format is "Bride & Groom"); finally fall
-  // back to the full names. This guarantees the cover never shows one combined line.
   const brideShort = (inv.brideShortName as string | undefined)?.trim() || "";
   const groomShort = (inv.groomShortName as string | undefined)?.trim() || "";
   const shortCoupleName = (inv.shortCoupleName as string | undefined)?.trim() || "";
   const coupleParts = shortCoupleName.includes(" & ")
     ? shortCoupleName.split(" & ").map((s) => s.trim())
     : [];
-  // Cover names: short names → legacy couple name → full names.
-  // Initials are not used on the cover.
   const brideName = brideShort || coupleParts[0] || invitation.brideName?.trim() || "";
   const groomName = groomShort || coupleParts[1] || invitation.groomName?.trim() || "";
 
-  // Name styling — read from CSS custom properties set by the EditorPage preview container
-  // Falls back to sensible defaults if not set (e.g. on the live invitation page)
   const nameStyle: React.CSSProperties = {
     fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
     fontSize: "var(--name-font-size, 3rem)",
@@ -82,15 +115,12 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
     lineHeight: 1.15,
     filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))",
   };
-
-  // Body text styling — controlled by --body-font-family CSS var
   const bodyFontFamily = "var(--body-font-family, 'Dancing Script', cursive)";
 
-  // If the same image is used for both card and envelope, render it as one
-  // continuous full-cover background for the whole card instead of showing it
-  // twice (once in hero, once in detail). Using an <img> with object-cover is
-  // more reliable than background-image for avoiding tiling/height issues.
   const sameImage = cardImageUrl && envelopeImageUrl && cardImageUrl === envelopeImageUrl;
+
+  const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
+  const panelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
 
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
@@ -104,8 +134,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         />
       )}
 
-      {/* ── HERO SECTION ── card-floral background, full first screen */}
-      <div className="relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden">
+      {/* ── PAGE 1: MUKA DEPAN ── */}
+      <section className={sectionBase}>
         {!sameImage && (cardImageUrl ? (
           <img
             src={cardImageUrl}
@@ -117,177 +147,155 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         ) : (
           <div className="absolute inset-0 bg-secondary" />
         ))}
-
         {showFrontText && (
-          <div className="relative z-10 flex flex-col items-center text-center px-10 py-16 w-full">
-            <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8"
-              dangerouslySetInnerHTML={{ __html: invitation.eventType || "" }}
-            />
-
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm">
-              {groomName}
-            </h1>
+          <div className={panelBase}>
+            <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8">
+              {coverTitle}
+            </p>
+            <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{groomName}</h1>
             {(brideName && groomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
                 &amp;
               </span>
             )}
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">
-              {brideName}
-            </h1>
-
-            {additionalInfo && (
-              <p
-                className="text-sm italic text-primary/80 mb-4 leading-snug"
-                style={{ fontFamily: bodyFontFamily }}
-                dangerouslySetInnerHTML={{ __html: additionalInfo }}
-              />
+            <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">{brideName}</h1>
+            <p className="text-[11px] font-semibold tracking-[0.3em] text-foreground/70 uppercase">{invitation.eventDay}</p>
+            <p className="text-sm text-foreground/80 mt-1 mb-5 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
+            {hashtag && (
+              <p className="text-xs italic text-primary/80" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
             )}
-
-            <p className="text-[11px] font-semibold tracking-[0.3em] text-foreground/70 uppercase">
-              {invitation.eventDay}
-            </p>
-            <p className="text-sm text-foreground/80 mt-1 mb-5 tracking-widest"
-              dangerouslySetInnerHTML={{ __html: coverDateText || pipeDate }}
-            />
-
-            <p className="text-base italic text-primary leading-snug" style={{ fontFamily: bodyFontFamily }}>
-              {invitation.venueName}
-            </p>
-            <p className="text-[10px] tracking-[0.25em] text-foreground/60 uppercase mt-1">
-              {invitation.venueCity}, {invitation.venueState}
-            </p>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* ── DETAIL SECTION ── envelope-floral background, scrollable */}
-      {/* Only show a second background image if it differs from the hero card image.
-          Otherwise the same image appears duplicated behind the content. */}
-      <div
-        className="relative min-h-(--card-viewport-height,100dvh) bg-cover bg-center"
-        style={
-          envelopeImageUrl && envelopeImageUrl !== cardImageUrl
-            ? {
-                backgroundImage: `url(${envelopeImageUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-              }
-            : {
-                backgroundColor: "hsl(var(--background))",
-              }
-        }
-      >
-        {/* White overlay for readability */}
+      {/* ── PAGE 2: AYAT JEMPUTAN ── */}
+      <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col items-center text-center px-7 pt-10 pb-6 gap-4">
-
-          <div>
-            <p
-              className="text-xl text-primary leading-snug"
-              style={{ fontFamily: nameStyle.fontFamily }}
-              dangerouslySetInnerHTML={{ __html: greetingText }}
-            />
-          </div>
-
+        <div className={panelBase}>
+          <p className="text-xl text-primary leading-snug" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
           <OrnamentDivider />
-
           {(invitation.brideParents || invitation.groomParents) && (
             <div className="space-y-1">
-              {invitation.brideParents && (
-                <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.brideParents }} />
+              {invitation.groomParents && (
+                <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.groomParents }} />
               )}
               {invitation.brideParents && invitation.groomParents && (
                 <p className="text-primary text-sm font-semibold">&amp;</p>
               )}
-              {invitation.groomParents && (
-                <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.groomParents }} />
+              {invitation.brideParents && (
+                <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.brideParents }} />
               )}
             </div>
           )}
-
-          <p className="text-xs text-foreground/70 italic leading-relaxed" style={{ fontFamily: bodyFontFamily }}
-            dangerouslySetInnerHTML={{ __html: invitationText }}
-          />
-
+          <p className="text-xs text-foreground/70 italic leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
           <div className="space-y-0.5">
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{invitation.brideName}</p>
-            <p className="text-sm text-foreground/60">&amp;</p>
             <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{invitation.groomName}</p>
+            <p className="text-sm text-foreground/60">&amp;</p>
+            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{invitation.brideName}</p>
           </div>
+        </div>
+      </section>
 
-          <OrnamentDivider />
-
+      {/* ── PAGE 3: TARIKH, MASA & LOKASI ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
           <div className="space-y-1">
-            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">
-              EVENT DATE
-            </p>
-            <p className="font-bold text-sm text-foreground tracking-[0.2em] uppercase">
-              {invitation.eventDay}
-            </p>
-            <p className="text-lg text-foreground tracking-widest" style={{ fontFamily: bodyFontFamily }}
-              dangerouslySetInnerHTML={{ __html: coverDateText || pipeDate }}
-            />
-            {venueHijriDate && (
-              <p className="text-xs text-foreground/55 italic">{venueHijriDate}</p>
-            )}
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">TARIKH</p>
+            <p className="font-bold text-sm text-foreground tracking-[0.2em] uppercase">{invitation.eventDay}</p>
+            <p className="text-lg text-foreground tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
           </div>
-
           <OrnamentDivider />
-
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">MASA</p>
+            <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.eventTime}</p>
+          </div>
+          <OrnamentDivider />
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">
-              EVENT VENUE
-            </p>
+            <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">LOKASI</p>
             <p className="text-base italic text-primary" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
             {invitation.venueAddress && (
-              <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }}
-                dangerouslySetInnerHTML={{ __html: invitation.venueAddress }}
-              />
+              <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
             )}
-            <p className="text-xs text-foreground/60">
-              {invitation.venueCity}, {invitation.venueState}
-            </p>
+            <p className="text-xs text-foreground/60">{invitation.venueCity}, {invitation.venueState}</p>
           </div>
+        </div>
+      </section>
 
+      {/* ── PAGE 4: ATURCARA & TEMA PAKAIAN ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
           {schedule && (
-            <>
-              <OrnamentDivider />
-              <div className="space-y-2 w-full">
-                <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">
-                  EVENT PROGRAMME
-                </p>
-                <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }}
-                  dangerouslySetInnerHTML={{ __html: schedule }}
-                />
-              </div>
-            </>
+            <div className="space-y-2 w-full">
+              <p className="text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase">ATUR CARA MAJLIS</p>
+              <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule }} />
+            </div>
           )}
-
           {invitation.dresscode && (
             <>
               <OrnamentDivider />
               <p className="text-[10px] text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider">
-                DRESS CODE: {invitation.dresscode.toUpperCase()}
+                TEMA PAKAIAN: {invitation.dresscode.toUpperCase()}
               </p>
             </>
           )}
-
-          <OrnamentDivider />
-          <p className="text-xs text-foreground/70 leading-relaxed">
-            Please <span className="font-bold text-foreground">RSVP</span> your attendance{" "}
-            <span className="font-bold text-primary"
-              dangerouslySetInnerHTML={{ __html: `before ${coverDateText || pipeDate}` }}
-            />
-          </p>
-
-          <OrnamentDivider />
-
-          <div className="h-24 w-full" />
         </div>
-      </div>
+      </section>
+
+      {/* ── PAGE 5: DOA ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Doa</p>
+          <OrnamentDivider />
+          <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: doaText }} />
+        </div>
+      </section>
+
+      {/* ── PAGE 6: COUNTDOWN ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Countdown</p>
+          <OrnamentDivider />
+          {(inv.eventStartDateTime as string) ? (
+            <Countdown targetDate={inv.eventStartDateTime as string} />
+          ) : (
+            <p className="text-sm text-foreground/70">Sila tetapkan tarikh & masa majlis.</p>
+          )}
+        </div>
+      </section>
+
+      {/* ── PAGE 7: GALERI ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Galeri</p>
+          <OrnamentDivider />
+          <p className="text-sm text-foreground/70">Galeri gambar akan dipaparkan di sini.</p>
+        </div>
+      </section>
+
+      {/* ── PAGE 8: KEHADIRAN (RSVP) ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Kehadiran</p>
+          <OrnamentDivider />
+          <p className="text-sm text-foreground/70">Sila sahkan kehadiran anda.</p>
+        </div>
+      </section>
+
+      {/* ── PAGE 9: UCAPAN ── */}
+      <section className={sectionBase}>
+        <div className="absolute inset-0 bg-white/65 pointer-events-none" />
+        <div className={panelBase}>
+          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>Ucapan</p>
+          <OrnamentDivider />
+          <p className="text-sm text-foreground/70" dangerouslySetInnerHTML={{ __html: (inv.message as string) || "Ucapan dan doa daripada tetamu akan dipaparkan di sini." }} />
+        </div>
+      </section>
     </div>
   );
 }

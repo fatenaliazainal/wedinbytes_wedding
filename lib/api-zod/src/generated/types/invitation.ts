@@ -27,5 +27,8 @@ export interface Invitation {
   contacts?: InvitationContactsItem[];
   dresscode?: string;
   message?: string;
+  coverTitle?: string;
+  hashtag?: string;
+  doaText?: string;
   packageId?: number | null;
 }

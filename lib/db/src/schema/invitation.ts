@@ -41,9 +41,12 @@ export const invitationTable = pgTable("invitation", {
   eventEndDateTime: text("event_end_date_time"),
   coverDateText: text("cover_date_text"),
   additionalInfo: text("additional_info"),
+  coverTitle: text("cover_title"),
+  hashtag: text("hashtag"),
   showFrontText: boolean("show_front_text").default(true),
   // Ayat undangan fields
   greetingText: text("greeting_text"),
+  doaText: text("doa_text"),
   invitationText: text("invitation_text"),
   hostName: text("host_name"),
   hostCount: integer("host_count").default(1),

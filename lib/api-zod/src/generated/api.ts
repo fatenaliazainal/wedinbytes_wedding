@@ -49,6 +49,9 @@ export const GetInvitationResponse = zod.object({
 })).max(getInvitationResponseContactsMax).optional(),
   "dresscode": zod.string().optional(),
   "message": zod.string().optional(),
+  "coverTitle": zod.string().optional(),
+  "hashtag": zod.string().optional(),
+  "doaText": zod.string().optional(),
   "packageId": zod.number().nullish()
 })
 

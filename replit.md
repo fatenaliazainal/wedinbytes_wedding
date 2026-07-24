@@ -52,7 +52,8 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 - **Buyer**: `/register`, `/login`, `/dashboard` (order list, profile), `/editor` (customise card)
 - **Admin**: `/admin` (RSVP dashboard, design management)
 - **Envelope (doors mode)**: Pink door panels, CSS/SVG rose florals, gold ribbon bow, large pearl oval frame, pearl necklace ring around badge, green badge + BUKA button. `cardMaxWidth` constrains the column; background shows on sides on desktop.
-- **WeddingCard sections**: Front-page hero → invitation text → date+hijri → venue → schedule → RSVP reminder → live countdown → gallery carousel → inline wishes/RSVP form (useListRsvps + useCreateRsvp)
+- **WeddingCard sections**: Muka Depan (cover title, names, day, date, hashtag) → Ayat Jemputan (greeting, parents, invitation text, full names) → Tarikh & Lokasi (day, date, time, venue) → Aturcara (schedule, dress code) → Doa → Countdown → Galeri → Kehadiran (RSVP) → Ucapan
+- **Editor tabs**: Match the card page order: Muka Depan, Ayat Jemputan, Tarikh & Lokasi, Aturcara, Doa, Countdown, Galeri, Kehadiran, Ucapan, Reka Bentuk
 
 ## User preferences
 
