@@ -139,6 +139,7 @@ export default function DashboardPage() {
     { label: "PRICE LIST", href: "/pricing" },
     { label: "INFO",       href: "/info" },
     { label: "FAQs",       href: "/faq" },
+    { label: "REVIEWS",    href: "/reviews" },
   ];
 
   return (

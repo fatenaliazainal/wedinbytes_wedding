@@ -25,16 +25,18 @@ task = "shell.exec"
 args = "pnpm --filter @workspace/wedding-invite run dev"
 cwd = "./artifacts/wedding-invite"
 waitForPort = 24366
+ensurePreviewReachable = "/"
 router = "path"
 
 [workflows.workflow.tasks.env]
 PORT = "24366"
 BASE_PATH = "/"
+VITE_R2_DOMAIN_URL = "https://pub-481ad7c8cfa7476cab2b1b405062a026.r2.dev/"
 
 [[workflows.workflow]]
 name = "artifacts/mockup-sandbox: Component Preview Server"
 author = "agent"
-mode = "parallel"
+mode = "sequential"
 
 [workflows.workflow.metadata]
 outputType = "webview"
@@ -46,6 +48,8 @@ task = "shell.exec"
 args = "pnpm --filter @workspace/mockup-sandbox run dev"
 cwd = "./artifacts/mockup-sandbox"
 waitForPort = 8081
+ensurePreviewReachable = "/"
+router = "path"
 
 [workflows.workflow.tasks.env]
 PORT = "8081"
@@ -57,26 +61,19 @@ author = "agent"
 mode = "sequential"
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 artifactId = "3B4_FFSkEVBkAeYMFRJ2e"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
+args = "pnpm --filter @workspace/api-server run dev"
+cwd = "./artifacts/api-server"
 waitForPort = 8080
+ensurePreviewReachable = "/"
+router = "path"
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "artifacts/api-server: API Server"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
+[workflows.workflow.tasks.env]
+PORT = "8080"
 
 [[workflows.workflow]]
 name = "Start application"
