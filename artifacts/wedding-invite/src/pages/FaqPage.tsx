@@ -258,7 +258,7 @@ export default function FaqPage() {
               Start creating your wedding invitation and share your special day with the people you love.
             </p>
             <button
-              onClick={() => toast.info("Editor is admin-only.")}
+              onClick={() => navigate("/editor")}
               className="mt-8 inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold tracking-widest px-8 py-4 rounded-xl hover:bg-gray-800 transition-colors"
             >
               Create Your Invitation

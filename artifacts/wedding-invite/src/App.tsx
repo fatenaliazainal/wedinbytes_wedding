@@ -43,6 +43,7 @@ function Router() {
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/demo" component={DemoEditorRoute} />
       <Route path="/admin/editor" component={EditorRoute} />
+      <Route path="/editor" component={EditorRoute} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />

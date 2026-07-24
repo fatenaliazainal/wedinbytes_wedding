@@ -144,7 +144,8 @@ export default function WeddingCardDetailPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      toast.info("Editor is admin-only.");
+                      if (card?.designCode) navigate(`/editor?designCode=${encodeURIComponent(card.designCode)}`);
+                      else navigate("/editor");
                     }}
                     className="inline-flex items-center gap-2 rounded-full bg-[#222] px-5 py-3 text-sm font-medium text-white shadow-sm"
                   >
@@ -200,7 +201,8 @@ export default function WeddingCardDetailPage() {
           <button
             type="button"
             onClick={() => {
-              toast.info("Editor is admin-only.");
+              if (card?.designCode) navigate(`/editor?designCode=${encodeURIComponent(card.designCode)}`);
+              else navigate("/editor");
             }}
             className="flex-1 rounded-full bg-[#222] py-3 text-base font-semibold text-white shadow-sm"
           >

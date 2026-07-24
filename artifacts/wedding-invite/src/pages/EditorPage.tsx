@@ -216,10 +216,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!authLoading && user && user.role !== "admin") {
+    if (!authLoading && user && user.role !== "admin" && mode === "demo") {
       navigate("/dashboard");
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, mode]);
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("muka-depan");
   const [saving, setSaving] = useState(false);

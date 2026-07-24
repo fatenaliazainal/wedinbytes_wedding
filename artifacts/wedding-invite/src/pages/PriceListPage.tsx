@@ -134,7 +134,8 @@ export default function PriceListPage() {
   const { data: packages = [], isLoading, isError } = useListPricing();
 
   function goToEditor(designCode?: string) {
-    toast.info("Editor is admin-only.");
+    if (designCode) navigate(`/editor?designCode=${encodeURIComponent(designCode)}`);
+    else navigate("/editor");
   }
 
   const sortedPackages = [...packages].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
