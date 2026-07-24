@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearch } from "wouter";
-import { useGetInvitation, useListDesigns, useListRsvps } from "@workspace/api-client-react";
+import { useGetInvitation, useListDesigns, useListRsvps, useGetRsvpCount } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
@@ -190,6 +190,10 @@ export default function InvitationPage() {
     .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+  const { data: rsvpCount } = useGetRsvpCount(
+    resolvedToken ? { invitationToken: resolvedToken } : undefined,
+  );
+
   return (
     <div
       className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center"
@@ -232,6 +236,7 @@ export default function InvitationPage() {
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
           guestWishes={guestWishes}
+          rsvpCount={rsvpCount ?? undefined}
           onRsvpClick={() => setIsRsvpModalOpen(true)}
         />
 

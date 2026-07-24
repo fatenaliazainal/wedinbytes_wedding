@@ -16,6 +16,7 @@ interface WeddingCardProps {
   envelopeImageUrl?: string;
   cardMaxWidth?: string;
   guestWishes?: { name: string; message?: string | null; createdAt?: string }[];
+  rsvpCount?: { attending: number; notAttending: number; totalGuests: number };
   onRsvpClick?: () => void;
 }
 
@@ -177,6 +178,8 @@ const CARD_TEXT = {
     countdownLabel: "Countdown",
     galleryLabel: "Galeri",
     attendanceLabel: "Kehadiran",
+    attendingLabel: "Hadir",
+    notAttendingLabel: "Tidak Hadir",
     wishesLabel: "Ucapan",
     contactLabel: "Hubungi",
     viewOnMap: "Buka Google Maps",
@@ -204,6 +207,8 @@ const CARD_TEXT = {
     countdownLabel: "Countdown",
     galleryLabel: "Gallery",
     attendanceLabel: "RSVP",
+    attendingLabel: "Attending",
+    notAttendingLabel: "Not Attending",
     wishesLabel: "Wishes",
     contactLabel: "Contact",
     viewOnMap: "Open in Google Maps",
@@ -214,7 +219,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, onRsvpClick }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -431,6 +436,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <div className={detailBlock}>
             <p className={sectionTitleCls} style={sectionTitleStyle}>{t.attendanceLabel}</p>
             <OrnamentDivider />
+            {rsvpCount && (rsvpCount.attending > 0 || rsvpCount.notAttending > 0) && (
+              <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-4">
+                <div className="text-center">
+                  <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.attending}</p>
+                  <p className="text-xs uppercase tracking-wider text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.attendingLabel}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.notAttending}</p>
+                  <p className="text-xs uppercase tracking-wider text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.notAttendingLabel}</p>
+                </div>
+              </div>
+            )}
             <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.rsvpPrompt}</p>
             {onRsvpClick && (
               <button
