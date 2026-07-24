@@ -681,7 +681,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("file", file);
-        const res = await fetch(`${BASE}/api/gallery-upload`, {
+        const res = await fetch(`${BASE}/api/gallery-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`, {
           method: "POST",
           credentials: "include",
           body: formData,

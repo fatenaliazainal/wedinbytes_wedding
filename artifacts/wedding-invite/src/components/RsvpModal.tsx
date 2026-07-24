@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCreateRsvp, useGetRsvpCount } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListRsvpsQueryKey } from "@workspace/api-client-react";
+import { getListRsvpsQueryKey, getGetRsvpCountQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { Invitation } from "@workspace/api-client-react";
@@ -116,6 +116,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListRsvpsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetRsvpCountQueryKey(resolvedToken ? { invitationToken: resolvedToken } : undefined) });
           toast.success("Terima kasih! RSVP anda telah dihantar.");
           onClose();
           form.reset();

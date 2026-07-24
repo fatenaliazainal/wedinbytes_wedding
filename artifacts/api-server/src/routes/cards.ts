@@ -134,12 +134,13 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       return;
     }
 
+    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
-      folder: "gallery",
-      metadata: { uploadedAt: new Date().toISOString() },
+      folder: invitationToken && typeof invitationToken === "string" ? `gallery/${invitationToken}` : "gallery",
+      metadata: { uploadedAt: new Date().toISOString(), invitationToken: typeof invitationToken === "string" ? invitationToken : "" },
     });
 
     res.json({ key: imageKey });
