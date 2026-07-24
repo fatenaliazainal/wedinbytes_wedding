@@ -351,27 +351,30 @@ export const useCreateRsvp = <
 /**
  * @summary Get RSVP count summary
  */
-export const getGetRsvpCountUrl = () => {
-  return `/api/rsvp/count`;
+export const getGetRsvpCountUrl = (invitationToken?: string) => {
+  const url = new URL(`/api/rsvp/count`, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  if (invitationToken) url.searchParams.set("invitationToken", invitationToken);
+  return url.pathname + url.search;
 };
 
 export const getRsvpCount = async (
+  invitationToken?: string,
   options?: RequestInit,
 ): Promise<RsvpCount> => {
-  return customFetch<RsvpCount>(getGetRsvpCountUrl(), {
+  return customFetch<RsvpCount>(getGetRsvpCountUrl(invitationToken), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetRsvpCountQueryKey = () => {
-  return [`/api/rsvp/count`] as const;
+export const getGetRsvpCountQueryKey = (invitationToken?: string) => {
+  return [`/api/rsvp/count`, invitationToken] as const;
 };
 
 export const getGetRsvpCountQueryOptions = <
   TData = Awaited<ReturnType<typeof getRsvpCount>>,
   TError = ErrorType<unknown>,
->(options?: {
+>(invitationToken?: string, options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof getRsvpCount>>,
     TError,
@@ -381,13 +384,13 @@ export const getGetRsvpCountQueryOptions = <
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetRsvpCountQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetRsvpCountQueryKey(invitationToken);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getRsvpCount>>> = ({
     signal,
-  }) => getRsvpCount({ signal, ...requestOptions });
+  }) => getRsvpCount(invitationToken, { signal, ...requestOptions });
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryKey, queryFn, enabled: !!invitationToken, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getRsvpCount>>,
     TError,
     TData
@@ -406,7 +409,7 @@ export type GetRsvpCountQueryError = ErrorType<unknown>;
 export function useGetRsvpCount<
   TData = Awaited<ReturnType<typeof getRsvpCount>>,
   TError = ErrorType<unknown>,
->(options?: {
+>(invitationToken?: string, options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof getRsvpCount>>,
     TError,
@@ -414,7 +417,7 @@ export function useGetRsvpCount<
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetRsvpCountQueryOptions(options);
+  const queryOptions = getGetRsvpCountQueryOptions(invitationToken, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -1372,7 +1372,8 @@ export default function AdminPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">{rsvp.name}</p>
-                      {rsvp.attending && <p className="text-xs text-muted-foreground mt-0.5">{rsvp.numberOfGuests} guests</p>}
+                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">{rsvp.invitationToken}</p>
+                      {rsvp.attending && <p className="text-xs text-muted-foreground mt-0.5">{rsvp.numberOfGuests} guests{rsvp.timeSlot ? ` · ${rsvp.timeSlot}` : ""}</p>}
                       {rsvp.message && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-2">"{rsvp.message}"</p>}
                     </div>
                     <p className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">

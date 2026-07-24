@@ -1,0 +1,128 @@
+I want to redesign the RSVP settings so that they are stored per invitation card created by each customer.
+
+This is NOT an admin feature.
+
+Every customer edits the RSVP settings for their own invitation card inside their dashboard.
+
+Requirements
+
+Each invitation card must have its own independent RSVP configuration.
+
+Example:
+
+Customer A
+
+Wedding Card 1
+RSVP Enabled
+Deadline: 10 Sept 2026
+Max Guests: 5
+
+Customer B
+
+Wedding Card 2
+RSVP Disabled
+
+Editing one invitation must NEVER affect another invitation.
+
+RSVP Settings
+
+Keep the current UI and fields exactly as shown.
+
+Fields:
+
+RSVP (Enabled / Disabled)
+Additional Information
+RSVP Deadline
+RSVP Introduction Text
+RSVP Form Note
+Maximum Overall Guests
+Maximum Guests Per Invitation
+Time Slot
+
+Do not change the existing layout unless necessary.
+
+Save Per Invitation
+
+All RSVP settings must be saved inside the invitation record.
+
+Example
+
+{
+  "id": "...",
+  "userId": "...",
+  "slug": "...",
+  "rsvp": {
+    "enabled": true,
+    "additionalInformation": "...",
+    "deadline": "...",
+    "introText": "...",
+    "formNote": "...",
+    "maxOverallGuests": 1000,
+    "maxGuestsPerInvitation": 10,
+    "timeSlots": []
+  }
+}
+
+Do NOT save RSVP settings globally.
+
+Do NOT share RSVP settings between invitations.
+
+Loading
+
+When a customer opens an invitation inside their dashboard:
+
+Load that invitation's RSVP settings.
+Populate every field with the saved values.
+Clicking Kemaskini only updates that invitation.
+Frontend Website
+
+When guests open an invitation website:
+
+Load the RSVP configuration from that invitation only.
+
+Display:
+
+Additional Information
+RSVP Introduction Text
+RSVP Form Note
+Time Slots
+Guest Limits
+
+If RSVP is disabled:
+
+Hide the RSVP section completely.
+
+If the RSVP deadline has passed:
+
+Display:
+
+RSVP Closed
+
+and disable submissions.
+
+If the overall guest limit has been reached:
+
+Display:
+
+Guest limit has been reached.
+
+and disable the form.
+
+Validation
+
+Before accepting an RSVP:
+
+RSVP must be enabled.
+Deadline must not have passed.
+Maximum overall guests must not be exceeded.
+Maximum guests per invitation must not exceed the configured limit.
+Selected time slot must exist.
+
+Reject invalid submissions with clear error messages.
+
+Important
+Every invitation has its own RSVP settings.
+Every invitation has its own RSVP responses.
+Editing Invitation A must never affect Invitation B.
+There must be no global RSVP configuration.
+The existing UI should remain unchanged unless required to support per-invitation settings.

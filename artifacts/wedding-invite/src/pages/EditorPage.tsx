@@ -110,8 +110,15 @@ interface InvData {
   hostCount: number;
   venueHijriDate: string;
   schedule: string;
-  rsvpShowSide: boolean;
-  rsvpMaxGuests: number;
+  // RSVP settings
+  rsvpEnabled: boolean;
+  rsvpAdditionalInfo: string;
+  rsvpDeadline: string;
+  rsvpIntroText: string;
+  rsvpFormNote: string;
+  rsvpMaxOverallGuests: number;
+  rsvpMaxGuestsPerInvitation: number;
+  rsvpTimeSlots: string;
 }
 
 interface DesignData {
@@ -219,7 +226,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     greetingText: "Undangan Majlis Perkahwinan",
     invitationText: "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
     hostName: "", hostCount: 1, venueHijriDate: "", schedule: "",
-    rsvpShowSide: false, rsvpMaxGuests: 5,
+    rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
+    rsvpIntroText: "", rsvpFormNote: "",
+    rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
   });
 
   const [design, setDesign] = useState<DesignData>({
@@ -329,8 +338,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           invitationText: d.invitationText ?? "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
-          rsvpShowSide: d.rsvpShowSide ?? false,
-          rsvpMaxGuests: d.rsvpMaxGuests ?? 5,
+          rsvpEnabled: d.rsvpEnabled ?? false,
+          rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
+          rsvpDeadline: d.rsvpDeadline ? new Date(d.rsvpDeadline).toISOString().slice(0, 16) : "",
+          rsvpIntroText: d.rsvpIntroText ?? "",
+          rsvpFormNote: d.rsvpFormNote ?? "",
+          rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
+          rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
+          rsvpTimeSlots: d.rsvpTimeSlots ?? "",
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
@@ -470,8 +485,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           hostCount: inv.hostCount,
           venueHijriDate: inv.venueHijriDate || undefined,
           schedule: inv.schedule || undefined,
-          rsvpShowSide: inv.rsvpShowSide,
-          rsvpMaxGuests: inv.rsvpMaxGuests,
+          rsvpEnabled: inv.rsvpEnabled,
+          rsvpAdditionalInfo: inv.rsvpAdditionalInfo || undefined,
+          rsvpDeadline: inv.rsvpDeadline || undefined,
+          rsvpIntroText: inv.rsvpIntroText || undefined,
+          rsvpFormNote: inv.rsvpFormNote || undefined,
+          rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
+          rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
+          rsvpTimeSlots: inv.rsvpTimeSlots || undefined,
           // Buyer design overrides (stored per-invitation, does NOT affect demo)
           designCode: design.designCode != null ? design.designCode : undefined,
           openingAnimation: design.openingAnimation || undefined,
@@ -1180,39 +1201,89 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">RSVP form and message settings.</p>
 
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Show "Dari" question</p>
-                    <p className="text-xs text-gray-500">Let guests select which side they are from.</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={inv.rsvpShowSide}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpShowSide: e.target.checked }))}
-                    className="h-5 w-5 accent-rose-700"
-                  />
-                </div>
-
-                <Field label="Max guests per RSVP">
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
+                <Field label="RSVP">
+                  <select
                     className={inputCls}
-                    value={inv.rsvpMaxGuests}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxGuests: Math.max(1, Math.min(20, Number(e.target.value))) }))}
+                    value={inv.rsvpEnabled ? "Ada" : "Tiada"}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpEnabled: e.target.value === "Ada" }))}
+                  >
+                    <option value="Ada">Ada</option>
+                    <option value="Tiada">Tiada</option>
+                  </select>
+                </Field>
+
+                <Field label="Maklumat Tambahan (jika ada)">
+                  <RichTextEditor
+                    value={inv.rsvpAdditionalInfo}
+                    onChange={(v) => setInv((p) => ({ ...p, rsvpAdditionalInfo: v }))}
+                    placeholder="Insert text here ..."
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "left" }}
                   />
                 </Field>
 
-                <Field label="Invitation Message">
+                <Field label="Tarikh Akhir RSVP">
+                  <input
+                    type="datetime-local"
+                    className={inputCls}
+                    value={inv.rsvpDeadline}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpDeadline: e.target.value }))}
+                  />
+                </Field>
+
+                <Field label="Ayat RSVP">
                   <RichTextEditor
-                    value={inv.message}
-                    onChange={(v) => setI("message")(v)}
-                    placeholder="With heartfelt gratitude, we joyfully invite you to celebrate our wedding."
+                    value={inv.rsvpIntroText}
+                    onChange={(v) => setInv((p) => ({ ...p, rsvpIntroText: v }))}
+                    placeholder="Insert text here ..."
                     multiLine
                     showFontSize
-                    inputStyle={{ textAlign: "center" }}
+                    inputStyle={{ textAlign: "left" }}
                   />
+                </Field>
+
+                <Field label="Nota RSVP (Borang)">
+                  <RichTextEditor
+                    value={inv.rsvpFormNote}
+                    onChange={(v) => setInv((p) => ({ ...p, rsvpFormNote: v }))}
+                    placeholder="Insert text here ..."
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "left" }}
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Had Keseluruhan Tetamu*" required>
+                    <input
+                      type="number"
+                      min={1}
+                      className={inputCls}
+                      value={inv.rsvpMaxOverallGuests}
+                      onChange={(e) => setInv((p) => ({ ...p, rsvpMaxOverallGuests: Math.max(1, Number(e.target.value)) }))}
+                    />
+                  </Field>
+                  <Field label="Had Tetamu Setiap Jemputan*" required>
+                    <input
+                      type="number"
+                      min={1}
+                      className={inputCls}
+                      value={inv.rsvpMaxGuestsPerInvitation}
+                      onChange={(e) => setInv((p) => ({ ...p, rsvpMaxGuestsPerInvitation: Math.max(1, Number(e.target.value)) }))}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Slot Masa*">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={inv.rsvpTimeSlots}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpTimeSlots: e.target.value }))}
+                    placeholder="e.g. 10:00 AM, 12:00 PM"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Pisahkan slot dengan koma. Biarkan kosong untuk Tiada.</p>
                 </Field>
               </div>
             )}

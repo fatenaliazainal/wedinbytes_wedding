@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, boolean, integer, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -45,9 +45,18 @@ export const invitationTable = pgTable("invitation", {
   // Lokasi fields
   venueHijriDate: text("venue_hijri_date"),
   schedule: text("schedule"),
-  // RSVP settings
+  // Legacy RSVP flags — kept to avoid destructive schema prompts, not used by new flow
   rsvpShowSide: boolean("rsvp_show_side").notNull().default(false),
   rsvpMaxGuests: integer("rsvp_max_guests").notNull().default(5),
+  // RSVP settings (per-invitation, independent for each card)
+  rsvpEnabled: boolean("rsvp_enabled").notNull().default(false),
+  rsvpAdditionalInfo: text("rsvp_additional_info"),
+  rsvpDeadline: timestamp("rsvp_deadline"),
+  rsvpIntroText: text("rsvp_intro_text"),
+  rsvpFormNote: text("rsvp_form_note"),
+  rsvpMaxOverallGuests: integer("rsvp_max_overall_guests").notNull().default(1000),
+  rsvpMaxGuestsPerInvitation: integer("rsvp_max_guests_per_invitation").notNull().default(10),
+  rsvpTimeSlots: text("rsvp_time_slots"), // JSON array of strings, e.g. ["10:00 AM","12:00 PM"]
   // Buyer design overrides (per-invitation, does NOT affect demo/global design)
   designCode: text("design_code"),
   openingAnimation: text("opening_animation"),
@@ -69,13 +78,16 @@ export type Invitation = typeof invitationTable.$inferSelect;
 
 export const rsvpTable = pgTable("rsvp", {
   id: serial("id").primaryKey(),
+  invitationToken: text("invitation_token").notNull().default("unknown"),
   name: text("name").notNull(),
   attending: boolean("attending").notNull(),
   numberOfGuests: integer("number_of_guests").notNull().default(1),
+  // Legacy field — kept to avoid destructive schema prompts, not used by new RSVP flow
   side: text("side"),
+  timeSlot: text("time_slot"),
   message: text("message"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [unique("rsvp_invitation_name").on(t.invitationToken, t.name)]);
 
 export const insertRsvpSchema = createInsertSchema(rsvpTable).omit({ id: true, createdAt: true });
 export type InsertRsvp = z.infer<typeof insertRsvpSchema>;

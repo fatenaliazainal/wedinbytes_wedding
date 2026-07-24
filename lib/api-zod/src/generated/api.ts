@@ -46,9 +46,11 @@ export const GetInvitationResponse = zod.object({
  */
 export const ListRsvpsResponseItem = zod.object({
   id: zod.number(),
+  invitationToken: zod.string(),
   name: zod.string(),
   attending: zod.boolean(),
   numberOfGuests: zod.number(),
+  timeSlot: zod.string().optional(),
   message: zod.string().optional(),
   createdAt: zod.string(),
 });
@@ -58,10 +60,11 @@ export const ListRsvpsResponse = zod.array(ListRsvpsResponseItem);
  * @summary Submit RSVP
  */
 export const CreateRsvpBody = zod.object({
+  invitationToken: zod.string(),
   name: zod.string(),
   attending: zod.boolean(),
   numberOfGuests: zod.number(),
-  side: zod.string().optional(),
+  timeSlot: zod.string().optional(),
   message: zod.string().optional(),
 });
 

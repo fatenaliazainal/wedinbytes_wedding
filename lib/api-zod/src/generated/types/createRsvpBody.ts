@@ -7,9 +7,10 @@
  */
 
 export interface CreateRsvpBody {
+  invitationToken: string;
   name: string;
   attending: boolean;
   numberOfGuests: number;
-  side?: string;
+  timeSlot?: string;
   message?: string;
 }

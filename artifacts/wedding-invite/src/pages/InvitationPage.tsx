@@ -217,6 +217,7 @@ export default function InvitationPage() {
               onRsvpClick={() => setIsRsvpModalOpen(true)}
               isVisible={showBottomNav}
               cardMaxWidth="100%"
+              showRsvp={inv?.rsvpEnabled === true}
             />
           </div>
         )}
@@ -269,6 +270,7 @@ export default function InvitationPage() {
         onClose={() => setIsRsvpModalOpen(false)}
         cardFontVars={cardFontVars}
         invitation={invitation}
+        token={resolvedToken}
       />
     </div>
   );

@@ -27,21 +27,34 @@ export interface Invitation {
   contactPhone: string;
   dresscode?: string;
   message?: string;
+  // RSVP settings
+  rsvpEnabled?: boolean;
+  rsvpAdditionalInfo?: string;
+  rsvpDeadline?: string;
+  rsvpIntroText?: string;
+  rsvpFormNote?: string;
+  rsvpMaxOverallGuests?: number;
+  rsvpMaxGuestsPerInvitation?: number;
+  rsvpTimeSlots?: string;
 }
 
 export interface Rsvp {
   id: number;
+  invitationToken: string;
   name: string;
   attending: boolean;
   numberOfGuests: number;
+  timeSlot?: string;
   message?: string;
   createdAt: string;
 }
 
 export interface CreateRsvpBody {
+  invitationToken: string;
   name: string;
   attending: boolean;
   numberOfGuests: number;
+  timeSlot?: string;
   message?: string;
 }
 

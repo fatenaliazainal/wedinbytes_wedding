@@ -42,7 +42,7 @@ const NAV_ITEMS: {
   { icon: MessageSquare, label: "RSVP",       isRsvp: true },
 ];
 
-export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "420px" }: BottomNavProps) {
+export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "420px", showRsvp = true }: BottomNavProps & { showRsvp?: boolean }) {
   return (
     <>
       <style>{`
@@ -63,7 +63,7 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
           pointerEvents: isVisible ? undefined : "none",
         }}
       >
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter((item) => !item.isRsvp || showRsvp).map((item) => {
             const isMuzik = item.tab === "muzik";
             const isActive = item.tab ? activeTab === item.tab : false;
             const playing = isMuzik && !isMuted;
