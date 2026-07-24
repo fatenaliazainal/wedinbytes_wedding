@@ -40,8 +40,10 @@ function applyDesignTokens(design: CardDesign) {
 export type DesignOverrides = {
   colorPrimary?: string | null;
   colorSecondary?: string | null;
+  colorAccent?: string | null;
   colorBackground?: string | null;
   colorCard?: string | null;
+  nameColor?: string | null;
   nameFontFamily?: string | null;
 };
 
@@ -49,11 +51,13 @@ function applyOverrides(overrides: DesignOverrides) {
   const root = document.documentElement;
   if (overrides.colorPrimary) root.style.setProperty("--primary", overrides.colorPrimary);
   if (overrides.colorSecondary) root.style.setProperty("--secondary", overrides.colorSecondary);
+  if (overrides.colorAccent) root.style.setProperty("--accent", overrides.colorAccent);
   if (overrides.colorBackground) root.style.setProperty("--background", overrides.colorBackground);
   if (overrides.colorCard) {
     root.style.setProperty("--card", overrides.colorCard);
     root.style.setProperty("--popover", overrides.colorCard);
   }
+  if (overrides.nameColor) root.style.setProperty("--name-color", overrides.nameColor);
 }
 
 export function useDesign(overrides?: DesignOverrides) {

@@ -144,9 +144,9 @@ export default function WeddingCardDetailPage() {
                     type="button"
                     onClick={() => {
                       const dest = card?.designCode
-                        ? `/editor?designCode=${card.designCode}`
+                        ? `/editor?designCode=${encodeURIComponent(card.designCode)}`
                         : "/editor";
-                      navigate(user ? dest : "/login");
+                      navigate(user ? dest : `/login?redirect=${encodeURIComponent(dest)}`);
                     }}
                     className="inline-flex items-center gap-2 rounded-full bg-[#222] px-5 py-3 text-sm font-medium text-white shadow-sm"
                   >
@@ -203,9 +203,9 @@ export default function WeddingCardDetailPage() {
             type="button"
             onClick={() => {
               const dest = card?.designCode
-                ? `/editor?designCode=${card.designCode}`
+                ? `/editor?designCode=${encodeURIComponent(card.designCode)}`
                 : "/editor";
-              navigate(user ? dest : "/login");
+              navigate(user ? dest : `/login?redirect=${encodeURIComponent(dest)}`);
             }}
             className="flex-1 rounded-full bg-[#222] py-3 text-base font-semibold text-white shadow-sm"
           >

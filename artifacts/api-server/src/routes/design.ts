@@ -35,7 +35,7 @@ const upload = multer({
 const ALLOWED_DESIGN_FIELDS = [
   "envelopeImageUrl","cardImageUrl","musicUrl","musicTitle","musicArtist",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
-  "fontHeading","fontBody","nameFontFamily","nameFontSize","nameColor",
+  "fontHeading","fontBody","nameFontFamily","nameFontSize","badgeFontSize","nameColor",
   "cardMaxWidth","openingAnimation","designCode","openButtonText","name",
 ];
 

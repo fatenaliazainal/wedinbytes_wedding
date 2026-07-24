@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
+import logo from "@assets/LOGO WEDINBYTES (1).png";
 
 export type SiteNavItem = {
   label: string;
@@ -46,10 +47,14 @@ export default function SiteHeader({
         <div className="flex-1 flex sm:flex-none items-center justify-center sm:justify-start">
           <button
             onClick={onLogoClick ?? (() => navigate("/"))}
-            className="font-serif text-xl text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
-            style={{ fontFamily: "'Dancing Script', cursive" }}
+            className="hover:opacity-70 transition-opacity"
+            aria-label="WedInBytes logo"
           >
-            WedInBytes
+            <img
+              src={logo}
+              alt="WedInBytes logo"
+              className="h-8 sm:h-10 w-auto object-contain"
+            />
           </button>
         </div>
 

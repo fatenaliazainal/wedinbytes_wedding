@@ -1,0 +1,227 @@
+Please update the website structure as follows:
+
+1. REMOVE THE FAQ SECTION FROM THE PRICING PAGE
+
+Remove the entire FAQ section from the Pricing page.
+
+This includes:
+- FAQ heading
+- FAQ questions and answers
+- FAQ accordion/dropdown components
+- Any FAQ-related content displayed on the Pricing page
+
+The Pricing page should focus only on:
+- Pricing plans
+- Standard plan
+- Premium plan
+- Feature comparison
+- Final call-to-action section
+
+Do not remove the FAQ link from the main navigation.
+
+==================================================
+
+2. CREATE A NEW FAQ PAGE
+
+Create a dedicated FAQ page at:
+
+/faq
+
+Add "FAQs" to the main website navigation and link it to /faq.
+
+==================================================
+
+FAQ PAGE DESIGN
+
+Create a clean, modern, elegant and user-friendly FAQ page for WedInBytes.
+
+Use the existing website design system:
+- Poppins font
+- Existing colour palette
+- Existing navbar/header
+- Existing button styles
+- Existing spacing and design language
+
+The page should be fully responsive on desktop, tablet and mobile.
+
+==================================================
+
+FAQ PAGE STRUCTURE
+
+HERO SECTION
+
+Small label:
+FAQs
+
+Main heading:
+Frequently Asked Questions
+
+Description:
+Everything you need to know about creating and sharing your digital wedding invitation.
+
+==================================================
+
+FAQ CATEGORIES
+
+Organise the FAQs into clear categories to make the page easy to navigate.
+
+Categories:
+
+1. GENERAL
+
+Question:
+What is WedInBytes?
+
+Answer:
+WedInBytes is a digital wedding invitation platform that allows you to create and share a beautiful online wedding invitation with your guests.
+
+Question:
+What is a digital wedding invitation?
+
+Answer:
+A digital wedding invitation is an online invitation that you can share with your guests through a link, WhatsApp, social media, or other messaging platforms.
+
+==================================================
+
+2. GETTING STARTED
+
+Question:
+How do I create my digital wedding invitation?
+
+Answer:
+Choose your preferred package, provide your wedding details, customise your invitation, and share your unique invitation link with your guests.
+
+Question:
+Do I need any technical knowledge?
+
+Answer:
+No. WedInBytes is designed to be simple and easy to use. You do not need any technical knowledge to create your digital wedding invitation.
+
+==================================================
+
+3. FEATURES
+
+Question:
+Can my guests RSVP through the invitation?
+
+Answer:
+Yes. Guests can confirm their attendance directly through your digital wedding invitation.
+
+Question:
+Can guests leave wishes for the couple?
+
+Answer:
+Yes. Guests can leave their wishes and messages for the couple through the invitation.
+
+Question:
+Can I add background music?
+
+Answer:
+Yes. You can add background music to your digital wedding invitation.
+
+Question:
+Can I add photos?
+
+Answer:
+Photo Gallery is available with the Premium package.
+
+Question:
+Can I add a dress code?
+
+Answer:
+Dress Code is available with the Premium package.
+
+Question:
+Can I include a money gift feature?
+
+Answer:
+Money Gift is available with the Premium package.
+
+==================================================
+
+4. CUSTOMISATION
+
+Question:
+Can I edit my wedding details after creating the invitation?
+
+Answer:
+Yes. You can update your available wedding details and content after creating your invitation.
+
+Question:
+Can I choose the language of my invitation?
+
+Answer:
+Premium invitations are available in either Malay or English.
+
+==================================================
+
+5. SHARING
+
+Question:
+How do I share my digital wedding invitation?
+
+Answer:
+You can share your unique invitation link through WhatsApp, social media, or any messaging platform.
+
+Question:
+Can my guests open the invitation on their phones?
+
+Answer:
+Yes. WedInBytes digital wedding invitations are designed to work on mobile devices, tablets, and desktop computers.
+
+==================================================
+
+6. PACKAGE & PAYMENT
+
+Question:
+What packages are available?
+
+Answer:
+We currently offer two packages: Standard at RM55 and Premium at RM65. Visit our Pricing page to see the features included in each package.
+
+Question:
+What is the difference between Standard and Premium?
+
+Answer:
+The Premium package includes additional features such as Photo Gallery, Money Gift, and Dress Code.
+
+Question:
+Can I change my package after creating my invitation?
+
+Answer:
+Please contact us for assistance with package changes.
+
+==================================================
+
+FAQ UI REQUIREMENTS
+
+Use an accordion-style FAQ layout.
+
+Each question should:
+- Be clickable
+- Expand to show the answer
+- Collapse when clicked again
+
+Use:
+- Plus icon when collapsed
+- Minus icon when expanded
+
+On desktop:
+- Use a clean centred layout with a comfortable maximum width.
+
+On mobile:
+- Make each FAQ item easy to tap.
+- Ensure long answers are easy to read.
+- Prevent horizontal scrolling.
+
+==================================================
+
+IMPORTANT
+
+- Remove FAQ completely from the Pricing page.
+- Create a separate dedicated /faq page.
+- Keep the existing Pricing page functionality unchanged.
+- Keep the FAQ navigation link working.
+- Do not duplicate the FAQ section on the Pricing page.
+- Use natural, clear and professional English.
+- Do not change other existing pages unnecessarily.

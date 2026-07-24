@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
+  const search = useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const params = new URLSearchParams(search);
+  const redirect = params.get("redirect") || "/dashboard";
+
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard");
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) {
+      navigate(user.role === "admin" ? "/admin" : "/dashboard");
+    }
+  }, [user, authLoading, navigate, redirect]);
 
   if (authLoading || user) return null;
 
@@ -22,7 +28,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate(redirect);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed.");
     } finally {

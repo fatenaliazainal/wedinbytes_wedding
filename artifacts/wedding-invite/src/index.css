@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=Alex+Brush&family=Allura&family=Poppins:wght@300;400;500;600&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Pinyon+Script&family=Style+Script&family=Petit+Formal+Script&family=Meow+Script&family=Rouge+Script&family=Lily+Script+One&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -117,8 +117,8 @@
   --chart-4: 120 15% 80%;
   --chart-5: 340 60% 96%;
 
-  --app-font-sans: 'Playfair Display', serif;
-  --app-font-serif: 'Dancing Script', cursive;
+  --app-font-sans: 'Poppins', sans-serif;
+  --app-font-serif: 'Poppins', sans-serif;
   --app-font-mono: Menlo, monospace;
   --radius: .5rem;
   

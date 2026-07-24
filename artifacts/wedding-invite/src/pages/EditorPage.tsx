@@ -5,16 +5,20 @@ import { toast } from "sonner";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
+import { BottomNav } from "@/components/BottomNav";
+import { DetailPanel, type TabKey } from "@/components/DetailPanel";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2 } from "lucide-react";
-import { useListDesigns } from "@workspace/api-client-react";
+import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
 const TABS = [
-  { id: "utama", label: "MAIN" },
   { id: "muka-depan", label: "COVER" },
+  { id: "utama", label: "MAIN" },
+  { id: "warna", label: "COLOR" },
   { id: "ayat-undangan", label: "INVITATION" },
   { id: "lokasi", label: "VENUE & PROGRAMME" },
   { id: "rsvp", label: "RSVP / MESSAGE" },
@@ -29,11 +33,43 @@ const OPENING_ANIMS = [
   { value: "envelope", label: "Envelope" },
   { value: "window", label: "Window" },
 ];
-const FONT_OPTIONS = [
-  { value: "Dancing Script", label: "Nova Quinta (Dancing Script)" },
+
+// Map legacy / custom font names to real Google Fonts so they actually render.
+const FONT_ALIASES: Record<string, string> = {
+  Magnolia: "Great Vibes",
+  Esthetique: "Alex Brush",
+};
+
+function normalizeFont(fontName?: string | null): string {
+  if (!fontName) return "Dancing Script";
+  return FONT_ALIASES[fontName] || fontName;
+}
+
+function fontFamilyStack(fontName?: string | null): string {
+  const normalized = normalizeFont(fontName);
+  // Preserve explicit fallbacks for web-safe fonts; otherwise add a sensible fallback chain
+  if (normalized.includes(",")) return normalized;
+  return `'${normalized}', 'Dancing Script', cursive`;
+}
+// Font options split into two groups so customers can pick a script font for
+// names and a classic font for body text independently.
+const SCRIPT_FONTS = [
+  { value: "Dancing Script", label: "Dancing Script" },
+  { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
+  { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
+  { value: "Allura", label: "Allura" },
+  { value: "Pinyon Script", label: "Pinyon Script" },
+  { value: "Style Script", label: "Style Script" },
+  { value: "Petit Formal Script", label: "Petit Formal Script" },
+  { value: "Meow Script", label: "Meow Script" },
+  { value: "Rouge Script", label: "Rouge Script" },
+  { value: "Lily Script One", label: "Lily Script One" },
+];
+
+const CLASSIC_FONTS = [
   { value: "Playfair Display", label: "Playfair Display" },
-  { value: "Esthetique", label: "Esthetique" },
-  { value: "Magnolia", label: "Magnolia" },
+  { value: "Poppins", label: "Poppins" },
+  { value: "Lato", label: "Lato" },
   { value: "Georgia, serif", label: "Georgia" },
   { value: "Arial, sans-serif", label: "Arial" },
 ];
@@ -58,6 +94,8 @@ interface InvData {
   dresscode: string;
   message: string;
   shortCoupleName: string;
+  groomShortName: string;
+  brideShortName: string;
   coupleCount: number;
   groomInitial: string;
   brideInitial: string;
@@ -80,7 +118,9 @@ interface DesignData {
   openButtonText: string;
   nameFontFamily: string;
   nameFontSize: string;
+  badgeFontSize: string;
   nameColor: string;
+  bodyFontFamily: string;
   colorPrimary: string;
   colorSecondary: string;
   colorBackground: string;
@@ -90,6 +130,7 @@ interface DesignData {
   musicArtist: string;
   cardImageUrl: string;
   envelopeImageUrl: string;
+  cardMaxWidth: string;
 }
 
 function hslToHex(hslStr: string): string {
@@ -147,11 +188,11 @@ const inputCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:
 const selectCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
 const textareaCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white resize-none";
 
-export default function EditorPage() {
+export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo" }) {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [navOpen, setNavOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("utama");
+  const [activeTab, setActiveTab] = useState("muka-depan");
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
@@ -159,45 +200,69 @@ export default function EditorPage() {
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const tabsRef = useRef<HTMLDivElement>(null);
   const { data: availableDesigns = [] } = useListDesigns();
+  const { data: activeDesign } = useGetActiveDesign();
 
   const [inv, setInv] = useState<InvData>({
     id: 0,
     token: "",
-    groomName: "", brideName: "", eventType: "Wedding Ceremony",
+    groomName: "", brideName: "", eventType: "Walimatul Urus",
     eventDate: "", eventDay: "", eventTime: "11:00 am – 4:00 pm",
     venueName: "", venueAddress: "", venueCity: "", venueState: "",
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "",
     dresscode: "", message: "",
-    shortCoupleName: "", coupleCount: 1,
+    shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
     groomInitial: "", brideInitial: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", showFrontText: true,
-    greetingText: "Wedding Invitation\n\nAssalamualaikum & greetings",
-    invitationText: "With heartfelt gratitude, we joyfully invite\nyou to celebrate the wedding of our beloved child",
+    greetingText: "Undangan Majlis Perkahwinan",
+    invitationText: "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
     hostName: "", hostCount: 1, venueHijriDate: "", schedule: "",
   });
 
   const [design, setDesign] = useState<DesignData>({
     designCode: "FL001", openingAnimation: "doors", openButtonText: "BUKA",
-    nameFontFamily: "Dancing Script", nameFontSize: "38",
-    nameColor: "0 0% 20%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
+    nameFontFamily: "Dancing Script", nameFontSize: "38", badgeFontSize: "24",
+    nameColor: "0 0% 20%", bodyFontFamily: "Poppins",
+    colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
     colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
     musicUrl: "", musicTitle: "", musicArtist: "",
     cardImageUrl: "wed_card_design/20260531-041903-27796.jpg", envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
+    cardMaxWidth: "420px",
   });
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/login");
-  }, [user, authLoading, navigate]);
+  // Inherited colours from the selected catalog design (or the global demo design as fallback).
+  // Buyer overrides are only saved when they differ from these inherited values.
+  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorPrimary" | "colorSecondary" | "colorBackground" | "colorCard">>({
+    nameColor: "0 0% 20%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
+  });
 
-  // Load buyer's invitation + global design (for images/music only)
+  // Redirect if not logged in (buyer mode → /login; demo mode → /admin/login)
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      const loginPath = mode === "demo" ? "/admin/login" : "/login";
+      navigate(`${loginPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
+    if (mode === "demo" && user.role !== "admin") {
+      navigate("/dashboard");
+      toast.error("Admin access only.");
+    }
+    if (mode === "buyer" && user.role !== "admin") {
+      // Buyer mode is fine for any logged-in user
+      return;
+    }
+  }, [user, authLoading, navigate, mode]);
+
+  // Load invitation + global design (for images/music only)
   const loadData = useCallback(async (silent = false) => {
-    if (!user) return;
+    if (mode === "buyer" && !user) return;
     if (!silent) setDataLoading(true);
     try {
       const [invRes, designRes, allDesRes] = await Promise.all([
-        fetch(`${BASE}/api/invitation-by-user/${user.id}`, { credentials: "include", cache: "no-store" }),
+        mode === "demo"
+          ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
+          : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
       ]);
@@ -224,6 +289,7 @@ export default function EditorPage() {
           openingAnimation: tpl.openingAnimation ?? "doors",
           nameFontFamily:   tpl.nameFontFamily   ?? "Dancing Script",
           nameColor:        tpl.nameColor        ?? "0 0% 20%",
+          cardMaxWidth:     tpl.cardMaxWidth     ?? gd.cardMaxWidth    ?? "420px",
           cardImageUrl:     tpl.cardImageUrl     ?? gd.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
           envelopeImageUrl: tpl.envelopeImageUrl ?? gd.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
           musicUrl:         tpl.musicUrl         ?? gd.musicUrl         ?? "",
@@ -238,7 +304,7 @@ export default function EditorPage() {
           id: d.id ?? 0,
           token: d.token ?? "",
           groomName: d.groomName ?? "", brideName: d.brideName ?? "",
-          eventType: d.eventType ?? "Wedding Ceremony",
+          eventType: d.eventType ?? "Walimatul Urus",
           eventDate: d.eventDate ?? "", eventDay: d.eventDay ?? "",
           eventTime: d.eventTime ?? "11:00 am – 4:00 pm",
           venueName: d.venueName ?? "", venueAddress: d.venueAddress ?? "",
@@ -246,29 +312,42 @@ export default function EditorPage() {
           venueMapUrl: d.venueMapUrl ?? "", groomParents: d.groomParents ?? "",
           brideParents: d.brideParents ?? "", contactPhone: d.contactPhone ?? "",
           dresscode: d.dresscode ?? "", message: d.message ?? "",
-          shortCoupleName: d.shortCoupleName ?? "", coupleCount: d.coupleCount ?? 1,
+          shortCoupleName: d.shortCoupleName ?? "",
+          groomShortName: d.groomShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[1]?.trim() ?? "",
+          brideShortName: d.brideShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[0]?.trim() ?? "",
+          coupleCount: d.coupleCount ?? 1,
           groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
           coverDateText: d.coverDateText ?? "",
           additionalInfo: d.additionalInfo ?? "",
           showFrontText: d.showFrontText ?? true,
-          greetingText: d.greetingText ?? "Wedding Invitation\n\nAssalamualaikum & greetings",
-          invitationText: d.invitationText ?? "With heartfelt gratitude, we joyfully invite\nyou to celebrate the wedding of our beloved child",
+          greetingText: d.greetingText ?? "Undangan Majlis Perkahwinan",
+          invitationText: d.invitationText ?? "Assalamualaikum wbt & salam sejahtera,\nDengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
         const tpl = resolveTemplate(resolvedCode);
+        setInheritedColors({
+          nameColor:        tpl.nameColor,
+          colorPrimary:     tpl.colorPrimary,
+          colorSecondary:   tpl.colorSecondary,
+          colorBackground:  tpl.colorBackground,
+          colorCard:        tpl.colorCard,
+        });
         // Buyer per-invitation overrides take priority; template values are the fallback
         setDesign({
           designCode:       resolvedCode,
           openingAnimation: d.openingAnimation ?? tpl.openingAnimation,
           openButtonText:   d.openButtonText   ?? "BUKA",
-          nameFontFamily:   d.nameFontFamily   ?? tpl.nameFontFamily,
+          nameFontFamily:   normalizeFont(d.nameFontFamily   ?? tpl.nameFontFamily),
           nameFontSize:     d.nameFontSize      ?? "38",
+          badgeFontSize:    d.badgeFontSize     ?? "24",
           nameColor:        d.nameColor         ?? tpl.nameColor,
+          cardMaxWidth:     d.cardMaxWidth      ?? tpl.cardMaxWidth,
+          bodyFontFamily:   normalizeFont(d.bodyFontFamily    ?? "Poppins"),
           colorPrimary:     d.colorPrimary      ?? tpl.colorPrimary,
           colorSecondary:   d.colorSecondary    ?? tpl.colorSecondary,
           colorBackground:  d.colorBackground   ?? tpl.colorBackground,
@@ -283,6 +362,13 @@ export default function EditorPage() {
         // No invitation yet — use URL param design (if any) or global admin design as preview defaults
         const resolvedCode = urlDesignCode ?? gd.designCode ?? "FL001";
         const tplFallback = resolveTemplate(resolvedCode);
+        setInheritedColors({
+          nameColor:        tplFallback.nameColor,
+          colorPrimary:     tplFallback.colorPrimary,
+          colorSecondary:   tplFallback.colorSecondary,
+          colorBackground:  tplFallback.colorBackground,
+          colorCard:        tplFallback.colorCard,
+        });
         setDesign((prev) => ({
           ...prev,
           designCode:       resolvedCode,
@@ -291,8 +377,10 @@ export default function EditorPage() {
           colorBackground:  tplFallback.colorBackground,
           colorCard:        tplFallback.colorCard,
           openingAnimation: tplFallback.openingAnimation,
-          nameFontFamily:   tplFallback.nameFontFamily,
+          nameFontFamily:   normalizeFont(tplFallback.nameFontFamily),
           nameColor:        tplFallback.nameColor,
+          cardMaxWidth:     tplFallback.cardMaxWidth,
+          bodyFontFamily:   "Poppins",
           cardImageUrl:     tplFallback.cardImageUrl,
           envelopeImageUrl: tplFallback.envelopeImageUrl,
           musicUrl:         tplFallback.musicUrl,
@@ -312,10 +400,10 @@ export default function EditorPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      let token = inv.token;
+      const token = mode === "demo" ? "demo" : inv.token;
 
       // If buyer has no invitation yet, create one first
-      if (!token) {
+      if (mode === "buyer" && !token) {
         const createRes = await fetch(`${BASE}/api/invitation`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -323,7 +411,7 @@ export default function EditorPage() {
           body: JSON.stringify({
             groomName: inv.groomName || "Groom",
             brideName: inv.brideName || "Bride",
-            eventType: inv.eventType || "Wedding Ceremony",
+            eventType: inv.eventType || "Walimatul Urus",
             eventDate: inv.eventDate || "", eventDay: inv.eventDay || "",
             eventTime: inv.eventTime || "11:00 am – 4:00 pm",
             venueName: inv.venueName || "", venueAddress: inv.venueAddress || "",
@@ -336,13 +424,15 @@ export default function EditorPage() {
           return;
         }
         const created = await createRes.json();
-        token = created.token as string;
-        setInv((p) => ({ ...p, token }));
+        const newToken = created.token as string;
+        setInv((p) => ({ ...p, token: newToken }));
       }
+
+      const saveToken = mode === "demo" ? "demo" : (token || inv.token);
 
       // All fields — invitation content AND buyer design overrides — go to the invitation record.
       // The global card_design table is never touched by the buyer, so the demo stays intact.
-      const r = await fetch(`${BASE}/api/invitation/${token}`, {
+      const r = await fetch(`${BASE}/api/invitation/${saveToken}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -359,6 +449,8 @@ export default function EditorPage() {
           contactPhone: inv.contactPhone, dresscode: inv.dresscode || undefined,
           message: inv.message || undefined,
           shortCoupleName: inv.shortCoupleName || undefined,
+          groomShortName: inv.groomShortName || undefined,
+          brideShortName: inv.brideShortName || undefined,
           coupleCount: inv.coupleCount,
           groomInitial: inv.groomInitial || undefined,
           brideInitial: inv.brideInitial || undefined,
@@ -379,11 +471,14 @@ export default function EditorPage() {
           openButtonText: design.openButtonText || undefined,
           nameFontFamily: design.nameFontFamily || undefined,
           nameFontSize: design.nameFontSize || undefined,
-          nameColor: design.nameColor || undefined,
-          colorPrimary: design.colorPrimary || undefined,
-          colorSecondary: design.colorSecondary || undefined,
-          colorBackground: design.colorBackground || undefined,
-          colorCard: design.colorCard || undefined,
+          badgeFontSize: design.badgeFontSize || undefined,
+          // Only save colour overrides when the buyer changed them from the inherited template/demo values.
+          nameColor:        design.nameColor        !== inheritedColors.nameColor        ? (design.nameColor || undefined)        : undefined,
+          bodyFontFamily: design.bodyFontFamily || undefined,
+          colorPrimary:     design.colorPrimary     !== inheritedColors.colorPrimary     ? (design.colorPrimary || undefined)     : undefined,
+          colorSecondary:   design.colorSecondary   !== inheritedColors.colorSecondary   ? (design.colorSecondary || undefined)   : undefined,
+          colorBackground:  design.colorBackground  !== inheritedColors.colorBackground  ? (design.colorBackground || undefined)  : undefined,
+          colorCard:        design.colorCard        !== inheritedColors.colorCard        ? (design.colorCard || undefined)        : undefined,
         }),
       });
       if (r.ok) {
@@ -400,7 +495,7 @@ export default function EditorPage() {
   }
 
   function handleBack() {
-    navigate("/dashboard");
+    navigate(mode === "demo" ? "/admin" : "/dashboard");
   }
 
   async function handleLogout() {
@@ -416,9 +511,12 @@ export default function EditorPage() {
     { label: "FAQs",       onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
   ];
 
-  const displayName = inv.shortCoupleName || `${inv.brideName} & ${inv.groomName}` || "Ain & Hidayat";
+  const displayName =
+    (inv.groomShortName && inv.brideShortName)
+      ? `${inv.groomShortName} & ${inv.brideShortName}`
+      : inv.shortCoupleName || `${inv.brideName} & ${inv.groomName}` || "Ain & Hidayat";
   const fontSize = Number(design.nameFontSize) || 38;
-  const fontFamily = design.nameFontFamily || "Dancing Script, cursive";
+  const fontFamily = fontFamilyStack(design.nameFontFamily);
   const nameColorStyle = design.nameColor ? `hsl(${design.nameColor})` : "#6b4c2a";
 
   if (authLoading || dataLoading) {
@@ -448,14 +546,26 @@ export default function EditorPage() {
           </button>
 
           {/* Logo — centred on mobile, left on desktop */}
-          <div className="flex-1 flex sm:flex-none items-center justify-center sm:justify-start">
+          <div className="flex-1 flex sm:flex-none items-center justify-center sm:justify-start gap-3">
+            {mode === "demo" && (
+              <button
+                onClick={handleBack}
+                className="hidden sm:flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-900 tracking-widest transition-colors"
+              >
+                ← BACK TO ADMIN
+              </button>
+            )}
             <button
               onClick={() => navigate("/")}
               className="font-serif text-xl text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
-              style={{ fontFamily: "'Dancing Script', cursive" }}
             >
               WedInBytes
             </button>
+            {mode === "demo" && (
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold tracking-wider">
+                DEMO EDITOR
+              </span>
+            )}
           </div>
 
           {/* Desktop nav */}
@@ -516,7 +626,6 @@ export default function EditorPage() {
                 <button
                   onClick={() => { navigate("/"); setNavOpen(false); }}
                   className="font-serif text-lg text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
-                  style={{ fontFamily: "'Dancing Script', cursive" }}
                 >
                   WedInBytes
                 </button>
@@ -628,21 +737,23 @@ export default function EditorPage() {
                       onChange={(e) => {
                         const picked = availableDesigns.find((d) => d.designCode === e.target.value);
                         if (picked) {
-                          // Switch to the picked design's own values.
-                          // Secondary/background fall back to primary so every
-                          // design stays visually consistent even if not fully configured.
-                          const primary = picked.colorPrimary ?? "142 45% 35%";
+                          const gd = activeDesign as Record<string, string> | undefined;
+                          const primary = picked.colorPrimary ?? gd?.colorPrimary ?? "142 45% 35%";
+                          const nextInherited = {
+                            nameColor:        picked.nameColor       ?? gd?.nameColor       ?? "0 0% 20%",
+                            colorPrimary:     primary,
+                            colorSecondary:   picked.colorSecondary  ?? gd?.colorSecondary  ?? primary,
+                            colorBackground:  picked.colorBackground ?? gd?.colorBackground ?? primary,
+                            colorCard:        picked.colorCard       ?? gd?.colorCard       ?? "0 0% 100%",
+                          };
+                          setInheritedColors(nextInherited);
                           setDesign((p) => ({
                             ...p,
+                            ...nextInherited,
                             designCode:       picked.designCode       ?? p.designCode,
                             openingAnimation: picked.openingAnimation ?? "doors",
                             openButtonText:   picked.openButtonText   ?? "BUKA",
-                            nameFontFamily:   picked.nameFontFamily   ?? p.nameFontFamily,
-                            nameColor:        picked.nameColor        ?? p.nameColor,
-                            colorPrimary:     primary,
-                            colorSecondary:   picked.colorSecondary   ?? primary,
-                            colorBackground:  picked.colorBackground  ?? primary,
-                            colorCard:        picked.colorCard        ?? "0 0% 100%",
+                            nameFontFamily:   normalizeFont(picked.nameFontFamily ?? p.nameFontFamily),
                             cardImageUrl:     picked.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
                             envelopeImageUrl: picked.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
                             musicUrl:         picked.musicUrl         ?? "",
@@ -652,6 +763,14 @@ export default function EditorPage() {
                           setPreviewOpened(true);
                         } else {
                           setDesign((p) => ({ ...p, designCode: e.target.value }));
+                        }
+                        // Remove the ?designCode= URL param so the user's chosen design
+                        // isn't overwritten on the next reload/save.
+                        const params = new URLSearchParams(window.location.search);
+                        if (params.has("designCode")) {
+                          params.delete("designCode");
+                          const qs = params.toString();
+                          navigate(window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash, { replace: true });
                         }
                       }}
                     >
@@ -677,8 +796,6 @@ export default function EditorPage() {
                     </select>
                   </Field>
                 </div>
-
-                {/* Initials for display */}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Initial">
                     <input
@@ -697,104 +814,35 @@ export default function EditorPage() {
                     />
                   </Field>
                 </div>
-
-                <Field label="Open Button">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1.5 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1 hover:bg-gray-100 rounded">B</button>
-                      <button className="italic px-1 hover:bg-gray-100 rounded">I</button>
-                      <button className="underline px-1 hover:bg-gray-100 rounded">U</button>
-                      <button className="line-through px-1 hover:bg-gray-100 rounded">S</button>
-                      <span className="px-1 text-gray-300">|</span>
-                      <span className="px-1">10px</span>
-                      <span className="px-1 text-gray-300">|</span>
-                      <span className="px-1">A</span>
-                      <span className="px-1 text-gray-300">|</span>
-                      <span className="px-1">Default</span>
-                    </div>
-                    <input
-                      className="w-full px-3 py-2.5 text-sm focus:outline-none bg-transparent text-center"
-                      value={design.openButtonText}
-                      onChange={(e) => setDesign((p) => ({ ...p, openButtonText: e.target.value }))}
-                      placeholder="BUKA"
-                    />
-                  </div>
-                </Field>
-
-                {/* Color swatches */}
-                <div className="flex flex-wrap gap-4 pt-1">
-                  {[
-                    { label: "Open Button",   field: "colorPrimary"    as const, def: "142 45% 35%" },
-                    { label: "Card Panel",    field: "colorCard"       as const, def: "0 0% 100%" },
-                    { label: "Background",    field: "colorBackground" as const, def: "142 20% 96%" },
-                    { label: "Accent",        field: "colorSecondary"  as const, def: "142 30% 92%" },
-                  ].map(({ label, field, def }) => (
-                    <label key={field} className="flex items-center gap-1.5 cursor-pointer group">
-                      <div className="relative w-6 h-6 rounded-full border border-gray-200 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-                        <div className="absolute inset-0" style={{ background: `hsl(${design[field] || def})` }} />
-                        <input
-                          type="color"
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                          value={hslToHex(design[field] || def)}
-                          onChange={(e) => setDesign(p => ({ ...p, [field]: hexToHsl(e.target.value) }))}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-600">{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* ── MUKA DEPAN ── */}
-            {activeTab === "muka-depan" && (
-              <>
-                <Field label="Event Type">
-                  <textarea className={textareaCls} rows={2} value={inv.eventType} onChange={(e) => setI("eventType")(e.target.value)} placeholder="WEDDING RECEPTION" />
-                </Field>
-                <Field label="Couple Count*">
-                  <select
-                    className={selectCls}
-                    value={String(inv.coupleCount)}
-                    onChange={(e) => setInv((p) => ({ ...p, coupleCount: Number(e.target.value) }))}
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                  </select>
-                </Field>
-                <Field label="Short Name*">
-                  <input className={inputCls} value={inv.shortCoupleName} onChange={(e) => setI("shortCoupleName")(e.target.value)} placeholder={`${inv.brideName || "Ain"} & ${inv.groomName || "Hidayat"}`} />
-                </Field>
-
-                {/* Font + size */}
-                <Field label="">
-                  <div className="flex gap-2 items-center">
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Script Font">
                     <select
-                      className={`${selectCls} flex-1`}
-                      value={design.nameFontFamily}
+                      className={selectCls}
+                      value={normalizeFont(design.nameFontFamily)}
                       style={{ fontFamily: design.nameFontFamily }}
                       onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
                     >
-                      {FONT_OPTIONS.map((f) => (
+                      {SCRIPT_FONTS.map((f) => (
                         <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
                       ))}
                     </select>
-                    <label className="flex items-center gap-1 border border-gray-200 rounded px-2 py-2 bg-white cursor-pointer group">
-                      <div className="relative w-4 h-4 rounded-full border border-gray-300 overflow-hidden group-hover:scale-110 transition-transform">
-                        <div className="absolute inset-0" style={{ background: design.nameColor ? `hsl(${design.nameColor})` : "#4a3520" }} />
-                        <input
-                          type="color"
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                          value={hslToHex(design.nameColor || "20 50% 20%")}
-                          onChange={(e) => setDesign(p => ({ ...p, nameColor: hexToHsl(e.target.value) }))}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500">Colour</span>
-                    </label>
-                  </div>
-                </Field>
-
-                <Field label={`Font Size — ${design.nameFontSize || 38}px`}>
+                    <p className="text-[11px] text-gray-400 mt-1">For couple names.</p>
+                  </Field>
+                  <Field label="Classic Font">
+                    <select
+                      className={selectCls}
+                      value={normalizeFont(design.bodyFontFamily)}
+                      style={{ fontFamily: design.bodyFontFamily }}
+                      onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
+                    >
+                      {CLASSIC_FONTS.map((f) => (
+                        <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-gray-400 mt-1">For greeting, address &amp; details.</p>
+                  </Field>
+                </div>
+                <Field label={`Name Font Size — ${design.nameFontSize || 38}px`}>
                   <input
                     type="range" min={20} max={70}
                     value={Number(design.nameFontSize) || 38}
@@ -802,59 +850,12 @@ export default function EditorPage() {
                     className="w-full accent-blue-500"
                   />
                 </Field>
-
-                {/* Live name preview */}
                 <div
                   className="w-full rounded border border-gray-200 bg-[#fdf6ee] text-center py-4 px-6 overflow-hidden"
                   style={{ fontFamily, fontSize, color: nameColorStyle, lineHeight: 1.2 }}
                 >
                   {displayName}
                 </div>
-
-                <Field label="Additional Info (if any)">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1">B</button>
-                      <button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button>
-                      <span className="px-1 text-gray-300">|</span>
-                      <span>18px</span>
-                      <span className="px-1 text-gray-300">|</span>
-                      <span style={{ fontFamily: "Dancing Script" }}>Nova Quinta</span>
-                    </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={3}
-                      value={inv.additionalInfo}
-                      onChange={(e) => setI("additionalInfo")(e.target.value)}
-                      placeholder="Forest Valley Hall,&#10;Cheras, Selangor"
-                      style={{ fontFamily: "Dancing Script, cursive", fontSize: 18, textAlign: "center" }}
-                    />
-                  </div>
-                </Field>
-
-                <Field label="Event Start Date & Time*">
-                  <input type="datetime-local" className={inputCls} value={inv.eventStartDateTime} onChange={(e) => setI("eventStartDateTime")(e.target.value)} />
-                </Field>
-                <Field label="Event End Date & Time*">
-                  <input type="datetime-local" className={inputCls} value={inv.eventEndDateTime} onChange={(e) => setI("eventEndDateTime")(e.target.value)} />
-                </Field>
-                <Field label="Cover Date*">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500">
-                      <button className="font-bold px-1">B</button>
-                      <button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button>
-                    </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={2}
-                      value={inv.coverDateText}
-                      onChange={(e) => setI("coverDateText")(e.target.value)}
-                      placeholder="taurjfn"
-                    />
-                  </div>
-                </Field>
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox" id="showFrontText"
@@ -869,26 +870,153 @@ export default function EditorPage() {
               </>
             )}
 
-            {/* ── AYAT UNDANGAN ── */}
-            {activeTab === "ayat-undangan" && (
+            {activeTab === "warna" && (
               <>
-                <Field label="Welcome Message">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1">B</button><button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button><span className="px-1 text-gray-300">|</span>
-                      <span>16px</span><span className="px-1 text-gray-300">|</span>
-                      <span style={{ fontFamily: "Dancing Script" }}>Nova Quinta</span>
+                <Field label="Script Font Color">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
+                      <div className="absolute inset-0" style={{ background: design.nameColor ? `hsl(${design.nameColor})` : "#4a3520" }} />
+                      <input
+                        type="color"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        value={hslToHex(design.nameColor || "20 50% 20%")}
+                        onChange={(e) => setDesign(p => ({ ...p, nameColor: hexToHsl(e.target.value) }))}
+                      />
                     </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={4}
-                      value={inv.greetingText}
-                      onChange={(e) => setI("greetingText")(e.target.value)}
-                      style={{ fontFamily: "Dancing Script, cursive", textAlign: "center" }}
-                    />
+                    <span className="text-sm text-gray-600">Couple names</span>
                   </div>
                 </Field>
+
+                <Field label="Button / Open Button">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorPrimary || "142 45% 35%"})` }} />
+                      <input
+                        type="color"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        value={hslToHex(design.colorPrimary || "142 45% 35%")}
+                        onChange={(e) => setDesign(p => ({ ...p, colorPrimary: hexToHsl(e.target.value) }))}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600">Primary button &amp; accents</span>
+                  </div>
+                </Field>
+
+                <Field label="Card Panel">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorCard || "0 0% 100%"})` }} />
+                      <input
+                        type="color"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        value={hslToHex(design.colorCard || "0 0% 100%")}
+                        onChange={(e) => setDesign(p => ({ ...p, colorCard: hexToHsl(e.target.value) }))}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600">Inner panels</span>
+                  </div>
+                </Field>
+
+                <Field label="Background">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorBackground || "142 20% 96%"})` }} />
+                      <input
+                        type="color"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        value={hslToHex(design.colorBackground || "142 20% 96%")}
+                        onChange={(e) => setDesign(p => ({ ...p, colorBackground: hexToHsl(e.target.value) }))}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600">Page background</span>
+                  </div>
+                </Field>
+
+                <Field label="Accent">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorSecondary || "142 30% 92%"})` }} />
+                      <input
+                        type="color"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        value={hslToHex(design.colorSecondary || "142 30% 92%")}
+                        onChange={(e) => setDesign(p => ({ ...p, colorSecondary: hexToHsl(e.target.value) }))}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600">Soft highlights</span>
+                  </div>
+                </Field>
+              </>
+            )}
+
+            {activeTab === "muka-depan" && (
+              <>
+                <Field label="Couple Short Name (optional)">
+                  <input className={inputCls} value={inv.shortCoupleName} onChange={(e) => setI("shortCoupleName")(e.target.value)} placeholder={`${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`} />
+                </Field>
+                <Field label="Badge Font Size (px)">
+                  <input
+                    className={inputCls}
+                    type="number"
+                    min={12}
+                    max={60}
+                    value={design.badgeFontSize || 24}
+                    onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
+                    placeholder="24"
+                  />
+                </Field>
+
+                <Field label="Open Button">
+                  <RichTextEditor
+                    value={design.openButtonText}
+                    onChange={(v) => setDesign((p) => ({ ...p, openButtonText: v }))}
+                    placeholder="BUKA"
+                    multiLine={false}
+                    showFontSize
+                  />
+                </Field>
+              </>
+            )}
+            {activeTab === "ayat-undangan" && (
+              <>
+                <Field label="Event Title">
+                  <RichTextEditor
+                    value={inv.greetingText}
+                    onChange={(v) => setI("greetingText")(v)}
+                    multiLine
+                    showFontSize
+                    inputStyle={{ fontFamily: "Poppins, sans-serif", textAlign: "center" }}
+                  />
+                </Field>
+
+                <Field label="Event Type">
+                  <RichTextEditor
+                    value={inv.eventType}
+                    onChange={(v) => setI("eventType")(v)}
+                    placeholder="WEDDING RECEPTION"
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
+                </Field>
+                <Field label="Couple Count*">
+                  <select
+                    className={selectCls}
+                    value={String(inv.coupleCount)}
+                    onChange={(e) => setInv((p) => ({ ...p, coupleCount: Number(e.target.value) }))}
+                  >
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                  </select>
+                </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Groom Short Name*">
+                    <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder={inv.groomName || "Nasser"} />
+                  </Field>
+                  <Field label="Bride Short Name*">
+                    <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder={inv.brideName || "Alia"} />
+                  </Field>
+                </div>
 
                 <Field label="Number of Hosts*">
                   <select
@@ -904,30 +1032,24 @@ export default function EditorPage() {
                 </Field>
 
                 <Field label="Host Names">
-                  <textarea
-                    className={textareaCls}
-                    rows={3}
+                  <RichTextEditor
                     value={inv.hostName}
-                    onChange={(e) => setI("hostName")(e.target.value)}
+                    onChange={(v) => setI("hostName")(v)}
                     placeholder="James & Sarah"
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
 
                 <Field label="Invitation Text">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1">B</button><button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button><span className="px-1 text-gray-300">|</span>
-                      <span>10px</span>
-                    </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={4}
-                      value={inv.invitationText}
-                      onChange={(e) => setI("invitationText")(e.target.value)}
-                      style={{ textAlign: "center" }}
-                    />
-                  </div>
+                  <RichTextEditor
+                    value={inv.invitationText}
+                    onChange={(v) => setI("invitationText")(v)}
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
                 </Field>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -940,10 +1062,53 @@ export default function EditorPage() {
                 </div>
 
                 <Field label="Groom's Parents' Names">
-                  <textarea className={textareaCls} rows={2} value={inv.groomParents} onChange={(e) => setI("groomParents")(e.target.value)} placeholder="Mr. John Smith & Mrs. Mary Smith" />
+                  <RichTextEditor
+                    value={inv.groomParents}
+                    onChange={(v) => setI("groomParents")(v)}
+                    placeholder="Mr. John Smith & Mrs. Mary Smith"
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
                 </Field>
                 <Field label="Bride's Parents' Names">
-                  <textarea className={textareaCls} rows={2} value={inv.brideParents} onChange={(e) => setI("brideParents")(e.target.value)} placeholder="Mr. David Lee & Mrs. Susan Lee" />
+                  <RichTextEditor
+                    value={inv.brideParents}
+                    onChange={(v) => setI("brideParents")(v)}
+                    placeholder="Mr. David Lee & Mrs. Susan Lee"
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
+                </Field>
+
+                <Field label="Additional Info (if any)">
+                  <RichTextEditor
+                    value={inv.additionalInfo}
+                    onChange={(v) => setI("additionalInfo")(v)}
+                    placeholder="Forest Valley Hall,&#10;Cheras, Selangor"
+                    multiLine
+                    showFontSize
+                    inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 18, textAlign: "center" }}
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Event Start Date & Time*">
+                    <input type="datetime-local" className={inputCls} value={inv.eventStartDateTime} onChange={(e) => setI("eventStartDateTime")(e.target.value)} />
+                  </Field>
+                  <Field label="Event End Date & Time*">
+                    <input type="datetime-local" className={inputCls} value={inv.eventEndDateTime} onChange={(e) => setI("eventEndDateTime")(e.target.value)} />
+                  </Field>
+                </div>
+                <Field label="Cover Date*">
+                  <RichTextEditor
+                    value={inv.coverDateText}
+                    onChange={(v) => setI("coverDateText")(v)}
+                    placeholder="taurjfn"
+                    multiLine
+                    showFontSize
+                  />
                 </Field>
               </>
             )}
@@ -969,22 +1134,14 @@ export default function EditorPage() {
                   <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder="-" />
                 </Field>
                 <Field label="Venue Address*">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1">B</button><button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button><span className="px-1 text-gray-300">|</span>
-                      <span>18px</span><span className="px-1 text-gray-300">|</span>
-                      <span style={{ fontFamily: "Dancing Script" }}>Nova Quinta</span>
-                    </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={4}
-                      value={inv.venueAddress}
-                      onChange={(e) => setI("venueAddress")(e.target.value)}
-                      placeholder={`Forest Valley Hall,\nJalan Permaisuri 10/6,\nBandar Mahkota Cheras,\n43200 Cheras, Selangor`}
-                      style={{ fontFamily: "Dancing Script, cursive", fontSize: 16, textAlign: "center" }}
-                    />
-                  </div>
+                  <RichTextEditor
+                    value={inv.venueAddress}
+                    onChange={(v) => setI("venueAddress")(v)}
+                    placeholder={`Forest Valley Hall,\nJalan Permaisuri 10/6,\nBandar Mahkota Cheras,\n43200 Cheras, Selangor`}
+                    multiLine
+                    showFontSize
+                    inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 16, textAlign: "center" }}
+                  />
                 </Field>
                 <Field label="GPS Coordinates*">
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder="3.05064,101.79395" />
@@ -999,20 +1156,14 @@ export default function EditorPage() {
                   <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
                 </Field>
                 <Field label="Event Programme*">
-                  <div className="border border-gray-200 rounded bg-white">
-                    <div className="flex gap-1 items-center px-2 py-1 border-b border-gray-100 text-xs text-gray-500 flex-wrap">
-                      <button className="font-bold px-1">B</button><button className="italic px-1">I</button>
-                      <button className="underline px-1">U</button>
-                    </div>
-                    <textarea
-                      className="w-full px-3 py-2 text-sm focus:outline-none resize-none bg-transparent"
-                      rows={5}
-                      value={inv.schedule}
-                      onChange={(e) => setI("schedule")(e.target.value)}
-                      placeholder={`Dining Reception:\n11:00 am - 4:00 pm\n\nCouple's Arrival:\n12:30 pm`}
-                      style={{ textAlign: "center" }}
-                    />
-                  </div>
+                  <RichTextEditor
+                    value={inv.schedule}
+                    onChange={(v) => setI("schedule")(v)}
+                    placeholder={`Dining Reception:\n11:00 am - 4:00 pm\n\nCouple's Arrival:\n12:30 pm`}
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
                 </Field>
               </>
             )}
@@ -1022,7 +1173,14 @@ export default function EditorPage() {
               <div className="space-y-3">
                 <p className="text-sm text-gray-500">RSVP form and message settings.</p>
                 <Field label="Invitation Message">
-                  <textarea className={textareaCls} rows={4} value={inv.message} onChange={(e) => setI("message")(e.target.value)} placeholder="With heartfelt gratitude, we joyfully invite you to celebrate our wedding." />
+                  <RichTextEditor
+                    value={inv.message}
+                    onChange={(v) => setI("message")(v)}
+                    placeholder="With heartfelt gratitude, we joyfully invite you to celebrate our wedding."
+                    multiLine
+                    showFontSize
+                    inputStyle={{ textAlign: "center" }}
+                  />
                 </Field>
               </div>
             )}
@@ -1097,7 +1255,7 @@ export default function EditorPage() {
         </div>
 
         {/* Right: Card Preview — always shown on mobile when preview tab active */}
-        <div className={`${mobileView === "preview" ? "flex" : "hidden"} lg:flex lg:w-[340px] xl:w-[380px] shrink-0 items-start justify-center py-4 px-4 lg:py-6 lg:pr-6`}>
+        <div className={`${mobileView === "preview" ? "flex" : "hidden"} lg:flex lg:w-[380px] xl:w-[420px] shrink-0 items-start justify-center py-4 px-4 lg:py-6 lg:pr-6`}>
           <div className="sticky top-6 w-full space-y-2">
 
             {/* Full preview + reset row */}
@@ -1127,7 +1285,7 @@ export default function EditorPage() {
                 remounts when the user switches designs, guaranteeing fresh CSS vars */}
             <div
               key={design.designCode}
-              className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-background"
+              className={`relative w-full rounded-xl shadow-2xl bg-background ${previewActiveTab ? "overflow-visible" : "overflow-hidden"}`}
               style={{
                 aspectRatio: "9/16",
                 maxHeight: "80vh",
@@ -1142,9 +1300,12 @@ export default function EditorPage() {
                 "--muted":              "142 15% 94%",
                 "--muted-foreground":   "142 10% 45%",
                 // Name styling — picked up by WeddingCard via CSS custom properties
-                "--name-font-family":   design.nameFontFamily   || "Dancing Script, cursive",
+                "--name-font-family":   fontFamilyStack(design.nameFontFamily),
                 "--name-font-size":     `${Number(design.nameFontSize) || 38}px`,
+                "--badge-font-size":    `${Number(design.badgeFontSize) || 24}px`,
                 "--name-color":         design.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
+                // Body text styling
+                "--body-font-family":   fontFamilyStack(design.bodyFontFamily),
               } as React.CSSProperties}
             >
               <div
@@ -1157,7 +1318,7 @@ export default function EditorPage() {
                   invitation={inv}
                   cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
-                  cardMaxWidth="100%"
+                  cardMaxWidth={design.cardMaxWidth}
                 />
               </div>
 
@@ -1168,7 +1329,7 @@ export default function EditorPage() {
                     key={`env-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
                     onOpen={() => setPreviewOpened(true)}
-                    names={inv.shortCoupleName || `${inv.brideInitial || inv.brideName || "Ain"} & ${inv.groomInitial || inv.groomName || "Hidayat"}`}
+                    names={inv.shortCoupleName || `${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
@@ -1177,10 +1338,10 @@ export default function EditorPage() {
                     key={`doors-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
                     onOpen={() => setPreviewOpened(true)}
-                    names={inv.shortCoupleName || `${inv.brideInitial || inv.brideName || "Ain"} & ${inv.groomInitial || inv.groomName || "Hidayat"}`}
+                    names={inv.shortCoupleName || `${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
-                    cardMaxWidth="100%"
+                    cardMaxWidth={design.cardMaxWidth}
                   />
                 )
               )}
@@ -1195,40 +1356,35 @@ export default function EditorPage() {
                 </span>
               </div>
 
-              {/* Bottom nav — solid bar matching BottomNav component style */}
+              {/* Bottom nav — actual component, positioned inside the preview frame */}
               {previewOpened && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 flex items-center justify-around px-1 py-1"
-                  style={{ zIndex: 60, backgroundColor: primaryCss }}
+                  className="absolute bottom-0 left-0 right-0 z-50"
+                  style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)" }}
                 >
-                  {([
-                    { icon: Music,          label: "Music",       tab: "muzik" },
-                    { icon: Calendar,       label: "Calendar",    tab: "kalendar" },
-                    { icon: Heart,          label: "With Love",   tab: "salam" },
-                    { icon: MapPin,         label: "Location",    tab: "lokasi" },
-                    { icon: Phone,          label: "Contact",     tab: "hubungi" },
-                    { icon: MessageSquare,  label: "RSVP",        tab: "rsvp" },
-                  ] as { icon: React.ElementType; label: string; tab: string }[]).map(({ icon: Icon, label, tab }) => {
-                    const isActive = previewActiveTab === tab;
-                    return (
-                      <button
-                        key={label}
-                        onClick={() => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
-                        className="flex flex-col items-center gap-0.5 px-0.5 py-0.5 transition-all active:scale-90"
-                      >
-                        <div
-                          className="flex items-center justify-center w-5 h-5 rounded-full transition-colors"
-                          style={{ backgroundColor: isActive ? "rgba(255,255,255,0.25)" : "transparent" }}
-                        >
-                          <Icon size={10} strokeWidth={isActive ? 2.5 : 1.8} color="white" />
-                        </div>
-                        <span className="text-[6px] font-medium leading-tight text-white" style={{ opacity: isActive ? 1 : 0.85 }}>
-                          {label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  <BottomNav
+                    activeTab={previewActiveTab as TabKey | null}
+                    isMuted={false}
+                    onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
+                    onRsvpClick={() => toast.info("RSVP preview only")}
+                    isVisible={true}
+                    cardMaxWidth={design.cardMaxWidth}
+                  />
                 </div>
+              )}
+
+              {/* Footer dialog / detail panel preview */}
+              {previewOpened && previewActiveTab && (
+                <DetailPanel
+                  activeTab={previewActiveTab as TabKey}
+                  onClose={() => setPreviewActiveTab(null)}
+                  invitation={inv}
+                  isMuted={false}
+                  onToggleMute={() => {}}
+                  musicTitle={design.musicTitle}
+                  musicArtist={design.musicArtist}
+                  previewMode
+                />
               )}
             </div>
           </div>

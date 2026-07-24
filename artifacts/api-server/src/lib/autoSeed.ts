@@ -63,24 +63,37 @@ const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
 
 export async function autoSeedIfEmpty() {
   try {
-    // --- Admin user: seed only if no admin exists ---
-    const existingAdmin = await db
-      .select()
-      .from(userTable)
-      .where(eq(userTable.role, "admin"))
-      .limit(1);
-    if (existingAdmin.length === 0) {
-      logger.info("Auto-seed: seeding admin user...");
-      const adminPassword = process.env.SEED_SECRET ?? "admin-wedinbytes";
+    // --- Admin user: create or update from SEED_SECRET ---
+    const adminPassword = process.env.SEED_SECRET;
+    if (adminPassword) {
+      const existingAdmin = await db
+        .select()
+        .from(userTable)
+        .where(eq(userTable.role, "admin"))
+        .limit(1);
       const passwordHash = await bcrypt.hash(adminPassword, 12);
-      await db.insert(userTable).values({
-        email: "admin@wedinbytes.com",
-        passwordHash,
-        name: "Admin",
-        role: "admin",
-      });
-      logger.info(
-        "Auto-seed: admin user seeded (email: admin@wedinbytes.com).",
+      if (existingAdmin.length === 0) {
+        logger.info("Auto-seed: seeding admin user...");
+        await db.insert(userTable).values({
+          email: "admin@wedinbytes.com",
+          passwordHash,
+          name: "Admin",
+          role: "admin",
+        });
+        logger.info(
+          "Auto-seed: admin user seeded (email: admin@wedinbytes.com).",
+        );
+      } else {
+        logger.info("Auto-seed: updating admin password from SEED_SECRET...");
+        await db
+          .update(userTable)
+          .set({ passwordHash })
+          .where(eq(userTable.id, existingAdmin[0].id));
+        logger.info("Auto-seed: admin password updated.");
+      }
+    } else {
+      logger.warn(
+        "Auto-seed: SEED_SECRET is not set; admin password will not be created or updated.",
       );
     }
 
@@ -108,7 +121,8 @@ export async function autoSeedIfEmpty() {
       logger.info("Auto-seed: demo invitations seeded.");
     }
 
-    // --- Patch existing demo rows that are missing richer fields (idempotent) ---
+    // --- Patch existing demo rows that are missing any invitationBase fields (idempotent) ---
+    // Automatically picks up new fields added to invitationBase — no manual enumeration needed.
     if (existingTokenSet.size > 0) {
       const existingRows = await db
         .select()
@@ -120,32 +134,21 @@ export async function autoSeedIfEmpty() {
           ),
         );
       for (const row of existingRows) {
-        const needsPatch =
-          !row.greetingText ||
-          !row.invitationText ||
-          !row.venueHijriDate ||
-          !row.schedule ||
-          !row.shortCoupleName ||
-          !row.coverDateText;
-        if (needsPatch) {
+        const patch: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(invitationBase)) {
+          const rowValue = (row as Record<string, unknown>)[key];
+          if (rowValue === null || rowValue === undefined) {
+            patch[key] = value;
+          }
+        }
+        if (Object.keys(patch).length > 0) {
           logger.info(
-            { token: row.token },
-            "Auto-seed: patching demo invitation with richer fields...",
+            { token: row.token, fields: Object.keys(patch) },
+            "Auto-seed: patching demo invitation with missing fields...",
           );
           await db
             .update(invitationTable)
-            .set({
-              greetingText: row.greetingText ?? invitationBase.greetingText,
-              invitationText: row.invitationText ?? invitationBase.invitationText,
-              hostName: row.hostName ?? invitationBase.hostName,
-              hostCount: row.hostCount ?? invitationBase.hostCount,
-              venueHijriDate: row.venueHijriDate ?? invitationBase.venueHijriDate,
-              schedule: row.schedule ?? invitationBase.schedule,
-              shortCoupleName: row.shortCoupleName ?? invitationBase.shortCoupleName,
-              groomInitial: row.groomInitial ?? invitationBase.groomInitial,
-              brideInitial: row.brideInitial ?? invitationBase.brideInitial,
-              coverDateText: row.coverDateText ?? invitationBase.coverDateText,
-            })
+            .set(patch)
             .where(eq(invitationTable.id, row.id));
           logger.info(
             { token: row.token },

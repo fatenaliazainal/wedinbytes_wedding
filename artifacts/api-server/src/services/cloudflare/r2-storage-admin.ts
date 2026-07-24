@@ -5,6 +5,8 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
   HeadObjectCommand,
+  PutBucketCorsCommand,
+  GetBucketCorsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Readable } from "stream";
@@ -22,6 +24,15 @@ const R2_CONFIG = {
   secretAccessKey: process.env.CF_R2_SECRET_ACCESS_KEY ?? "",
   bucketName: process.env.CF_R2_BUCKET_NAME ?? "",
   region: process.env.CF_R2_REGION ?? "auto",
+  /**
+   * Optional custom public domain for R2 objects (e.g. "https://assets.example.com").
+   * When set, getImagePublicUrl() returns URLs under this domain instead of the
+   * private r2.cloudflarestorage.com endpoint.
+   *
+   * Configure in Cloudflare: R2 bucket → Settings → Custom Domains.
+   * Then set the CF_R2_PUBLIC_DOMAIN secret to that domain (no trailing slash).
+   */
+  publicDomain: process.env.CF_R2_PUBLIC_DOMAIN ?? "",
 };
 
 /**
@@ -230,12 +241,92 @@ export async function imageExists(fileKey: string): Promise<boolean> {
 }
 
 /**
- * Generate a public URL for an image (if your bucket allows public access)
+ * Generate a public URL for an image.
+ *
+ * If CF_R2_PUBLIC_DOMAIN is set (e.g. "https://assets.example.com"), that custom
+ * domain is used — recommended for production because:
+ *   - Custom domains support CORS configuration via Cloudflare dashboard.
+ *   - They are cacheable by Cloudflare's CDN.
+ *
+ * Otherwise falls back to the private r2.cloudflarestorage.com endpoint, which
+ * requires public bucket access to be enabled and does NOT support browser CORS.
+ *
  * @param fileKey - The S3 object key of the file
  * @returns The public URL
  */
 export function getImagePublicUrl(fileKey: string): string {
+  if (R2_CONFIG.publicDomain) {
+    return `${R2_CONFIG.publicDomain.replace(/\/$/, "")}/${fileKey}`;
+  }
   return `https://${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com/${fileKey}`;
+}
+
+/**
+ * Configure CORS on the R2 bucket so the wedding-invite frontend can load images.
+ *
+ * Call this once during initial bucket setup or after changing allowed origins.
+ * R2 accepts CORS rules via the S3-compatible PutBucketCors API.
+ *
+ * @param allowedOrigins - List of origins to allow (e.g. ["https://yourdomain.com"]).
+ *   Pass ["*"] only during development; restrict to real origins in production.
+ */
+export async function configureBucketCors(allowedOrigins: string[]): Promise<void> {
+  assertR2Configured();
+  try {
+    const command = new PutBucketCorsCommand({
+      Bucket: R2_CONFIG.bucketName,
+      CORSConfiguration: {
+        CORSRules: [
+          {
+            AllowedOrigins: allowedOrigins,
+            AllowedMethods: ["GET", "HEAD"],
+            AllowedHeaders: ["*"],
+            ExposeHeaders: ["Content-Type", "Content-Length", "ETag"],
+            MaxAgeSeconds: 3600,
+          },
+        ],
+      },
+    });
+    await s3Client.send(command);
+    console.log(`CORS configured for bucket ${R2_CONFIG.bucketName} — allowed origins: ${allowedOrigins.join(", ")}`);
+  } catch (error) {
+    console.error("Error configuring bucket CORS:", error);
+    throw new Error(
+      `Failed to configure bucket CORS: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+/**
+ * Read the current CORS rules from the R2 bucket.
+ * Useful for verifying that CORS is correctly configured.
+ */
+export async function getBucketCors(): Promise<Array<{
+  allowedOrigins: string[];
+  allowedMethods: string[];
+  allowedHeaders: string[];
+  maxAgeSeconds: number;
+}>> {
+  assertR2Configured();
+  try {
+    const command = new GetBucketCorsCommand({ Bucket: R2_CONFIG.bucketName });
+    const response = await s3Client.send(command);
+    return (response.CORSRules ?? []).map((rule) => ({
+      allowedOrigins: rule.AllowedOrigins ?? [],
+      allowedMethods: rule.AllowedMethods ?? [],
+      allowedHeaders: rule.AllowedHeaders ?? [],
+      maxAgeSeconds: rule.MaxAgeSeconds ?? 0,
+    }));
+  } catch (error: any) {
+    // NoSuchCORSConfiguration means CORS has never been set
+    if (error.name === "NoSuchCORSConfiguration" || error.$metadata?.httpStatusCode === 404) {
+      return [];
+    }
+    console.error("Error reading bucket CORS:", error);
+    throw new Error(
+      `Failed to read bucket CORS: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
 }
 
 /**
@@ -340,4 +431,6 @@ export default {
   getImageSignedUrl,
   listImages,
   isValidImageType,
+  configureBucketCors,
+  getBucketCors,
 };

@@ -10,15 +10,16 @@ const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
   "groomParents","brideParents","contactPhone","dresscode","message",
-  "shortCoupleName","coupleCount","groomInitial","brideInitial",
+  "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial",
   "eventStartDateTime","eventEndDateTime",
   "coverDateText","additionalInfo","showFrontText",
   "greetingText","invitationText","hostName","hostCount",
   "venueHijriDate","schedule",
   // Buyer design overrides
   "designCode","openingAnimation","openButtonText",
-  "colorPrimary","colorSecondary","colorBackground","colorCard",
+  "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
   "nameFontFamily","nameFontSize","nameColor",
+  "bodyFontFamily",
 ];
 
 // Create a new invitation for the logged-in buyer (idempotent — returns existing if already has one)

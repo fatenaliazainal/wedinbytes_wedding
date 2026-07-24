@@ -74,7 +74,13 @@ export function EnvelopeDoors({
             }}
           >
             <div className="absolute inset-2 border border-dashed border-primary/40 rounded-full" />
-            <span className="font-serif text-xl text-primary text-center px-4 leading-tight drop-shadow-sm">
+            <span
+              className="text-primary text-center px-4 leading-tight drop-shadow-sm"
+              style={{
+                fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                fontSize: "var(--badge-font-size, 24px)",
+              }}
+            >
               {names}
             </span>
           </div>
@@ -83,9 +89,8 @@ export function EnvelopeDoors({
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
             className="mt-5 px-8 py-2 bg-primary text-primary-foreground rounded-full tracking-widest text-sm shadow-md font-semibold"
-          >
-            {openButtonText}
-          </motion.div>
+            dangerouslySetInnerHTML={{ __html: openButtonText }}
+          />
         </motion.div>
       </div>
     </div>

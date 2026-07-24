@@ -51,25 +51,18 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
         @keyframes musicBar3 { from { height: 5px } to { height: 12px } }
       `}</style>
 
-      {/* Outer strip: fixed full-width, handles show/hide animation */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center transition duration-300 ease-out"
+        className="w-full flex items-center justify-around px-1 py-2 transition duration-300 ease-out"
         style={{
+          maxWidth: cardMaxWidth,
+          backgroundColor: "hsl(var(--primary))",
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? "translateY(0)" : "translateY(18px)",
           willChange: "transform, opacity",
           pointerEvents: isVisible ? undefined : "none",
         }}
       >
-        {/* Inner bar: same mx-auto + maxWidth centering as WeddingCard */}
-        <div
-          className="w-full flex items-center justify-around px-1 py-2"
-          style={{
-            maxWidth: cardMaxWidth,
-            backgroundColor: "hsl(var(--primary))",
-            paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
-          }}
-        >
           {NAV_ITEMS.map((item) => {
             const isMuzik = item.tab === "muzik";
             const isActive = item.tab ? activeTab === item.tab : false;
@@ -117,7 +110,6 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
             );
           })}
         </div>
-      </div>
     </>
   );
 }

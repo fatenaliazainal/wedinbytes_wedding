@@ -10,6 +10,7 @@ import { logger } from "./lib/logger";
 const PgSession = connectPgSimple(session);
 
 const app: Express = express();
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -47,7 +48,8 @@ app.use(
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.REPLIT_DEV_DOMAIN ? "none" : "lax",
+      secure: process.env.REPLIT_DEV_DOMAIN ? "auto" : false,
     },
   }),
 );

@@ -283,7 +283,7 @@ export default function DashboardPage() {
                       >
                         <span
                           className="leading-tight"
-                          style={{ fontFamily: "'Dancing Script', cursive", fontSize: 8, color: accentColor, fontWeight: 700 }}
+                          style={{ fontFamily: "'Poppins', sans-serif", fontSize: 8, color: accentColor, fontWeight: 700 }}
                         >
                           {invitation.brideName}<br />&amp;<br />{invitation.groomName}
                         </span>

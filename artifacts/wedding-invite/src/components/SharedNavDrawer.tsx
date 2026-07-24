@@ -51,7 +51,6 @@ export default function SharedNavDrawer({
               <button
                 onClick={() => { navigate("/"); setNavOpen(false); }}
                 className="font-serif text-lg text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
-                style={{ fontFamily: "'Dancing Script', cursive" }}
               >
                 WedInBytes
               </button>

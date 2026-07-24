@@ -27,6 +27,8 @@ export const invitationTable = pgTable("invitation", {
   message: text("message"),
   // Cover / front page fields
   shortCoupleName: text("short_couple_name"),
+  groomShortName: text("groom_short_name"),
+  brideShortName: text("bride_short_name"),
   coupleCount: integer("couple_count").default(1),
   groomInitial: text("groom_initial"),
   brideInitial: text("bride_initial"),
@@ -54,6 +56,7 @@ export const invitationTable = pgTable("invitation", {
   nameFontFamily: text("name_font_family"),
   nameFontSize: text("name_font_size"),
   nameColor: text("name_color"),
+  bodyFontFamily: text("body_font_family"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -99,6 +102,7 @@ export const cardDesignTable = pgTable("card_design", {
   // Name styling
   nameFontFamily: text("name_font_family"),
   nameFontSize: text("name_font_size"),
+  badgeFontSize: text("badge_font_size"),
   nameColor: text("name_color"),
   // Layout
   cardMaxWidth: text("card_max_width"),
@@ -110,3 +114,17 @@ export const cardDesignTable = pgTable("card_design", {
 export const insertCardDesignSchema = createInsertSchema(cardDesignTable).omit({ id: true, createdAt: true });
 export type InsertCardDesign = z.infer<typeof insertCardDesignSchema>;
 export type CardDesign = typeof cardDesignTable.$inferSelect;
+
+export const reviewTable = pgTable("review", {
+  id: serial("id").primaryKey(),
+  customerName: text("customer_name").notNull(),
+  rating: integer("rating").notNull(),
+  reviewText: text("review_text").notNull(),
+  weddingDate: text("wedding_date"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviewTable).omit({ id: true, createdAt: true });
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviewTable.$inferSelect;

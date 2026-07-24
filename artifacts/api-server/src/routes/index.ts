@@ -5,6 +5,7 @@ import rsvpRouter from "./rsvp";
 import designRouter from "./design";
 import authRouter from "./auth";
 import cardsRouter from "./cards";
+import reviewsRouter from "./reviews";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(invitationRouter);
 router.use(rsvpRouter);
 router.use(designRouter);
 router.use(cardsRouter);
+router.use(reviewsRouter);
 
 export default router;

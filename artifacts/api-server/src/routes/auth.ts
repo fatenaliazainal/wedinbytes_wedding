@@ -96,6 +96,36 @@ router.get("/auth/me", async (req, res) => {
   }
 });
 
+router.post("/auth/admin-login", async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      res.status(400).json({ error: "Kata laluan diperlukan." });
+      return;
+    }
+
+    const [user] = await db.select().from(userTable).where(eq(userTable.role, "admin")).limit(1);
+    if (!user) {
+      res.status(401).json({ error: "Akaun admin tidak dijumpai." });
+      return;
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "Kata laluan salah." });
+      return;
+    }
+
+    req.session.userId = user.id;
+    req.session.role = user.role;
+
+    res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
+  } catch (err) {
+    req.log.error({ err }, "Admin login failed");
+    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+  }
+});
+
 router.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ ok: true });

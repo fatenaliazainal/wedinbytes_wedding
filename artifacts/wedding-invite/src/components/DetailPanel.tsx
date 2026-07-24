@@ -13,6 +13,7 @@ interface DetailPanelProps {
   onToggleMute: () => void;
   musicTitle?: string;
   musicArtist?: string;
+  previewMode?: boolean;
 }
 
 function MuzikPanel({
@@ -35,11 +36,11 @@ function MuzikPanel({
         )}
       </div>
 
-      <p className="font-serif text-2xl text-primary text-center">Wedding Music</p>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Wedding Music</p>
 
       <div className="w-full bg-background/80 rounded-2xl p-4 border border-primary/10 text-center space-y-2">
         <p className="text-xs text-muted-foreground">Theme Song</p>
-        <p className="font-serif text-lg text-foreground">"{musicTitle ?? "Sempurna"}"</p>
+        <p className="text-lg text-foreground" style={{ fontFamily: nameFont }}>"{musicTitle ?? "Sempurna"}"</p>
         <p className="text-xs text-muted-foreground">{musicArtist ?? "Andra & The Backbone"}</p>
       </div>
 
@@ -98,16 +99,16 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <Calendar size={36} className="text-primary" />
       </div>
-      <p className="font-serif text-2xl text-primary text-center">Event Date</p>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Event Date</p>
       <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-3">
-        <p className="text-xs tracking-widest text-muted-foreground uppercase">Day</p>
-        <p className="font-bold text-xl text-foreground">{invitation?.eventDay}</p>
+        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
+        <p className="font-bold text-xl text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="text-xs tracking-widest text-muted-foreground uppercase">Date</p>
-        <p className="font-serif text-2xl text-primary">{invitation?.eventDate}</p>
+        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Date</p>
+        <p className="text-2xl text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDate}</p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="text-xs tracking-widest text-muted-foreground uppercase">Time</p>
-        <p className="text-foreground">{invitation?.eventTime}</p>
+        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Time</p>
+        <p className="text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventTime}</p>
       </div>
       <a
         href={mapsCalUrl}
@@ -121,26 +122,30 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
   );
 }
 
-function SalamPanel() {
+function SalamPanel({ invitation }: { invitation?: Invitation }) {
   return (
     <div className="flex flex-col items-center gap-6 py-4">
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <Heart size={36} className="text-primary" />
       </div>
-      <p className="font-serif text-2xl text-primary text-center">With Love</p>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>With Love</p>
       <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-3">
-        <p className="text-sm text-foreground/80 leading-relaxed italic">
+        <p className="text-sm text-foreground/80 leading-relaxed italic" style={{ fontFamily: bodyFont }}>
           "With heartfelt gratitude, we joyfully invite you
           to celebrate our wedding."
         </p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="font-serif text-lg text-primary">Ain &amp; Hidayat</p>
-        <p className="text-xs text-muted-foreground">Together with family</p>
+        <p className="text-lg text-primary" style={{ fontFamily: nameFont }}>
+          {invitation?.brideName && invitation?.groomName
+            ? `${invitation.brideName} & ${invitation.groomName}`
+            : "Ain & Hidayat"}
+        </p>
+        <p className="text-xs text-muted-foreground" style={{ fontFamily: bodyFont }}>Together with family</p>
       </div>
       <div className="w-full bg-secondary/50 rounded-2xl p-4 border border-primary/10 text-center">
-        <p className="text-xs text-muted-foreground mb-1">Dress Code</p>
-        <p className="text-sm font-semibold text-foreground">
-          Hijau Sage &amp; Pink
+        <p className="text-xs text-muted-foreground mb-1" style={{ fontFamily: bodyFont }}>Dress Code</p>
+        <p className="text-sm font-semibold text-foreground" style={{ fontFamily: bodyFont }}>
+          {invitation?.dresscode || "Hijau Sage & Pink"}
         </p>
       </div>
     </div>
@@ -159,12 +164,14 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <MapPin size={36} className="text-primary" />
       </div>
-      <p className="font-serif text-2xl text-primary text-center">Event Venue</p>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Event Venue</p>
       <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-2">
         <p className="font-bold text-base text-foreground">
           {invitation?.venueName}
         </p>
-        <p className="text-sm text-muted-foreground">{invitation?.venueAddress}</p>
+        <p className="text-sm text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: invitation?.venueAddress || "" }}
+        />
         <p className="text-sm text-muted-foreground">
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
@@ -187,13 +194,13 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <Phone size={36} className="text-primary" />
       </div>
-      <p className="font-serif text-2xl text-primary text-center">Contact Us</p>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Contact Us</p>
       <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-4">
         <div>
-          <p className="text-xs tracking-widest text-muted-foreground uppercase mb-1">
+          <p className="text-xs tracking-widest text-muted-foreground uppercase mb-1" style={{ fontFamily: bodyFont }}>
             Couple's Line
           </p>
-          <p className="font-bold text-lg text-foreground">
+          <p className="font-bold text-lg text-foreground" style={{ fontFamily: bodyFont }}>
             {invitation?.contactPhone}
           </p>
         </div>
@@ -224,6 +231,9 @@ const PANEL_TITLES: Record<TabKey, string> = {
   hubungi: "Contact",
 };
 
+const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
+const bodyFont = "var(--body-font-family, Poppins, sans-serif)";
+
 export function DetailPanel({
   activeTab,
   onClose,
@@ -232,62 +242,83 @@ export function DetailPanel({
   onToggleMute,
   musicTitle,
   musicArtist,
+  previewMode,
 }: DetailPanelProps) {
+  const panelContent = (
+    <div className="w-full max-w-[420px] bg-card rounded-t-3xl shadow-2xl border border-primary/10 border-b-0 p-6 pb-28">
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-lg text-primary" style={{ fontFamily: nameFont }}>
+          {activeTab ? PANEL_TITLES[activeTab] : ""}
+        </p>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          data-testid="button-close-panel"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      {activeTab === "muzik" && (
+        <MuzikPanel
+          isMuted={isMuted}
+          onToggleMute={onToggleMute}
+          musicTitle={musicTitle}
+          musicArtist={musicArtist}
+        />
+      )}
+      {activeTab === "kalendar" && (
+        <KalendarPanel invitation={invitation} />
+      )}
+      {activeTab === "salam" && <SalamPanel invitation={invitation} />}
+      {activeTab === "lokasi" && <LokasiPanel invitation={invitation} />}
+      {activeTab === "hubungi" && (
+        <HubungiPanel invitation={invitation} />
+      )}
+    </div>
+  );
+
+  if (!activeTab) return null;
+
+  // Preview mode: skip framer-motion animations to avoid clipping issues
+  // inside the editor's scaled phone frame.
+  if (previewMode) {
+    return (
+      <>
+        <div
+          className="absolute inset-0 z-40 bg-black/20"
+          onClick={onClose}
+        />
+        <div className="absolute bottom-0 left-0 right-0 z-50 flex justify-center">
+          {panelContent}
+        </div>
+      </>
+    );
+  }
+
   return (
     <AnimatePresence>
-      {activeTab && (
-        <>
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <motion.div
-            key="panel"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
-          >
-            <div className="w-full max-w-[420px] bg-card rounded-t-3xl shadow-2xl border border-primary/10 border-b-0 p-6 pb-28">
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-serif text-lg text-primary">
-                  {PANEL_TITLES[activeTab]}
-                </p>
-                <button
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                  data-testid="button-close-panel"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {activeTab === "muzik" && (
-                <MuzikPanel
-                  isMuted={isMuted}
-                  onToggleMute={onToggleMute}
-                  musicTitle={musicTitle}
-                  musicArtist={musicArtist}
-                />
-              )}
-              {activeTab === "kalendar" && (
-                <KalendarPanel invitation={invitation} />
-              )}
-              {activeTab === "salam" && <SalamPanel />}
-              {activeTab === "lokasi" && <LokasiPanel invitation={invitation} />}
-              {activeTab === "hubungi" && (
-                <HubungiPanel invitation={invitation} />
-              )}
-            </div>
-          </motion.div>
-        </>
-      )}
+      <>
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          onClick={onClose}
+        />
+        <motion.div
+          key="panel"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 28, stiffness: 300 }}
+          className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
+        >
+          {panelContent}
+        </motion.div>
+      </>
     </AnimatePresence>
   );
 }

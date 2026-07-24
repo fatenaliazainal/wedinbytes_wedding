@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, useSearch } from "wouter";
 import { useGetInvitation, useListDesigns } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
@@ -10,6 +10,23 @@ import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesign } from "@/hooks/use-design";
+
+// Legacy custom fonts that are not loaded as web fonts — map to real Google Fonts.
+const FONT_ALIASES: Record<string, string> = {
+  Magnolia: "Great Vibes",
+  Esthetique: "Alex Brush",
+};
+
+function normalizeFont(fontName?: string | null): string {
+  if (!fontName) return "Dancing Script";
+  return FONT_ALIASES[fontName] || fontName;
+}
+
+function fontFamilyStack(fontName?: string | null): string {
+  const normalized = normalizeFont(fontName);
+  if (normalized.includes(",")) return normalized;
+  return `'${normalized}', 'Dancing Script', cursive`;
+}
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
@@ -17,12 +34,15 @@ import { resolveImageUrl } from "@/lib/r2-url";
 export default function InvitationPage() {
   const { token } = useParams<{ token: string }>();
   const resolvedToken = token ?? "demo";
+  const search = useSearch();
+  const urlParams = new URLSearchParams(search);
+  const overrideDesignCode = urlParams.get("designCode");
   const { data: invitation, isLoading: invitationLoading } = useGetInvitation(resolvedToken);
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
 
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
-  const designCode = (inv?.designCode as string | undefined) ?? "FL001";
+  const designCode = overrideDesignCode ?? (inv?.designCode as string | undefined) ?? "FL001";
   const templateDesign = allDesigns.find((d) => d.designCode === designCode);
 
   // CSS token overrides: template's colours as base, per-invitation overrides on top
@@ -31,8 +51,10 @@ export default function InvitationPage() {
       ? {
           colorPrimary:    (inv?.colorPrimary    as string | undefined) ?? templateDesign?.colorPrimary    ?? undefined,
           colorSecondary:  (inv?.colorSecondary  as string | undefined) ?? templateDesign?.colorSecondary  ?? undefined,
+          colorAccent:     (inv?.colorAccent     as string | undefined) ?? templateDesign?.colorAccent     ?? undefined,
           colorBackground: (inv?.colorBackground as string | undefined) ?? templateDesign?.colorBackground ?? undefined,
           colorCard:       (inv?.colorCard       as string | undefined) ?? templateDesign?.colorCard       ?? undefined,
+          nameColor:       (inv?.nameColor       as string | undefined) ?? templateDesign?.nameColor       ?? undefined,
         }
       : undefined
   );
@@ -124,12 +146,27 @@ export default function InvitationPage() {
     );
   }
 
+  const shortGroom = invitation.groomShortName?.trim() || "";
+  const shortBride = invitation.brideShortName?.trim() || "";
   const coupleNames = invitation
-    ? `${invitation.brideName} & ${invitation.groomName}`
+    ? (shortGroom || shortBride)
+      ? `${shortGroom || invitation.groomName} & ${shortBride || invitation.brideName}`
+      : `${invitation.brideName} & ${invitation.groomName}`
     : "A & H";
 
+  const cardFontVars = {
+    "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
+    "--name-font-size":   (inv?.nameFontSize   as string | undefined) ? `${inv?.nameFontSize}px` : undefined,
+    "--badge-font-size":  (inv?.badgeFontSize  as string | undefined) ? `${inv?.badgeFontSize}px` : undefined,
+    "--name-color":       (inv?.nameColor       as string | undefined) ? `hsl(${inv?.nameColor})` : undefined,
+    "--body-font-family": fontFamilyStack(inv?.bodyFontFamily as string | undefined),
+  } as React.CSSProperties;
+
   return (
-    <div className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center">
+    <div
+      className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center"
+      style={cardFontVars}
+    >
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           key={replayKey}
@@ -157,7 +194,9 @@ export default function InvitationPage() {
         className={`w-full absolute inset-0 z-10 transition-all duration-700 ${
           isOpened ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden pointer-events-none"
         }`}
-        style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        style={{
+          WebkitOverflowScrolling: "touch",
+        } as React.CSSProperties}
       >
         <WeddingCard
           invitation={invitation}
@@ -165,6 +204,22 @@ export default function InvitationPage() {
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
         />
+
+        {isOpened && (
+          <div
+            className="sticky bottom-0 z-50 w-full mx-auto"
+            style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+          >
+            <BottomNav
+              activeTab={activeTab}
+              isMuted={isMuted}
+              onTabClick={handleTabClick}
+              onRsvpClick={() => setIsRsvpModalOpen(true)}
+              isVisible={showBottomNav}
+              cardMaxWidth="100%"
+            />
+          </div>
+        )}
       </div>
 
       {/* Replay + Mute buttons — fixed top-left, only visible when card is open */}
@@ -198,30 +253,21 @@ export default function InvitationPage() {
       </AnimatePresence>
 
       {isOpened && (
-        <>
-          <BottomNav
-            activeTab={activeTab}
-            isMuted={isMuted}
-            onTabClick={handleTabClick}
-            onRsvpClick={() => setIsRsvpModalOpen(true)}
-            isVisible={showBottomNav}
-            cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px"}
-          />
-          <DetailPanel
-            activeTab={activeTab}
-            onClose={() => setActiveTab(null)}
-            invitation={invitation}
-            isMuted={isMuted}
-            onToggleMute={() => setIsMuted((prev) => !prev)}
-            musicTitle={templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
-            musicArtist={templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
-          />
-        </>
+        <DetailPanel
+          activeTab={activeTab}
+          onClose={() => setActiveTab(null)}
+          invitation={invitation}
+          isMuted={isMuted}
+          onToggleMute={() => setIsMuted((prev) => !prev)}
+          musicTitle={templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
+          musicArtist={templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+        />
       )}
 
       <RsvpModal
         isOpen={isRsvpModalOpen}
         onClose={() => setIsRsvpModalOpen(false)}
+        cardFontVars={cardFontVars}
       />
     </div>
   );

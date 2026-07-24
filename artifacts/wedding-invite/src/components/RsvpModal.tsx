@@ -26,9 +26,10 @@ type FormValues = z.infer<typeof formSchema>;
 interface RsvpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  cardFontVars?: React.CSSProperties;
 }
 
-export function RsvpModal({ isOpen, onClose }: RsvpModalProps) {
+export function RsvpModal({ isOpen, onClose, cardFontVars }: RsvpModalProps) {
   const queryClient = useQueryClient();
   const createRsvp = useCreateRsvp();
   
@@ -68,10 +69,15 @@ export function RsvpModal({ isOpen, onClose }: RsvpModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] border-primary/20 bg-card">
+      <DialogContent className="sm:max-w-[425px] border-primary/20 bg-card" style={cardFontVars}>
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl text-center text-primary">Attendance (RSVP)</DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground">
+          <DialogTitle
+            className="text-2xl text-center text-primary"
+            style={{ fontFamily: "var(--name-font-family, 'Dancing Script', serif)" }}
+          >
+            Attendance (RSVP)
+          </DialogTitle>
+          <DialogDescription className="text-center text-muted-foreground" style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}>
             Please confirm your attendance before the event.
           </DialogDescription>
         </DialogHeader>

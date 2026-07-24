@@ -82,9 +82,8 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
               textTransform: "uppercase",
               marginBottom: 10,
             }}
-          >
-            {invitation.eventType}
-          </p>
+            dangerouslySetInnerHTML={{ __html: invitation.eventType || "" }}
+          />
 
           <h1
             style={{

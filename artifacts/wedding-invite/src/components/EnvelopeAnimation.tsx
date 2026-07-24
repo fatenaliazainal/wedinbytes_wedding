@@ -75,7 +75,13 @@ export function EnvelopeAnimation({
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="relative w-[130px] h-[130px] rounded-full bg-card/80 border border-primary/30 flex items-center justify-center shadow-md">
                   <div className="absolute inset-2 border border-dashed border-primary/30 rounded-full pointer-events-none" />
-                  <span className="font-serif text-base text-primary text-center leading-snug px-4 relative">
+                  <span
+                    className="text-primary text-center leading-snug px-4 relative"
+                    style={{
+                      fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                      fontSize: "var(--badge-font-size, 24px)",
+                    }}
+                  >
                     {names}
                   </span>
                 </div>
@@ -142,9 +148,8 @@ export function EnvelopeAnimation({
               }
               disabled={phase !== "idle"}
               className="mt-8 px-8 py-2 bg-primary text-primary-foreground rounded-full tracking-widest text-sm shadow-md font-semibold cursor-pointer disabled:cursor-default"
-            >
-              {openButtonText}
-            </motion.button>
+              dangerouslySetInnerHTML={{ __html: openButtonText }}
+            />
           </div>
         </motion.div>
       )}

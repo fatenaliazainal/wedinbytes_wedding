@@ -13,6 +13,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  adminLogin: (password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -52,6 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data);
   };
 
+  const adminLogin = async (password: string) => {
+    const res = await fetch(`${BASE}/api/auth/admin-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Admin login failed.");
+    setUser(data);
+  };
+
   const register = async (email: string, password: string, name: string) => {
     const res = await fetch(`${BASE}/api/auth/register`, {
       method: "POST",
@@ -70,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, adminLogin, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

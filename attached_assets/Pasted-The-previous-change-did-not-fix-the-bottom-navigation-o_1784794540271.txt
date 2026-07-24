@@ -1,0 +1,46 @@
+The previous change did not fix the bottom navigation on the actual wedding invitation PREVIEW page.
+
+Please focus specifically on the invitation preview route/component shown when a user previews their wedding invitation.
+
+The bottom navigation is currently too wide and is not aligned with the main wedding invitation content. In the preview page, the invitation content is centered, but the green bottom navigation extends wider than the invitation content.
+
+I need the bottom navigation to have the EXACT SAME WIDTH as the main wedding invitation container.
+
+IMPORTANT:
+- Find the actual component and CSS used by the wedding invitation preview page.
+- Do not only modify the homepage or dashboard.
+- Do not create a separate duplicate navigation component.
+- Identify the actual bottom navigation component rendered in the preview page and modify that component directly.
+
+Current problem:
+The invitation content is centered with a specific max-width, but the bottom navigation has a different width and extends beyond the invitation content.
+
+Desired result:
+- The bottom navigation must be centered horizontally.
+- The left edge of the navigation must align exactly with the left edge of the wedding invitation container.
+- The right edge of the navigation must align exactly with the right edge of the wedding invitation container.
+- The navigation should not stretch across the full browser viewport.
+- Keep the existing green background, icons, labels, and functionality unchanged.
+
+Use the same parent container or the same max-width value as the main wedding invitation preview.
+
+If the invitation preview container uses a max-width such as 640px, 680px, or another value, reuse that exact value for the bottom navigation.
+
+The layout should be:
+
+        ┌─────────────────────────┐
+        │                         │
+        │   WEDDING INVITATION    │
+        │                         │
+        │                         │
+        ├─────────────────────────┤
+        │ Music Calendar ... RSVP │
+        └─────────────────────────┘
+
+The bottom navigation must be exactly the same width as the invitation content above it.
+
+After making the change:
+1. Inspect the actual preview page in the browser.
+2. Verify the navigation is centered.
+3. Verify both left and right edges align with the invitation container.
+4. Make sure the desktop and mobile layouts remain responsive.

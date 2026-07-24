@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import {
   useListRsvps,
   useGetRsvpCount,
@@ -9,16 +10,17 @@ import {
 import {
   Users, UserCheck, UserX, CalendarHeart, Loader2, RefreshCw,
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
-  Pencil, Copy, Check,
+  Pencil, Copy, Check, Star, MessageSquare,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListDesignsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "rsvp" | "designs" | "rawcard";
+type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo";
 
 type RawCard = {
   id: number;
@@ -248,8 +250,10 @@ interface DesignFormData {
   openingAnimation: string;
   colorPrimary: string;
   colorSecondary: string;
+  colorAccent: string;
   colorBackground: string;
   colorCard: string;
+  nameColor: string;
   musicUrl: string;
   musicTitle: string;
   musicArtist: string;
@@ -259,7 +263,8 @@ interface DesignFormData {
 const EMPTY_FORM: DesignFormData = {
   name: "", designCode: "", cardImageUrl: "", envelopeImageUrl: "",
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
-  colorBackground: "", colorCard: "", musicUrl: "", musicTitle: "",
+  colorAccent: "", colorBackground: "", colorCard: "", nameColor: "",
+  musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
 };
 
@@ -366,8 +371,10 @@ function DesignForm({
         openingAnimation: form.openingAnimation,
         colorPrimary: form.colorPrimary,
         colorSecondary: form.colorSecondary,
+        colorAccent: form.colorAccent,
         colorBackground: form.colorBackground,
         colorCard: form.colorCard,
+        nameColor: form.nameColor,
         musicUrl: form.musicUrl,
         musicTitle: form.musicTitle,
         musicArtist: form.musicArtist,
@@ -538,10 +545,11 @@ function DesignForm({
           {/* Colours */}
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
-            <ColorRow label="Primary colour (button, accent)" value={form.colorPrimary} onChange={set("colorPrimary")} placeholder="142 45% 35%" />
-            <ColorRow label="Secondary colour"                value={form.colorSecondary} onChange={set("colorSecondary")} placeholder="142 30% 92%" />
-            <ColorRow label="Background"                      value={form.colorBackground} onChange={set("colorBackground")} placeholder="142 20% 96%" />
-            <ColorRow label="Card / Panel"                    value={form.colorCard} onChange={set("colorCard")} placeholder="0 0% 100%" />
+            <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} placeholder="0 0% 13%" />
+            <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} placeholder="142 45% 35%" />
+            <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} placeholder="0 0% 100%" />
+            <ColorRow label="Background — Page background" value={form.colorBackground} onChange={set("colorBackground")} placeholder="142 20% 96%" />
+            <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} placeholder="142 30% 92%" />
           </div>
 
           {/* Music */}
@@ -715,8 +723,10 @@ function DesignsTab() {
                     openingAnimation: d.openingAnimation ?? "doors",
                     colorPrimary: d.colorPrimary ?? "",
                     colorSecondary: d.colorSecondary ?? "",
+                    colorAccent: d.colorAccent ?? "",
                     colorBackground: d.colorBackground ?? "",
                     colorCard: d.colorCard ?? "",
+                    nameColor: d.nameColor ?? "",
                     musicUrl: d.musicUrl ?? "",
                     musicTitle: d.musicTitle ?? "",
                     musicArtist: d.musicArtist ?? "",
@@ -1097,15 +1107,194 @@ function StatCard({ icon: Icon, label, value, color }: {
   );
 }
 
+interface AdminReview {
+  id: number;
+  customerName: string;
+  rating: number;
+  reviewText: string;
+  weddingDate?: string | null;
+  status: string;
+  createdAt: string;
+}
+
+function ReviewsTab() {
+  const [reviews, setReviews] = useState<AdminReview[]>([]);
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const qs = filter === "all" ? "" : `?status=${filter}`;
+      const res = await fetch(`${BASE}/api/admin/reviews${qs}`, { credentials: "include" });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setReviews(data.reviews || []);
+    } catch {
+      toast.error("Failed to load reviews.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, [filter]);
+
+  async function updateStatus(id: number, status: string) {
+    try {
+      const res = await fetch(`${BASE}/api/admin/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`Review ${status}.`);
+      await load();
+    } catch {
+      toast.error("Failed to update review.");
+    }
+  }
+
+  async function deleteReview(id: number) {
+    if (!confirm("Delete this review?")) return;
+    try {
+      const res = await fetch(`${BASE}/api/admin/reviews/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) throw new Error();
+      toast.success("Review deleted.");
+      await load();
+    } catch {
+      toast.error("Failed to delete review.");
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          {(["all", "pending", "approved", "rejected"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setFilter(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                filter === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {s[0].toUpperCase() + s.slice(1)}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={load}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted transition-colors disabled:opacity-40"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
+          <Loader2 size={18} className="animate-spin" /> <span className="text-sm">Loading…</span>
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="py-16 text-center text-sm text-muted-foreground">No reviews found.</div>
+      ) : (
+        <div className="divide-y divide-border rounded-2xl border border-border bg-card overflow-hidden">
+          {reviews.map((r) => (
+            <div key={r.id} className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-foreground">{r.customerName}</p>
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                      r.status === "approved" ? "bg-emerald-100 text-emerald-700" :
+                      r.status === "rejected" ? "bg-rose-100 text-rose-600" :
+                      "bg-amber-100 text-amber-700"
+                    }`}>
+                      {r.status === "approved" && <CheckCircle2 size={11} />}
+                      {r.status === "rejected" && <X size={11} />}
+                      {r.status === "pending" && <Circle size={11} />}
+                      {r.status[0].toUpperCase() + r.status.slice(1)}
+                    </span>
+                    {r.weddingDate && <span className="text-xs text-muted-foreground">{r.weddingDate}</span>}
+                  </div>
+                  <div className="flex items-center gap-0.5 mt-1.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={12}
+                        className={i < r.rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-foreground mt-2 leading-relaxed">“{r.reviewText}”</p>
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
+                  {r.status !== "approved" && (
+                    <button
+                      onClick={() => updateStatus(r.id, "approved")}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                    >
+                      <CheckCircle2 size={12} /> Approve
+                    </button>
+                  )}
+                  {r.status !== "rejected" && (
+                    <button
+                      onClick={() => updateStatus(r.id, "rejected")}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium bg-rose-100 text-rose-600 hover:bg-rose-200"
+                    >
+                      <X size={12} /> Reject
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteReview(r.id)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  >
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Admin Page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("rsvp");
+  const [, navigate] = useLocation();
+  const { user, loading: authLoading } = useAuth();
 
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        navigate(`/admin/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      } else if (user.role !== "admin") {
+        navigate("/dashboard");
+        toast.error("Admin access only.");
+      }
+    }
+  }, [user, authLoading, navigate]);
+
+  const isAdmin = !authLoading && user?.role === "admin";
   const { data: rsvps, isLoading: rsvpsLoading, isError: rsvpsError, refetch: refetchRsvps } =
-    useListRsvps({ query: { refetchInterval: 30_000, queryKey: [] } });
+    useListRsvps({ query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
   const { data: counts, isLoading: countsLoading, refetch: refetchCounts } =
-    useGetRsvpCount({ query: { refetchInterval: 30_000, queryKey: [] } });
+    useGetRsvpCount({ query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
+
+  if (authLoading || !user || user.role !== "admin") {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const isLoading = rsvpsLoading || countsLoading;
 
@@ -1129,11 +1318,11 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"]] as [Tab, string][]).map(([key, label]) => (
+        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
-            onClick={() => setTab(key)}
+            onClick={() => key === "demo" ? navigate("/admin/demo") : setTab(key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
               tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
@@ -1199,6 +1388,7 @@ export default function AdminPage() {
 
       {tab === "designs" && <DesignsTab />}
       {tab === "rawcard" && <RawCardTab />}
+      {tab === "reviews" && <ReviewsTab />}
     </div>
   );
 }

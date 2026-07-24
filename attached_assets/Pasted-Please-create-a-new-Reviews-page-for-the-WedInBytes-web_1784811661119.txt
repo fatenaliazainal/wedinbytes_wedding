@@ -1,0 +1,210 @@
+Please create a new Reviews page for the WedInBytes website.
+
+ROUTE:
+ /reviews
+
+Add "Reviews" to the main navigation and link it to the new Reviews page.
+
+==================================================
+PAGE PURPOSE
+==================================================
+
+The Reviews page should allow visitors to:
+
+1. Read reviews from previous customers.
+2. Submit their own review through a review form.
+
+The page should feel:
+- Warm
+- Trustworthy
+- Elegant
+- Modern
+- Wedding-focused
+- User-friendly
+
+Use the existing WedInBytes design system and Poppins font.
+
+==================================================
+1. HERO SECTION
+==================================================
+
+Small label:
+REVIEWS
+
+Main heading:
+Loved by Couples, Made for Memories.
+
+Description:
+See what couples have to say about their experience with WedInBytes.
+
+==================================================
+2. REVIEW SUMMARY
+==================================================
+
+Create a review summary section showing:
+
+★★★★★
+
+4.9 out of 5
+
+Based on customer reviews
+
+If actual review data is available, calculate the average rating dynamically instead of hardcoding it.
+
+==================================================
+3. REVIEW LIST
+==================================================
+
+Display customer reviews in clean review cards.
+
+Each review card should show:
+
+★★★★★
+
+"Review content goes here."
+
+Customer Name
+Wedding Date or optional short detail
+
+Example:
+
+★★★★★
+
+"Everything was so easy to customise and our guests loved how convenient the digital invitation was!"
+
+Aiza & Afiq
+December 2026
+
+The review cards should be responsive.
+
+On desktop:
+- Display multiple review cards in a clean grid or carousel.
+
+On mobile:
+- Display one review card per row or a mobile-friendly carousel.
+
+==================================================
+4. SUBMIT A REVIEW SECTION
+==================================================
+
+Add a clear section inviting customers to submit their review.
+
+Heading:
+Share Your Experience
+
+Description:
+We would love to hear about your experience with WedInBytes.
+
+Create a review form with:
+
+Full Name
+[ Enter your name ]
+
+
+Rating
+★★★★★
+
+Review
+[ Tell us about your experience... ]
+
+Submit button:
+Submit Review
+
+==================================================
+FORM FUNCTIONALITY
+==================================================
+
+The form should:
+
+- Require the customer's name.
+- Require a rating from 1 to 5 stars.
+- Require a review message.
+- Wedding date should be optional.
+- Validate required fields.
+- Show a loading state while submitting.
+- Show a success message after submission.
+
+Success message:
+Thank you for sharing your experience with us! Your review has been submitted for approval.
+
+==================================================
+REVIEW MODERATION
+==================================================
+
+IMPORTANT:
+
+New reviews submitted through the form should NOT appear publicly immediately.
+
+Create a review status system:
+
+- Pending
+- Approved
+- Rejected
+
+Only APPROVED reviews should appear publicly on the Reviews page.
+
+New reviews should automatically have the status:
+
+Pending
+
+The admin should be able to:
+- View pending reviews.
+- Approve reviews.
+- Reject reviews.
+- Delete reviews.
+
+==================================================
+REVIEW DATA STRUCTURE
+==================================================
+
+Create a reviews database table with fields similar to:
+
+- id
+- customer_name
+- rating
+- review_text
+- status
+- created_at
+
+Use the existing database setup and authentication system where appropriate.
+
+==================================================
+ADMIN FUNCTIONALITY
+==================================================
+
+Add a Reviews section to the admin/back office.
+
+Admin should be able to:
+
+- View all reviews.
+- Filter reviews by status:
+  - Pending
+  - Approved
+  - Rejected
+- Approve a review.
+- Reject a review.
+- Delete a review.
+
+Only approved reviews should be visible on the public Reviews page.
+
+==================================================
+DESIGN REQUIREMENTS
+==================================================
+
+- Use the existing WedInBytes navbar.
+- Use the existing WedInBytes footer.
+- Use Poppins throughout the page.
+- Use the existing colour palette.
+- Use elegant review cards.
+- Use star rating UI.
+- Use clear visual hierarchy.
+- Make the review form easy to complete.
+- Make the page fully responsive.
+- Do not use overly complicated animations.
+- Do not break any existing pages or functionality.
+
+Before making changes:
+1. Inspect the existing project structure.
+2. Check the existing authentication and database setup.
+3. Reuse existing components and styles where possible.
+4. Do not create duplicate components unnecessarily.

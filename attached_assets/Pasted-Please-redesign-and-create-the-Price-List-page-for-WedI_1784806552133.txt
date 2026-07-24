@@ -1,0 +1,215 @@
+Please redesign and create the Price List page for WedInBytes.
+
+I want a beautiful, modern and user-friendly pricing page with TWO pricing plans displayed in elegant pricing cards/boxes:
+
+1. STANDARD — RM55
+2. PREMIUM — RM65
+
+IMPORTANT DESIGN DIRECTION:
+Use the general concept of a modern digital wedding invitation pricing page as inspiration, but DO NOT copy the layout, design, wording, styling, or visual appearance of any existing website.
+
+Create an original WedInBytes design that feels:
+- Elegant
+- Modern
+- Premium
+- Clean
+- Easy to compare
+- Wedding-focused
+- User-friendly
+
+PAGE STRUCTURE:
+
+==================================================
+1. HERO SECTION
+==================================================
+
+Small label:
+PRICE LIST
+
+Main heading:
+Choose the perfect invitation for your special day.
+
+Subheading:
+Beautiful digital wedding invitations designed to make your special day even more memorable.
+
+Keep the hero section clean and not too tall.
+
+==================================================
+2. DIGITAL INVITATION PACKAGE
+==================================================
+
+Create two pricing cards displayed side-by-side on desktop and stacked vertically on mobile.
+
+--------------------------------------------------
+STANDARD
+RM55
+--------------------------------------------------
+
+Description:
+Everything you need for a beautiful and memorable digital wedding invitation.
+
+Features:
+✓ RSVP / Wishes
+✓ Contact
+✓ Location & Navigation
+✓ Calendar
+✓ Countdown
+✓ Background Music
+
+Button:
+Choose Standard
+
+--------------------------------------------------
+PREMIUM
+RM65
+--------------------------------------------------
+
+Add a small badge:
+MORE FEATURES
+
+Description:
+A complete digital wedding invitation experience with more ways to personalise and connect with your guests.
+
+Features:
+✓ RSVP / Wishes
+✓ Contact
+✓ Location & Navigation
+✓ Calendar
+✓ Countdown
+✓ Background Music
+✓ Photo Gallery
+✓ Money Gift
+✓ Dress Code
+
+Package limitations:
+- Up to 2 couples
+- Up to 2 sets of parents
+- Available in Malay OR English
+
+Button:
+Choose Premium
+
+==================================================
+3. VISUAL DESIGN
+==================================================
+
+Create elegant pricing boxes with:
+
+- Rounded corners
+- Clean spacing
+- Subtle borders
+- Soft shadows
+- Clear visual hierarchy
+- Beautiful typography
+- Easy-to-scan feature lists
+- Clear price display
+
+Make the Premium card visually stand out slightly, but do not make it look too aggressive or overly colourful.
+
+The Standard plan should feel simple and elegant.
+
+The Premium plan should feel like a clear upgrade with more features.
+
+Do not use a confusing comparison table as the main design.
+
+==================================================
+4. FEATURE COMPARISON
+==================================================
+
+Below the pricing cards, add a simple optional section:
+
+"Compare Features"
+
+Create a clean and easy-to-read comparison layout showing:
+
+Feature                 Standard     Premium
+RSVP / Wishes           ✓             ✓
+Contact                 ✓             ✓
+Location & Navigation   ✓             ✓
+Calendar                ✓             ✓
+Countdown               ✓             ✓
+Background Music        ✓             ✓
+Photo Gallery           —             ✓
+Money Gift              —             ✓
+Dress Code              —             ✓
+
+This comparison section should be optional and should not make the page feel crowded.
+
+On mobile, make sure the comparison section is easy to read and does not break the layout.
+
+==================================================
+5. FAQ SECTION
+==================================================
+
+Add a simple FAQ section below the pricing plans.
+
+Questions:
+
+What is the difference between Standard and Premium?
+Standard includes all the essential features for a digital wedding invitation. Premium includes additional features such as Photo Gallery, Money Gift, and Dress Code.
+
+Can I edit my invitation after creating it?
+Yes, you can edit your wedding details and available content after creating your invitation.
+
+Can guests RSVP through the invitation?
+Yes, guests can RSVP and leave wishes directly through the digital invitation.
+
+Can I share my invitation with guests?
+Yes, you can share your invitation link through WhatsApp and other messaging platforms.
+
+Can I choose the language of my invitation?
+Premium invitations are available in either Malay or English.
+
+==================================================
+6. FINAL CTA
+==================================================
+
+Heading:
+Ready to create your beautiful digital wedding invitation?
+
+Description:
+Start creating your wedding invitation and share your special day with the people you love.
+
+Button:
+Create Your Invitation
+
+==================================================
+TYPOGRAPHY
+==================================================
+
+Use:
+- Poppins SemiBold for main headings and elegant titles.
+- Poppins Regular for body text, navigation, buttons, labels, pricing details, and UI elements.
+
+Keep the WedInBytes logo image in the navbar unchanged.
+
+==================================================
+RESPONSIVE DESIGN
+==================================================
+
+Desktop:
+- Display the Standard and Premium pricing cards side-by-side.
+- Keep both cards visually balanced.
+- Make the Premium card slightly more visually prominent.
+
+Mobile:
+- Stack the pricing cards vertically.
+- Keep each card easy to read.
+- Make buttons full-width or almost full-width.
+- Ensure no horizontal scrolling.
+- Keep the comparison section mobile-friendly.
+
+==================================================
+IMPORTANT
+==================================================
+
+- Do not copy any existing website design.
+- Create an original WedInBytes layout.
+- Keep the design elegant and premium.
+- Do not add additional pricing plans.
+- Standard price must remain RM55.
+- Premium price must remain RM65.
+- Do not add features that are not listed.
+- Keep all existing website functionality working.
+- Add the Pricing page to the main navigation if it is not already there.
+- Make sure the pricing cards and buttons are functional.
