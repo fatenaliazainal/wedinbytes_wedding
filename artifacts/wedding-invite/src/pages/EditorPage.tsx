@@ -1592,6 +1592,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   cardMaxWidth={design.cardMaxWidth}
+                  onRsvpClick={() => toast.info("RSVP form is functional in the public card preview only.")}
                 />
               </div>
 

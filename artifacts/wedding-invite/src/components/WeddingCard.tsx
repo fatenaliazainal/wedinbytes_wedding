@@ -16,6 +16,7 @@ interface WeddingCardProps {
   envelopeImageUrl?: string;
   cardMaxWidth?: string;
   guestWishes?: { name: string; message?: string | null; createdAt?: string }[];
+  onRsvpClick?: () => void;
 }
 
 const MONTH_MAP: Record<string, string> = {
@@ -213,7 +214,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, onRsvpClick }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -431,6 +432,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className={sectionTitleCls} style={sectionTitleStyle}>{t.attendanceLabel}</p>
             <OrnamentDivider />
             <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.rsvpPrompt}</p>
+            {onRsvpClick && (
+              <button
+                onClick={onRsvpClick}
+                className="mt-2 px-6 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                style={{ fontFamily: bodyFontFamily }}
+              >
+                {inv.rsvpEnabled === false ? "RSVP Ditutup" : "Sahkan Kehadiran"}
+              </button>
+            )}
           </div>
           </RevealOnScroll>
 

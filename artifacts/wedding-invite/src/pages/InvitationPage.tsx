@@ -232,6 +232,7 @@ export default function InvitationPage() {
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
           guestWishes={guestWishes}
+          onRsvpClick={() => setIsRsvpModalOpen(true)}
         />
 
         {/* Hidden YouTube player for background music */}
