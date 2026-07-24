@@ -14,6 +14,15 @@ function safeJsonParse<T>(value: unknown, fallback: T): T {
   }
 }
 
+function normalizeRsvpForApi(r: typeof rsvpTable.$inferSelect) {
+  return {
+    ...r,
+    timeSlot: r.timeSlot ?? undefined,
+    message: r.message ?? undefined,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
 router.get("/rsvp", async (req, res) => {
   try {
     const invitationToken = req.query.invitationToken as string | undefined;
@@ -22,9 +31,7 @@ router.get("/rsvp", async (req, res) => {
       query = query.where(eq(rsvpTable.invitationToken, invitationToken)) as typeof query;
     }
     const rows = await query;
-    const data = ListRsvpsResponse.parse(
-      rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))
-    );
+    const data = ListRsvpsResponse.parse(rows.map(normalizeRsvpForApi));
     res.json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to list RSVPs");
@@ -121,7 +128,7 @@ router.post("/rsvp", async (req, res) => {
         },
       })
       .returning();
-    const data = ListRsvpsResponseItem.parse({ ...upserted, createdAt: upserted.createdAt.toISOString() });
+    const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     res.status(201).json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to create RSVP");

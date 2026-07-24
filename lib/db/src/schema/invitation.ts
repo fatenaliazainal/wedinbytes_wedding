@@ -80,6 +80,10 @@ export const invitationTable = pgTable("invitation", {
   nameFontSize: text("name_font_size"),
   nameColor: text("name_color"),
   bodyFontFamily: text("body_font_family"),
+  // Music override (per-invitation)
+  musicUrl: text("music_url"),
+  musicTitle: text("music_title"),
+  musicArtist: text("music_artist"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

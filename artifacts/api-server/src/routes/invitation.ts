@@ -24,6 +24,8 @@ const ALLOWED_FIELDS = [
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
   "nameFontFamily","nameFontSize","nameColor",
   "bodyFontFamily",
+  // Music
+  "musicUrl","musicTitle","musicArtist",
   // Pricing package
   "packageId",
 ];

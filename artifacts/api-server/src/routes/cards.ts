@@ -112,6 +112,43 @@ router.post("/raw-card", upload.single("file"), async (req, res) => {
   }
 });
 
+// ── Upload a gallery image to R2 (returns the storage key) ─────────────────────
+router.post("/gallery-upload", upload.single("file"), async (req, res) => {
+  if (!isR2Configured()) {
+    res.status(503).json({
+      error:
+        "Photo storage is not configured. The server administrator must set the CF_R2_ACCOUNT_ID, CF_R2_ACCESS_KEY_ID, CF_R2_SECRET_ACCESS_KEY, and CF_R2_BUCKET_NAME secrets before uploads will work.",
+    });
+    return;
+  }
+
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "Image file is required (jpeg/png/webp/gif, max 10 MB)" });
+      return;
+    }
+
+    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mimeType)) {
+      res.status(400).json({ error: "Invalid image type" });
+      return;
+    }
+
+    const imageKey = await uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: mimeType,
+      folder: "gallery",
+      metadata: { uploadedAt: new Date().toISOString() },
+    });
+
+    res.json({ key: imageKey });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload gallery image");
+    res.status(500).json({ error: "Failed to upload gallery image" });
+  }
+});
+
 // ── Delete raw card ──────────────────────────────────────────────────────────
 router.delete("/raw-card/:id", async (req, res) => {
   try {

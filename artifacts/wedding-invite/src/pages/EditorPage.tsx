@@ -240,6 +240,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [previewActiveTab, setPreviewActiveTab] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -591,6 +592,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           colorSecondary:   design.colorSecondary   !== inheritedColors.colorSecondary   ? (design.colorSecondary || undefined)   : undefined,
           colorBackground:  design.colorBackground  !== inheritedColors.colorBackground  ? (design.colorBackground || undefined)  : undefined,
           colorCard:        design.colorCard        !== inheritedColors.colorCard        ? (design.colorCard || undefined)        : undefined,
+          // Music
+          musicUrl:    design.musicUrl    || undefined,
+          musicTitle:  design.musicTitle  || undefined,
+          musicArtist: design.musicArtist || undefined,
         }),
       });
       if (r.ok) {
@@ -613,6 +618,38 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   async function handleLogout() {
     await logout();
     navigate("/login");
+  }
+
+  async function uploadGalleryFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploadingGallery(true);
+    try {
+      const uploadedKeys: string[] = [];
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch(`${BASE}/api/gallery-upload`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          toast.error(data.error || `Failed to upload ${file.name}`);
+          continue;
+        }
+        const data = await res.json();
+        if (data.key) uploadedKeys.push(data.key);
+      }
+      if (uploadedKeys.length > 0) {
+        setInv((p) => ({ ...p, galleryImages: [...p.galleryImages, ...uploadedKeys] }));
+        toast.success(`${uploadedKeys.length} image(s) uploaded`);
+      }
+    } catch {
+      toast.error("Network error during upload.");
+    } finally {
+      setUploadingGallery(false);
+    }
   }
 
   const navItems = [
@@ -999,8 +1036,22 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {activeTab === "galeri" && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Add image URLs (one per line). Supports R2 keys or full URLs.
+                  Upload images or paste URLs (one per line). Supports R2 keys or full URLs.
                 </p>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => uploadGalleryFiles(e.target.files)}
+                      disabled={uploadingGallery}
+                    />
+                    {uploadingGallery ? "Uploading..." : "Upload Images"}
+                  </label>
+                  <span className="text-xs text-gray-400">Max 10 MB each</span>
+                </div>
                 <textarea
                   className={textareaCls}
                   rows={6}
@@ -1019,12 +1070,26 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 {inv.galleryImages.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
                     {inv.galleryImages.map((url, idx) => (
-                      <img
-                        key={idx}
-                        src={resolveImageUrl(url)}
-                        alt={`Gallery preview ${idx + 1}`}
-                        className="w-full h-24 object-cover rounded border border-gray-200"
-                      />
+                      <div key={idx} className="relative group">
+                        <img
+                          src={resolveImageUrl(url)}
+                          alt={`Gallery preview ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInv((p) => ({
+                              ...p,
+                              galleryImages: p.galleryImages.filter((_, i) => i !== idx),
+                            }))
+                          }
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1087,6 +1152,25 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── DESIGN ── */}
             {activeTab === "reka-bentuk" && (
               <>
+                {packages.length > 0 && (
+                  <Field label="Package">
+                    <select
+                      className={selectCls}
+                      value={activePackageId ?? ""}
+                      onChange={(e) => {
+                        const id = e.target.value ? parseInt(e.target.value, 10) : null;
+                        setActivePackageId(id);
+                      }}
+                    >
+                      <option value="">Select a package</option>
+                      {packages.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} {p.price ? `– RM ${p.price}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
                 <Field label="Card Language">
                   <select
                     className={selectCls}

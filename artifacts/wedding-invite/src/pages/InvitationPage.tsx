@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearch } from "wouter";
-import { useGetInvitation, useListDesigns } from "@workspace/api-client-react";
+import { useGetInvitation, useListDesigns, useListRsvps } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
@@ -31,6 +31,11 @@ import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
 
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
 export default function InvitationPage() {
   const { token } = useParams<{ token: string }>();
   const resolvedToken = token ?? "demo";
@@ -39,6 +44,16 @@ export default function InvitationPage() {
   const overrideDesignCode = urlParams.get("designCode");
   const { data: invitation, isLoading: invitationLoading } = useGetInvitation(resolvedToken);
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
+  const { data: rsvps = [] } = useListRsvps({
+    query: {
+      queryKey: ["rsvps", resolvedToken],
+      queryFn: async () => {
+        const res = await fetch(`/api/rsvp?invitationToken=${resolvedToken}`, { credentials: "include" });
+        if (!res.ok) throw new Error("Failed to fetch RSVPs");
+        return res.json();
+      },
+    },
+  });
 
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
@@ -74,6 +89,7 @@ export default function InvitationPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
   const handleReplay = () => {
@@ -88,23 +104,29 @@ export default function InvitationPage() {
     setReplayKey((k) => k + 1);
   };
 
-  const musicUrl = templateDesign?.musicUrl ?? design?.musicUrl ?? "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3";
+  const musicUrl = (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
+  const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
+  const isYouTubeMusic = Boolean(youtubeVideoId);
 
   useEffect(() => {
-    if (isOpened && musicUrl) {
-      const audio = new Audio(musicUrl);
-      audio.loop = true;
-      audio.volume = 0.35;
-      audio.play().catch(() => {});
-      audioRef.current = audio;
-      return () => {
-        audio.pause();
-        audio.src = "";
-        audioRef.current = null;
-      };
+    if (!isOpened || !musicUrl) return undefined;
+
+    if (isYouTubeMusic) {
+      // YouTube iframe handles playback; mute is toggled by reloading the iframe.
+      return undefined;
     }
-    return undefined;
-  }, [isOpened, musicUrl]);
+
+    const audio = new Audio(musicUrl);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audio.play().catch(() => {});
+    audioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  }, [isOpened, musicUrl, isYouTubeMusic]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -163,6 +185,11 @@ export default function InvitationPage() {
     "--body-font-family": fontFamilyStack(inv?.bodyFontFamily as string | undefined),
   } as React.CSSProperties;
 
+  const guestWishes = (rsvps ?? [])
+    .filter((r) => r.message && r.message.trim())
+    .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   return (
     <div
       className="relative min-h-dvh w-full bg-background overflow-hidden flex justify-center"
@@ -204,7 +231,20 @@ export default function InvitationPage() {
           cardImageUrl={resolvedCardImageUrl}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
+          guestWishes={guestWishes}
         />
+
+        {/* Hidden YouTube player for background music */}
+        {isOpened && youtubeVideoId && (
+          <iframe
+            key={`yt-${youtubeVideoId}-${isMuted ? "muted" : "unmuted"}`}
+            ref={youtubeRef}
+            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&mute=${isMuted ? 1 : 0}&playsinline=1`}
+            allow="autoplay"
+            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none"
+            title="Background music"
+          />
+        )}
 
         {isOpened && (
           <div
@@ -261,8 +301,8 @@ export default function InvitationPage() {
           invitation={invitation}
           isMuted={isMuted}
           onToggleMute={() => setIsMuted((prev) => !prev)}
-          musicTitle={templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
-          musicArtist={templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+          musicTitle={(inv?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
+          musicArtist={(inv?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
         />
       )}
 

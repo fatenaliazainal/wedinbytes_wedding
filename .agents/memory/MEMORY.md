@@ -1,1 +1,4 @@
 - [OpenAPI/spec mismatch](openapi-spec-mismatch.md) — API responses carry extra fields the generated client types don't know about; keep the spec in sync or cast carefully.
+- [Allowed fields need DB columns](allowed-fields-db-columns.md) — expanding an API allow-list requires the matching DB column to exist; the OpenAPI spec may already be ahead of the schema.
+- [Drizzle push interactivity](drizzle-push-interactive.md) — drizzle-kit push can prompt when adding constraints with existing data; make workflow commands non-interactive.
+- [Zod optional vs null](zod-optional-null.md) — Zod `.optional()` rejects `null`; normalize DB rows or use `.nullish()` when parsing nullable columns.

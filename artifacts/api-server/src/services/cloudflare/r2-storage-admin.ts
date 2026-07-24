@@ -79,7 +79,7 @@ const s3Client = new S3Client({
 export interface ImageUploadOptions {
   fileName: string;
   fileBuffer: Buffer;
-  contentType: "image/png" | "image/jpeg";
+  contentType: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
   metadata?: Record<string, string>;
   folder?: string; // Optional folder/prefix within the bucket
 }
