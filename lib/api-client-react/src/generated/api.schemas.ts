@@ -44,8 +44,8 @@ export interface Rsvp {
   name: string;
   attending: boolean;
   numberOfGuests: number;
-  timeSlot?: string | null;
-  message?: string | null;
+  timeSlot?: string;
+  message?: string;
   createdAt: string;
 }
 
@@ -54,8 +54,8 @@ export interface CreateRsvpBody {
   name: string;
   attending: boolean;
   numberOfGuests: number;
-  timeSlot?: string | null;
-  message?: string | null;
+  timeSlot?: string;
+  message?: string;
 }
 
 export interface RsvpCount {

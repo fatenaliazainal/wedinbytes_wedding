@@ -109,8 +109,8 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
           name: values.name,
           attending: values.attending === "yes",
           numberOfGuests: values.numberOfGuests,
-          timeSlot: timeSlots.length > 0 && values.timeSlot ? values.timeSlot : undefined,
-          message: values.message ? values.message : undefined,
+          timeSlot: timeSlots.length > 0 ? values.timeSlot : undefined,
+          message: values.message,
         },
       },
       {

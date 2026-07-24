@@ -87,7 +87,7 @@ export const rsvpTable = pgTable("rsvp", {
   timeSlot: text("time_slot"),
   message: text("message"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [unique("rsvp_invitation_name").on(t.invitationToken, t.name)]);
 
 export const insertRsvpSchema = createInsertSchema(rsvpTable).omit({ id: true, createdAt: true });
 export type InsertRsvp = z.infer<typeof insertRsvpSchema>;
