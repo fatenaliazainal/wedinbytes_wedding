@@ -732,8 +732,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     { label: "HOME",       onClick: () => { navigate("/dashboard"); setNavOpen(false); } },
     { label: "CATALOG",    onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
     { label: "PRICE LIST", onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
-    { label: "INFO",       onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
     { label: "FAQs",       onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
+    { label: "REVIEWS",    onClick: () => { navigate("/reviews"); setNavOpen(false); } },
   ];
 
   const displayName =

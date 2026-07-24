@@ -16,8 +16,8 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
   { label: "PRICE LIST", href: "/pricing" },
-  { label: "INFO", href: "/info" },
   { label: "FAQs", href: "/faq" },
+  { label: "REVIEWS", href: "/reviews" },
 ];
 
 function IPhoneFrame({ children }: { children: React.ReactNode }) {
