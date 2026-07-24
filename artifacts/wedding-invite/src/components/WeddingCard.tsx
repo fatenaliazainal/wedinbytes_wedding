@@ -251,6 +251,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
+  const sectionTitleCls = "text-lg font-semibold text-primary tracking-wide uppercase";
+  const sectionTitleStyle: React.CSSProperties = { fontFamily: bodyFontFamily };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   const bgUrl = cardImageUrl || envelopeImageUrl;
@@ -339,7 +341,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Date & Location */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.dateLabel}</p>
+            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.dateLabel}</p>
             <OrnamentDivider />
             <div className="space-y-1">
               <p className="text-lg text-foreground whitespace-pre-line" style={{ fontFamily: bodyFontFamily }}>
@@ -377,7 +379,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           {/* Programme & Dress Code */}
           {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? true : Boolean(schedule)) && (
             <div className={detailBlock}>
-              <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.programmeLabel}</p>
+              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.programmeLabel}</p>
               <OrnamentDivider />
               {Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? (
                 <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
@@ -410,7 +412,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Countdown */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.countdownLabel}</p>
+            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.countdownLabel}</p>
             <OrnamentDivider />
             {(() => {
               const target = getCountdownTarget(invitation.eventDate ?? "", invitation.eventTime ?? "");
@@ -426,7 +428,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* RSVP */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.attendanceLabel}</p>
+            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.attendanceLabel}</p>
             <OrnamentDivider />
             <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.rsvpPrompt}</p>
           </div>
@@ -435,7 +437,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Wishes / Guestbook */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.wishesLabel}</p>
+            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
             <OrnamentDivider />
             {(inv.message as string) && (
               <p className="text-sm text-foreground/70 mb-4" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: inv.message as string }} />
@@ -467,7 +469,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Gallery */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.galleryLabel}</p>
+            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.galleryLabel}</p>
             <OrnamentDivider />
             {(() => {
               const images = Array.isArray(inv.galleryImages) ? (inv.galleryImages as string[]) : [];
