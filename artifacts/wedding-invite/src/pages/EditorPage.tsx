@@ -141,6 +141,7 @@ interface InvData {
   schedule: string;
   itinerary: { time: string; event: string }[];
   galleryImages: string[];
+  designCode: string;
   // RSVP settings
   rsvpEnabled: boolean;
   rsvpAdditionalInfo: string;
@@ -300,6 +301,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
     hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", itinerary: [], galleryImages: [],
+    designCode: "FL001",
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
@@ -426,6 +428,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
           itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
           galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages : [],
+          designCode: d.designCode ?? "FL001",
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
           rsvpDeadline: d.rsvpDeadline ? new Date(d.rsvpDeadline).toISOString().slice(0, 16) : "",
@@ -571,6 +574,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
       // All fields — invitation content AND buyer design overrides — go to the invitation record.
       // The global card_design table is never touched by the buyer, so the demo stays intact.
+      // When the design code changes we must also persist the new template's colours, otherwise
+      // stale colour overrides from the previous template keep overriding the new template.
+      const designCodeChanged = inv.designCode !== design.designCode;
       const r = await fetch(`${BASE}/api/invitation/${saveToken}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -631,12 +637,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           nameFontSize: design.nameFontSize || undefined,
           badgeFontSize: design.badgeFontSize || undefined,
           // Only save colour overrides when the buyer changed them from the inherited template/demo values.
-          nameColor:        design.nameColor        !== inheritedColors.nameColor        ? (design.nameColor || undefined)        : undefined,
+          // If the design code itself changed, persist the new template's colours so the old template's
+          // overrides do not keep shadowing the new design.
+          nameColor:        designCodeChanged || design.nameColor        !== inheritedColors.nameColor        ? (design.nameColor || undefined)        : undefined,
           bodyFontFamily: design.bodyFontFamily || undefined,
-          colorPrimary:     design.colorPrimary     !== inheritedColors.colorPrimary     ? (design.colorPrimary || undefined)     : undefined,
-          colorSecondary:   design.colorSecondary   !== inheritedColors.colorSecondary   ? (design.colorSecondary || undefined)   : undefined,
-          colorBackground:  design.colorBackground  !== inheritedColors.colorBackground  ? (design.colorBackground || undefined)  : undefined,
-          colorCard:        design.colorCard        !== inheritedColors.colorCard        ? (design.colorCard || undefined)        : undefined,
+          colorPrimary:     designCodeChanged || design.colorPrimary     !== inheritedColors.colorPrimary     ? (design.colorPrimary || undefined)     : undefined,
+          colorSecondary:   designCodeChanged || design.colorSecondary   !== inheritedColors.colorSecondary   ? (design.colorSecondary || undefined)   : undefined,
+          colorBackground:  designCodeChanged || design.colorBackground  !== inheritedColors.colorBackground  ? (design.colorBackground || undefined)  : undefined,
+          colorCard:        designCodeChanged || design.colorCard        !== inheritedColors.colorCard        ? (design.colorCard || undefined)        : undefined,
           // Music
           musicUrl:    design.musicUrl    || undefined,
           musicTitle:  design.musicTitle  || undefined,

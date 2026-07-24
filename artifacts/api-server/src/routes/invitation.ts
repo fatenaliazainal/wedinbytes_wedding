@@ -111,7 +111,13 @@ router.patch("/invitation/:token", async (req, res) => {
     const update: Record<string, unknown> = {};
     for (const field of ALLOWED_FIELDS) {
       if (field in body) {
-        update[field] = body[field];
+        let value = body[field];
+        // timestamp columns expect a Date instance, not a string.
+        if (field === "rsvpDeadline" && typeof value === "string" && value.trim()) {
+          const parsed = new Date(value);
+          if (!isNaN(parsed.getTime())) value = parsed;
+        }
+        update[field] = value;
       }
     }
 
