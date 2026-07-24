@@ -27,14 +27,58 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 function formatDatePipes(dateStr: string): string {
-  const parts = dateStr.trim().split(" ");
+  if (!dateStr) return "";
+  const s = dateStr.trim();
+  // ISO / date-picker format: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [year, month, day] = s.split("-");
+    return `${day} | ${month} | ${year}`;
+  }
+  // Display format: "15 November 2025"
+  const parts = s.split(" ");
   if (parts.length === 3) {
     const day = parts[0].padStart(2, "0");
     const month = MONTH_MAP[parts[1]] ?? parts[1];
     const year = parts[2];
     return `${day} | ${month} | ${year}`;
   }
-  return dateStr;
+  return s;
+}
+
+function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
+  if (!dateStr) return null;
+  const s = dateStr.trim();
+  let datePart: string | null = null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    datePart = s;
+  } else {
+    const parts = s.split(" ");
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, "0");
+      const month = MONTH_MAP[parts[1]] ?? "01";
+      const year = parts[2];
+      datePart = `${year}-${month}-${day}`;
+    }
+  }
+
+  if (!datePart) return null;
+
+  // Try to extract a start time from the freeform eventTime string
+  let timePart = "12:00:00";
+  if (timeStr) {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3]?.toLowerCase();
+      if (period === "pm" && hours < 12) hours += 12;
+      if (period === "am" && hours === 12) hours = 0;
+      timePart = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
+    }
+  }
+
+  return `${datePart}T${timePart}`;
 }
 
 function OrnamentDivider() {
@@ -86,7 +130,7 @@ function Countdown({ targetDate, labels }: { targetDate: string; labels: { days:
       {units.map((u) => (
         <div key={u.label} className="bg-white/50 rounded-lg p-2 border border-primary/10">
           <p className="text-xl font-bold text-primary">{u.value}</p>
-          <p className="text-[9px] uppercase text-foreground/60">{u.label}</p>
+          <p className="text-xs uppercase text-foreground/60">{u.label}</p>
         </div>
       ))}
     </div>
@@ -201,7 +245,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
-  const detailLabel = "text-[10px] font-semibold tracking-[0.28em] text-foreground/50 uppercase";
+  const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   const bgUrl = cardImageUrl || envelopeImageUrl;
@@ -229,7 +273,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         <PageBackground imageUrl={bgUrl} />
         {showFrontText && (
           <div className={coverPanelBase}>
-            <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8">{coverTitle}</p>
+            <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8">{coverTitle}</p>
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{groomName}</h1>
             {(brideName && groomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
@@ -237,7 +281,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               </span>
             )}
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">{brideName}</h1>
-            <p className="text-[11px] font-semibold tracking-[0.3em] text-foreground/70 uppercase">{invitation.eventDay}</p>
+            <p className="text-xs font-semibold tracking-[0.3em] text-foreground/70 uppercase">{invitation.eventDay}</p>
             <p className="text-sm text-foreground/80 mt-1 mb-5 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
             {hashtag && (
               <p className="text-xs italic text-primary/80" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
@@ -328,7 +372,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <OrnamentDivider />
               <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule }} />
               {invitation.dresscode && (
-                <p className="text-[10px] text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider">
+                <p className="text-xs text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider">
                   {t.dressCodeLabel}: {invitation.dresscode.toUpperCase()}
                 </p>
               )}
@@ -348,11 +392,14 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <div className={detailBlock}>
             <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.countdownLabel}</p>
             <OrnamentDivider />
-            {(inv.eventStartDateTime as string) ? (
-              <Countdown targetDate={inv.eventStartDateTime as string} labels={countdownLabels} />
-            ) : (
-              <p className="text-sm text-foreground/70">{t.setDateTime}</p>
-            )}
+            {(() => {
+              const target = getCountdownTarget(invitation.eventDate ?? "", invitation.eventTime ?? "");
+              return target ? (
+                <Countdown targetDate={target} labels={countdownLabels} />
+              ) : (
+                <p className="text-sm text-foreground/70">{t.setDateTime}</p>
+              );
+            })()}
           </div>
           </RevealOnScroll>
 

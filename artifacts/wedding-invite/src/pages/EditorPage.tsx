@@ -23,7 +23,6 @@ const TABS = [
   { id: "tarikh-lokasi", label: "DATE & LOCATION" },
   { id: "aturcara", label: "PROGRAMME" },
   { id: "doa", label: "PRAYER" },
-  { id: "countdown", label: "COUNTDOWN" },
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
   { id: "ucapan", label: "WISHES" },
@@ -880,7 +879,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
                   </Field>
                   <Field label="Date">
-                    <input className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} placeholder="22.09.2026" />
+                    <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
                   </Field>
                 </div>
                 <Field label="Hashtag">
@@ -960,7 +959,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.eventDay} onChange={(e) => setI("eventDay")(e.target.value)} placeholder="Saturday" />
                   </Field>
                   <Field label="Date">
-                    <input className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} placeholder="22.09.2026" />
+                    <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
                   </Field>
                   <Field label="Time">
                     <input className={inputCls} value={inv.eventTime} onChange={(e) => setI("eventTime")(e.target.value)} placeholder="11:00 am – 4:00 pm" />
@@ -1025,13 +1024,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               </Field>
             )}
 
-            {/* ── COUNTDOWN ── */}
-            {activeTab === "countdown" && (
-              <Field label="Event Date & Time (for Countdown)">
-                <input type="datetime-local" className={inputCls} value={inv.eventStartDateTime} onChange={(e) => setI("eventStartDateTime")(e.target.value)} />
-              </Field>
-            )}
-
             {/* ── GALERI ── */}
             {activeTab === "galeri" && (
               <div className="space-y-4">
@@ -1052,21 +1044,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </label>
                   <span className="text-xs text-gray-400">Max 10 MB each</span>
                 </div>
-                <textarea
-                  className={textareaCls}
-                  rows={6}
-                  value={inv.galleryImages.join("\n")}
-                  onChange={(e) =>
-                    setInv((p) => ({
-                      ...p,
-                      galleryImages: e.target.value
-                        .split("\n")
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    }))
-                  }
-                  placeholder={`https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg`}
-                />
                 {inv.galleryImages.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
                     {inv.galleryImages.map((url, idx) => (
