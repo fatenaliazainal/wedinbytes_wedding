@@ -177,25 +177,21 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   const bgUrl = cardImageUrl || envelopeImageUrl;
 
-  function PageBackground({ imageUrl }: { imageUrl?: string }) {
-    if (!imageUrl) return <div className="absolute inset-0 bg-secondary" />;
-    return (
-      <img
-        src={imageUrl}
-        aria-hidden
-        alt=""
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-      />
-    );
-  }
-
   return (
-    <div className="relative w-full mx-auto" style={{ maxWidth }}>
+    <div
+      className="relative w-full mx-auto"
+      style={{
+        maxWidth,
+        backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
 
       {/* ── PAGE 1: COVER ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
         {showFrontText && (
           <div className={panelBase}>
             <p className="text-[10px] font-semibold tracking-[0.35em] text-primary uppercase mb-8">{coverTitle}</p>
@@ -217,7 +213,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 2: INVITATION TEXT ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/40 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-xl text-primary leading-snug" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
@@ -246,7 +242,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 3: DATE, TIME & LOCATION ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <div className="space-y-1">
@@ -273,7 +269,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 4: PROGRAMME & DRESS CODE ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           {schedule && (
@@ -295,7 +291,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 5: PRAYER ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: doaText }} />
@@ -304,7 +300,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 6: COUNTDOWN ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.countdownLabel}</p>
@@ -319,7 +315,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 7: GALLERY ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.galleryLabel}</p>
@@ -330,7 +326,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 8: ATTENDANCE (RSVP) ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.attendanceLabel}</p>
@@ -341,7 +337,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── PAGE 9: WISHES ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
           <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.wishesLabel}</p>
