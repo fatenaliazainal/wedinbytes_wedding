@@ -18,7 +18,7 @@ import { resolveImageUrl } from "@/lib/r2-url";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
-  { id: "muka-depan", label: "FRONT PAGE" },
+  { id: "muka-depan", label: "COVER" },
   { id: "ayat-undangan", label: "INVITATION TEXT" },
   { id: "tarikh-lokasi", label: "DATE & LOCATION" },
   { id: "aturcara", label: "PROGRAMME" },
