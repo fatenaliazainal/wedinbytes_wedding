@@ -300,8 +300,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       <section className={sectionBase}>
         <div className="absolute inset-0 bg-white/65 pointer-events-none" />
         <div className={panelBase}>
-          <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{t.prayerLabel}</p>
-          <OrnamentDivider />
           <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: doaText }} />
         </div>
       </section>
