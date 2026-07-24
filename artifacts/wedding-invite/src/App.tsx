@@ -18,6 +18,7 @@ import MarketingHomePage from "@/pages/MarketingHomePage";
 import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
 import ReviewsPage from "@/pages/ReviewsPage";
+import InfoPage from "@/pages/InfoPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/weddingcards/home/:slug" component={WeddingCardDetailPage} />
       <Route path="/pricing" component={PriceListPage} />
       <Route path="/faq" component={FaqPage} />
+      <Route path="/info" component={InfoPage} />
       <Route path="/reviews" component={ReviewsPage} />
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />

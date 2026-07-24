@@ -134,11 +134,11 @@ export default function DashboardPage() {
   ];
 
   const NAV_ITEMS: SiteNavItem[] = [
-    { label: "HOME",       href: "/dashboard" },
-    { label: "CATALOG",    onClick: () => toast.info("Coming soon!") },
-    { label: "PRICE LIST", onClick: () => toast.info("Coming soon!") },
-    { label: "INFO",       onClick: () => toast.info("Coming soon!") },
-    { label: "FAQs",       onClick: () => toast.info("Coming soon!") },
+    { label: "HOME",       href: "/" },
+    { label: "CATALOG",    href: "/weddingcards/home" },
+    { label: "PRICE LIST", href: "/pricing" },
+    { label: "INFO",       href: "/info" },
+    { label: "FAQs",       href: "/faq" },
   ];
 
   return (
@@ -151,7 +151,7 @@ export default function DashboardPage() {
         rightSlot={
           <>
             <button
-              onClick={() => setActiveSection("profile")}
+              onClick={() => navigate("/dashboard")}
               title={user.name}
               className="text-gray-500 hover:text-gray-800 transition-colors"
             >
