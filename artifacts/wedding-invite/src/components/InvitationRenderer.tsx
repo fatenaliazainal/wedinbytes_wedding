@@ -177,18 +177,20 @@ export function InvitationRenderer({
 
       {opened && (
         <div
-          className="absolute bottom-0 left-0 right-0 z-50"
+          className="absolute bottom-0 left-0 right-0 z-50 flex justify-center"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)" }}
         >
-          <BottomNav
-            activeTab={activeTab}
-            isMuted={isMuted}
-            onTabClick={onTabClick}
-            onRsvpClick={onRsvpClick}
-            isVisible={true}
-            cardMaxWidth={cardMaxWidth}
-            showRsvp={inv?.rsvpEnabled === true}
-          />
+          <div className="w-full mx-auto" style={{ maxWidth: cardMaxWidth }}>
+            <BottomNav
+              activeTab={activeTab}
+              isMuted={isMuted}
+              onTabClick={onTabClick}
+              onRsvpClick={onRsvpClick}
+              isVisible={true}
+              cardMaxWidth="100%"
+              showRsvp={inv?.rsvpEnabled === true}
+            />
+          </div>
         </div>
       )}
 
