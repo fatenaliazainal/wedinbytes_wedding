@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
+import { toast } from "sonner";
 import { ArrowLeft, Mail, MessageSquareQuote, ClipboardList, Wand2, Loader2, type LucideIcon } from "lucide-react";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { CardThumbnail } from "@/components/CardThumbnail";

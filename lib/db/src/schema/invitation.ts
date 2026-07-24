@@ -1,6 +1,8 @@
-import { pgTable, serial, text, timestamp, boolean, integer, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, boolean, integer, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+
+export type Contact = { name: string; phone: string };
 
 export const invitationTable = pgTable("invitation", {
   id: serial("id").primaryKey(),
@@ -22,7 +24,9 @@ export const invitationTable = pgTable("invitation", {
   venueMapUrl: text("venue_map_url"),
   groomParents: text("groom_parents"),
   brideParents: text("bride_parents"),
-  contactPhone: text("contact_phone").notNull(),
+  contactPhone: text("contact_phone").notNull().default(""),
+  // JSON array of { name, phone } contacts (max 4). Legacy contactPhone is kept for migration.
+  contacts: jsonb("contacts").$type<Contact[]>(),
   dresscode: text("dresscode"),
   message: text("message"),
   // Cover / front page fields

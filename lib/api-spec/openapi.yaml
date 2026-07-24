@@ -98,6 +98,12 @@ paths:
       operationId: getRsvpCount
       tags: [rsvp]
       summary: Get RSVP count summary
+      parameters:
+        - name: invitationToken
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: RSVP counts
@@ -165,6 +171,214 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /pricing:
+    get:
+      operationId: listPricing
+      tags: [pricing]
+      summary: List active pricing packages with features
+      responses:
+        "200":
+          description: List of pricing packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PricingPackage"
+
+  /admin/pricing:
+    get:
+      operationId: listAdminPricing
+      tags: [pricing]
+      summary: List all pricing packages with features (admin)
+      responses:
+        "200":
+          description: List of pricing packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PricingPackage"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createPricingPackage
+      tags: [pricing]
+      summary: Create a pricing package (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePricingPackageBody"
+      responses:
+        "201":
+          description: Pricing package created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingPackage"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/pricing/{id}:
+    patch:
+      operationId: updatePricingPackage
+      tags: [pricing]
+      summary: Update a pricing package (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePricingPackageBody"
+      responses:
+        "200":
+          description: Pricing package updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingPackage"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePricingPackage
+      tags: [pricing]
+      summary: Delete a pricing package (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Pricing package deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/pricing/{id}/features:
+    post:
+      operationId: createPricingFeature
+      tags: [pricing]
+      summary: Add a feature to a pricing package (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePricingFeatureBody"
+      responses:
+        "201":
+          description: Feature created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingFeature"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/pricing/{id}/features/{featureId}:
+    patch:
+      operationId: updatePricingFeature
+      tags: [pricing]
+      summary: Update a pricing feature (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: featureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePricingFeatureBody"
+      responses:
+        "200":
+          description: Feature updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingFeature"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePricingFeature
+      tags: [pricing]
+      summary: Delete a pricing feature (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: featureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Feature deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -208,6 +422,19 @@ components:
           type: string
         contactPhone:
           type: string
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              phone:
+                type: string
+            required:
+              - name
+              - phone
+          maxItems: 4
         dresscode:
           type: string
         message:
@@ -231,18 +458,23 @@ components:
       properties:
         id:
           type: integer
+        invitationToken:
+          type: string
         name:
           type: string
         attending:
           type: boolean
         numberOfGuests:
           type: integer
+        timeSlot:
+          type: string
         message:
           type: string
         createdAt:
           type: string
       required:
         - id
+        - invitationToken
         - name
         - attending
         - numberOfGuests
@@ -251,15 +483,20 @@ components:
     CreateRsvpBody:
       type: object
       properties:
+        invitationToken:
+          type: string
         name:
           type: string
         attending:
           type: boolean
         numberOfGuests:
           type: integer
+        timeSlot:
+          type: string
         message:
           type: string
       required:
+        - invitationToken
         - name
         - attending
         - numberOfGuests
@@ -338,3 +575,141 @@ components:
           type: string
       required:
         - error
+
+    PricingPackage:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: string
+        description:
+          type: string
+        badgeText:
+          type: string
+        showBadge:
+          type: boolean
+        isFeatured:
+          type: boolean
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingFeature"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - price
+        - description
+        - badgeText
+        - showBadge
+        - isFeatured
+        - isActive
+        - sortOrder
+        - features
+        - createdAt
+        - updatedAt
+
+    PricingFeature:
+      type: object
+      properties:
+        id:
+          type: integer
+        packageId:
+          type: integer
+        name:
+          type: string
+        icon:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - packageId
+        - name
+        - icon
+        - sortOrder
+        - createdAt
+        - updatedAt
+
+    CreatePricingPackageBody:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: string
+        description:
+          type: string
+        badgeText:
+          type: string
+        showBadge:
+          type: boolean
+        isFeatured:
+          type: boolean
+        isActive:
+          type: boolean
+      required:
+        - name
+        - price
+
+    UpdatePricingPackageBody:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: string
+        description:
+          type: string
+        badgeText:
+          type: string
+        showBadge:
+          type: boolean
+        isFeatured:
+          type: boolean
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    CreatePricingFeatureBody:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+
+    UpdatePricingFeatureBody:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        sortOrder:
+          type: integer
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success

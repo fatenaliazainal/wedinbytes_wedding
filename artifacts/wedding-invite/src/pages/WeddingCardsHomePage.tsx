@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 import { Search, Heart, ShoppingBag, User, X, Menu } from "lucide-react";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";

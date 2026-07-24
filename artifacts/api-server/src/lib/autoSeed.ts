@@ -1,4 +1,4 @@
-import { db, invitationTable, cardDesignTable, userTable } from "@workspace/db";
+import { db, invitationTable, cardDesignTable, userTable, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { logger } from "./logger";
@@ -18,6 +18,7 @@ const invitationBase = {
   groomParents: "Encik Razali bin Hamid & Puan Rohani binti Yusof",
   brideParents: "Encik Sulaiman bin Othman & Puan Norzahra binti Abdul Rahman",
   contactPhone: "0123456789",
+  contacts: [{ name: "Ain", phone: "0123456789" }],
   dresscode: "Hijau Sage & Pink",
   message:
     "Dengan penuh kesyukuran ke hadrat Ilahi, kami menjemput Tuan/Puan hadir ke majlis perkahwinan kami.",
@@ -189,6 +190,57 @@ export async function autoSeedIfEmpty() {
         logger.info("Auto-seed: card design values fixed.");
       }
     }
+    // --- Pricing packages: seed defaults if none exist ---
+    const existingPackages = await db.select().from(pricingPackageTable).limit(1);
+    if (existingPackages.length === 0) {
+      logger.info("Auto-seed: seeding default pricing packages...");
+      const [standard] = await db
+        .insert(pricingPackageTable)
+        .values({
+          name: "Standard",
+          price: "55",
+          description: "Everything you need for a beautiful and memorable digital wedding invitation.",
+          badgeText: "",
+          showBadge: false,
+          isFeatured: false,
+          isActive: true,
+          sortOrder: 1,
+        })
+        .returning();
+      const [premium] = await db
+        .insert(pricingPackageTable)
+        .values({
+          name: "Premium",
+          price: "65",
+          description: "A complete digital wedding invitation experience with more ways to personalise and connect with your guests.",
+          badgeText: "More Features",
+          showBadge: true,
+          isFeatured: true,
+          isActive: true,
+          sortOrder: 2,
+        })
+        .returning();
+
+      await db.insert(pricingFeatureTable).values([
+        { packageId: standard.id, name: "RSVP / Wishes", icon: "MessageSquareHeart", sortOrder: 1 },
+        { packageId: standard.id, name: "Contact", icon: "Phone", sortOrder: 2 },
+        { packageId: standard.id, name: "Location & Navigation", icon: "MapPin", sortOrder: 3 },
+        { packageId: standard.id, name: "Calendar", icon: "CalendarDays", sortOrder: 4 },
+        { packageId: standard.id, name: "Countdown", icon: "Timer", sortOrder: 5 },
+        { packageId: standard.id, name: "Background Music", icon: "Music", sortOrder: 6 },
+        { packageId: premium.id, name: "RSVP / Wishes", icon: "MessageSquareHeart", sortOrder: 1 },
+        { packageId: premium.id, name: "Contact", icon: "Phone", sortOrder: 2 },
+        { packageId: premium.id, name: "Location & Navigation", icon: "MapPin", sortOrder: 3 },
+        { packageId: premium.id, name: "Calendar", icon: "CalendarDays", sortOrder: 4 },
+        { packageId: premium.id, name: "Countdown", icon: "Timer", sortOrder: 5 },
+        { packageId: premium.id, name: "Background Music", icon: "Music", sortOrder: 6 },
+        { packageId: premium.id, name: "Photo Gallery", icon: "Images", sortOrder: 7 },
+        { packageId: premium.id, name: "Money Gift", icon: "Gift", sortOrder: 8 },
+        { packageId: premium.id, name: "Dress Code", icon: "Shirt", sortOrder: 9 },
+      ]);
+      logger.info("Auto-seed: default pricing packages seeded.");
+    }
+
   } catch (err) {
     logger.error({ err }, "Auto-seed: failed.");
   }

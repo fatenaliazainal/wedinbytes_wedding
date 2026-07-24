@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreateRsvpBody {
-  invitationToken: string;
+export interface PricingFeature {
+  id: number;
+  packageId: number;
   name: string;
-  attending: boolean;
-  numberOfGuests: number;
-  timeSlot?: string;
-  message?: string;
+  icon: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }

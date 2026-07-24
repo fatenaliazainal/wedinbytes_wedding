@@ -1,0 +1,1 @@
+- [OpenAPI/spec mismatch](openapi-spec-mismatch.md) — API responses carry extra fields the generated client types don't know about; keep the spec in sync or cast carefully.

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { ChevronRight, ShoppingBag, Heart, User, PenLine, Mail, Smartphone, Users } from "lucide-react";
+import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
-import { useCallback } from "react";
 import { CardThumbnail } from "@/components/CardThumbnail";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -73,7 +73,7 @@ export default function MarketingHomePage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
 
-  const goToEditor = useCallback(() => {
+  const goToEditor = useCallback((_code?: string) => {
     toast.info("Editor is admin-only.");
   }, []);
 

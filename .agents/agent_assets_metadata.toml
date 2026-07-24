@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "6z7Kuzb4s9uQczlmUv1Qa"
+uri = "file://screenshots/demo-invite.jpg"
+type = "image"
+title = "Demo invitation page with contact tab available"
+
+[[outputs]]
+id = "Y0r3pIsE2OM2KyjmKg1EG"
+uri = "file://screenshots/pricing-page-final.jpg"
+type = "image"
+title = "Public Pricing Page"

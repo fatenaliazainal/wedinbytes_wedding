@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface RsvpCount {
-  attending: number;
-  notAttending: number;
-  totalGuests: number;
+export interface UpdatePricingFeatureBody {
+  name?: string;
+  icon?: string;
+  sortOrder?: number;
 }

@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getListRsvpsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import type { Invitation } from "@workspace/db";
+import type { Invitation } from "@workspace/api-client-react";
 
 function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== "string" || !value.trim()) return fallback;
@@ -57,7 +57,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
   const timeSlots = parseTimeSlots(inv?.rsvpTimeSlots);
 
   const isDeadlinePassed = deadline ? deadline.getTime() < Date.now() : false;
-  const { data: rsvpCount } = useGetRsvpCount(resolvedToken || undefined);
+  const { data: rsvpCount } = useGetRsvpCount(resolvedToken ? { invitationToken: resolvedToken } : undefined);
   const currentTotalGuests = (rsvpCount as { totalGuests?: number } | undefined)?.totalGuests ?? 0;
   const isOverallLimitReached = maxOverallGuests > 0 && currentTotalGuests >= maxOverallGuests;
 

@@ -1,0 +1,117 @@
+I want to make the Pricing / Price List section fully manageable by the Admin.
+
+IMPORTANT:
+- Keep the current visual design exactly as it is.
+- Do not redesign the pricing cards.
+- Do not change the current Poppins font, colors, spacing, icons, layout, responsive design, or overall appearance.
+- Only make the pricing content dynamic and editable from the Admin Panel.
+- First inspect the existing project structure, database schema, API routes, admin panel, and current pricing page before making changes.
+- Reuse the existing database and project architecture. Do not create unnecessary duplicate tables or systems.
+
+ADMIN PRICE LIST MANAGEMENT
+
+Create a new admin page/section called "Price List" or "Pricing Management".
+
+The admin should be able to:
+
+1. CREATE, EDIT, DELETE AND REORDER pricing packages.
+
+Each pricing package should have:
+- Package name
+  Example: STANDARD, PREMIUM
+- Price
+  Example: RM55, RM65
+- Description
+- Badge text
+  Example: MORE FEATURES, MOST POPULAR, BEST VALUE
+- Show/hide badge toggle
+- Featured/highlighted package toggle
+- Active/inactive toggle
+- Display order
+
+2. MANAGE FEATURES FOR EACH PACKAGE
+
+The admin should be able to:
+- Add a new feature
+- Edit an existing feature
+- Delete a feature
+- Reorder features
+- Select or assign an icon for each feature
+
+Example features:
+- RSVP / Wishes
+- Contact
+- Location & Navigation
+- Calendar
+- Countdown
+- Background Music
+
+The feature list should be linked to the specific pricing package.
+
+3. PUBLIC PRICING PAGE
+
+The public pricing page should fetch the pricing packages and features dynamically from the database.
+
+The current pricing design must remain exactly the same.
+
+Any changes made by the admin should automatically be reflected on the public pricing page without requiring code changes.
+
+For example:
+- If admin changes RM55 to RM59, the public page should show RM59.
+- If admin adds a new package, it should appear on the public pricing page.
+- If admin adds or removes a feature, it should update automatically.
+- If admin changes the badge text, it should update automatically.
+- If admin disables a package, it should not appear on the public pricing page.
+
+DATABASE / BACKEND
+
+Use the existing database and ORM structure in the project.
+
+Create or update the necessary database tables/models for:
+- Pricing Packages
+- Pricing Features
+
+A possible structure:
+
+Pricing Package:
+- id
+- name
+- price
+- description
+- badgeText
+- showBadge
+- isFeatured
+- isActive
+- sortOrder
+- createdAt
+- updatedAt
+
+Pricing Feature:
+- id
+- packageId
+- name
+- icon
+- sortOrder
+- createdAt
+- updatedAt
+
+Use the existing conventions, naming style, authentication system, API patterns, validation, and UI components already used in this project.
+
+ADMIN UI
+
+Create a clean and easy-to-use admin interface.
+
+The admin should be able to:
+- See all pricing packages
+- Add a new package
+- Edit a package
+- Delete a package
+- Reorder packages
+- Manage features inside each package
+- Save changes
+
+Add proper form validation and confirmation before deleting a package or feature.
+
+Before implementing, inspect the existing codebase and determine the best way to integrate this feature with the current architecture.
+
+Do not break any existing functionality.

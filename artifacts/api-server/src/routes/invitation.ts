@@ -9,7 +9,7 @@ const router: IRouter = Router();
 const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
-  "groomParents","brideParents","contactPhone","dresscode","message",
+  "groomParents","brideParents","contactPhone","contacts","dresscode","message",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial",
   "eventStartDateTime","eventEndDateTime",
   "coverDateText","additionalInfo","showFrontText",
@@ -56,6 +56,7 @@ router.post("/invitation", async (req, res) => {
       venueCity:    (body.venueCity    as string) || "",
       venueState:   (body.venueState   as string) || "",
       contactPhone: (body.contactPhone as string) || "",
+      contacts: Array.isArray(body.contacts) ? body.contacts : undefined,
       rsvpEnabled: (body.rsvpEnabled as boolean) ?? false,
       rsvpMaxOverallGuests: (body.rsvpMaxOverallGuests as number) ?? 1000,
       rsvpMaxGuestsPerInvitation: (body.rsvpMaxGuestsPerInvitation as number) ?? 10,

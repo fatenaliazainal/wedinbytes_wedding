@@ -16,11 +16,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getListDesignsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import PricingTab from "@/components/PricingTab";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor";
+type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing";
 
 type RawCard = {
   id: number;
@@ -1286,7 +1287,7 @@ export default function AdminPage() {
   const { data: rsvps, isLoading: rsvpsLoading, isError: rsvpsError, refetch: refetchRsvps } =
     useListRsvps({ query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
   const { data: counts, isLoading: countsLoading, refetch: refetchCounts } =
-    useGetRsvpCount({ query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
+    useGetRsvpCount(undefined, { query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
 
   if (authLoading || !user || user.role !== "admin") {
     return (
@@ -1318,7 +1319,7 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -1361,30 +1362,33 @@ export default function AdminPage() {
               <div className="py-16 text-center text-sm text-muted-foreground">No RSVP responses yet.</div>
             ) : (
               <div className="divide-y divide-border">
-                {rsvps.map((rsvp) => (
-                  <div key={rsvp.id} className="px-5 py-4 flex items-start gap-3">
-                    <div className="mt-0.5">
-                      {rsvp.attending ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                          <UserCheck size={11} /> Attending
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">
-                          <UserX size={11} /> Not Attending
-                        </span>
-                      )}
+                {rsvps.map((rsvp) => {
+                  const rsvpRecord = rsvp as unknown as Record<string, unknown>;
+                  return (
+                    <div key={rsvp.id} className="px-5 py-4 flex items-start gap-3">
+                      <div className="mt-0.5">
+                        {rsvp.attending ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                            <UserCheck size={11} /> Attending
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">
+                            <UserX size={11} /> Not Attending
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{rsvp.name}</p>
+                        <p className="text-[10px] text-muted-foreground/70 mt-0.5">{rsvpRecord.invitationToken as string}</p>
+                        {rsvp.attending && <p className="text-xs text-muted-foreground mt-0.5">{rsvp.numberOfGuests} guests{(rsvpRecord.timeSlot as string | undefined) ? ` · ${rsvpRecord.timeSlot as string}` : ""}</p>}
+                        {rsvp.message && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-2">"{rsvp.message}"</p>}
+                      </div>
+                      <p className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
+                        {new Date(rsvp.createdAt).toLocaleDateString("ms-MY", { day: "numeric", month: "short" })}
+                      </p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{rsvp.name}</p>
-                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">{rsvp.invitationToken}</p>
-                      {rsvp.attending && <p className="text-xs text-muted-foreground mt-0.5">{rsvp.numberOfGuests} guests{rsvp.timeSlot ? ` · ${rsvp.timeSlot}` : ""}</p>}
-                      {rsvp.message && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-2">"{rsvp.message}"</p>}
-                    </div>
-                    <p className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
-                      {new Date(rsvp.createdAt).toLocaleDateString("ms-MY", { day: "numeric", month: "short" })}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1394,6 +1398,7 @@ export default function AdminPage() {
       {tab === "designs" && <DesignsTab />}
       {tab === "rawcard" && <RawCardTab />}
       {tab === "reviews" && <ReviewsTab />}
+      {tab === "pricing" && <PricingTab />}
     </div>
   );
 }

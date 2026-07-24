@@ -146,8 +146,9 @@ export default function InvitationPage() {
     );
   }
 
-  const shortGroom = invitation.groomShortName?.trim() || "";
-  const shortBride = invitation.brideShortName?.trim() || "";
+  const invitationRecord = invitation as Record<string, unknown> | undefined;
+  const shortGroom = (invitationRecord?.groomShortName as string | undefined)?.trim() || "";
+  const shortBride = (invitationRecord?.brideShortName as string | undefined)?.trim() || "";
   const coupleNames = invitation
     ? (shortGroom || shortBride)
       ? `${shortGroom || invitation.groomName} & ${shortBride || invitation.brideName}`

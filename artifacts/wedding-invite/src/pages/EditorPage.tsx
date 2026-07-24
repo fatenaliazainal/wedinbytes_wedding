@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2 } from "lucide-react";
+import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2 } from "lucide-react";
 import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -74,6 +74,19 @@ const CLASSIC_FONTS = [
   { value: "Arial, sans-serif", label: "Arial" },
 ];
 
+type Contact = { name: string; phone: string };
+
+function normalizeContacts(raw: unknown, fallbackPhone: string): Contact[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((c): c is { name?: unknown; phone?: unknown } => c && typeof c === "object")
+      .map((c) => ({ name: String(c.name ?? ""), phone: String(c.phone ?? "") }))
+      .filter((c) => c.name || c.phone);
+  }
+  if (fallbackPhone) return [{ name: "Contact", phone: fallbackPhone }];
+  return [];
+}
+
 interface InvData {
   id: number;
   token: string;
@@ -91,6 +104,7 @@ interface InvData {
   groomParents: string;
   brideParents: string;
   contactPhone: string;
+  contacts: Contact[];
   dresscode: string;
   message: string;
   shortCoupleName: string;
@@ -223,7 +237,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     groomName: "", brideName: "", eventType: "Walimatul Urus",
     eventDate: "", eventDay: "", eventTime: "11:00 am – 4:00 pm",
     venueName: "", venueAddress: "", venueCity: "", venueState: "",
-    venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "",
+    venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
     groomInitial: "", brideInitial: "",
@@ -329,6 +343,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           venueCity: d.venueCity ?? "", venueState: d.venueState ?? "",
           venueMapUrl: d.venueMapUrl ?? "", groomParents: d.groomParents ?? "",
           brideParents: d.brideParents ?? "", contactPhone: d.contactPhone ?? "",
+          contacts: normalizeContacts(d.contacts, d.contactPhone ?? ""),
           dresscode: d.dresscode ?? "", message: d.message ?? "",
           shortCoupleName: d.shortCoupleName ?? "",
           groomShortName: d.groomShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[1]?.trim() ?? "",
@@ -443,6 +458,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             venueName: inv.venueName || "", venueAddress: inv.venueAddress || "",
             venueCity: inv.venueCity || "", venueState: inv.venueState || "",
             contactPhone: inv.contactPhone || "",
+            contacts: inv.contacts.length > 0 ? inv.contacts : undefined,
           }),
         });
         if (!createRes.ok) {
@@ -472,7 +488,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           venueMapUrl: inv.venueMapUrl || undefined,
           groomParents: inv.groomParents || undefined,
           brideParents: inv.brideParents || undefined,
-          contactPhone: inv.contactPhone, dresscode: inv.dresscode || undefined,
+          contactPhone: inv.contactPhone,
+          contacts: inv.contacts.length > 0 ? inv.contacts : undefined,
+          dresscode: inv.dresscode || undefined,
           message: inv.message || undefined,
           shortCoupleName: inv.shortCoupleName || undefined,
           groomShortName: inv.groomShortName || undefined,
@@ -1296,11 +1314,65 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── HUBUNGI ── */}
             {activeTab === "hubungi" && (
-              <>
-                <Field label="Phone Number*">
-                  <input className={inputCls} value={inv.contactPhone} onChange={(e) => setI("contactPhone")(e.target.value)} placeholder="0123456789" />
-                </Field>
-              </>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-700">Contacts</p>
+                  {inv.contacts.length < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setInv((p) => ({ ...p, contacts: [...p.contacts, { name: "", phone: "" }] }))}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Plus size={14} /> Add contact
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">Add up to 4 contacts with name and phone number.</p>
+
+                {inv.contacts.length === 0 && (
+                  <div className="text-sm text-gray-400 italic">No contacts added yet.</div>
+                )}
+
+                {inv.contacts.map((contact, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-white">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact {idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setInv((p) => ({ ...p, contacts: p.contacts.filter((_, i) => i !== idx) }))}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                        title="Remove contact"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <Field label="Name">
+                      <input
+                        className={inputCls}
+                        value={contact.name}
+                        onChange={(e) => setInv((p) => {
+                          const next = [...p.contacts];
+                          next[idx] = { ...next[idx], name: e.target.value };
+                          return { ...p, contacts: next };
+                        })}
+                        placeholder="e.g. Ain"
+                      />
+                    </Field>
+                    <Field label="Phone">
+                      <input
+                        className={inputCls}
+                        value={contact.phone}
+                        onChange={(e) => setInv((p) => {
+                          const next = [...p.contacts];
+                          next[idx] = { ...next[idx], phone: e.target.value };
+                          return { ...p, contacts: next };
+                        })}
+                        placeholder="0123456789"
+                      />
+                    </Field>
+                  </div>
+                ))}
+              </div>
             )}
 
             {/* ── LAGU ── */}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 import {
   Heart,
   User,
@@ -17,12 +18,16 @@ import {
   Images,
   Gift,
   Shirt,
+  Loader2,
+  type LucideIcon,
 } from "lucide-react";
+import { useListPricing } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import type { PricingPackage } from "@workspace/api-client-react";
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -32,33 +37,24 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "REVIEWS", href: "/reviews" },
 ];
 
-const STANDARD_FEATURES = [
-  { icon: MessageSquareHeart, label: "RSVP / Wishes" },
-  { icon: Phone, label: "Contact" },
-  { icon: MapPin, label: "Location & Navigation" },
-  { icon: CalendarDays, label: "Calendar" },
-  { icon: Timer, label: "Countdown" },
-  { icon: Music, label: "Background Music" },
-];
+const ICON_MAP: Record<string, LucideIcon> = {
+  MessageSquareHeart,
+  Phone,
+  MapPin,
+  CalendarDays,
+  Timer,
+  Music,
+  Images,
+  Gift,
+  Shirt,
+  Check,
+  Minus,
+  Sparkles,
+};
 
-const PREMIUM_FEATURES = [
-  ...STANDARD_FEATURES,
-  { icon: Images, label: "Photo Gallery" },
-  { icon: Gift, label: "Money Gift" },
-  { icon: Shirt, label: "Dress Code" },
-];
-
-const COMPARISON = [
-  { feature: "RSVP / Wishes", standard: true, premium: true },
-  { feature: "Contact", standard: true, premium: true },
-  { feature: "Location & Navigation", standard: true, premium: true },
-  { feature: "Calendar", standard: true, premium: true },
-  { feature: "Countdown", standard: true, premium: true },
-  { feature: "Background Music", standard: true, premium: true },
-  { feature: "Photo Gallery", standard: false, premium: true },
-  { feature: "Money Gift", standard: false, premium: true },
-  { feature: "Dress Code", standard: false, premium: true },
-];
+function resolveIcon(name?: string | null): LucideIcon {
+  return ICON_MAP[name ?? ""] ?? Check;
+}
 
 function PricingCard({
   name,
@@ -135,10 +131,21 @@ export default function PriceListPage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
+  const { data: packages = [], isLoading, isError } = useListPricing();
 
   function goToEditor(designCode?: string) {
     toast.info("Editor is admin-only.");
   }
+
+  const sortedPackages = [...packages].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const packageNames = sortedPackages.map((p) => p.name);
+  const featureNames = Array.from(
+    new Set(
+      sortedPackages.flatMap((pkg) =>
+        (pkg.features ?? []).map((f) => f.name)
+      )
+    )
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -226,24 +233,30 @@ export default function PriceListPage() {
         {/* Pricing Cards */}
         <section className="py-10 px-4 sm:px-6 bg-gray-50">
           <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-              <PricingCard
-                name="Standard"
-                price="55"
-                description="Everything you need for a beautiful and memorable digital wedding invitation."
-                features={STANDARD_FEATURES}
-                onChoose={() => goToEditor()}
-              />
-              <PricingCard
-                name="Premium"
-                price="65"
-                description="A complete digital wedding invitation experience with more ways to personalise and connect with your guests."
-                features={PREMIUM_FEATURES}
-                badge="More Features"
-                highlighted
-                onChoose={() => goToEditor()}
-              />
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16 text-gray-400 gap-2">
+                <Loader2 size={18} className="animate-spin" /> <span className="text-sm">Loading packages…</span>
+              </div>
+            ) : isError ? (
+              <div className="py-16 text-center text-sm text-red-500">Failed to load pricing packages. Please refresh.</div>
+            ) : sortedPackages.length === 0 ? (
+              <div className="py-16 text-center text-sm text-gray-400">No pricing packages available.</div>
+            ) : (
+              <div className={`grid gap-6 lg:gap-8 items-stretch ${sortedPackages.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-2"}`}>
+                {sortedPackages.map((pkg) => (
+                  <PricingCard
+                    key={pkg.id}
+                    name={pkg.name}
+                    price={pkg.price}
+                    description={pkg.description || "Everything you need for a beautiful and memorable digital wedding invitation."}
+                    features={(pkg.features ?? []).map((f) => ({ icon: resolveIcon(f.icon), label: f.name }))}
+                    badge={pkg.showBadge ? pkg.badgeText : undefined}
+                    highlighted={pkg.isFeatured}
+                    onChoose={() => goToEditor()}
+                  />
+                ))}
+              </div>
+            )}
 
             <p className="mt-8 text-center text-xs text-gray-400">
               LIMIT TO:<br />
@@ -263,24 +276,36 @@ export default function PriceListPage() {
               <p className="mt-2 text-sm text-gray-500">See what is included in each plan.</p>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-              <div className="grid grid-cols-3 text-xs font-bold tracking-widest text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50">
-                <div className="px-4 py-3">Feature</div>
-                <div className="px-4 py-3 text-center">Standard</div>
-                <div className="px-4 py-3 text-center">Premium</div>
-              </div>
-              {COMPARISON.map((row) => (
-                <div key={row.feature} className="grid grid-cols-3 text-sm border-b border-gray-100 last:border-0">
-                  <div className="px-4 py-3.5 text-gray-700 font-medium">{row.feature}</div>
-                  <div className="px-4 py-3.5 flex justify-center items-center text-gray-900">
-                    {row.standard ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
-                  </div>
-                  <div className="px-4 py-3.5 flex justify-center items-center text-gray-900">
-                    {row.premium ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
-                  </div>
+            {sortedPackages.length > 0 && (
+              <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                <div
+                  className="grid text-xs font-bold tracking-widest text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50"
+                  style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
+                >
+                  <div className="px-4 py-3">Feature</div>
+                  {packageNames.map((name) => (
+                    <div key={name} className="px-4 py-3 text-center">{name}</div>
+                  ))}
                 </div>
-              ))}
-            </div>
+                {featureNames.map((featureName) => (
+                  <div
+                    key={featureName}
+                    className="grid text-sm border-b border-gray-100 last:border-0"
+                    style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
+                  >
+                    <div className="px-4 py-3.5 text-gray-700 font-medium">{featureName}</div>
+                    {sortedPackages.map((pkg) => {
+                      const hasFeature = (pkg.features ?? []).some((f) => f.name === featureName);
+                      return (
+                        <div key={pkg.id} className="px-4 py-3.5 flex justify-center items-center text-gray-900">
+                          {hasFeature ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

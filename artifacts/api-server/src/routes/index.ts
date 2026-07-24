@@ -6,6 +6,7 @@ import designRouter from "./design";
 import authRouter from "./auth";
 import cardsRouter from "./cards";
 import reviewsRouter from "./reviews";
+import pricingRouter from "./pricing";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(rsvpRouter);
 router.use(designRouter);
 router.use(cardsRouter);
 router.use(reviewsRouter);
+router.use(pricingRouter);
 
 export default router;
