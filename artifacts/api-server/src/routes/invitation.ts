@@ -153,6 +153,11 @@ router.patch("/invitation/:token", async (req, res) => {
   try {
     const { token } = req.params;
     const body = req.body as Record<string, unknown>;
+    const brandingFields = ["showFooter", "footerText", "footerUrl", "socialLinks"];
+    if (req.session.role !== "admin" && brandingFields.some((field) => field in body)) {
+      res.status(403).json({ error: "Only admin can update footer branding" });
+      return;
+    }
 
     // Check the invitation exists (and optionally check ownership)
     const rows = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);

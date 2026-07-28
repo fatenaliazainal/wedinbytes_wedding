@@ -255,7 +255,7 @@ const inputCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:
 const selectCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
 const textareaCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white resize-none";
 
-export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo" }) {
+export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo" | "admin" }) {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -267,7 +267,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("tab") || "reka-bentuk";
+    const requestedTab = params.get("tab") || "reka-bentuk";
+    return mode === "buyer" && requestedTab === "footer" ? "reka-bentuk" : requestedTab;
   });
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -285,11 +286,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const activeFeatureNames = useMemo(() => new Set((activePackage?.features ?? []).map((f) => f.name)), [activePackage]);
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
+      if (tab.id === "footer") return mode !== "buyer";
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
     });
-  }, [activeFeatureNames]);
+  }, [activeFeatureNames, mode]);
 
   const [inv, setInv] = useState<InvData>({
     id: 0,

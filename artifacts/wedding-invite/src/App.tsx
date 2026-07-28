@@ -26,7 +26,11 @@ function PublicInvitationRoute() {
 const queryClient = new QueryClient();
 
 function EditorRoute() {
-  return <EditorPage />;
+  return <EditorPage mode="buyer" />;
+}
+
+function AdminEditorRoute() {
+  return <EditorPage mode="admin" />;
 }
 
 function DemoEditorRoute() {
@@ -47,7 +51,7 @@ function Router() {
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/demo" component={DemoEditorRoute} />
-      <Route path="/admin/editor" component={EditorRoute} />
+      <Route path="/admin/editor" component={AdminEditorRoute} />
       <Route path="/editor" component={EditorRoute} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/login" component={LoginPage} />
