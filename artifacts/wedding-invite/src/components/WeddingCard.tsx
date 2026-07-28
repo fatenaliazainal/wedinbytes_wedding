@@ -5,7 +5,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
@@ -28,22 +29,9 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 function GalleryCarousel({ images, label }: { images: string[]; label: string }) {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!api) return;
-    const updateSelected = () => setSelectedIndex(api.selectedScrollSnap());
-    updateSelected();
-    api.on("select", updateSelected);
-    return () => {
-      api.off("select", updateSelected);
-    };
-  }, [api]);
-
   return (
     <div className="w-full max-w-xs">
-      <Carousel setApi={setApi}>
+      <Carousel>
         <CarouselContent>
           {images.slice(0, 4).map((url, idx) => {
             const resolved = resolveImageUrl(url);
@@ -60,26 +48,13 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
             );
           })}
         </CarouselContent>
+        {images.length > 1 && (
+          <>
+            <CarouselPrevious className="!left-2 !right-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 border-primary/20 bg-white/90 shadow-sm hover:bg-white" />
+            <CarouselNext className="!right-2 !left-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 border-primary/20 bg-white/90 shadow-sm hover:bg-white" />
+          </>
+        )}
       </Carousel>
-      {images.length > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-1.5" role="tablist" aria-label={`${label} pagination`}>
-          {images.slice(0, 4).map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              role="tab"
-              aria-label={`View ${label.toLowerCase()} ${idx + 1}`}
-              aria-selected={selectedIndex === idx}
-              onClick={() => api?.scrollTo(idx)}
-              className={`h-2 rounded-full transition-all ${
-                selectedIndex === idx
-                  ? "w-5 bg-primary"
-                  : "w-2 bg-primary/30 hover:bg-primary/60"
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
