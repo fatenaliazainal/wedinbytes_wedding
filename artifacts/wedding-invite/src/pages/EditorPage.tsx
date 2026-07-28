@@ -23,7 +23,7 @@ const TABS = [
   { id: "ayat-undangan", label: "INVITATION TEXT" },
   { id: "tarikh-lokasi", label: "DATE & LOCATION" },
   { id: "aturcara", label: "PROGRAMME" },
-  { id: "doa", label: "PRAYER" },
+  { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
   { id: "ucapan", label: "WISHES" },
@@ -1150,7 +1150,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
             {/* ── DOA ── */}
             {activeTab === "doa" && (
-              <Field label="Prayer">
+              <Field label="Doa">
                 <RichTextEditor
                   value={inv.doaText}
                   onChange={(v) => setI("doaText")(v)}
