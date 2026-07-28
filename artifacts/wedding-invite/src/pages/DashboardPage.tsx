@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
+import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -37,7 +38,16 @@ interface Invitation {
 
 interface Design {
   cardImageUrl?: string;
+  envelopeImageUrl?: string;
+  cardMaxWidth?: string;
   colorPrimary?: string;
+  colorSecondary?: string;
+  colorBackground?: string;
+  colorCard?: string;
+  nameFontFamily?: string;
+  nameFontSize?: number | string;
+  nameColor?: string;
+  bodyFontFamily?: string;
   designCode?: string;
 }
 
@@ -117,13 +127,6 @@ export default function DashboardPage() {
     ? new Date(new Date(invitation.createdAt).getTime() + 365 * 24 * 60 * 60 * 1000)
         .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "";
-
-  const cardBg = design?.cardImageUrl;
-  const accentColor = invitation?.colorPrimary
-    ? `hsl(${invitation.colorPrimary})`
-    : design?.colorPrimary
-    ? `hsl(${design.colorPrimary})`
-    : "#4a8a5a";
 
   if (authLoading || (loading && !!user)) {
     return (
@@ -366,28 +369,35 @@ export default function DashboardPage() {
                       className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                       style={{ width: 24, height: 10, borderRadius: "0 0 8px 8px" }}
                     />
-                    {cardBg ? (
-                      <img src={resolveImageUrl(cardBg)} alt="Card preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          background: `linear-gradient(160deg, hsl(${design?.colorPrimary ?? "142 30% 80%"}) 0%, hsl(${design?.colorPrimary ?? "142 20% 96%"}) 100%)`,
-                        }}
+                    <div
+                      className="absolute left-0 top-0"
+                      style={{
+                        width: 420,
+                        transform: "scale(0.1714286)",
+                        transformOrigin: "top left",
+                        "--card-viewport-height": "900px",
+                        "--primary": design?.colorPrimary || "142 45% 35%",
+                        "--primary-foreground": "0 0% 100%",
+                        "--secondary": design?.colorSecondary || "142 30% 92%",
+                        "--background": design?.colorBackground || "142 20% 96%",
+                        "--card": design?.colorCard || "0 0% 100%",
+                        "--popover": design?.colorCard || "0 0% 100%",
+                        "--border": "142 20% 80%",
+                        "--muted": "142 15% 94%",
+                        "--muted-foreground": "142 10% 45%",
+                        "--name-font-family": `'${design?.nameFontFamily || "Dancing Script"}', cursive`,
+                        "--name-font-size": `${Number(design?.nameFontSize) || 38}px`,
+                        "--name-color": design?.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
+                        "--body-font-family": `'${design?.bodyFontFamily || "Dancing Script"}', cursive`,
+                      } as React.CSSProperties}
+                    >
+                      <WeddingCard
+                        invitation={invitation as any}
+                        cardImageUrl={resolveImageUrl(design?.cardImageUrl || "")}
+                        envelopeImageUrl={resolveImageUrl(design?.envelopeImageUrl || design?.cardImageUrl || "")}
+                        cardMaxWidth={design?.cardMaxWidth || "420px"}
+                        rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
                       />
-                    )}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ pointerEvents: "none" }}>
-                      <div
-                        className="flex flex-col items-center justify-center text-center"
-                        style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.88)", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
-                      >
-                        <span
-                          className="leading-tight"
-                          style={{ fontFamily: "'Poppins', sans-serif", fontSize: 8, color: accentColor, fontWeight: 700 }}
-                        >
-                          {invitation.brideName}<br />&amp;<br />{invitation.groomName}
-                        </span>
-                      </div>
                     </div>
                     {!invitation.isPurchased && (
                       <div

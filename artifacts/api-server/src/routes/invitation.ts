@@ -7,14 +7,14 @@ import { db, invitationTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
-function initial(value: string | null | undefined) {
+function slugPart(value: string | null | undefined) {
   return (value ?? "")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
-    .charAt(0)
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function publicDateCode(eventDate: string | null | undefined) {
@@ -25,8 +25,14 @@ function publicDateCode(eventDate: string | null | undefined) {
 }
 
 function publicSlug(row: typeof invitationTable.$inferSelect) {
-  const brideInitial = initial(row.brideName) || initial(row.brideShortName) || initial(row.brideInitial);
-  const groomInitial = initial(row.groomName) || initial(row.groomShortName) || initial(row.groomInitial);
+  const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
+  const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
+  return [brideSlug, groomSlug].filter(Boolean).join("-") || "wi";
+}
+
+function legacyPublicSlug(row: typeof invitationTable.$inferSelect) {
+  const brideInitial = slugPart(row.brideName || row.brideShortName || row.brideInitial).charAt(0);
+  const groomInitial = slugPart(row.groomName || row.groomShortName || row.groomInitial).charAt(0);
   return `${brideInitial}${groomInitial}` || "wi";
 }
 
@@ -136,7 +142,7 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
     const rows = await db.select().from(invitationTable);
     const row = rows.find((candidate) =>
       publicDateCode(candidate.eventDate) === req.params.dateCode &&
-      publicSlug(candidate) === req.params.slug,
+      (publicSlug(candidate) === req.params.slug || legacyPublicSlug(candidate) === req.params.slug),
     );
     if (!row) {
       res.status(404).json({ error: "Invitation not found" });

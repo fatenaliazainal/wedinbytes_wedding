@@ -6,14 +6,14 @@ export function inviteDateCode(eventDate: string | null | undefined): string {
   return digits.length >= 6 ? digits.slice(-6) : "000000";
 }
 
-function initial(value: string | null | undefined): string {
+function slugPart(value: string | null | undefined): string {
   return (value ?? "")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
-    .charAt(0)
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function inviteNameSlug(
@@ -22,9 +22,9 @@ export function inviteNameSlug(
   brideFallback?: string | null,
   groomFallback?: string | null,
 ): string {
-  const brideInitial = initial(brideName) || initial(brideFallback);
-  const groomInitial = initial(groomName) || initial(groomFallback);
-  return `${brideInitial}${groomInitial}` || "wi";
+  const brideSlug = slugPart(brideName) || slugPart(brideFallback);
+  const groomSlug = slugPart(groomName) || slugPart(groomFallback);
+  return [brideSlug, groomSlug].filter(Boolean).join("-") || "wi";
 }
 
 export function publicInvitePath(invitation: {
