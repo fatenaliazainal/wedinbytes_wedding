@@ -364,16 +364,23 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     if (mode === "buyer" && !user) return;
     if (!silent) setDataLoading(true);
     try {
-      const [invRes, designRes, allDesRes, pricingRes] = await Promise.all([
+      const [invRes, designRes, allDesRes, pricingRes, adminFooterRes] = await Promise.all([
         mode === "demo"
           ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
           : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
         mode === "buyer" ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
+        mode === "buyer" ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("{}")),
       ]);
       const loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
       setPackages(loadedPackages);
+      const adminFooter = adminFooterRes.ok ? await adminFooterRes.json() as {
+        showFooter?: boolean;
+        footerText?: string | null;
+        footerUrl?: string | null;
+        socialLinks?: { platform: string; url: string }[] | null;
+      } : null;
       // Global (active) design — fallback for colours and images
       let gd: Record<string, string> = {};
       if (designRes.ok) gd = await designRes.json();
@@ -456,14 +463,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
-          showFooter: d.showFooter ?? false,
-          footerText: d.footerText ?? "",
-          footerUrl: d.footerUrl ?? "",
-          socialLinks: Array.isArray(d.socialLinks) ? d.socialLinks : [
+          // Buyer editors always inherit the current Admin footer defaults.
+          showFooter: mode === "buyer" ? (adminFooter?.showFooter ?? true) : (d.showFooter ?? false),
+          footerText: mode === "buyer" ? (adminFooter?.footerText ?? "Dapatkan kad digital anda di:") : (d.footerText ?? ""),
+          footerUrl: mode === "buyer" ? (adminFooter?.footerUrl ?? "wedinbytes.com") : (d.footerUrl ?? ""),
+          socialLinks: mode === "buyer"
+            ? (Array.isArray(adminFooter?.socialLinks) ? adminFooter.socialLinks : [])
+            : (Array.isArray(d.socialLinks) ? d.socialLinks : [
             { platform: "website", url: "" },
             { platform: "tiktok", url: "" },
             { platform: "instagram", url: "" },
-          ],
+          ]),
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";

@@ -64,8 +64,29 @@ const ALLOWED_FIELDS = [
   "packageId",
 ];
 
-function publicInvitation(row: typeof invitationTable.$inferSelect) {
+async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   const { lockPinHash: _lockPinHash, ...safe } = row;
+  // Footer branding is controlled centrally by the admin demo invitation.
+  // Apply it to every buyer invitation so old per-invitation branding values
+  // cannot override the current admin default.
+  if (row.token !== "demo") {
+    const [adminDefaults] = await db
+      .select({
+        showFooter: invitationTable.showFooter,
+        footerText: invitationTable.footerText,
+        footerUrl: invitationTable.footerUrl,
+        socialLinks: invitationTable.socialLinks,
+      })
+      .from(invitationTable)
+      .where(eq(invitationTable.token, "demo"))
+      .limit(1);
+    if (adminDefaults) {
+      safe.showFooter = adminDefaults.showFooter;
+      safe.footerText = adminDefaults.footerText;
+      safe.footerUrl = adminDefaults.footerUrl;
+      safe.socialLinks = adminDefaults.socialLinks;
+    }
+  }
   return { ...safe, isLocked: Boolean(row.lockPinHash) };
 }
 
@@ -129,7 +150,7 @@ router.get("/invitation/:token", async (req, res) => {
     }
     const row = rows[0];
     // Return full row (merge extra fields beyond what api-zod knows)
-    res.json(publicInvitation(row));
+     res.json(await publicInvitation(row));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation");
     res.status(500).json({ error: "Internal server error" });
@@ -148,7 +169,7 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    res.json({ ...publicInvitation(row), token: row.token });
+     res.json({ ...(await publicInvitation(row)), token: row.token });
   } catch (err) {
     req.log.error({ err }, "Failed to find public invitation");
     res.status(500).json({ error: "Internal server error" });
@@ -200,7 +221,7 @@ router.patch("/invitation/:token", async (req, res) => {
       .where(eq(invitationTable.token, token))
       .returning();
 
-    res.json(publicInvitation(updated));
+    res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation");
     res.status(500).json({ error: "Internal server error" });
@@ -231,7 +252,7 @@ router.post("/invitation/:token/lock", async (req, res) => {
       .set({ lockPinHash: protect ? await bcrypt.hash(pin, 12) : null })
       .where(eq(invitationTable.id, row.id))
       .returning();
-    res.json(publicInvitation(updated));
+    res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation lock");
     res.status(500).json({ error: "Failed to update card lock" });
@@ -275,7 +296,7 @@ router.get("/invitation-by-user/:userId", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    res.json(publicInvitation(rows[0]));
+     res.json(await publicInvitation(rows[0]));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation by user");
     res.status(500).json({ error: "Internal server error" });
