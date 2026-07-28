@@ -15,6 +15,7 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 // Todo: move this to a helper since it's also used in InvitationPage, and ensure it's consistent with the URL used in the email template
 import { resolveImageUrl } from "@/lib/r2-url";
+import { publicInvitePath } from "@/lib/invite-url";
 
 interface Invitation {
   id: number;
@@ -22,6 +23,11 @@ interface Invitation {
   groomName: string;
   brideName: string;
   eventType: string;
+  eventDate?: string | null;
+  brideShortName?: string | null;
+  groomShortName?: string | null;
+  brideInitial?: string | null;
+  groomInitial?: string | null;
   isPurchased: boolean;
   isLocked?: boolean;
   createdAt: string;
@@ -86,7 +92,7 @@ export default function DashboardPage() {
   };
 
   const inviteLink = invitation
-    ? `${window.location.origin}${BASE}/invite/${invitation.token}`
+    ? `${window.location.origin}${BASE}${publicInvitePath(invitation)}`
     : "";
 
   const copyLink = () => {
@@ -131,7 +137,7 @@ export default function DashboardPage() {
 
   const actionButtons = [
     { icon: Edit2,  label: "Edit",  onClick: () => navigate("/editor") },
-    { icon: Eye,    label: "View",  onClick: () => invitation && window.open(`${BASE}/invite/${invitation.token}`, "_blank"), disabled: !invitation },
+    { icon: Eye,    label: "View",  onClick: () => invitation && window.open(`${BASE}${publicInvitePath(invitation)}`, "_blank"), disabled: !invitation },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/admin") },
     { icon: Share2, label: "Share", onClick: copyLink, disabled: !invitation },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!"), disabled: !invitation },

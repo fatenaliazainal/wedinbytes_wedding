@@ -15,6 +15,7 @@ import type { PricingPackage } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
+import { publicInvitePath } from "@/lib/invite-url";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
@@ -1627,7 +1628,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 onClick={async () => {
                   await handleSave();
                   const token = inv.token;
-                  if (token) window.open(`${BASE}/invite/${token}`, "_blank");
+                  if (token) window.open(`${BASE}${publicInvitePath(inv)}`, "_blank");
                 }}
                 className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
                 disabled={saving}

@@ -90,8 +90,33 @@ function MuzikPanel({
 }
 
 function KalendarPanel({ invitation }: { invitation?: Invitation }) {
-  const mapsCalUrl = invitation
-    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+Ceremony+${encodeURIComponent(invitation.brideName + " & " + invitation.groomName)}&location=${encodeURIComponent(invitation.venueName + ", " + invitation.venueCity)}&details=Wedding+Reception`
+  const calendarInvitation = invitation as (Invitation & {
+    eventStartTime?: string | null;
+    eventEndTime?: string | null;
+    brideShortName?: string | null;
+    groomShortName?: string | null;
+    invitationText?: string | null;
+  }) | undefined;
+  const calendarDate = calendarInvitation?.eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const calendarDateCode = calendarDate
+    ? `${calendarDate[1]}${calendarDate[2]}${calendarDate[3]}`
+    : "";
+  const timeCode = (value?: string | null) => {
+    const match = value?.match(/^(\d{2}):(\d{2})/);
+    return match ? `${match[1]}${match[2]}00` : "";
+  };
+  const startTime = timeCode(calendarInvitation?.eventStartTime);
+  const endTime = timeCode(calendarInvitation?.eventEndTime);
+  const calendarDates = calendarDateCode
+    ? startTime
+      ? `${calendarDateCode}T${startTime}/${calendarDateCode}T${endTime || startTime}`
+      : `${calendarDateCode}/${calendarDateCode}`
+    : "";
+  const calendarTitle = calendarInvitation
+    ? `Wedding Ceremony ${calendarInvitation.brideName || calendarInvitation.brideShortName || ""} & ${calendarInvitation.groomName || calendarInvitation.groomShortName || ""}`.replace(/\s+/g, " ").trim()
+    : "Wedding Ceremony";
+  const mapsCalUrl = calendarInvitation && calendarDates
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarTitle)}&dates=${calendarDates}&location=${encodeURIComponent([calendarInvitation.venueName, calendarInvitation.venueCity].filter(Boolean).join(", "))}&details=${encodeURIComponent(calendarInvitation.invitationText || "Wedding Reception")}`
     : "#";
 
   return (

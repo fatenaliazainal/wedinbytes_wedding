@@ -19,6 +19,10 @@ import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 
+function PublicInvitationRoute() {
+  return <InvitationPage />;
+}
+
 const queryClient = new QueryClient();
 
 function EditorRoute() {
@@ -39,6 +43,7 @@ function Router() {
       <Route path="/pricing" component={PriceListPage} />
       <Route path="/faq" component={FaqPage} />
       <Route path="/reviews" component={ReviewsPage} />
+      <Route path="/invite/:dateCode/:slug" component={PublicInvitationRoute} />
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/demo" component={DemoEditorRoute} />

@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, cardTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import multer from "multer";
-import { deleteImage, uploadImage, getImagePublicUrl, isR2Configured } from "../services/cloudflare/r2-storage-admin";
+import { deleteImage, uploadImage, downloadImage, getImagePublicUrl, isR2Configured } from "../services/cloudflare/r2-storage-admin";
 
 const router: IRouter = Router();
 
@@ -15,6 +15,29 @@ const upload = multer({
     const ok = /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype);
     cb(null, ok);
   },
+});
+
+// Serve R2 object keys through the same origin when no public R2 domain is configured.
+// This keeps uploaded gallery images visible without exposing storage credentials.
+router.get("/r2", async (req, res) => {
+  const key = typeof req.query.key === "string" ? req.query.key : "";
+  if (!key || key.includes("..") || key.startsWith("/")) {
+    res.status(400).json({ error: "A valid R2 object key is required" });
+    return;
+  }
+  if (!isR2Configured()) {
+    res.status(503).json({ error: "Photo storage is not configured" });
+    return;
+  }
+  try {
+    const image = await downloadImage(key);
+    res.setHeader("Content-Type", image.contentType);
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(image.buffer);
+  } catch (err) {
+    req.log.error({ err, key }, "Failed to serve R2 image");
+    res.status(404).json({ error: "Image not found" });
+  }
 });
 
 function stripNulls<T extends Record<string, unknown>>(obj: T): T {

@@ -4,7 +4,7 @@
  * Rules:
  *  - Absolute URLs (http/https) → returned as-is.
  *  - Paths starting with "/" → local Vite public asset, returned as-is.
- *  - Anything else → R2 object key, prefixed with VITE_R2_DOMAIN_URL.
+ *  - R2 object keys → public R2 domain when configured, otherwise the API image proxy.
  */
 const R2_DOMAIN = (import.meta.env.VITE_R2_DOMAIN_URL as string | undefined) ?? "";
 
@@ -13,5 +13,6 @@ export function resolveImageUrl(path: string | null | undefined): string | undef
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) {
     return path;
   }
-  return R2_DOMAIN.replace(/\/$/, "") + "/" + path;
+  if (R2_DOMAIN) return R2_DOMAIN.replace(/\/$/, "") + "/" + path;
+  return `/api/r2?key=${encodeURIComponent(path)}`;
 }

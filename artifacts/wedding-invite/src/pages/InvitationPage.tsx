@@ -37,12 +37,37 @@ function extractYouTubeId(url: string): string | null {
 }
 
 export default function InvitationPage() {
-  const { token } = useParams<{ token: string }>();
-  const resolvedToken = token ?? "demo";
+  const { token, dateCode, slug } = useParams<{ token?: string; dateCode?: string; slug?: string }>();
+  const [publicToken, setPublicToken] = useState<string | null>(null);
+  const isPublicPath = Boolean(dateCode && slug);
+  useEffect(() => {
+    if (!isPublicPath) return;
+    let cancelled = false;
+    fetch(`/api/invitation/public/${encodeURIComponent(dateCode!)}/${encodeURIComponent(slug!)}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Invitation not found");
+        return response.json() as Promise<{ token: string }>;
+      })
+      .then((data) => {
+        if (!cancelled) setPublicToken(data.token);
+      })
+      .catch(() => {
+        if (!cancelled) setPublicToken("");
+      });
+    return () => { cancelled = true; };
+  }, [dateCode, slug, isPublicPath]);
+
+  const resolvedToken = token ?? publicToken ?? "";
+  const tokenReady = Boolean(resolvedToken);
   const search = useSearch();
   const urlParams = new URLSearchParams(search);
   const overrideDesignCode = urlParams.get("designCode");
-  const { data: invitation, isLoading: invitationLoading } = useGetInvitation(resolvedToken);
+  const { data: invitation, isLoading: invitationLoading } = useGetInvitation(resolvedToken, {
+    query: {
+      queryKey: [`/api/invitation/${resolvedToken}`],
+      enabled: tokenReady,
+    },
+  });
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
   const { data: rsvps = [] } = useListRsvps({
     query: {
@@ -52,11 +77,12 @@ export default function InvitationPage() {
         if (!res.ok) throw new Error("Failed to fetch RSVPs");
         return res.json();
       },
+      enabled: tokenReady,
     },
   });
 
   const { data: rsvpCount } = useGetRsvpCount(
-    resolvedToken ? { invitationToken: resolvedToken } : undefined,
+    tokenReady ? { invitationToken: resolvedToken } : undefined,
   );
 
   // Resolve template early so we can pass its colors to useDesign
@@ -193,7 +219,7 @@ export default function InvitationPage() {
     }
   }, [isOpened]);
 
-  if (invitationLoading || designLoading || designsLoading) {
+  if (invitationLoading || designLoading || designsLoading || (isPublicPath && publicToken === null)) {
     return (
       <div className="min-h-dvh w-full bg-background flex items-center justify-center">
         <Skeleton className="w-75 h-100 rounded-2xl" />

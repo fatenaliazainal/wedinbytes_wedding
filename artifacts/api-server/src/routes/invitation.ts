@@ -7,6 +7,29 @@ import { db, invitationTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
+function initial(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .charAt(0)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function publicDateCode(eventDate: string | null | undefined) {
+  const match = eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) return `${match[1].slice(2)}${match[2]}${match[3]}`;
+  const digits = (eventDate ?? "").replace(/\D/g, "");
+  return digits.length >= 6 ? digits.slice(-6) : "000000";
+}
+
+function publicSlug(row: typeof invitationTable.$inferSelect) {
+  const brideInitial = initial(row.brideName) || initial(row.brideShortName) || initial(row.brideInitial);
+  const groomInitial = initial(row.groomName) || initial(row.groomShortName) || initial(row.groomInitial);
+  return `${brideInitial}${groomInitial}` || "wi";
+}
+
 const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
@@ -103,6 +126,25 @@ router.get("/invitation/:token", async (req, res) => {
     res.json(publicInvitation(row));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Public, human-readable URL lookup. The UUID token remains internal.
+router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
+  try {
+    const rows = await db.select().from(invitationTable);
+    const row = rows.find((candidate) =>
+      publicDateCode(candidate.eventDate) === req.params.dateCode &&
+      publicSlug(candidate) === req.params.slug,
+    );
+    if (!row) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    res.json({ ...publicInvitation(row), token: row.token });
+  } catch (err) {
+    req.log.error({ err }, "Failed to find public invitation");
     res.status(500).json({ error: "Internal server error" });
   }
 });
