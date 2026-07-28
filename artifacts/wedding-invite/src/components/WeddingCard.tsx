@@ -522,8 +522,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                       );
                     })}
                   </CarouselContent>
-                  <CarouselPrevious className="left-2 bg-white/80 hover:bg-white border-primary/20" />
-                  <CarouselNext className="right-2 bg-white/80 hover:bg-white border-primary/20" />
+                  <CarouselPrevious className="!left-2 !right-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 bg-white/90 shadow-sm hover:bg-white border-primary/20" />
+                  <CarouselNext className="!right-2 !left-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 bg-white/90 shadow-sm hover:bg-white border-primary/20" />
                 </Carousel>
               ) : (
                 <p className="text-sm text-foreground/70">{t.galleryLabel}.</p>
