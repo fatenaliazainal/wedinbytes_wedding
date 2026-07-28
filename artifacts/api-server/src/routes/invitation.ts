@@ -1,6 +1,7 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 import { GetInvitationResponse } from "@workspace/api-zod";
 import { db, invitationTable } from "@workspace/db";
 
@@ -33,6 +34,15 @@ const ALLOWED_FIELDS = [
   // Pricing package
   "packageId",
 ];
+
+function publicInvitation(row: typeof invitationTable.$inferSelect) {
+  const { lockPinHash: _lockPinHash, ...safe } = row;
+  return { ...safe, isLocked: Boolean(row.lockPinHash) };
+}
+
+function canManageInvitation(req: Request, row: typeof invitationTable.$inferSelect) {
+  return Boolean(req.session.userId && row.userId === req.session.userId);
+}
 
 // Create a new invitation for the logged-in buyer (idempotent — returns existing if already has one)
 router.post("/invitation", async (req, res) => {
@@ -90,7 +100,7 @@ router.get("/invitation/:token", async (req, res) => {
     }
     const row = rows[0];
     // Return full row (merge extra fields beyond what api-zod knows)
-    res.json(row);
+    res.json(publicInvitation(row));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation");
     res.status(500).json({ error: "Internal server error" });
@@ -134,10 +144,65 @@ router.patch("/invitation/:token", async (req, res) => {
       .where(eq(invitationTable.token, token))
       .returning();
 
-    res.json(updated);
+    res.json(publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/invitation/:token/lock", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const [row] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
+    if (!row) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (!canManageInvitation(req, row)) {
+      res.status(403).json({ error: "You do not own this invitation" });
+      return;
+    }
+
+    const protect = req.body?.protect === true;
+    const pin = typeof req.body?.pin === "string" ? req.body.pin.trim() : "";
+    if (protect && !/^\d{4}$/.test(pin)) {
+      res.status(400).json({ error: "PIN must be exactly 4 digits" });
+      return;
+    }
+
+    const [updated] = await db.update(invitationTable)
+      .set({ lockPinHash: protect ? await bcrypt.hash(pin, 12) : null })
+      .where(eq(invitationTable.id, row.id))
+      .returning();
+    res.json(publicInvitation(updated));
+  } catch (err) {
+    req.log.error({ err }, "Failed to update invitation lock");
+    res.status(500).json({ error: "Failed to update card lock" });
+  }
+});
+
+router.post("/invitation/:token/unlock", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const pin = typeof req.body?.pin === "string" ? req.body.pin.trim() : "";
+    if (!/^\d{4}$/.test(pin)) {
+      res.status(400).json({ error: "PIN must be exactly 4 digits" });
+      return;
+    }
+    const [row] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
+    if (!row) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (!row.lockPinHash || !(await bcrypt.compare(pin, row.lockPinHash))) {
+      res.status(401).json({ error: "Incorrect PIN" });
+      return;
+    }
+    res.json({ unlocked: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to verify invitation PIN");
+    res.status(500).json({ error: "Failed to verify PIN" });
   }
 });
 
@@ -154,7 +219,7 @@ router.get("/invitation-by-user/:userId", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    res.json(rows[0]);
+    res.json(publicInvitation(rows[0]));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation by user");
     res.status(500).json({ error: "Internal server error" });

@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Edit2, Eye, Users, Share2, Lock, LogOut,
-  User, Plus, Copy, Check, QrCode,
+  User, Plus, Copy, Check, QrCode, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import SiteFooter from "@/components/SiteFooter";
@@ -23,6 +23,7 @@ interface Invitation {
   brideName: string;
   eventType: string;
   isPurchased: boolean;
+  isLocked?: boolean;
   createdAt: string;
   colorPrimary?: string;
   designCode?: string;
@@ -45,6 +46,10 @@ export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState<Section>("orders");
   const [copied, setCopied] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [lockModalOpen, setLockModalOpen] = useState(false);
+  const [protectCard, setProtectCard] = useState(false);
+  const [lockPin, setLockPin] = useState("");
+  const [lockSaving, setLockSaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -130,8 +135,39 @@ export default function DashboardPage() {
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/admin") },
     { icon: Share2, label: "Share", onClick: copyLink, disabled: !invitation },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!"), disabled: !invitation },
-    { icon: Lock,   label: "Lock",  onClick: () => toast.info("Coming soon!"), disabled: !invitation },
+    { icon: Lock,   label: "Lock",  onClick: () => {
+      setProtectCard(Boolean(invitation?.isLocked));
+      setLockPin("");
+      setLockModalOpen(true);
+    }, disabled: !invitation },
   ];
+
+  const saveCardLock = async () => {
+    if (!invitation) return;
+    if (protectCard && !/^\d{4}$/.test(lockPin)) {
+      toast.error("Please enter exactly 4 digits.");
+      return;
+    }
+    setLockSaving(true);
+    try {
+      const response = await fetch(`${BASE}/api/invitation/${invitation.token}/lock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ protect: protectCard, pin: lockPin }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to update card lock");
+      setInvitation((current) => current ? { ...current, isLocked: data.isLocked } : current);
+      setLockModalOpen(false);
+      setLockPin("");
+      toast.success(protectCard ? "Card protected with PIN." : "Card lock removed.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update card lock");
+    } finally {
+      setLockSaving(false);
+    }
+  };
 
   const NAV_ITEMS: SiteNavItem[] = [
     { label: "HOME",       href: "/" },
@@ -187,6 +223,64 @@ export default function DashboardPage() {
           </div>
         }
       />
+
+      {lockModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="lock-title">
+          <div className="w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-2xl">
+            <div className="relative border-b border-gray-100 px-6 py-7 text-center">
+              <button onClick={() => setLockModalOpen(false)} className="absolute right-4 top-4 text-gray-400 hover:text-gray-700" aria-label="Close">
+                <X size={23} strokeWidth={1.5} />
+              </button>
+              <h2 id="lock-title" className="text-lg font-normal text-gray-900">Protect Your Card</h2>
+              <p className="mt-2 text-sm text-gray-600">Keep Your Invitation Private with a Pin</p>
+            </div>
+            <div className="px-6 py-6">
+              <label className="mx-auto flex max-w-xs cursor-pointer items-center justify-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={protectCard}
+                  onChange={(event) => setProtectCard(event.target.checked)}
+                  className="h-4 w-4 accent-blue-600"
+                />
+                <span>Protect this card</span>
+              </label>
+              {protectCard && (
+                <div className="mx-auto mt-7 max-w-xs">
+                  <p className="mb-3 text-center text-xs text-gray-700">Set a 4-digit pin code</p>
+                  <div className="flex overflow-hidden rounded-lg border border-gray-300">
+                    <input
+                      value={lockPin}
+                      onChange={(event) => setLockPin(event.target.value.replace(/\D/g, "").slice(0, 4))}
+                      inputMode="numeric"
+                      maxLength={4}
+                      type="password"
+                      placeholder="••••"
+                      className="min-w-0 flex-1 px-4 py-3 text-center tracking-[0.5em] outline-none"
+                      aria-label="4-digit PIN"
+                    />
+                    <button
+                      onClick={saveCardLock}
+                      disabled={lockSaving}
+                      className="bg-black px-5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      {lockSaving ? "..." : "SAVE"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!protectCard && (
+                <button
+                  onClick={saveCardLock}
+                  disabled={lockSaving}
+                  className="mx-auto mt-6 block bg-black px-6 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {lockSaving ? "Saving..." : "REMOVE LOCK"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Body ── */}
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col md:flex-row gap-6 md:gap-10 flex-1">

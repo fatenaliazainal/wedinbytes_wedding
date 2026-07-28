@@ -27,7 +27,7 @@ function fontFamilyStack(fontName?: string | null): string {
   if (normalized.includes(",")) return normalized;
   return `'${normalized}', 'Dancing Script', cursive`;
 }
-import { RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { RotateCcw, Volume2, VolumeX, LockKeyhole } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
 
@@ -92,6 +92,10 @@ export default function InvitationPage() {
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [unlockPin, setUnlockPin] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
@@ -140,6 +144,31 @@ export default function InvitationPage() {
 
   const handleTabClick = (tab: TabKey) => {
     setActiveTab((prev) => (prev === tab ? null : tab));
+  };
+
+  const isLocked = Boolean(inv?.isLocked);
+  const verifyPin = async () => {
+    if (!/^\d{4}$/.test(unlockPin)) {
+      setUnlockError("Please enter your 4-digit PIN.");
+      return;
+    }
+    setUnlocking(true);
+    setUnlockError("");
+    try {
+      const response = await fetch(`/api/invitation/${resolvedToken}/unlock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: unlockPin }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Incorrect PIN");
+      setIsUnlocked(true);
+      setUnlockPin("");
+    } catch (error) {
+      setUnlockError(error instanceof Error ? error.message : "Incorrect PIN");
+    } finally {
+      setUnlocking(false);
+    }
   };
 
   useEffect(() => {
@@ -193,6 +222,36 @@ export default function InvitationPage() {
     .filter((r) => r.message && r.message.trim())
     .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  if (isLocked && !isUnlocked) {
+    return (
+      <div className="min-h-dvh w-full bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-xl bg-white px-7 py-9 text-center shadow-xl">
+          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+            <LockKeyhole size={22} />
+          </div>
+          <h1 className="text-xl font-normal text-gray-900">This Invitation is Protected</h1>
+          <p className="mt-2 text-sm text-gray-500">Enter the 4-digit PIN to view this invitation.</p>
+          <input
+            value={unlockPin}
+            onChange={(event) => { setUnlockPin(event.target.value.replace(/\D/g, "").slice(0, 4)); setUnlockError(""); }}
+            onKeyDown={(event) => { if (event.key === "Enter") void verifyPin(); }}
+            inputMode="numeric"
+            maxLength={4}
+            type="password"
+            placeholder="••••"
+            className="mx-auto mt-7 block w-full max-w-xs rounded-lg border border-gray-300 px-4 py-3 text-center tracking-[0.5em] outline-none focus:border-gray-700"
+            aria-label="4-digit PIN"
+            autoFocus
+          />
+          {unlockError && <p className="mt-3 text-xs text-red-600">{unlockError}</p>}
+          <button onClick={verifyPin} disabled={unlocking} className="mt-5 w-full max-w-xs bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-50">
+            {unlocking ? "Checking..." : "VIEW INVITATION"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
