@@ -442,7 +442,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
           itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
-          galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages : [],
+          galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages.slice(0, 4) : [],
           designCode: d.designCode ?? "FL001",
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
@@ -702,10 +702,19 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
   async function uploadGalleryFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
+    const remainingSlots = Math.max(0, 4 - inv.galleryImages.length);
+    if (remainingSlots === 0) {
+      toast.info("Gallery maksimum 4 gambar.");
+      return;
+    }
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+    if (files.length > remainingSlots) {
+      toast.info(`Gallery hanya boleh 4 gambar. ${remainingSlots} gambar pertama sahaja akan dimuat naik.`);
+    }
     setUploadingGallery(true);
     try {
       const uploadedKeys: string[] = [];
-      for (const file of Array.from(files)) {
+      for (const file of filesToUpload) {
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch(`${BASE}/api/gallery-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`, {
@@ -722,7 +731,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         if (data.key) uploadedKeys.push(data.key);
       }
       if (uploadedKeys.length > 0) {
-        setInv((p) => ({ ...p, galleryImages: [...p.galleryImages, ...uploadedKeys] }));
+        setInv((p) => ({ ...p, galleryImages: [...p.galleryImages, ...uploadedKeys].slice(0, 4) }));
         toast.success(`${uploadedKeys.length} image(s) uploaded`);
       }
     } catch {
@@ -1165,7 +1174,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {activeTab === "galeri" && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Upload images or paste URLs (one per line). Supports R2 keys or full URLs.
+                  Upload up to 4 images. Supports R2 keys or full URLs.
                 </p>
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
@@ -1177,9 +1186,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       onChange={(e) => uploadGalleryFiles(e.target.files)}
                       disabled={uploadingGallery}
                     />
-                    {uploadingGallery ? "Uploading..." : "Upload Images"}
+                    {uploadingGallery ? "Uploading..." : inv.galleryImages.length >= 4 ? "Gallery Full" : "Upload Images"}
                   </label>
-                  <span className="text-xs text-gray-400">Max 10 MB each</span>
+                  <span className="text-xs text-gray-400">{inv.galleryImages.length}/4 images · Max 10 MB each</span>
                 </div>
                 {inv.galleryImages.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">

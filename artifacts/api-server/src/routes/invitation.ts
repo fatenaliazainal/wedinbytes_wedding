@@ -166,6 +166,9 @@ router.patch("/invitation/:token", async (req, res) => {
     for (const field of ALLOWED_FIELDS) {
       if (field in body) {
         let value = body[field];
+        if (field === "galleryImages" && Array.isArray(value)) {
+          value = value.slice(0, 4);
+        }
         // timestamp columns expect a Date instance, not a string.
         if (field === "rsvpDeadline" && typeof value === "string" && value.trim()) {
           const parsed = new Date(value);

@@ -5,8 +5,7 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
@@ -27,6 +26,63 @@ const MONTH_MAP: Record<string, string> = {
   January: "01", February: "02", March: "03", May: "05",
   June: "06", July: "07", August: "08", October: "10", December: "12",
 };
+
+function GalleryCarousel({ images, label }: { images: string[]; label: string }) {
+  const [api, setApi] = React.useState<CarouselApi>();
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!api) return;
+    const updateSelected = () => setSelectedIndex(api.selectedScrollSnap());
+    updateSelected();
+    api.on("select", updateSelected);
+    return () => {
+      api.off("select", updateSelected);
+    };
+  }, [api]);
+
+  return (
+    <div className="w-full max-w-xs">
+      <Carousel setApi={setApi}>
+        <CarouselContent>
+          {images.slice(0, 4).map((url, idx) => {
+            const resolved = resolveImageUrl(url);
+            return (
+              <CarouselItem key={idx}>
+                <img
+                  src={resolved}
+                  alt={`${label} ${idx + 1}`}
+                  onError={(e) => fallbackToR2Proxy(e, url)}
+                  className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
+                  loading="lazy"
+                />
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+      </Carousel>
+      {images.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5" role="tablist" aria-label={`${label} pagination`}>
+          {images.slice(0, 4).map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              role="tab"
+              aria-label={`View ${label.toLowerCase()} ${idx + 1}`}
+              aria-selected={selectedIndex === idx}
+              onClick={() => api?.scrollTo(idx)}
+              className={`h-2 rounded-full transition-all ${
+                selectedIndex === idx
+                  ? "w-5 bg-primary"
+                  : "w-2 bg-primary/30 hover:bg-primary/60"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function formatDatePipes(dateStr: string): string {
   if (!dateStr) return "";
@@ -503,28 +559,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {(() => {
               const images = Array.isArray(inv.galleryImages) ? (inv.galleryImages as string[]) : [];
               return images.length > 0 ? (
-                <Carousel className="w-full max-w-xs">
-                  <CarouselContent>
-                    {images.map((url, idx) => {
-                      const resolved = resolveImageUrl(url);
-                      return (
-                        <CarouselItem key={idx}>
-                          <img
-                            src={resolved}
-                            alt={`${t.galleryLabel} ${idx + 1}`}
-                            onError={(e) => {
-                              fallbackToR2Proxy(e, url);
-                            }}
-                            className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
-                            loading="lazy"
-                          />
-                        </CarouselItem>
-                      );
-                    })}
-                  </CarouselContent>
-                  <CarouselPrevious className="!left-2 !right-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 bg-white/90 shadow-sm hover:bg-white border-primary/20" />
-                  <CarouselNext className="!right-2 !left-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 bg-white/90 shadow-sm hover:bg-white border-primary/20" />
-                </Carousel>
+                <GalleryCarousel images={images} label={t.galleryLabel} />
               ) : (
                 <p className="text-sm text-foreground/70">{t.galleryLabel}.</p>
               );
