@@ -50,8 +50,14 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
         </CarouselContent>
         {images.length > 1 && (
           <>
-            <CarouselPrevious className="!left-2 !right-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 border-primary/20 bg-white/90 shadow-sm hover:bg-white" />
-            <CarouselNext className="!right-2 !left-auto !top-1/2 z-20 h-8 w-8 -translate-y-1/2 border-primary/20 bg-white/90 shadow-sm hover:bg-white" />
+            <CarouselPrevious
+              aria-label="Previous gallery image"
+              className="!left-0 !right-auto !top-1/2 z-20 h-20 w-10 -translate-y-1/2 !border-0 !bg-transparent !p-0 !text-[#f2e500] !shadow-none hover:!bg-transparent hover:!text-[#e5d900] [&_svg]:!h-16 [&_svg]:!w-10 [&_svg]:!stroke-[3]"
+            />
+            <CarouselNext
+              aria-label="Next gallery image"
+              className="!right-0 !left-auto !top-1/2 z-20 h-20 w-10 -translate-y-1/2 !border-0 !bg-transparent !p-0 !text-[#f2e500] !shadow-none hover:!bg-transparent hover:!text-[#e5d900] [&_svg]:!h-16 [&_svg]:!w-10 [&_svg]:!stroke-[3]"
+            />
           </>
         )}
       </Carousel>
