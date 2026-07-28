@@ -1,0 +1,178 @@
+import { Router, type IRouter } from "express";
+import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import {
+  db,
+  invitationTable,
+  orderTable,
+  pricingPackageTable,
+  userTable,
+} from "@workspace/db";
+
+const router: IRouter = Router();
+
+function adminGuard(req: any, res: any) {
+  if (req.session?.role !== "admin") {
+    res.status(403).json({ error: "Admin access only" });
+    return false;
+  }
+  return true;
+}
+
+function invitationStatus(invitation: typeof invitationTable.$inferSelect | undefined) {
+  if (!invitation) return "DISABLED";
+  if (invitation.websiteStatus !== "ACTIVE") return invitation.websiteStatus;
+  return invitation.isPurchased ? "ACTIVE" : "PREVIEW";
+}
+
+async function readOrderRows() {
+  const [orders, users, invitations, packages] = await Promise.all([
+    db.select().from(orderTable).orderBy(desc(orderTable.createdAt)),
+    db.select().from(userTable),
+    db.select().from(invitationTable),
+    db.select().from(pricingPackageTable),
+  ]);
+  const userById = new Map(users.map((row) => [row.id, row]));
+  const invitationById = new Map(invitations.map((row) => [row.id, row]));
+  const packageById = new Map(packages.map((row) => [row.id, row]));
+  return orders.map((order) => {
+    const user = order.userId ? userById.get(order.userId) : undefined;
+    const invitation = order.invitationId ? invitationById.get(order.invitationId) : undefined;
+    const pkg = order.packageId ? packageById.get(order.packageId) : undefined;
+    return {
+      ...order,
+      customer: user ? { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt } : null,
+      package: pkg ? { id: pkg.id, name: pkg.name, price: pkg.price } : null,
+      invitation: invitation ? {
+        id: invitation.id,
+        token: invitation.token,
+        brideName: invitation.brideName,
+        groomName: invitation.groomName,
+        eventDate: invitation.eventDate,
+        venueName: invitation.venueName,
+        websiteStatus: invitationStatus(invitation),
+        isPurchased: invitation.isPurchased,
+      } : null,
+    };
+  });
+}
+
+router.get("/admin/orders", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  try {
+    const rows = await readOrderRows();
+    const search = String(req.query.search ?? "").trim().toLowerCase();
+    const paymentStatus = String(req.query.paymentStatus ?? "");
+    const invitationStatusFilter = String(req.query.invitationStatus ?? "");
+    const filtered = rows.filter((row) => {
+      const haystack = [
+        row.id,
+        row.customer?.name,
+        row.customer?.email,
+        row.paymentReference,
+      ].join(" ").toLowerCase();
+      return (!search || haystack.includes(search))
+        && (!paymentStatus || row.paymentStatus === paymentStatus)
+        && (!invitationStatusFilter || row.invitation?.websiteStatus === invitationStatusFilter);
+    });
+    res.json(filtered);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list admin orders");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/admin/orders/stats", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  try {
+    const rows = await readOrderRows();
+    const revenue = rows
+      .filter((row) => row.paymentStatus === "PAID")
+      .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const activeWebsites = (await db.select().from(invitationTable))
+      .filter((row) => invitationStatus(row) === "ACTIVE").length;
+    res.json({
+      totalOrders: rows.length,
+      successfulPayments: rows.filter((row) => row.paymentStatus === "PAID").length,
+      pendingPayments: rows.filter((row) => row.paymentStatus === "PENDING").length,
+      failedPayments: rows.filter((row) => ["FAILED", "EXPIRED", "REFUNDED"].includes(row.paymentStatus)).length,
+      totalRevenue: revenue,
+      activeWebsites,
+      recentOrders: rows.slice(0, 5),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to load order stats");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/admin/orders/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ error: "Invalid order id" });
+    return;
+  }
+  const row = (await readOrderRows()).find((order) => order.id === id);
+  if (!row) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  res.json(row);
+});
+
+router.get("/admin/customers", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  try {
+    const [users, orders, invitations] = await Promise.all([
+      db.select().from(userTable).where(eq(userTable.role, "buyer")).orderBy(desc(userTable.createdAt)),
+      db.select().from(orderTable),
+      db.select().from(invitationTable),
+    ]);
+    const result = users.map((user) => {
+      const userOrders = orders.filter((order) => order.userId === user.id);
+      const websites = invitations.filter((invitation) => invitation.userId === user.id);
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        totalOrders: userOrders.length,
+        totalPaid: userOrders.filter((order) => order.paymentStatus === "PAID")
+          .reduce((sum, order) => sum + Number(order.amount || 0), 0),
+        websites: websites.map((invitation) => ({
+          id: invitation.id,
+          token: invitation.token,
+          websiteStatus: invitationStatus(invitation),
+          brideName: invitation.brideName,
+          groomName: invitation.groomName,
+        })),
+      };
+    });
+    const search = String(req.query.search ?? "").trim().toLowerCase();
+    res.json(search ? result.filter((row) => `${row.name} ${row.email}`.toLowerCase().includes(search)) : result);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list admin customers");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/invitations/:id/status", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  const status = String(req.body?.status ?? "");
+  if (!Number.isInteger(id) || !["ACTIVE", "DISABLED"].includes(status)) {
+    res.status(400).json({ error: "Invalid invitation status" });
+    return;
+  }
+  const [updated] = await db.update(invitationTable)
+    .set({ websiteStatus: status })
+    .where(eq(invitationTable.id, id))
+    .returning();
+  if (!updated) {
+    res.status(404).json({ error: "Invitation not found" });
+    return;
+  }
+  res.json({ id: updated.id, websiteStatus: invitationStatus(updated) });
+});
+
+export default router;

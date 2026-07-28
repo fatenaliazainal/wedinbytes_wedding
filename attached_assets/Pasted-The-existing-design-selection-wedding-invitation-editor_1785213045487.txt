@@ -1,0 +1,319 @@
+The existing design selection, wedding invitation editor, and current Admin Back Office functionality are already completed and working correctly.
+
+Do not rebuild, redesign, replace, remove, overwrite, or modify any existing functionality unless it is absolutely necessary for the new feature to work.
+
+Do not modify the existing:
+
+* Design selection functionality
+* Wedding invitation editor
+* Invitation templates
+* Editor layout
+* Preview layout
+* Existing form fields
+* Existing invitation data
+* Existing save functionality
+* Existing customer flow
+* Existing Admin Back Office pages
+* Existing Admin Dashboard
+* Existing Admin navigation
+* Existing admin authentication
+* Existing admin settings
+* Existing admin functions
+* Existing database connections
+* Existing Back Office UI, layout, styling, or components
+
+First, inspect the current Admin Back Office and identify all existing pages, menus, functions, routes, database connections, and features.
+
+Preserve all existing Back Office functionality exactly as it is.
+
+Only add the new Order Management and Customer Management features requested below. Integrate these features into the existing Back Office architecture without replacing or redesigning the current Back Office.
+
+If an existing Back Office page or component can be reused, extend it carefully instead of creating a duplicate page or replacing the existing implementation.
+
+Do not delete, rename, or change existing admin routes, menu items, functions, or database fields.
+
+I want to add new Admin Back Office features for monitoring orders, payments, customers, and active wedding websites only.
+
+Admin does not need to manually process, approve, review, or complete any order because customers complete their own wedding invitation in the editor and the wedding website will be activated automatically after successful payment.
+
+## Admin Back Office Structure
+
+### 1. Existing Admin Dashboard
+
+Do not redesign or replace the existing Admin Dashboard.
+
+Keep all current dashboard cards, statistics, widgets, charts, navigation, and functionality unchanged.
+
+Only add the following new order and payment statistics if they do not already exist:
+
+* Total Orders
+* Total Successful Payments
+* Total Pending Payments
+* Total Failed Payments
+* Total Revenue
+* Total Active Wedding Websites
+* Recent Orders
+
+Add these new statistics without removing, moving, or changing existing dashboard content.
+
+Display recent orders in a simple table with:
+
+* Order ID
+* Customer name
+* Selected design
+* Package
+* Payment amount
+* Payment status
+* Invitation status
+* Order date
+
+Add a **“View All Orders”** button.
+
+### 2. Orders Page
+
+If an existing Orders page already exists, extend the existing page without replacing its current functionality or design.
+
+If no Orders page exists, create a new Order Management page that follows the existing Back Office layout, navigation, components, styling, and design system.
+
+Display all customer orders in a responsive table.
+
+Include these columns:
+
+* Order ID
+* Customer name
+* Customer email
+* Customer phone number
+* Selected invitation design
+* Selected package
+* Order amount
+* Payment status
+* Invitation status
+* Payment reference or transaction ID
+* Payment date
+* Order date
+
+Add:
+
+* Search by Order ID
+* Search by customer name
+* Search by customer email
+* Filter by payment status
+* Filter by invitation status
+* Sort by newest order
+* Pagination for a large number of orders
+* Click an order to open the full Order Details page
+
+Use clear status badges.
+
+Payment status:
+
+* `PENDING`
+* `PAID`
+* `FAILED`
+* `EXPIRED`
+* `REFUNDED`
+
+Invitation status:
+
+* `PREVIEW`
+* `ACTIVE`
+* `DISABLED`
+* `EXPIRED`
+
+### 3. Order Details Page
+
+When the admin clicks an order, display:
+
+#### Customer Information
+
+* Customer name
+* Customer email
+* Customer phone number
+* Customer account ID, if available
+
+#### Order Information
+
+* Order ID
+* Selected invitation design
+* Selected package
+* Package price
+* Total payment amount
+* Order creation date
+* Last updated date
+
+#### Payment Information
+
+* Payment status
+* Payment transaction/reference ID
+* Payment amount
+* Payment date
+* Payment gateway name, if available
+
+#### Wedding Invitation Information
+
+* Invitation status
+* Public wedding website URL
+* All wedding details entered by the customer
+* Wedding couple names
+* Wedding date
+* Wedding venue
+* Other invitation details saved in the existing editor
+
+Add:
+
+* **View Wedding Website**
+* **Open Invitation Editor**
+* **Copy Wedding Website Link**
+
+Admin controls should only include:
+
+* Disable Wedding Website
+* Reactivate Wedding Website
+
+Do not add:
+
+* Approve Order
+* Reject Order
+* Process Order
+* Mark as Completed
+* Manual Payment Approval
+
+The admin should not need to take any action after a successful payment.
+
+### 4. Customers Page
+
+If an existing Customers page already exists, extend it carefully without removing or changing current functionality.
+
+If no Customers page exists, create a new Customers page using the existing Back Office layout and styling.
+
+Display:
+
+* Customer name
+* Customer email
+* Customer phone number
+* Total number of orders
+* Total amount paid
+* Customer registration date
+
+When an admin clicks a customer, display:
+
+* Customer profile information
+* All orders created by the customer
+* Payment history
+* Wedding websites created by the customer
+
+### 5. Admin Navigation
+
+Do not replace or redesign the existing Admin navigation.
+
+Keep all existing sidebar items, menu items, routes, icons, and navigation behavior unchanged.
+
+Only add **Orders** and **Customers** to the existing navigation if these menu items do not already exist.
+
+Do not remove, rename, reorder, or replace any existing navigation items.
+
+Use the existing WedInBytes branding, colors, typography, components, and design system.
+
+The new pages must visually match the current Back Office.
+
+## Data Integration
+
+First, inspect the existing database and application structure.
+
+Identify:
+
+* Existing customer data
+* Existing invitation data
+* Existing selected design data
+* Existing package data
+* Existing order data, if available
+* Existing payment data, if available
+* Existing Admin Back Office database queries and API endpoints
+
+Reuse existing database models, tables, API endpoints, and application architecture where possible.
+
+Do not duplicate customer, invitation, order, or payment data.
+
+Do not rename or delete existing database tables, columns, relationships, or records.
+
+If new database fields are required, add them using a safe migration without affecting existing data.
+
+If the order or payment database structure does not exist yet, create only the required models or tables. Do not build payment gateway integration in this task.
+
+The Back Office should be ready to display real order and payment data when the payment system is connected later.
+
+Use realistic empty states if there are currently no orders.
+
+Do not use fake customer orders as permanent production data.
+
+## Admin Security
+
+Keep the existing admin authentication and authorization system unchanged.
+
+Do not replace the current admin login or authentication flow.
+
+Ensure:
+
+* Only authorized admin users can access the new pages.
+* Normal customers cannot access admin pages.
+* Existing admin permissions continue working.
+* Customer information and payment information remain protected.
+* Payment secrets and gateway credentials are never displayed.
+* Sensitive customer data is not exposed on public pages.
+
+## Important Restrictions
+
+Do not modify, remove, replace, or break:
+
+* Existing design selection
+* Existing invitation editor
+* Existing invitation templates
+* Existing customer-facing pages
+* Existing preview functionality
+* Existing invitation styling
+* Existing customer flow
+* Existing Admin Back Office pages
+* Existing Admin Dashboard
+* Existing admin navigation
+* Existing admin authentication
+* Existing admin functions
+* Existing admin settings
+* Existing database structure or data
+
+Do not implement:
+
+* Payment gateway integration
+* Payment API integration
+* Payment webhook
+* Payment callback logic
+* Automatic invitation activation
+* Checkout redesign
+
+Only add the new Order Management and Customer Management features to the existing Admin Back Office.
+
+Do not rebuild the entire Back Office.
+
+Do not create a separate or duplicate Admin Back Office.
+
+Do not replace existing Back Office files unless absolutely necessary.
+
+Before editing any existing file, check whether the requested feature can be added through a new component, route, or extension.
+
+If modifying an existing file is necessary, make the smallest possible change and preserve all existing functionality.
+
+Before making changes, provide a short implementation plan and list the existing Back Office features that will remain unchanged.
+
+After implementation, test all existing Back Office functions to confirm that nothing has been broken.
+
+After implementation, provide:
+
+* A summary of all files created or changed
+* A clear list of existing files that were modified
+* A summary of what was added
+* Confirmation that existing Back Office functions remain unchanged
+* The Admin Back Office URL
+* Database models or tables used
+* Any new database fields created
+* Any remaining setup required
+
+Do not modify unrelated parts of the application.

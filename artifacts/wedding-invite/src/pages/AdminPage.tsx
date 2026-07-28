@@ -11,6 +11,7 @@ import {
   Users, UserCheck, UserX, CalendarHeart, Loader2, RefreshCw,
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
+  Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListDesignsQueryKey } from "@workspace/api-client-react";
@@ -21,7 +22,7 @@ import PricingTab from "@/components/PricingTab";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing";
+type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
 
 type RawCard = {
   id: number;
@@ -29,6 +30,43 @@ type RawCard = {
   path: string;
   category: string;
   publicUrl?: string;
+};
+
+type AdminOrder = {
+  id: number;
+  paymentStatus: string;
+  paymentReference?: string | null;
+  paymentGateway?: string | null;
+  amount: string;
+  paidAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  customer?: { id: number; name: string; email: string; createdAt: string } | null;
+  package?: { id: number; name: string; price: string } | null;
+  invitation?: {
+    id: number; token: string; brideName: string; groomName: string;
+    eventDate: string; venueName: string; websiteStatus: string; isPurchased: boolean;
+  } | null;
+};
+
+type AdminOrderStats = {
+  totalOrders: number;
+  successfulPayments: number;
+  pendingPayments: number;
+  failedPayments: number;
+  totalRevenue: number;
+  activeWebsites: number;
+  recentOrders: AdminOrder[];
+};
+
+type AdminCustomer = {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  totalOrders: number;
+  totalPaid: number;
+  websites: Array<{ id: number; token: string; websiteStatus: string; brideName: string; groomName: string }>;
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -1265,6 +1303,108 @@ function ReviewsTab() {
   );
 }
 
+function StatusBadge({ value }: { value: string }) {
+  const tone = ["PAID", "ACTIVE", "APPROVED"].includes(value)
+    ? "bg-emerald-100 text-emerald-700"
+    : ["FAILED", "EXPIRED", "REFUNDED", "DISABLED"].includes(value)
+    ? "bg-rose-100 text-rose-700"
+    : "bg-amber-100 text-amber-700";
+  return <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${tone}`}>{value}</span>;
+}
+
+function OrdersTab() {
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [stats, setStats] = useState<AdminOrderStats | null>(null);
+  const [search, setSearch] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [invitationStatus, setInvitationStatus] = useState("");
+  const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const query = new URLSearchParams({ search, paymentStatus, invitationStatus }).toString();
+      const [ordersRes, statsRes] = await Promise.all([
+        fetch(`${BASE}/api/admin/orders?${query}`, { credentials: "include", cache: "no-store" }),
+        fetch(`${BASE}/api/admin/orders/stats`, { credentials: "include", cache: "no-store" }),
+      ]);
+      if (!ordersRes.ok || !statsRes.ok) throw new Error("Unable to load orders");
+      setOrders(await ordersRes.json());
+      setStats(await statsRes.json());
+    } catch { toast.error("Failed to load orders."); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, [search, paymentStatus, invitationStatus]);
+
+  const statsCards = [
+    ["Total Orders", stats?.totalOrders ?? 0, ShoppingBag],
+    ["Successful Payments", stats?.successfulPayments ?? 0, CheckCircle2],
+    ["Pending Payments", stats?.pendingPayments ?? 0, Circle],
+    ["Active Websites", stats?.activeWebsites ?? 0, ExternalLink],
+  ] as const;
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3">
+        {statsCards.map(([label, value, Icon]) => (
+          <div key={label} className="rounded-2xl border border-border bg-card p-4">
+            <Icon size={17} className="mb-2 text-primary" />
+            <p className="text-2xl font-semibold">{value}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <div className="relative min-w-[220px] flex-1">
+          <Search size={15} className="absolute left-3 top-3 text-muted-foreground" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search order, name or email..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="rounded-xl border border-border bg-card px-3 text-sm">
+          <option value="">All payments</option><option>PENDING</option><option>PAID</option><option>FAILED</option><option>EXPIRED</option><option>REFUNDED</option>
+        </select>
+        <select value={invitationStatus} onChange={(e) => setInvitationStatus(e.target.value)} className="rounded-xl border border-border bg-card px-3 text-sm">
+          <option value="">All websites</option><option>PREVIEW</option><option>ACTIVE</option><option>DISABLED</option><option>EXPIRED</option>
+        </select>
+        <button onClick={load} className="rounded-xl border border-border px-3 text-sm hover:bg-muted"><RefreshCw size={15} /></button>
+      </div>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        {loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading orders…</div> : orders.length === 0 ? (
+          <div className="py-16 text-center"><ShoppingBag size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No orders yet</p><p className="mt-1 text-xs text-muted-foreground">Orders will appear here when payment is connected.</p></div>
+        ) : (
+          <table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Order ID","Customer","Design / Package","Amount","Payment","Website","Order date"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead>
+            <tbody className="divide-y divide-border">{orders.map((order) => <tr key={order.id} onClick={() => setSelected(order)} className="cursor-pointer hover:bg-muted/40">
+              <td className="px-4 py-3 font-mono text-xs">#{order.id}</td><td className="px-4 py-3"><p className="font-medium">{order.customer?.name ?? "Unknown"}</p><p className="text-xs text-muted-foreground">{order.customer?.email}</p></td>
+              <td className="px-4 py-3"><p>{order.invitation ? `${order.invitation.brideName} & ${order.invitation.groomName}` : "—"}</p><p className="text-xs text-muted-foreground">{order.package?.name ?? "—"}</p></td>
+              <td className="px-4 py-3">{order.amount}</td><td className="px-4 py-3"><StatusBadge value={order.paymentStatus} /></td><td className="px-4 py-3"><StatusBadge value={order.invitation?.websiteStatus ?? "DISABLED"} /></td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
+            </tr>)}</tbody>
+          </table>
+        )}
+      </div>
+      {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelected(null)}><div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}><div className="mb-5 flex items-center justify-between"><h2 className="font-semibold">Order #{selected.id}</h2><button onClick={() => setSelected(null)}><X size={18} /></button></div><div className="grid grid-cols-2 gap-4 text-sm"><div><p className="text-xs text-muted-foreground">Customer</p><p>{selected.customer?.name ?? "—"}</p><p className="text-xs text-muted-foreground">{selected.customer?.email}</p></div><div><p className="text-xs text-muted-foreground">Payment</p><StatusBadge value={selected.paymentStatus} /><p className="mt-1">{selected.amount}</p></div><div><p className="text-xs text-muted-foreground">Invitation</p><p>{selected.invitation ? `${selected.invitation.brideName} & ${selected.invitation.groomName}` : "—"}</p></div><div><p className="text-xs text-muted-foreground">Package</p><p>{selected.package?.name ?? "—"}</p></div></div>{selected.invitation && <div className="mt-6 flex gap-2"><a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={`/invite/${selected.invitation.token}`} target="_blank" rel="noreferrer">View Wedding Website</a><button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/${selected.invitation?.token}`)}>Copy Link</button></div>}</div></div>}
+    </div>
+  );
+}
+
+function CustomersTab() {
+  const [customers, setCustomers] = useState<AdminCustomer[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      fetch(`${BASE}/api/admin/customers?search=${encodeURIComponent(search)}`, { credentials: "include", cache: "no-store" })
+        .then((res) => res.ok ? res.json() : Promise.reject(new Error()))
+        .then(setCustomers).catch(() => toast.error("Failed to load customers.")).finally(() => setLoading(false));
+    }, 200);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  return <div className="space-y-5">
+    <div className="relative"><Search size={15} className="absolute left-3 top-3 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customer name or email..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" /></div>
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card">{loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading customers…</div> : customers.length === 0 ? <div className="py-16 text-center"><UserRound size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No customers yet</p><p className="mt-1 text-xs text-muted-foreground">Registered customer accounts will appear here.</p></div> : <table className="w-full min-w-[680px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Customer","Orders","Total paid","Websites","Registered"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead><tbody className="divide-y divide-border">{customers.map((customer) => <tr key={customer.id} className="hover:bg-muted/40"><td className="px-4 py-3"><p className="font-medium">{customer.name}</p><p className="text-xs text-muted-foreground">{customer.email}</p></td><td className="px-4 py-3">{customer.totalOrders}</td><td className="px-4 py-3">{customer.totalPaid.toFixed(2)}</td><td className="px-4 py-3">{customer.websites.length}</td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(customer.createdAt).toLocaleDateString("ms-MY")}</td></tr>)}</tbody></table>}</div>
+  </div>;
+}
+
 // ── Admin Page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -1319,7 +1459,7 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["rsvp", "RSVP Guests"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+        {([["rsvp", "RSVP Guests"], ["orders", "Orders"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -1399,6 +1539,8 @@ export default function AdminPage() {
       {tab === "rawcard" && <RawCardTab />}
       {tab === "reviews" && <ReviewsTab />}
       {tab === "pricing" && <PricingTab />}
+      {tab === "orders" && <OrdersTab />}
+      {tab === "customers" && <CustomersTab />}
     </div>
   );
 }

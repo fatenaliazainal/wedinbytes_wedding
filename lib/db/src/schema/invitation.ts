@@ -11,6 +11,7 @@ export const invitationTable = pgTable("invitation", {
   userId: integer("user_id"),
   packageId: integer("package_id"),
   isPurchased: boolean("is_purchased").notNull().default(false),
+  websiteStatus: text("website_status").notNull().default("ACTIVE"),
   lockPinHash: text("lock_pin_hash"),
   // Basic info
   groomName: text("groom_name").notNull(),

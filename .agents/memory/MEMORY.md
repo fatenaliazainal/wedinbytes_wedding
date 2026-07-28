@@ -3,3 +3,4 @@
 - [Drizzle push interactivity](drizzle-push-interactive.md) — drizzle-kit push can prompt when adding constraints with existing data; make workflow commands non-interactive.
 - [Zod optional vs null](zod-optional-null.md) — Zod `.optional()` rejects `null`; normalize DB rows or use `.nullish()` when parsing nullable columns.
 - [DB schema declarations](db-schema-declarations.md) — after changing Drizzle schema, rebuild the composite DB declarations before API typechecking.
+- [Admin order readiness](admin-order-readiness.md) — keep order/payment records additive and derive website status from purchase state plus an explicit admin status.
