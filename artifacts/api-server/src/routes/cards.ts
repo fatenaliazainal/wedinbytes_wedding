@@ -16,6 +16,14 @@ const upload = multer({
     cb(null, ok);
   },
 });
+const logoUpload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = /^image\/(jpeg|png|webp)$/.test(file.mimetype);
+    cb(null, ok);
+  },
+});
 
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
@@ -170,6 +178,33 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to upload gallery image");
     res.status(500).json({ error: "Failed to upload gallery image" });
+  }
+});
+
+// ── Upload a small initials/logo image for an invitation ─────────────────────
+router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
+  if (!isR2Configured()) {
+    res.status(503).json({ error: "Photo storage is not configured." });
+    return;
+  }
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "Logo image is required (jpeg/png/webp, max 2 MB)" });
+      return;
+    }
+    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp";
+    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
+    const imageKey = await uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: mimeType,
+      folder: invitationToken && typeof invitationToken === "string" ? `logos/${invitationToken}` : "logos",
+      metadata: { uploadedAt: new Date().toISOString(), invitationToken: typeof invitationToken === "string" ? invitationToken : "" },
+    });
+    res.json({ key: imageKey });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload initials logo");
+    res.status(500).json({ error: "Failed to upload logo" });
   }
 });
 

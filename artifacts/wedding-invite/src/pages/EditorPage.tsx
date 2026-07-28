@@ -125,6 +125,7 @@ interface InvData {
   coupleCount: number;
   groomInitial: string;
   brideInitial: string;
+  logoInitialsUrl: string;
   eventStartDateTime: string;
   eventEndDateTime: string;
   eventStartTime: string;
@@ -304,7 +305,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "",
+    groomInitial: "", brideInitial: "", logoInitialsUrl: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -428,6 +429,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           brideShortName: d.brideShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[0]?.trim() ?? "",
           coupleCount: d.coupleCount ?? 1,
           groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
+          logoInitialsUrl: d.logoInitialsUrl ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
           eventStartTime: d.eventStartTime ?? "11:00",
@@ -628,6 +630,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           coupleCount: inv.coupleCount,
           groomInitial: inv.groomInitial || undefined,
           brideInitial: inv.brideInitial || undefined,
+          logoInitialsUrl: inv.logoInitialsUrl || undefined,
           eventStartDateTime: inv.eventStartDateTime || undefined,
           eventEndDateTime: inv.eventEndDateTime || undefined,
           coverDateText: inv.coverDateText || undefined,
@@ -740,6 +743,36 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       toast.error("Network error during upload.");
     } finally {
       setUploadingGallery(false);
+    }
+  }
+
+  async function uploadInitialsLogo(file: File | undefined) {
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      toast.error("Logo mesti dalam format JPG, PNG atau WebP.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Saiz logo maksimum ialah 2 MB.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${BASE}/api/logo-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.key) {
+        toast.error(data.error || "Logo gagal dimuat naik.");
+        return;
+      }
+      setInv((p) => ({ ...p, logoInitialsUrl: data.key }));
+      toast.success("Logo initials berjaya dimuat naik.");
+    } catch {
+      toast.error("Network error semasa upload logo.");
     }
   }
 
@@ -966,6 +999,36 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder="Sarah" />
                   </Field>
                 </div>
+                <Field label="Logo Initials">
+                  <div className="space-y-2">
+                    {inv.logoInitialsUrl && (
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={resolveImageUrl(inv.logoInitialsUrl)}
+                          alt="Logo initials"
+                          className="h-20 w-20 rounded-full border border-gray-200 object-contain bg-white p-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setInv((p) => ({ ...p, logoInitialsUrl: "" }))}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Remove logo
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => {
+                        void uploadInitialsLogo(e.target.files?.[0]);
+                        e.currentTarget.value = "";
+                      }}
+                      className={inputCls}
+                    />
+                    <p className="text-xs text-gray-400">Upload logo kecil untuk menggantikan bulatan initials. PNG/JPG/WebP, maksimum 2 MB.</p>
+                  </div>
+                </Field>
                 <Field label="Hashtag">
                   <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder="#OurWedding" />
                 </Field>
@@ -1691,6 +1754,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               >
                 <WeddingCard
                   invitation={inv}
+                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                   cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   cardMaxWidth={design.cardMaxWidth}
@@ -1708,6 +1772,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     onOpen={() => setPreviewOpened(true)}
                     names={inv.shortCoupleName || `${inv.groomShortName || inv.groomName || "Nasser"} & ${inv.brideShortName || inv.brideName || "Alia"}`}
                     openButtonText={design.openButtonText || "BUKA"}
+                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
                 ) : (
@@ -1719,6 +1784,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}
+                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                   />
                 )
               )}

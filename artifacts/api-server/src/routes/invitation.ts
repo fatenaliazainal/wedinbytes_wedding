@@ -40,7 +40,7 @@ const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
   "groomParents","brideParents","contactPhone","contacts","dresscode","message","galleryImages",
-  "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial",
+  "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","logoInitialsUrl",
   "eventStartDateTime","eventEndDateTime",
   "eventStartTime","eventEndTime",
   "itinerary",

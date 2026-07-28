@@ -14,6 +14,7 @@ interface WeddingCardProps {
   invitation?: Invitation;
   cardImageUrl?: string;
   envelopeImageUrl?: string;
+  logoInitialsUrl?: string;
   cardMaxWidth?: string;
   guestWishes?: { name: string; message?: string | null; createdAt?: string }[];
   rsvpCount?: { attending: number; notAttending: number; totalGuests: number };
@@ -258,7 +259,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoInitialsUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -323,6 +324,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       {/* ── PAGE 1: MAIN INVITATION / COVER ── */}
       <section className={sectionBase}>
         <PageBackground imageUrl={bgUrl} />
+        {logoInitialsUrl && (
+          <img
+            src={logoInitialsUrl}
+            alt="Logo initials"
+            className="absolute z-10 top-6 left-1/2 -translate-x-1/2 h-20 w-20 object-contain"
+          />
+        )}
         {showFrontText && (
           <div className={coverPanelBase}>
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
