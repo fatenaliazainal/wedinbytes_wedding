@@ -280,8 +280,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const coupleParts = shortCoupleName.includes(" & ")
     ? shortCoupleName.split(" & ").map((s) => s.trim())
     : [];
-  const brideName = brideShort || coupleParts[0] || invitation.brideName?.trim() || "";
-  const groomName = groomShort || coupleParts[1] || invitation.groomName?.trim() || "";
+  const groomName = groomShort || invitation.groomName?.trim() || coupleParts[0] || "";
+  const brideName = brideShort || invitation.brideName?.trim() || coupleParts[1] || "";
 
   const nameStyle: React.CSSProperties = {
     fontFamily: "var(--name-font-family, 'Dancing Script', serif)",

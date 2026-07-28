@@ -17,14 +17,14 @@ function slugPart(value: string | null | undefined): string {
 }
 
 export function inviteNameSlug(
-  brideName: string | null | undefined,
   groomName: string | null | undefined,
-  brideFallback?: string | null,
+  brideName: string | null | undefined,
   groomFallback?: string | null,
+  brideFallback?: string | null,
 ): string {
-  const brideSlug = slugPart(brideName) || slugPart(brideFallback);
   const groomSlug = slugPart(groomName) || slugPart(groomFallback);
-  return [brideSlug, groomSlug].filter(Boolean).join("-") || "wi";
+  const brideSlug = slugPart(brideName) || slugPart(brideFallback);
+  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
 }
 
 export function publicInvitePath(invitation: {
@@ -37,9 +37,9 @@ export function publicInvitePath(invitation: {
   groomInitial?: string | null;
 }): string {
   return `/invite/${inviteDateCode(invitation.eventDate)}/${inviteNameSlug(
-    invitation.brideName,
+    invitation.groomShortName || invitation.groomInitial || invitation.groomName,
+    invitation.brideShortName || invitation.brideInitial || invitation.brideName,
     invitation.groomName,
-    invitation.brideShortName || invitation.brideInitial,
-    invitation.groomShortName || invitation.groomInitial,
+    invitation.brideName,
   )}`;
 }

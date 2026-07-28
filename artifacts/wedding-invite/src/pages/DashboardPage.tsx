@@ -114,7 +114,7 @@ export default function DashboardPage() {
   };
 
   const displayName = invitation
-    ? `${invitation.brideName} & ${invitation.groomName}`
+    ? `${invitation.groomName} & ${invitation.brideName}`
     : "";
 
   const createdDate = invitation

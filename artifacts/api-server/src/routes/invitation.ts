@@ -25,9 +25,9 @@ function publicDateCode(eventDate: string | null | undefined) {
 }
 
 function publicSlug(row: typeof invitationTable.$inferSelect) {
-  const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
   const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
-  return [brideSlug, groomSlug].filter(Boolean).join("-") || "wi";
+  const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
+  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
 }
 
 function legacyPublicSlug(row: typeof invitationTable.$inferSelect) {
