@@ -53,11 +53,11 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
           <>
             <CarouselPrevious
               aria-label="Previous gallery image"
-              className="!left-0 !right-auto !top-1/2 z-20 h-20 w-10 -translate-y-1/2 !border-0 !bg-transparent !p-0 !text-[#f2e500] !shadow-none hover:!bg-transparent hover:!text-[#e5d900] [&_svg]:!h-16 [&_svg]:!w-10 [&_svg]:!stroke-[3]"
+              className="!left-2 !right-auto !top-1/2 z-20 h-5 w-5 -translate-y-1/2 !border !border-black/10 !bg-white/90 !p-0 !text-black/55 !shadow-sm backdrop-blur-[2px] hover:!bg-white hover:!text-black/75 [&_svg]:!h-3 [&_svg]:!w-3 [&_svg]:!stroke-[1.5]"
             />
             <CarouselNext
               aria-label="Next gallery image"
-              className="!right-0 !left-auto !top-1/2 z-20 h-20 w-10 -translate-y-1/2 !border-0 !bg-transparent !p-0 !text-[#f2e500] !shadow-none hover:!bg-transparent hover:!text-[#e5d900] [&_svg]:!h-16 [&_svg]:!w-10 [&_svg]:!stroke-[3]"
+              className="!right-2 !left-auto !top-1/2 z-20 h-5 w-5 -translate-y-1/2 !border !border-black/10 !bg-white/90 !p-0 !text-black/55 !shadow-sm backdrop-blur-[2px] hover:!bg-white hover:!text-black/75 [&_svg]:!h-3 [&_svg]:!w-3 [&_svg]:!stroke-[1.5]"
             />
           </>
         )}
