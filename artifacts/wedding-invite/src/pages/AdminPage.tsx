@@ -1320,6 +1320,7 @@ function OrdersTab() {
   const [invitationStatus, setInvitationStatus] = useState("");
   const [selected, setSelected] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [togglingStatus, setTogglingStatus] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -1336,6 +1337,30 @@ function OrdersTab() {
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, [search, paymentStatus, invitationStatus]);
+
+  const handleToggleWebsiteStatus = async (order: AdminOrder) => {
+    if (!order.invitation) return;
+    const currentStatus = order.invitation.websiteStatus;
+    const newStatus = currentStatus === "DISABLED" ? "ACTIVE" : "DISABLED";
+    setTogglingStatus(true);
+    try {
+      const res = await fetch(`${BASE}/api/admin/invitations/${order.invitation.id}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update website status");
+      toast.success(`Website ${newStatus === "ACTIVE" ? "activated" : "disabled"}.`);
+      await load();
+      // Refresh the selected order state
+      setSelected(null);
+    } catch {
+      toast.error("Failed to update website status.");
+    } finally {
+      setTogglingStatus(false);
+    }
+  };
 
   const statsCards = [
     ["Total Orders", stats?.totalOrders ?? 0, ShoppingBag],
@@ -1381,7 +1406,62 @@ function OrdersTab() {
           </table>
         )}
       </div>
-      {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelected(null)}><div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}><div className="mb-5 flex items-center justify-between"><h2 className="font-semibold">Order #{selected.id}</h2><button onClick={() => setSelected(null)}><X size={18} /></button></div><div className="grid grid-cols-2 gap-4 text-sm"><div><p className="text-xs text-muted-foreground">Customer</p><p>{selected.customer?.name ?? "—"}</p><p className="text-xs text-muted-foreground">{selected.customer?.email}</p></div><div><p className="text-xs text-muted-foreground">Payment</p><StatusBadge value={selected.paymentStatus} /><p className="mt-1">{selected.amount}</p></div><div><p className="text-xs text-muted-foreground">Invitation</p><p>{selected.invitation ? `${selected.invitation.brideName} & ${selected.invitation.groomName}` : "—"}</p></div><div><p className="text-xs text-muted-foreground">Package</p><p>{selected.package?.name ?? "—"}</p></div></div>{selected.invitation && <div className="mt-6 flex gap-2"><a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={`/invite/${selected.invitation.token}`} target="_blank" rel="noreferrer">View Wedding Website</a><button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/${selected.invitation?.token}`)}>Copy Link</button></div>}</div></div>}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelected(null)}>
+          <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="font-semibold">Order #{selected.id}</h2>
+              <button onClick={() => setSelected(null)}><X size={18} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Customer</p>
+                <p>{selected.customer?.name ?? "—"}</p>
+                <p className="text-xs text-muted-foreground">{selected.customer?.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Payment</p>
+                <StatusBadge value={selected.paymentStatus} />
+                <p className="mt-1">{selected.amount}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Invitation</p>
+                <p>{selected.invitation ? `${selected.invitation.brideName} & ${selected.invitation.groomName}` : "—"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Package</p>
+                <p>{selected.package?.name ?? "—"}</p>
+              </div>
+            </div>
+            {selected.invitation && (
+              <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Website Status</p>
+                    <StatusBadge value={selected.invitation.websiteStatus} />
+                  </div>
+                  <button
+                    disabled={togglingStatus}
+                    onClick={() => handleToggleWebsiteStatus(selected)}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors disabled:opacity-40 ${
+                      selected.invitation.websiteStatus === "DISABLED"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                        : "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
+                    }`}
+                  >
+                    {togglingStatus ? <Loader2 size={12} className="animate-spin" /> : selected.invitation.websiteStatus === "DISABLED" ? <CheckCircle2 size={12} /> : <Ban size={12} />}
+                    {selected.invitation.websiteStatus === "DISABLED" ? "Activate" : "Disable"}
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={`/invite/${selected.invitation.token}`} target="_blank" rel="noreferrer">View Website</a>
+                  <button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/${selected.invitation?.token}`)}>Copy Link</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
