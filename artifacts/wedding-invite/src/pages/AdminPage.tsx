@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
-  useListRsvps,
-  useGetRsvpCount,
   useListDesigns,
   useActivateDesign,
   CardDesign,
 } from "@workspace/api-client-react";
 import {
-  Users, UserCheck, UserX, CalendarHeart, Loader2, RefreshCw,
+  Loader2, RefreshCw,
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
   Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag,
@@ -22,7 +20,7 @@ import PricingTab from "@/components/PricingTab";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "rsvp" | "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
+type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
 
 type RawCard = {
   id: number;
@@ -1488,7 +1486,7 @@ function CustomersTab() {
 // ── Admin Page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<Tab>("rsvp");
+  const [tab, setTab] = useState<Tab>("orders");
   const [, navigate] = useLocation();
   const { user, loading: authLoading } = useAuth();
 
@@ -1504,11 +1502,6 @@ export default function AdminPage() {
   }, [user, authLoading, navigate]);
 
   const isAdmin = !authLoading && user?.role === "admin";
-  const { data: rsvps, isLoading: rsvpsLoading, isError: rsvpsError, refetch: refetchRsvps } =
-    useListRsvps({ query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
-  const { data: counts, isLoading: countsLoading, refetch: refetchCounts } =
-    useGetRsvpCount(undefined, { query: { refetchInterval: 30_000, queryKey: [], enabled: isAdmin } });
-
   if (authLoading || !user || user.role !== "admin") {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background">
@@ -1517,29 +1510,17 @@ export default function AdminPage() {
     );
   }
 
-  const isLoading = rsvpsLoading || countsLoading;
-
   return (
     <div className="min-h-[100dvh] bg-background px-4 py-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-serif text-2xl text-foreground">Admin Dashboard</h1>
-          <p className="text-sm text-muted-foreground">RSVP &amp; Card Design Management</p>
+          <p className="text-sm text-muted-foreground">Orders, Customers &amp; Card Design Management</p>
         </div>
-        {tab === "rsvp" && (
-          <button
-            onClick={() => { refetchRsvps(); refetchCounts(); }}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted transition-colors disabled:opacity-40"
-          >
-            <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
-            Refresh
-          </button>
-        )}
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["rsvp", "RSVP Guests"], ["orders", "Orders"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -1556,64 +1537,6 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
-
-      {tab === "rsvp" && (
-        <>
-          <div className="grid grid-cols-1 gap-3 mb-8 sm:grid-cols-3">
-            <StatCard icon={UserCheck} label="Attending" value={counts?.attending} color="bg-emerald-100 text-emerald-700" />
-            <StatCard icon={UserX} label="Not Attending" value={counts?.notAttending} color="bg-rose-100 text-rose-600" />
-            <StatCard icon={CalendarHeart} label="Total Guests" value={counts?.totalGuests} color="bg-primary/10 text-primary" />
-          </div>
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
-              <Users size={16} className="text-muted-foreground" />
-              <h2 className="font-semibold text-sm text-foreground">
-                Guest List
-                {rsvps && <span className="ml-2 text-muted-foreground font-normal">({rsvps.length} respons)</span>}
-              </h2>
-            </div>
-            {rsvpsLoading ? (
-              <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
-                <Loader2 size={18} className="animate-spin" /> <span className="text-sm">Loading…</span>
-              </div>
-            ) : rsvpsError ? (
-              <div className="py-16 text-center text-sm text-destructive">Failed to load RSVPs. Please refresh.</div>
-            ) : !rsvps?.length ? (
-              <div className="py-16 text-center text-sm text-muted-foreground">No RSVP responses yet.</div>
-            ) : (
-              <div className="divide-y divide-border">
-                {rsvps.map((rsvp) => {
-                  const rsvpRecord = rsvp as unknown as Record<string, unknown>;
-                  return (
-                    <div key={rsvp.id} className="px-5 py-4 flex items-start gap-3">
-                      <div className="mt-0.5">
-                        {rsvp.attending ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                            <UserCheck size={11} /> Attending
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">
-                            <UserX size={11} /> Not Attending
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{rsvp.name}</p>
-                        <p className="text-[10px] text-muted-foreground/70 mt-0.5">{rsvpRecord.invitationToken as string}</p>
-                        {rsvp.attending && <p className="text-xs text-muted-foreground mt-0.5">{rsvp.numberOfGuests} guests{(rsvpRecord.timeSlot as string | undefined) ? ` · ${rsvpRecord.timeSlot as string}` : ""}</p>}
-                        {rsvp.message && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-2">"{rsvp.message}"</p>}
-                      </div>
-                      <p className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
-                        {new Date(rsvp.createdAt).toLocaleDateString("ms-MY", { day: "numeric", month: "short" })}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </>
-      )}
 
       {tab === "designs" && <DesignsTab />}
       {tab === "rawcard" && <RawCardTab />}
