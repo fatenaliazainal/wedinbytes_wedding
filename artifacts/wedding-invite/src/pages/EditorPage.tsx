@@ -14,7 +14,7 @@ import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react"
 import type { PricingPackage } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-import { resolveImageUrl } from "@/lib/r2-url";
+import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
 
 const TABS = [
@@ -1189,7 +1189,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                           src={resolveImageUrl(url)}
                           alt={`Gallery preview ${idx + 1}`}
                           onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' fill='%23f3f4f6'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='12'%3EImage not found%3C/text%3E%3C/svg%3E";
+                            fallbackToR2Proxy(e, url);
                           }}
                           className="w-full h-24 object-cover rounded border border-gray-200"
                         />

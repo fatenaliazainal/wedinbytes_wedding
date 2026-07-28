@@ -8,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { resolveImageUrl } from "@/lib/r2-url";
+import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 interface WeddingCardProps {
   invitation?: Invitation;
@@ -513,7 +513,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                             src={resolved}
                             alt={`${t.galleryLabel} ${idx + 1}`}
                             onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%23f3f4f6'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImage not found%3C/text%3E%3C/svg%3E";
+                              fallbackToR2Proxy(e, url);
                             }}
                             className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
                             loading="lazy"
