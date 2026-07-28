@@ -714,7 +714,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
   async function handleLogout() {
     await logout();
-    navigate("/login");
+    navigate(mode === "demo" ? "/login" : "/");
   }
 
   async function uploadGalleryFiles(files: FileList | null) {

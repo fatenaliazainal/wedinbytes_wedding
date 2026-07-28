@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const inviteLink = invitation
