@@ -270,6 +270,22 @@ export default function InvitationPage() {
         )}
       </div>
 
+      {/* Unpaid buyer invitations remain visible as a reference preview until
+          payment is completed. The admin demo card is never watermarked. */}
+      {resolvedToken !== "demo" && invitationRecord?.isPurchased !== true && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
+          style={{ transform: "rotate(-30deg)" }}
+        >
+          <span
+            className="font-black tracking-[0.3em] text-black/25 select-none"
+            style={{ fontSize: "clamp(2rem, 8vw, 5rem)", textShadow: "0 1px 3px rgba(255,255,255,0.45)" }}
+          >
+            PREVIEW
+          </span>
+        </div>
+      )}
+
       {/* Replay + Mute buttons — fixed top-left, only visible when card is open */}
       <AnimatePresence>
         {isOpened && (

@@ -289,6 +289,19 @@ export default function DashboardPage() {
                         </span>
                       </div>
                     </div>
+                    {!invitation.isPurchased && (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        style={{ transform: "rotate(-45deg)" }}
+                      >
+                        <span
+                          className="text-white/75 font-black tracking-[0.14em] select-none"
+                          style={{ fontSize: 10, textShadow: "0 1px 2px rgba(0,0,0,0.55)" }}
+                        >
+                          PREVIEW
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 bg-white/40 rounded-full" style={{ width: 24, height: 3 }} />
                   </div>
 

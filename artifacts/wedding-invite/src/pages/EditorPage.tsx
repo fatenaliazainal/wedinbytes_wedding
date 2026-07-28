@@ -100,6 +100,7 @@ function normalizeContacts(raw: unknown, fallbackPhone: string): Contact[] {
 interface InvData {
   id: number;
   token: string;
+  isPurchased: boolean;
   groomName: string;
   brideName: string;
   eventType: string;
@@ -292,6 +293,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [inv, setInv] = useState<InvData>({
     id: 0,
     token: "",
+    isPurchased: false,
     groomName: "", brideName: "", eventType: "Walimatul Urus",
     eventDate: "", eventDay: "", eventTime: "11:00 pagi – 4:00 petang",
     eventStartTime: "11:00", eventEndTime: "16:00",
@@ -407,6 +409,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         setInv({
           id: d.id ?? 0,
           token: d.token ?? "",
+          isPurchased: d.isPurchased === true,
           groomName: d.groomName ?? "", brideName: d.brideName ?? "",
           eventType: d.eventType ?? "Walimatul Urus",
           eventDate: d.eventDate ?? "", eventDay: d.eventDay ?? "",
@@ -1708,15 +1711,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 )
               )}
 
-              {/* PREVIU watermark */}
-              <div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{ transform: "rotate(-30deg)", zIndex: 40 }}
-              >
-                <span className="text-white/20 font-black tracking-[0.3em] select-none" style={{ fontSize: 52 }}>
-                  PREVIEW
-                </span>
-              </div>
+              {/* Unpaid cards are clearly marked as previews. The editor remains
+                  interactive so buyers can continue preparing their invitation. */}
+              {!inv.isPurchased && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{ transform: "rotate(-30deg)", zIndex: 40 }}
+                >
+                  <span
+                    className="text-white/25 font-black tracking-[0.3em] select-none"
+                    style={{ fontSize: 52, textShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
+                  >
+                    PREVIEW
+                  </span>
+                </div>
+              )}
 
               {/* Bottom nav — actual component, positioned inside the preview frame */}
               {previewOpened && (
