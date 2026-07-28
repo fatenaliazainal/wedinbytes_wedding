@@ -604,84 +604,86 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       // When the design code changes we must also persist the new template's colours, otherwise
       // stale colour overrides from the previous template keep overriding the new template.
       const designCodeChanged = inv.designCode !== design.designCode;
+      const savePayload: Record<string, unknown> = {
+        // Invitation content — explicit nulls clear previously saved optional values.
+        groomName: inv.groomName, brideName: inv.brideName,
+        eventType: inv.eventType, eventDate: inv.eventDate,
+        eventDay: inv.eventDay, eventTime: inv.eventTime,
+        eventStartTime: inv.eventStartTime || null,
+        eventEndTime: inv.eventEndTime || null,
+        venueName: inv.venueName, venueAddress: inv.venueAddress,
+        venueCity: inv.venueCity, venueState: inv.venueState,
+        venueMapUrl: inv.venueMapUrl || null,
+        groomParents: inv.groomParents || null,
+        brideParents: inv.brideParents || null,
+        contactPhone: inv.contactPhone,
+        contacts: inv.contacts,
+        dresscode: inv.dresscode || null,
+        message: inv.message || null,
+        shortCoupleName: inv.shortCoupleName || null,
+        groomShortName: inv.groomShortName || null,
+        brideShortName: inv.brideShortName || null,
+        coupleCount: inv.coupleCount,
+        groomInitial: inv.groomInitial || null,
+        brideInitial: inv.brideInitial || null,
+        logoInitialsUrl: inv.logoInitialsUrl || null,
+        eventStartDateTime: inv.eventStartDateTime || null,
+        eventEndDateTime: inv.eventEndDateTime || null,
+        coverDateText: inv.coverDateText || null,
+        additionalInfo: inv.additionalInfo || null,
+        coverTitle: inv.coverTitle || null,
+        hashtag: inv.hashtag || null,
+        language: inv.language,
+        showFrontText: inv.showFrontText,
+        greetingText: inv.greetingText || null,
+        doaText: inv.doaText || null,
+        invitationText: inv.invitationText || null,
+        hostName: inv.hostName || null,
+        hostCount: inv.hostCount,
+        venueHijriDate: inv.venueHijriDate || null,
+        schedule: inv.schedule || null,
+        itinerary: inv.itinerary,
+        galleryImages: inv.galleryImages,
+        rsvpEnabled: inv.rsvpEnabled,
+        rsvpAdditionalInfo: inv.rsvpAdditionalInfo || null,
+        rsvpDeadline: inv.rsvpDeadline || null,
+        rsvpIntroText: inv.rsvpIntroText || null,
+        rsvpFormNote: inv.rsvpFormNote || null,
+        rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
+        rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
+        rsvpTimeSlots: inv.rsvpTimeSlots || null,
+        packageId: activePackageId ?? null,
+        // Buyer design overrides are stored per invitation, never in the global template.
+        designCode: design.designCode || null,
+        openingAnimation: design.openingAnimation || null,
+        openButtonText: design.openButtonText || null,
+        nameFontFamily: design.nameFontFamily || null,
+        nameFontSize: design.nameFontSize || null,
+        badgeFontSize: design.badgeFontSize || null,
+        bodyFontFamily: design.bodyFontFamily || null,
+        nameColor: designCodeChanged || design.nameColor !== inheritedColors.nameColor ? (design.nameColor || null) : null,
+        colorPrimary: designCodeChanged || design.colorPrimary !== inheritedColors.colorPrimary ? (design.colorPrimary || null) : null,
+        colorSecondary: designCodeChanged || design.colorSecondary !== inheritedColors.colorSecondary ? (design.colorSecondary || null) : null,
+        colorBackground: designCodeChanged || design.colorBackground !== inheritedColors.colorBackground ? (design.colorBackground || null) : null,
+        colorCard: designCodeChanged || design.colorCard !== inheritedColors.colorCard ? (design.colorCard || null) : null,
+        musicUrl: design.musicUrl || null,
+        musicTitle: design.musicTitle || null,
+        musicArtist: design.musicArtist || null,
+      };
+
+      // Footer branding is admin-owned and must not be included in buyer saves.
+      if (mode === "admin" || mode === "demo") {
+        savePayload.showFooter = inv.showFooter;
+        savePayload.footerText = inv.footerText || null;
+        savePayload.footerUrl = inv.footerUrl || null;
+        savePayload.socialLinks = inv.socialLinks;
+      }
+
       const r = await fetch(`${BASE}/api/invitation/${saveToken}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          // Invitation content
-          groomName: inv.groomName, brideName: inv.brideName,
-          eventType: inv.eventType, eventDate: inv.eventDate,
-          eventDay: inv.eventDay, eventTime: inv.eventTime,
-          eventStartTime: inv.eventStartTime || undefined,
-          eventEndTime: inv.eventEndTime || undefined,
-          venueName: inv.venueName, venueAddress: inv.venueAddress,
-          venueCity: inv.venueCity, venueState: inv.venueState,
-          venueMapUrl: inv.venueMapUrl || undefined,
-          groomParents: inv.groomParents || undefined,
-          brideParents: inv.brideParents || undefined,
-          contactPhone: inv.contactPhone,
-          contacts: inv.contacts.length > 0 ? inv.contacts : undefined,
-          dresscode: inv.dresscode || undefined,
-          message: inv.message || undefined,
-          shortCoupleName: inv.shortCoupleName || undefined,
-          groomShortName: inv.groomShortName || undefined,
-          brideShortName: inv.brideShortName || undefined,
-          coupleCount: inv.coupleCount,
-          groomInitial: inv.groomInitial || undefined,
-          brideInitial: inv.brideInitial || undefined,
-          logoInitialsUrl: inv.logoInitialsUrl || undefined,
-          eventStartDateTime: inv.eventStartDateTime || undefined,
-          eventEndDateTime: inv.eventEndDateTime || undefined,
-          coverDateText: inv.coverDateText || undefined,
-          additionalInfo: inv.additionalInfo || undefined,
-          coverTitle: inv.coverTitle || undefined,
-          hashtag: inv.hashtag || undefined,
-          language: inv.language,
-          showFrontText: inv.showFrontText,
-          greetingText: inv.greetingText || undefined,
-          doaText: inv.doaText || undefined,
-          invitationText: inv.invitationText || undefined,
-          hostName: inv.hostName || undefined,
-          hostCount: inv.hostCount,
-          venueHijriDate: inv.venueHijriDate || undefined,
-          schedule: inv.schedule || undefined,
-          itinerary: inv.itinerary.length > 0 ? inv.itinerary : undefined,
-          galleryImages: inv.galleryImages.length > 0 ? inv.galleryImages : undefined,
-          rsvpEnabled: inv.rsvpEnabled,
-          rsvpAdditionalInfo: inv.rsvpAdditionalInfo || undefined,
-          rsvpDeadline: inv.rsvpDeadline || undefined,
-          rsvpIntroText: inv.rsvpIntroText || undefined,
-          rsvpFormNote: inv.rsvpFormNote || undefined,
-          rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
-          rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
-          rsvpTimeSlots: inv.rsvpTimeSlots || undefined,
-          showFooter: inv.showFooter,
-          footerText: inv.footerText || undefined,
-          footerUrl: inv.footerUrl || undefined,
-          socialLinks: inv.socialLinks.length > 0 ? inv.socialLinks : undefined,
-          packageId: activePackageId ?? undefined,
-          // Buyer design overrides (stored per-invitation, does NOT affect demo)
-          designCode: design.designCode != null ? design.designCode : undefined,
-          openingAnimation: design.openingAnimation || undefined,
-          openButtonText: design.openButtonText || undefined,
-          nameFontFamily: design.nameFontFamily || undefined,
-          nameFontSize: design.nameFontSize || undefined,
-          badgeFontSize: design.badgeFontSize || undefined,
-          // Only save colour overrides when the buyer changed them from the inherited template/demo values.
-          // If the design code itself changed, persist the new template's colours so the old template's
-          // overrides do not keep shadowing the new design.
-          nameColor:        designCodeChanged || design.nameColor        !== inheritedColors.nameColor        ? (design.nameColor || undefined)        : undefined,
-          bodyFontFamily: design.bodyFontFamily || undefined,
-          colorPrimary:     designCodeChanged || design.colorPrimary     !== inheritedColors.colorPrimary     ? (design.colorPrimary || undefined)     : undefined,
-          colorSecondary:   designCodeChanged || design.colorSecondary   !== inheritedColors.colorSecondary   ? (design.colorSecondary || undefined)   : undefined,
-          colorBackground:  designCodeChanged || design.colorBackground  !== inheritedColors.colorBackground  ? (design.colorBackground || undefined)  : undefined,
-          colorCard:        designCodeChanged || design.colorCard        !== inheritedColors.colorCard        ? (design.colorCard || undefined)        : undefined,
-          // Music
-          musicUrl:    design.musicUrl    || undefined,
-          musicTitle:  design.musicTitle  || undefined,
-          musicArtist: design.musicArtist || undefined,
-        }),
+        body: JSON.stringify(savePayload),
       });
       if (r.ok) {
         toast.success("Details saved successfully!");
@@ -1634,20 +1636,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       />
                     </div>
                     <span className="text-sm text-gray-600">Page background</span>
-                  </div>
-                </Field>
-                <Field label="Accent Color">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorSecondary || "142 30% 92%"})` }} />
-                      <input
-                        type="color"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        value={hslToHex(design.colorSecondary || "142 30% 92%")}
-                        onChange={(e) => setDesign(p => ({ ...p, colorSecondary: hexToHsl(e.target.value) }))}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-600">Soft accents</span>
                   </div>
                 </Field>
                 <Field label="Song Link (YouTube)">
