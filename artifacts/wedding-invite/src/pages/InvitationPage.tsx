@@ -233,7 +233,6 @@ export default function InvitationPage() {
     : "A & H";
   const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
-  const logoInitialsUrl = (invitationRecord?.logoInitialsUrl as string | undefined) || undefined;
 
   const cardFontVars = {
     "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
@@ -292,7 +291,6 @@ export default function InvitationPage() {
           initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
-          logoInitialsUrl={logoInitialsUrl ? resolveImageUrl(logoInitialsUrl) : undefined}
         />
       ) : (
         <EnvelopeDoors
@@ -304,7 +302,6 @@ export default function InvitationPage() {
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
-          logoInitialsUrl={logoInitialsUrl ? resolveImageUrl(logoInitialsUrl) : undefined}
         />
       )}
 
@@ -322,7 +319,6 @@ export default function InvitationPage() {
           invitation={invitation}
           cardImageUrl={resolvedCardImageUrl}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
-          logoInitialsUrl={logoInitialsUrl ? resolveImageUrl(logoInitialsUrl) : undefined}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
           guestWishes={guestWishes}
           rsvpCount={rsvpCount ?? undefined}

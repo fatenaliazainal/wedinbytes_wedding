@@ -7,7 +7,6 @@ interface EnvelopeDoorsProps {
   names: string;
   initialsSize?: string;
   envelopeImageUrl?: string;
-  logoInitialsUrl?: string;
   openButtonText?: string;
   cardMaxWidth?: string;
 }
@@ -24,7 +23,6 @@ export function EnvelopeDoors({
   names,
   initialsSize,
   openButtonText = "BUKA",
-  logoInitialsUrl,
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
   const maxWidth = cardMaxWidth || "420px";
@@ -78,9 +76,6 @@ export function EnvelopeDoors({
             }}
           >
             <div className="absolute inset-2 border border-dashed border-primary/40 rounded-full" />
-            {logoInitialsUrl ? (
-              <img src={logoInitialsUrl} alt="Logo initials" className="relative z-10 h-20 w-20 object-contain" />
-            ) : (
             <span
               className="text-primary text-center px-4 leading-tight drop-shadow-sm"
               style={{
@@ -90,7 +85,6 @@ export function EnvelopeDoors({
             >
               {names}
             </span>
-            )}
           </div>
 
           <motion.div

@@ -9,7 +9,6 @@ interface EnvelopeAnimationProps {
   names: string;
   initialsSize?: string;
   envelopeImageUrl?: string;
-  logoInitialsUrl?: string;
   openButtonText?: string;
 }
 
@@ -20,7 +19,6 @@ export function EnvelopeAnimation({
   initialsSize,
   envelopeImageUrl,
   openButtonText = "BUKA",
-  logoInitialsUrl,
 }: EnvelopeAnimationProps) {
   const [phase, setPhase] = useState<"idle" | "flap" | "done">("idle");
   const bgImage = envelopeImageUrl || defaultEnvelopeRef;
@@ -79,9 +77,6 @@ export function EnvelopeAnimation({
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="relative w-[130px] h-[130px] rounded-full bg-card/80 border border-primary/30 flex items-center justify-center shadow-md">
                   <div className="absolute inset-2 border border-dashed border-primary/30 rounded-full pointer-events-none" />
-                  {logoInitialsUrl ? (
-                    <img src={logoInitialsUrl} alt="Logo initials" className="relative z-10 h-20 w-20 object-contain" />
-                  ) : (
                   <span
                     className="text-primary text-center leading-snug px-4 relative"
                     style={{
@@ -91,7 +86,6 @@ export function EnvelopeAnimation({
                   >
                     {names}
                   </span>
-                  )}
                 </div>
               </div>
 

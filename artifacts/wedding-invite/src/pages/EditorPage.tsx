@@ -132,7 +132,6 @@ interface InvData {
   envelopeInitials: string;
   envelopeInitialsSize: string;
   page2Initials: string;
-  logoInitialsUrl: string;
   eventStartDateTime: string;
   eventEndDateTime: string;
   eventStartTime: string;
@@ -312,7 +311,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", page2Initials: "", logoInitialsUrl: "",
+    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", page2Initials: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -452,7 +451,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           envelopeInitials: d.envelopeInitials ?? "",
           envelopeInitialsSize: d.envelopeInitialsSize ? String(d.envelopeInitialsSize) : "24",
           page2Initials: d.page2Initials ?? "",
-          logoInitialsUrl: d.logoInitialsUrl ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
           eventStartTime: d.eventStartTime ?? "11:00",
@@ -710,7 +708,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         envelopeInitials: inv.envelopeInitials || null,
         envelopeInitialsSize: String(Number(inv.envelopeInitialsSize) || 24),
         page2Initials: inv.page2Initials || null,
-        logoInitialsUrl: inv.logoInitialsUrl || null,
         eventStartDateTime: inv.eventStartDateTime || null,
         eventEndDateTime: inv.eventEndDateTime || null,
         coverDateText: inv.coverDateText || null,
@@ -829,36 +826,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       toast.error("Network error during upload.");
     } finally {
       setUploadingGallery(false);
-    }
-  }
-
-  async function uploadInitialsLogo(file: File | undefined) {
-    if (!file) return;
-    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-      toast.error("Logo mesti dalam format JPG, PNG atau WebP.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Saiz logo maksimum ialah 2 MB.");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await fetch(`${BASE}/api/logo-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.key) {
-        toast.error(data.error || "Logo gagal dimuat naik.");
-        return;
-      }
-      setInv((p) => ({ ...p, logoInitialsUrl: data.key }));
-      toast.success("Logo initials berjaya dimuat naik.");
-    } catch {
-      toast.error("Network error semasa upload logo.");
     }
   }
 
@@ -1106,36 +1073,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     onChange={(e) => setInv((p) => ({ ...p, envelopeInitialsSize: e.target.value }))}
                     className="w-full accent-gray-700"
                   />
-                </Field>
-                <Field label="Logo Initials">
-                  <div className="space-y-2">
-                    {inv.logoInitialsUrl && (
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={resolveImageUrl(inv.logoInitialsUrl)}
-                          alt="Logo initials"
-                          className="h-20 w-20 rounded-full border border-gray-200 object-contain bg-white p-2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setInv((p) => ({ ...p, logoInitialsUrl: "" }))}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove logo
-                        </button>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={(e) => {
-                        void uploadInitialsLogo(e.target.files?.[0]);
-                        e.currentTarget.value = "";
-                      }}
-                      className={inputCls}
-                    />
-                    <p className="text-xs text-gray-400">Upload logo kecil untuk menggantikan bulatan initials. PNG/JPG/WebP, maksimum 2 MB.</p>
-                  </div>
                 </Field>
                 <Field label="Hashtag">
                   <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder={t("placeholders.hashtag")} />
@@ -1922,7 +1859,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               >
                 <WeddingCard
                   invitation={inv}
-                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                   cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   cardMaxWidth={design.cardMaxWidth}
@@ -1941,7 +1877,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     names={inv.envelopeInitials}
                     initialsSize={inv.envelopeInitialsSize}
                     openButtonText={design.openButtonText || "BUKA"}
-                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
                 ) : (
@@ -1954,7 +1889,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}
-                    logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                   />
                 )
               )}
