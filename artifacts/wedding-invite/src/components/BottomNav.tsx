@@ -1,5 +1,5 @@
 import React from "react";
-import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, VolumeX } from "lucide-react";
+import { Music, Calendar, MapPin, Phone, MessageSquare, VolumeX } from "lucide-react";
 import { type TabKey } from "@/components/DetailPanel";
 
 interface BottomNavProps {
@@ -36,7 +36,6 @@ const NAV_ITEMS: {
 }[] = [
   { icon: Music,         label: "Music",      tab: "muzik" },
   { icon: Calendar,      label: "Calendar",   tab: "kalendar" },
-  { icon: Heart,         label: "With Love",  tab: "salam" },
   { icon: MapPin,        label: "Location",   tab: "lokasi" },
   { icon: Phone,         label: "Contact",    tab: "hubungi" },
   { icon: MessageSquare, label: "RSVP",       isRsvp: true },

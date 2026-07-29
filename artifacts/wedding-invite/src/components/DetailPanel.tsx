@@ -1,9 +1,9 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Phone, Calendar, Heart, Music, Volume2, VolumeX } from "lucide-react";
+import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX } from "lucide-react";
 import { type Invitation } from "@workspace/api-client-react";
 
-type TabKey = "muzik" | "kalendar" | "salam" | "lokasi" | "hubungi";
+export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi";
 
 interface DetailPanelProps {
   activeTab: TabKey | null;
@@ -15,7 +15,6 @@ interface DetailPanelProps {
   musicArtist?: string;
   previewMode?: boolean;
 }
-
 function MuzikPanel({
   isMuted,
   onToggleMute,
@@ -88,7 +87,6 @@ function MuzikPanel({
     </div>
   );
 }
-
 function KalendarPanel({ invitation }: { invitation?: Invitation }) {
   const calendarInvitation = invitation as (Invitation & {
     eventStartTime?: string | null;
@@ -146,36 +144,6 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
     </div>
   );
 }
-
-function SalamPanel({ invitation }: { invitation?: Invitation }) {
-  return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-        <Heart size={36} className="text-primary" />
-      </div>
-      <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-3">
-        <p className="text-sm text-foreground/80 leading-relaxed italic" style={{ fontFamily: bodyFont }}>
-          "With heartfelt gratitude, we joyfully invite you
-          to celebrate our wedding."
-        </p>
-        <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="text-lg text-primary" style={{ fontFamily: nameFont }}>
-          {invitation?.brideName && invitation?.groomName
-            ? `${invitation.brideName} & ${invitation.groomName}`
-            : "Ain & Hidayat"}
-        </p>
-        <p className="text-xs text-muted-foreground" style={{ fontFamily: bodyFont }}>Together with family</p>
-      </div>
-      <div className="w-full bg-secondary/50 rounded-2xl p-4 border border-primary/10 text-center">
-        <p className="text-xs text-muted-foreground mb-1" style={{ fontFamily: bodyFont }}>Dress Code</p>
-        <p className="text-sm font-semibold text-foreground" style={{ fontFamily: bodyFont }}>
-          {invitation?.dresscode || "Hijau Sage & Pink"}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function LokasiPanel({ invitation }: { invitation?: Invitation }) {
   const mapsUrl =
     invitation?.venueMapUrl ||
@@ -211,7 +179,6 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
     </div>
   );
 }
-
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -219,7 +186,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 function normalizeContacts(raw: unknown, fallbackPhone?: string): { name: string; phone: string }[] {
   const parsed = Array.isArray(raw)
     ? raw
@@ -297,7 +263,6 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
 const PANEL_TITLES: Record<TabKey, string> = {
   muzik: "Music",
   kalendar: "Calendar",
-  salam: "With Love",
   lokasi: "Location",
   hubungi: "Contact",
 };
@@ -341,7 +306,6 @@ export function DetailPanel({
       {activeTab === "kalendar" && (
         <KalendarPanel invitation={invitation} />
       )}
-      {activeTab === "salam" && <SalamPanel invitation={invitation} />}
       {activeTab === "lokasi" && <LokasiPanel invitation={invitation} />}
       {activeTab === "hubungi" && (
         <HubungiPanel invitation={invitation} />
@@ -394,4 +358,3 @@ export function DetailPanel({
   );
 }
 
-export type { TabKey };

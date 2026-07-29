@@ -42,6 +42,8 @@ export const invitationTable = pgTable("invitation", {
   coupleCount: integer("couple_count").default(1),
   groomInitial: text("groom_initial"),
   brideInitial: text("bride_initial"),
+  envelopeInitials: text("envelope_initials"),
+  page2Initials: text("page2_initials"),
   logoInitialsUrl: text("logo_initials_url"),
   eventStartDateTime: text("event_start_date_time"),
   eventEndDateTime: text("event_end_date_time"),
@@ -85,6 +87,7 @@ export const invitationTable = pgTable("invitation", {
   colorCard: text("color_card"),
   nameFontFamily: text("name_font_family"),
   nameFontSize: text("name_font_size"),
+  badgeFontSize: text("badge_font_size"),
   nameColor: text("name_color"),
   bodyFontFamily: text("body_font_family"),
   // Music override (per-invitation)
