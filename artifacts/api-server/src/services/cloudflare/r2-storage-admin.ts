@@ -82,6 +82,7 @@ export interface ImageUploadOptions {
   contentType: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
   metadata?: Record<string, string>;
   folder?: string; // Optional folder/prefix within the bucket
+  objectKey?: string; // Optional deterministic object name within the folder
 }
 
 export interface ImageDownloadResult {
@@ -99,9 +100,9 @@ export async function uploadImage(
   options: ImageUploadOptions,
 ): Promise<string> {
   assertR2Configured();
-  const { fileName, fileBuffer, contentType, metadata, folder } = options;
+  const { fileName, fileBuffer, contentType, metadata, folder, objectKey } = options;
 
-  const key = (folder ? `${folder}/` : "") + generateFileKey(fileName);
+  const key = (folder ? `${folder}/` : "") + (objectKey || generateFileKey(fileName));
 
   try {
     const command = new PutObjectCommand({

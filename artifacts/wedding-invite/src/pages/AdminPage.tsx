@@ -282,8 +282,10 @@ function ImageScaleControl({
   );
 }
 
-async function uploadFile(file: File) {
+async function uploadFile(file: File, designCode: string, assetType: "card" | "envelope") {
   const fd = new FormData();
+  fd.append("designCode", designCode);
+  fd.append("assetType", assetType);
   fd.append("file", file);
   const res = await fetch(`${BASE}/api/upload`, {
     method: "POST",
@@ -510,11 +512,11 @@ function DesignForm({
     try {
       let cardImageUrl = form.cardImageUrl;
       if (form.cardImageFile) {
-        cardImageUrl = await uploadFile(await scaleImageFile(form.cardImageFile, cardImageScale));
+        cardImageUrl = await uploadFile(await scaleImageFile(form.cardImageFile, cardImageScale), displayCode, "card");
       }
       let envelopeImageUrl = form.envelopeImageUrl;
       if (form.envelopeImageFile) {
-        envelopeImageUrl = await uploadFile(await scaleImageFile(form.envelopeImageFile, envelopeImageScale));
+        envelopeImageUrl = await uploadFile(await scaleImageFile(form.envelopeImageFile, envelopeImageScale), displayCode, "envelope");
       }
 
       const payload = {

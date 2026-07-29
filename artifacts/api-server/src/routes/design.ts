@@ -52,13 +52,25 @@ router.post("/upload", (req, res, next) => {
       res.status(400).json({ error: "No valid image uploaded (jpeg/png/webp/gif, max 20 MB)" });
       return;
     }
+    const designCode = typeof req.body.designCode === "string"
+      ? req.body.designCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "")
+      : "";
+    const assetType = req.body.assetType === "envelope" ? "envelope" : "card";
+    if (!designCode) {
+      res.status(400).json({ error: "Design code is required for image upload." });
+      return;
+    }
     const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+    const extension = mimeType === "image/jpeg"
+      ? "jpg"
+      : mimeType.replace("image/", "");
     uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
       folder: "wed_card_design",
-      metadata: { uploadedAt: new Date().toISOString(), type: "card-design" },
+      objectKey: `${designCode}-${assetType}.${extension}`,
+      metadata: { uploadedAt: new Date().toISOString(), type: "card-design", designCode, assetType },
     })
       .then((key) => res.json({ key, url: key }))
       .catch((uploadError) => {
