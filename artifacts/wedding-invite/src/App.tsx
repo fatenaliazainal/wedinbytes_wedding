@@ -19,6 +19,7 @@ import MarketingHomePage from "@/pages/MarketingHomePage";
 import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
 import ReviewsPage from "@/pages/ReviewsPage";
+import Page2DesignGuidePage from "@/pages/Page2DesignGuidePage";
 
 function PublicInvitationRoute() {
   return <InvitationPage />;
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/pricing" component={PriceListPage} />
       <Route path="/faq" component={FaqPage} />
       <Route path="/reviews" component={ReviewsPage} />
+      <Route path="/page-2-design-guide" component={Page2DesignGuidePage} />
       <Route path="/invite/:dateCode/:slug" component={PublicInvitationRoute} />
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />
