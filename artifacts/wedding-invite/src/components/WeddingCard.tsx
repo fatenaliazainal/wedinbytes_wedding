@@ -334,6 +334,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   const groomInitial = (inv.groomInitial as string | undefined)?.trim() || groomName.charAt(0).toUpperCase();
   const brideInitial = (inv.brideInitial as string | undefined)?.trim() || brideName.charAt(0).toUpperCase();
   const page2Initials = (inv.page2Initials as string | undefined)?.trim() || `${groomInitial} & ${brideInitial}`;
+  const displayGroomName = groomShort || groomName;
+  const displayBrideName = brideShort || brideName;
 
   const nameStyle: React.CSSProperties = {
     fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
@@ -452,9 +454,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             )}
             <p className="text-xs text-foreground/70 italic leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
             <div className="space-y-0.5">
-              <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{invitation.groomName}</p>
+               <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{displayGroomName}</p>
               <p className="text-sm text-foreground/60">&amp;</p>
-              <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{invitation.brideName}</p>
+               <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{displayBrideName}</p>
             </div>
           </div>
           </RevealOnScroll>
