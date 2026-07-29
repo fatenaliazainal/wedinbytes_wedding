@@ -401,7 +401,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   // scrollable invitation details are group 2. Older templates may only have
   // one image, so each group falls back to the other image for compatibility.
   const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
-  const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
+  // Do not render the same artwork as both the cover and the Page 2 backdrop.
+  // This prevents a duplicated/overlaid image when both design fields point
+  // to the same uploaded R2 object.
+  const groupTwoBackgroundUrl =
+    envelopeImageUrl && envelopeImageUrl !== cardImageUrl
+      ? envelopeImageUrl
+      : undefined;
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
