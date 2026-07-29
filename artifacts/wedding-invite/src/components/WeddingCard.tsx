@@ -354,27 +354,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       <section
         className="relative"
         style={{
-          // Keep the details screen as one page. Its content scrolls inside
-          // this viewport instead of making each details block look like a
-          // separate page below the cover.
-          height: "var(--card-viewport-height, 100dvh)",
-          minHeight: "var(--card-viewport-height, 100dvh)",
-          overflowY: "auto",
-          overscrollBehavior: "contain",
           backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
-          // Page 2 is content-height and much taller than the portrait artwork.
-          // `cover` scales by height and crops the image horizontally, which
-          // makes the artwork look zoomed in. Stretching the background to the
-          // full section keeps the complete artwork visible.
-          backgroundSize: bgUrl ? "100% 100%" : undefined,
+          backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundAttachment: "scroll",
+          backgroundAttachment: "fixed",
           backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
         }}
       >
         <div className="absolute inset-0 bg-white/70 pointer-events-none" />
-        <div className="relative z-10 flex min-h-full flex-col items-center gap-14 py-16 px-6">
+        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
           {/* Invitation Text */}
