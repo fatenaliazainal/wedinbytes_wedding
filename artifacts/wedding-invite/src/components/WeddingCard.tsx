@@ -301,18 +301,22 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   const sectionTitleStyle: React.CSSProperties = { fontFamily: nameStyle.fontFamily };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  const bgUrl = cardImageUrl || envelopeImageUrl;
+  // Keep the two background groups explicit: the cover is group 1 and the
+  // scrollable invitation details are group 2. Older templates may only have
+  // one image, so each group falls back to the other image for compatibility.
+  const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
+  const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
 
-  function PageBackground({ imageUrl }: { imageUrl?: string }) {
-    if (!imageUrl) return <div className="absolute inset-0 bg-secondary" />;
+  function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
-      <img
-        src={imageUrl}
-        aria-hidden
-        alt=""
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-      />
+      <>
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-secondary bg-cover bg-center bg-no-repeat bg-fixed"
+          style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+        />
+        {overlay && <div className="absolute inset-0 bg-white/70 pointer-events-none" />}
+      </>
     );
   }
 
@@ -321,9 +325,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
 
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── PAGE 1: MAIN INVITATION / COVER ── */}
+      {/* ── BACKGROUND GROUP 1 / COVER ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={bgUrl} />
+        <PageBackground imageUrl={groupOneBackgroundUrl} />
         {logoInitialsUrl && (
           <img
             src={logoInitialsUrl}
@@ -350,18 +354,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
         )}
       </section>
 
-      {/* ── PAGE 2: WEDDING DETAILS (scrollable) ── */}
+      {/* ── BACKGROUND GROUP 2 / ALL REMAINING INVITATION SECTIONS ── */}
       <section
         className="relative"
-        style={{
-          backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
-        }}
       >
-        <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+        <PageBackground imageUrl={groupTwoBackgroundUrl} overlay />
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>

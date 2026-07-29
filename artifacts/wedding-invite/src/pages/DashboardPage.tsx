@@ -59,6 +59,7 @@ export default function DashboardPage() {
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [design, setDesign] = useState<Design | null>(null);
+  const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("orders");
   const [copied, setCopied] = useState(false);
@@ -86,6 +87,7 @@ export default function DashboardPage() {
         const allDesigns: Design[] = allDesRes.ok ? await allDesRes.json() : [];
         setInvitations(invData);
         setInvitation(invData[0] ?? null);
+         setDesigns(allDesigns);
         // Resolve the design template matching the invitation's designCode
         const tpl = allDesigns.find((d) => d.designCode === invData[0]?.designCode);
         setDesign(tpl ?? globalDesign ?? null);
@@ -103,32 +105,24 @@ export default function DashboardPage() {
     navigate("/");
   };
 
-  const inviteLink = invitation
-    ? `${window.location.origin}${BASE}${publicInvitePath(invitation)}`
-    : "";
+  const inviteLinkFor = (card: Invitation) =>
+    `${window.location.origin}${BASE}${publicInvitePath(card)}`;
 
-  const copyLink = () => {
-    if (!inviteLink) return;
-    navigator.clipboard.writeText(inviteLink);
+  const copyLink = (card: Invitation) => {
+    navigator.clipboard.writeText(inviteLinkFor(card));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success("Link copied!");
   };
 
-  const displayName = invitation
-    ? `${invitation.groomName} & ${invitation.brideName}`
-    : "";
+  const formatCreatedDate = (card: Invitation) =>
+    new Date(card.createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+    });
 
-  const createdDate = invitation
-    ? new Date(invitation.createdAt).toLocaleDateString("en-GB", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-      })
-    : "";
-
-  const expiryDate = invitation
-    ? new Date(new Date(invitation.createdAt).getTime() + 365 * 24 * 60 * 60 * 1000)
-        .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
-    : "";
+  const formatExpiryDate = (card: Invitation) =>
+    new Date(new Date(card.createdAt).getTime() + 365 * 24 * 60 * 60 * 1000)
+      .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
 
   if (authLoading || (loading && !!user)) {
     return (
@@ -140,17 +134,18 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const actionButtons = [
-    { icon: Edit2,  label: "Edit",  onClick: () => invitation && navigate(`/editor?token=${encodeURIComponent(invitation.token)}`) },
-    { icon: Eye,    label: "View",  onClick: () => invitation && window.open(`${BASE}${publicInvitePath(invitation)}`, "_blank"), disabled: !invitation },
+  const actionButtonsFor = (card: Invitation) => [
+    { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
+    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}${publicInvitePath(card)}`, "_blank") },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
-    { icon: Share2, label: "Share", onClick: copyLink, disabled: !invitation },
-    { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!"), disabled: !invitation },
+    { icon: Share2, label: "Share", onClick: () => copyLink(card) },
+    { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },
     { icon: Lock,   label: "Lock",  onClick: () => {
-      setProtectCard(Boolean(invitation?.isLocked));
+      setInvitation(card);
+      setProtectCard(Boolean(card.isLocked));
       setLockPin("");
       setLockModalOpen(true);
-    }, disabled: !invitation },
+    } },
   ];
 
   const saveCardLock = async () => {
@@ -360,25 +355,16 @@ export default function DashboardPage() {
                   </button>
                 </div>
               ) : (
-                <>
-                {invitations.length > 1 && (
-                  <div className="mb-5 flex flex-wrap gap-2 border-b border-gray-100 pb-4">
-                    {invitations.map((card) => (
-                      <button
-                        key={card.token}
-                        onClick={() => setInvitation(card)}
-                        className={`rounded-full border px-3 py-1.5 text-xs ${
-                          invitation.token === card.token
-                            ? "border-gray-900 bg-gray-900 text-white"
-                            : "border-gray-200 bg-white text-gray-600"
-                        }`}
-                      >
-                        {card.groomName} &amp; {card.brideName}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 items-start">
+                <div className="space-y-6">
+                {invitations.map((card) => {
+                  const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design;
+                  const cardInviteLink = inviteLinkFor(card);
+                  const cardDisplayName = `${card.groomName} & ${card.brideName}`;
+                  const cardActionButtons = actionButtonsFor(card);
+
+                  return (
+                  <article key={card.token} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
+                  <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 items-start">
 
                   {/* Phone mockup */}
                   <div
@@ -396,26 +382,26 @@ export default function DashboardPage() {
                         transform: "scale(0.1714286)",
                         transformOrigin: "top left",
                         "--card-viewport-height": "900px",
-                        "--primary": design?.colorPrimary || "142 45% 35%",
+                        "--primary": cardDesign?.colorPrimary || "142 45% 35%",
                         "--primary-foreground": "0 0% 100%",
-                        "--secondary": design?.colorSecondary || "142 30% 92%",
-                        "--background": design?.colorBackground || "142 20% 96%",
-                        "--card": design?.colorCard || "0 0% 100%",
-                        "--popover": design?.colorCard || "0 0% 100%",
+                        "--secondary": cardDesign?.colorSecondary || "142 30% 92%",
+                        "--background": cardDesign?.colorBackground || "142 20% 96%",
+                        "--card": cardDesign?.colorCard || "0 0% 100%",
+                        "--popover": cardDesign?.colorCard || "0 0% 100%",
                         "--border": "142 20% 80%",
                         "--muted": "142 15% 94%",
                         "--muted-foreground": "142 10% 45%",
-                        "--name-font-family": `'${design?.nameFontFamily || "Dancing Script"}', cursive`,
-                        "--name-font-size": `${Number(design?.nameFontSize) || 38}px`,
-                        "--name-color": design?.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
-                        "--body-font-family": `'${design?.bodyFontFamily || "Dancing Script"}', cursive`,
+                        "--name-font-family": `'${cardDesign?.nameFontFamily || "Dancing Script"}', cursive`,
+                        "--name-font-size": `${Number(cardDesign?.nameFontSize) || 38}px`,
+                        "--name-color": cardDesign?.nameColor ? `hsl(${cardDesign.nameColor})` : "hsl(20 50% 25%)",
+                        "--body-font-family": `'${cardDesign?.bodyFontFamily || "Dancing Script"}', cursive`,
                       } as React.CSSProperties}
                     >
                       <WeddingCard
-                        invitation={invitation as any}
-                        cardImageUrl={resolveImageUrl(design?.cardImageUrl || "")}
-                        envelopeImageUrl={resolveImageUrl(design?.envelopeImageUrl || design?.cardImageUrl || "")}
-                        cardMaxWidth={design?.cardMaxWidth || "420px"}
+                        invitation={card as any}
+                        cardImageUrl={resolveImageUrl(cardDesign?.cardImageUrl || "")}
+                        envelopeImageUrl={resolveImageUrl(cardDesign?.envelopeImageUrl || cardDesign?.cardImageUrl || "")}
+                        cardMaxWidth={cardDesign?.cardMaxWidth || "420px"}
                         rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
                       />
                     </div>
@@ -438,12 +424,12 @@ export default function DashboardPage() {
                   {/* Details */}
                   <div className="flex-1 space-y-3 min-w-0 w-full">
                     <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide leading-tight">
-                      {invitation.eventType} — {displayName}
+                      {card.eventType} — {cardDisplayName}
                     </h2>
 
                     <div className="text-xs text-gray-500 space-y-0.5">
-                      <p>Created: <span className="text-gray-700">{createdDate}</span></p>
-                      <p>Expires: <span className="text-gray-700">{expiryDate}</span></p>
+                      <p>Created: <span className="text-gray-700">{formatCreatedDate(card)}</span></p>
+                      <p>Expires: <span className="text-gray-700">{formatExpiryDate(card)}</span></p>
                     </div>
 
                     <div>
@@ -452,11 +438,11 @@ export default function DashboardPage() {
                         <input
                           type="text"
                           readOnly
-                          value={inviteLink}
+                          value={cardInviteLink}
                           className="flex-1 text-xs px-2 py-1.5 text-gray-700 bg-white outline-none min-w-0 truncate select-all"
                         />
                         <button
-                          onClick={copyLink}
+                          onClick={() => copyLink(card)}
                           className="px-2 py-1.5 bg-gray-50 border-l border-gray-200 text-gray-500 hover:bg-gray-100 transition-colors shrink-0"
                           title="Copy link"
                         >
@@ -468,11 +454,10 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-x-4 gap-y-2">
-                      {actionButtons.map(({ icon: Icon, label, onClick, disabled }) => (
+                      {cardActionButtons.map(({ icon: Icon, label, onClick }) => (
                         <button
                           key={label}
                           onClick={onClick}
-                          disabled={!!disabled}
                           className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Icon size={13} />
@@ -482,7 +467,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="pt-1">
-                      {invitation.isPurchased ? (
+                      {card.isPurchased ? (
                         <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
                           ✓ PAID
                         </span>
@@ -497,7 +482,10 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-                </>
+                </article>
+                  );
+                })}
+                </div>
               )}
             </div>
           )}
