@@ -236,7 +236,7 @@ function ImageScaleControl({
         aria-label="Image scale before saving"
       />
       <div className="mt-3 flex justify-center overflow-hidden rounded-xl border border-border bg-[#e9e9e5] p-5 sm:p-8">
-        <div className="relative h-[min(72vh,720px)] w-[min(360px,72vw)] overflow-hidden border-[4px] border-gray-800 bg-white shadow-lg">
+        <div className="relative aspect-[9/16] w-[min(360px,72vw)] overflow-hidden border-[4px] border-gray-800 bg-white shadow-lg">
           <img
             src={previewUrl}
             alt="Scaled image preview"
@@ -274,8 +274,8 @@ function ImageScaleControl({
         100% keeps the uploaded image unchanged. Keep text, faces, and decorations inside the green Safe Area.
       </p>
       <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] leading-4 text-emerald-900">
-        <p className="font-semibold">Recommended artwork size: 900 × 1200 px (3:4)</p>
-        <p>Safe Area: approximately 756 × 768 px, starting 72 px from the left/right and 216 px from the top.</p>
+        <p className="font-semibold">Recommended artwork size: 900 × 1600 px (9:16)</p>
+        <p>Safe Area: approximately 756 × 1024 px, starting 72 px from the left/right and 288 px from the top.</p>
         <p className="mt-1">Create your artwork on this full canvas. The image will not be cropped before scaling.</p>
       </div>
     </div>
@@ -304,12 +304,12 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
       element.onerror = () => reject(new Error("Unable to read image"));
       element.src = sourceUrl;
     });
-    // The invitation renderer uses object-cover inside a 3:4 mobile frame.
+    // The invitation artwork uses a 9:16 mobile canvas.
     // Bake the same frame into the uploaded file so the renderer cannot
     // re-fit a small scaled image back to full size.
     const canvas = document.createElement("canvas");
     canvas.width = 900;
-    canvas.height = 1200;
+    canvas.height = 1600;
     const context = canvas.getContext("2d");
     if (!context) return file;
 
