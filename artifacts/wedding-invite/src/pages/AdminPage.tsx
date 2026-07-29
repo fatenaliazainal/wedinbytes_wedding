@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import PricingTab from "@/components/PricingTab";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-import { resolveImageUrl } from "@/lib/r2-url";
+import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
 
@@ -447,18 +447,13 @@ function DesignForm({
   const set = (key: keyof DesignFormData) => (val: string) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  const buildR2Url = (path: string) => {
-    const base = (import.meta.env.VITE_R2_DOMAIN_URL ?? "").replace(/\/$/, "");
-    return path ? `${base}/${path.replace(/^\//, "")}` : "";
-  };
-
   const findPickerIdByPath = (path: string) => rawCards.find((c) => c.path === path)?.id;
 
   const selectedCard = cardPickerId ? rawCards.find((c) => String(c.id) === cardPickerId) : undefined;
-  const selectedCardPreviewUrl = selectedCard?.path ? buildR2Url(selectedCard.path) : "";
+  const selectedCardPreviewUrl = selectedCard?.path ? resolveImageUrl(selectedCard.path) : "";
 
   const selectedEnvelope = envelopePickerId ? rawCards.find((c) => String(c.id) === envelopePickerId) : undefined;
-  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? buildR2Url(selectedEnvelope.path) : "";
+  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? resolveImageUrl(selectedEnvelope.path) : "";
 
   useEffect(() => {
     if (!cardPickerId && form.cardImageUrl) {
@@ -623,7 +618,7 @@ function DesignForm({
                   src={selectedCardPreviewUrl}
                   alt={selectedCard?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                   onError={(e) => fallbackToR2Proxy(e, selectedCard?.path)}
                 />
               </div>
             ) : null}
@@ -648,7 +643,7 @@ function DesignForm({
                   src={selectedEnvelopePreviewUrl}
                   alt={selectedEnvelope?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                   onError={(e) => fallbackToR2Proxy(e, selectedEnvelope?.path)}
                 />
               </div>
             ) : null}
