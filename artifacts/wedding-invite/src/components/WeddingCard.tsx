@@ -292,6 +292,7 @@ const CARD_TEXT = {
     setDateTime: "Sila tetapkan tarikh & masa majlis.",
     eventStarted: "Majlis telah bermula",
     guestWishes: "Ucapan dan doa daripada tetamu akan dipaparkan di sini.",
+    eventDetailsLabel: "Butiran Majlis",
     dateLabel: "Tarikh",
     dayLabel: "Hari",
     timeLabel: "Masa",
@@ -322,6 +323,7 @@ const CARD_TEXT = {
     setDateTime: "Please set the event date & time.",
     eventStarted: "The event has started",
     guestWishes: "Guest wishes and prayers will appear here.",
+    eventDetailsLabel: "Event Details",
     dateLabel: "Date",
     dayLabel: "Day",
     timeLabel: "Time",
@@ -499,9 +501,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
           </RevealOnScroll>
 
           <RevealOnScroll>
-          {/* Date & Location */}
+           {/* Event Details */}
           <div className={detailBlock}>
-            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.dateLabel}</p>
+             <p className={sectionTitleCls} style={sectionTitleStyle}>{t.eventDetailsLabel}</p>
             <OrnamentDivider />
             <div className="space-y-1">
               <p className="text-lg text-foreground whitespace-pre-line" style={{ fontFamily: bodyFontFamily }}>
