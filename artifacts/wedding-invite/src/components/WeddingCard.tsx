@@ -26,12 +26,28 @@ const MONTH_MAP: Record<string, string> = {
 
 function GalleryCarousel({ images, label }: { images: string[]; label: string }) {
   const galleryImages = images.filter(Boolean);
+  const AUTO_SLIDE_DELAY = 4500;
+  const RESUME_DELAY = 2500;
   const [viewportRef, emblaApi] = useEmblaCarousel({
     align: "start",
     loop: galleryImages.length > 1,
     duration: 28,
   });
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const autoSlideTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearAutoSlide = React.useCallback(() => {
+    if (autoSlideTimer.current) {
+      clearTimeout(autoSlideTimer.current);
+      autoSlideTimer.current = null;
+    }
+  }, []);
+  const scheduleAutoSlide = React.useCallback((delay: number) => {
+    clearAutoSlide();
+    autoSlideTimer.current = setTimeout(() => {
+      emblaApi?.scrollNext();
+      scheduleAutoSlide(AUTO_SLIDE_DELAY);
+    }, delay);
+  }, [clearAutoSlide, emblaApi]);
 
   React.useEffect(() => {
     if (!emblaApi) return;
@@ -49,6 +65,28 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
       emblaApi.off("reInit", updateActiveSlide);
     };
   }, [emblaApi]);
+
+  React.useEffect(() => {
+    if (!emblaApi || galleryImages.length <= 1) return;
+
+    const pauseAutoSlide = () => clearAutoSlide();
+    const resumeAutoSlide = () => scheduleAutoSlide(RESUME_DELAY);
+
+    scheduleAutoSlide(AUTO_SLIDE_DELAY);
+    emblaApi.on("pointerDown", pauseAutoSlide);
+    emblaApi.on("pointerUp", resumeAutoSlide);
+
+    return () => {
+      clearAutoSlide();
+      emblaApi.off("pointerDown", pauseAutoSlide);
+      emblaApi.off("pointerUp", resumeAutoSlide);
+    };
+  }, [emblaApi, galleryImages.length]);
+
+  const handleArrowInteraction = (scroll: () => void) => {
+    scroll();
+    scheduleAutoSlide(RESUME_DELAY);
+  };
 
   return (
     <div className="w-full max-w-xs">
@@ -81,7 +119,7 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
             <button
               type="button"
               aria-label={`Previous ${label.toLowerCase()}`}
-              onClick={() => emblaApi?.scrollPrev()}
+              onClick={() => handleArrowInteraction(() => emblaApi?.scrollPrev())}
               className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black/60 shadow-sm backdrop-blur-[2px] transition-colors hover:bg-white hover:text-black"
             >
               <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
@@ -89,7 +127,7 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
             <button
               type="button"
               aria-label={`Next ${label.toLowerCase()}`}
-              onClick={() => emblaApi?.scrollNext()}
+              onClick={() => handleArrowInteraction(() => emblaApi?.scrollNext())}
               className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black/60 shadow-sm backdrop-blur-[2px] transition-colors hover:bg-white hover:text-black"
             >
               <ChevronRight className="h-4 w-4" strokeWidth={1.5} />

@@ -28,6 +28,7 @@ const TABS = [
   { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
+  { id: "hubungi", label: "CONTACT" },
   { id: "footer", label: "FOOTER" },
 ];
 
@@ -36,6 +37,7 @@ const TABS = [
 const TAB_FEATURE_MAP: Record<string, string[]> = {
   "tarikh-lokasi": ["Location & Navigation", "Calendar"],
   kehadiran: ["RSVP / Wishes"],
+  hubungi: ["Contact"],
   galeri: ["Photo Gallery", "Money Gift"],
 };
 
@@ -1433,18 +1435,82 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
               </div>
             )}
 
-            {/* ── UCAPAN ── */}
-            {activeTab === "ucapan" && (
-              <Field label="Wishes / Additional Note">
-                <RichTextEditor
-                  value={inv.message}
-                  onChange={(v) => setI("message")(v)}
-                  placeholder={t("placeholders.wishes")}
-                  multiLine
-                  showFontSize
-                  inputStyle={{ textAlign: "left" }}
-                />
-              </Field>
+            {/* ── CONTACT ── */}
+            {activeTab === "hubungi" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">Contact persons</p>
+                    <p className="text-xs text-gray-500">Add the people guests can contact for this invitation.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setInv((p) => ({
+                      ...p,
+                      contacts: [...p.contacts, { name: "", phone: "" }],
+                    }))}
+                    className="inline-flex items-center gap-1 rounded border border-gray-300 px-3 py-2 text-xs font-medium hover:bg-gray-50"
+                  >
+                    <Plus size={14} /> Add contact
+                  </button>
+                </div>
+
+                {inv.contacts.length === 0 && (
+                  <Field label="Contact phone">
+                    <input
+                      className={inputCls}
+                      value={inv.contactPhone}
+                      onChange={(e) => setI("contactPhone")(e.target.value)}
+                      placeholder="0123456789"
+                      type="tel"
+                    />
+                  </Field>
+                )}
+
+                <div className="space-y-3">
+                  {inv.contacts.map((contact, index) => (
+                    <div key={`contact-${index}`} className="rounded border border-gray-200 p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium text-gray-600">Contact {index + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => setInv((p) => ({
+                            ...p,
+                            contacts: p.contacts.filter((_, i) => i !== index),
+                          }))}
+                          className="text-xs text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <Field label="Name">
+                        <input
+                          className={inputCls}
+                          value={contact.name}
+                          onChange={(e) => setInv((p) => ({
+                            ...p,
+                            contacts: p.contacts.map((item, i) => i === index ? { ...item, name: e.target.value } : item),
+                          }))}
+                          placeholder="Contact name"
+                        />
+                      </Field>
+                      <Field label="Phone number">
+                        <input
+                          className={inputCls}
+                          value={contact.phone}
+                          onChange={(e) => setInv((p) => ({
+                            ...p,
+                            contacts: p.contacts.map((item, i) => i === index ? { ...item, phone: e.target.value } : item),
+                          }))}
+                          placeholder="0123456789"
+                          type="tel"
+                        />
+                      </Field>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
             )}
 
             {/* ── FOOTER / BRANDING ── */}
