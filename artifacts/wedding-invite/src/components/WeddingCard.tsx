@@ -355,9 +355,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
         className="relative"
         style={{
           backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
-          backgroundSize: "auto",
-          backgroundPosition: "center top",
-          backgroundAttachment: "scroll",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
           backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
         }}
       >
