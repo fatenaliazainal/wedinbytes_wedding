@@ -132,6 +132,7 @@ interface InvData {
   envelopeInitials: string;
   envelopeInitialsSize: string;
   initialsImageUrl: string;
+  initialsImageScale: number;
   page2Initials: string;
   eventStartDateTime: string;
   eventEndDateTime: string;
@@ -314,7 +315,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", initialsImageUrl: "", page2Initials: "",
+    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", initialsImageUrl: "", initialsImageScale: 100, page2Initials: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -454,6 +455,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           envelopeInitials: d.envelopeInitials ?? "",
           envelopeInitialsSize: d.envelopeInitialsSize ? String(d.envelopeInitialsSize) : "24",
           initialsImageUrl: d.initialsImageUrl ?? "",
+          initialsImageScale: Number(d.initialsImageScale) || 100,
           page2Initials: d.page2Initials ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
@@ -712,6 +714,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         envelopeInitials: inv.envelopeInitials || null,
         envelopeInitialsSize: String(Number(inv.envelopeInitialsSize) || 24),
         page2Initials: inv.page2Initials || null,
+        initialsImageScale: Math.min(140, Math.max(50, Number(inv.initialsImageScale) || 100)),
         eventStartDateTime: inv.eventStartDateTime || null,
         eventEndDateTime: inv.eventEndDateTime || null,
         coverDateText: inv.coverDateText || null,
@@ -1113,9 +1116,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     Teks ini dipaparkan dalam bulatan jika tiada artwork initials.
                   </p>
                 </Field>
-                <Field label="Upload Initial Artwork (Optional)">
+                <Field label="Upload your logo (Optional)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace Initial Artwork" : "Choose Initial Artwork"}</span>
+                    <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace your logo" : "Upload your logo"}</span>
                     <input
                       type="file"
                       accept="image/png"
@@ -1131,11 +1134,26 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     Optional. Sila gunakan PNG dengan transparent background. Maksimum 2 MB.
                   </p>
                   {inv.initialsImageUrl && (
-                    <img
-                      src={resolveImageUrl(inv.initialsImageUrl)}
-                      alt="Uploaded initials preview"
-                      className="mt-2 h-24 w-24 object-contain"
-                    />
+                    <>
+                      <img
+                        src={resolveImageUrl(inv.initialsImageUrl)}
+                        alt="Uploaded logo preview"
+                        className="mt-2 h-24 w-24 object-contain"
+                        style={{ transform: `scale(${inv.initialsImageScale / 100})` }}
+                      />
+                      <label className="mt-3 block text-xs text-gray-500">
+                        Logo size: {inv.initialsImageScale}%
+                        <input
+                          type="range"
+                          min="50"
+                          max="140"
+                          step="5"
+                          value={inv.initialsImageScale}
+                          onChange={(e) => setInv((p) => ({ ...p, initialsImageScale: Number(e.target.value) }))}
+                          className="mt-1 w-full accent-gray-700"
+                        />
+                      </label>
+                    </>
                   )}
                 </Field>
                 <Field label="Hashtag">
@@ -1945,6 +1963,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     names={inv.envelopeInitials}
                     initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
+                    initialsImageScale={inv.initialsImageScale}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
@@ -1959,6 +1978,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     names={inv.envelopeInitials}
                     initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
+                    initialsImageScale={inv.initialsImageScale}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}

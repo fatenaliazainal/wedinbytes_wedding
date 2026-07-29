@@ -9,6 +9,7 @@ interface EnvelopeAnimationProps {
   names?: string;
   initialsSize?: string;
   initialsImageUrl?: string;
+  initialsImageScale?: number;
   envelopeImageUrl?: string;
   openButtonText?: string;
 }
@@ -19,6 +20,7 @@ export function EnvelopeAnimation({
   names = "",
   initialsSize,
   initialsImageUrl,
+  initialsImageScale = 100,
   envelopeImageUrl,
   openButtonText = "BUKA",
 }: EnvelopeAnimationProps) {
@@ -96,6 +98,7 @@ export function EnvelopeAnimation({
                       src={initialsImageUrl}
                       alt="Uploaded initials"
                       className="h-[76%] w-[76%] object-contain"
+                      style={{ transform: `scale(${initialsImageScale / 100})` }}
                       draggable={false}
                     />
                   ) : (

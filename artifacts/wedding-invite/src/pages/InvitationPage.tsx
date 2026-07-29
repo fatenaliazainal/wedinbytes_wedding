@@ -234,6 +234,7 @@ export default function InvitationPage() {
   const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
   const initialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
+  const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
   const cardFontVars = {
     "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
@@ -289,6 +290,7 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
+           initialsImageScale={initialsImageScale}
            names={envelopeInitials}
            initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
@@ -300,6 +302,7 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
+           initialsImageScale={initialsImageScale}
            names={envelopeInitials}
            initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}

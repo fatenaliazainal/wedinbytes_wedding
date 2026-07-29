@@ -7,6 +7,7 @@ interface EnvelopeDoorsProps {
   names?: string;
   initialsSize?: string;
   initialsImageUrl?: string;
+  initialsImageScale?: number;
   envelopeImageUrl?: string;
   openButtonText?: string;
   cardMaxWidth?: string;
@@ -24,6 +25,7 @@ export function EnvelopeDoors({
   names = "",
   initialsSize,
   initialsImageUrl,
+  initialsImageScale = 100,
   openButtonText = "BUKA",
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
@@ -91,6 +93,7 @@ export function EnvelopeDoors({
                   src={initialsImageUrl}
                   alt="Uploaded initials"
                   className="h-[76%] w-[76%] object-contain"
+                  style={{ transform: `scale(${initialsImageScale / 100})` }}
                   draggable={false}
                 />
               ) : (
