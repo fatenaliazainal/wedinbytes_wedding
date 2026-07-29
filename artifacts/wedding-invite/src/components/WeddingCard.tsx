@@ -1,14 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
-import {
-  type CarouselApi,
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import useEmblaCarousel from "embla-carousel-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 interface WeddingCardProps {
@@ -31,40 +24,44 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 function GalleryCarousel({ images, label }: { images: string[]; label: string }) {
-  const [api, setApi] = React.useState<CarouselApi>();
+  const galleryImages = images.filter(Boolean);
+  const [viewportRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    loop: galleryImages.length > 1,
+    duration: 28,
+  });
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   React.useEffect(() => {
-    if (!api) return;
+    if (!emblaApi) return;
 
     const updateActiveSlide = () => {
-      setActiveIndex(api.selectedScrollSnap());
+      setActiveIndex(emblaApi.selectedScrollSnap());
     };
 
     updateActiveSlide();
-    api.on("select", updateActiveSlide);
-    api.on("reInit", updateActiveSlide);
+    emblaApi.on("select", updateActiveSlide);
+    emblaApi.on("reInit", updateActiveSlide);
 
     return () => {
-      api.off("select", updateActiveSlide);
-      api.off("reInit", updateActiveSlide);
+      emblaApi.off("select", updateActiveSlide);
+      emblaApi.off("reInit", updateActiveSlide);
     };
-  }, [api]);
-
-  const galleryImages = images.filter(Boolean);
+  }, [emblaApi]);
 
   return (
     <div className="w-full max-w-xs">
-      <Carousel
-        setApi={setApi}
-        opts={{ align: "start", loop: galleryImages.length > 1, duration: 28 }}
-        className="group"
-      >
-        <CarouselContent>
+      <div ref={viewportRef} className="overflow-hidden">
+        <div className="flex -ml-4">
           {galleryImages.map((url, idx) => {
             const resolved = resolveImageUrl(url);
             return (
-              <CarouselItem key={`${url}-${idx}`} className="transition-transform duration-500 ease-out">
+              <div
+                key={`${url}-${idx}`}
+                role="group"
+                aria-roledescription="slide"
+                className="min-w-0 shrink-0 grow-0 basis-full pl-4"
+              >
                 <img
                   src={resolved}
                   alt={`${label} ${idx + 1}`}
@@ -72,32 +69,17 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
                   className="aspect-[4/3] w-full rounded-lg border border-primary/10 object-cover"
                   loading="lazy"
                 />
-              </CarouselItem>
+              </div>
             );
           })}
-        </CarouselContent>
-        {galleryImages.length > 1 && (
-          <>
-            <CarouselPrevious
-              aria-label="Previous gallery image"
-              className="!left-2 !right-auto !top-1/2 z-20 h-7 w-7 -translate-y-1/2 border-black/10 bg-white/90 p-0 text-black/55 opacity-0 shadow-sm backdrop-blur-[2px] transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:bg-white hover:text-black/75 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:stroke-[1.5]"
-            />
-            <CarouselNext
-              aria-label="Next gallery image"
-              className="!right-2 !left-auto !top-1/2 z-20 h-7 w-7 -translate-y-1/2 border-black/10 bg-white/90 p-0 text-black/55 opacity-0 shadow-sm backdrop-blur-[2px] transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:bg-white hover:text-black/75 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:stroke-[1.5]"
-            />
-          </>
-        )}
-      </Carousel>
+        </div>
+      </div>
       {galleryImages.length > 1 && (
         <div className="mt-3 flex items-center justify-center gap-1.5" aria-label={`${label} pagination`}>
           {galleryImages.map((url, idx) => (
-            <button
+            <span
               key={`dot-${url}-${idx}`}
-              type="button"
-              aria-label={`Go to ${label.toLowerCase()} ${idx + 1}`}
               aria-current={activeIndex === idx ? "true" : undefined}
-              onClick={() => api?.scrollTo(idx)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 activeIndex === idx ? "w-5 bg-primary" : "w-1.5 bg-primary/25 hover:bg-primary/50"
               }`}
