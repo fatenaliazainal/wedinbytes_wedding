@@ -88,7 +88,7 @@ export function EnvelopeAnimation({
                       ? { repeat: Infinity, duration: 2 }
                       : { duration: 0.2 }
                   }
-                  className="flex h-[87px] w-[87px] items-center justify-center rounded-full bg-white shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
+                  className="flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
                   aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
                 >
                   {initialsImageUrl ? (

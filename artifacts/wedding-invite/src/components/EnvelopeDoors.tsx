@@ -70,7 +70,7 @@ export function EnvelopeDoors({
           onClick={!isOpened ? onOpen : undefined}
         >
           <div
-            className="flex h-[90px] w-[90px] items-center justify-center rounded-full bg-white shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
+            className="flex h-[126px] w-[126px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
             aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
             <motion.div
