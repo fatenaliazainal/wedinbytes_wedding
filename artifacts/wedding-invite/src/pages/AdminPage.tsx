@@ -219,6 +219,37 @@ async function uploadFile(file: File) {
   return data.url;
 }
 
+async function scaleImageFile(file: File, scale: number): Promise<File> {
+  if (scale === 100) return file;
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error("Unable to read image"));
+      element.src = sourceUrl;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    const width = image.naturalWidth * (scale / 100);
+    const height = image.naturalHeight * (scale / 100);
+    context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, file.type === "image/jpeg" ? "image/jpeg" : "image/png", 0.95),
+    );
+    return blob ? new File([blob], file.name, { type: blob.type }) : file;
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 // ── Colour Picker Row ─────────────────────────────────────────────────────────
 
 function ColorRow({
@@ -832,6 +863,7 @@ function RawCardForm({
 }) {
   const [form, setForm] = useState<RawFormData>({ ...initial });
   const [saving, setSaving] = useState(false);
+  const [imageScale, setImageScale] = useState(100);
   const qc = useQueryClient();
 
   const set = (key: keyof RawFormData) => (val: string) =>
@@ -850,7 +882,7 @@ function RawCardForm({
       
       // For new cards, file is required; for updates, file is optional
       if (form.pathFile) {
-        fd.append("file", form.pathFile);
+        fd.append("file", await scaleImageFile(form.pathFile, imageScale));
       }
 
       const url = mode === "add"
@@ -917,8 +949,40 @@ function RawCardForm({
             value={form.path}
             previewUrl={form.pathPreviewUrl}
             onChange={(url) => setForm((f) => ({ ...f, path: url, pathFile: null, pathPreviewUrl: "" }))}
-            onFileSelect={(file, previewUrl) => setForm((f) => ({ ...f, pathFile: file, pathPreviewUrl: previewUrl, path: file ? "" : f.path }))}
+            onFileSelect={(file, previewUrl) => {
+              setImageScale(100);
+              setForm((f) => ({ ...f, pathFile: file, pathPreviewUrl: previewUrl, path: file ? "" : f.path }));
+            }}
           />
+          {form.pathPreviewUrl && (
+            <div className="rounded-xl border border-border bg-muted/30 p-3">
+              <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                <span>Image scale before saving</span>
+                <span className="font-mono text-foreground">{imageScale}%</span>
+              </div>
+              <input
+                type="range"
+                min="25"
+                max="200"
+                step="1"
+                value={imageScale}
+                onChange={(e) => setImageScale(Number(e.target.value))}
+                className="mt-2 w-full accent-primary"
+                aria-label="Raw card image scale"
+              />
+              <div className="mt-3 flex h-44 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
+                <img
+                  src={form.pathPreviewUrl}
+                  alt="Scaled raw card preview"
+                  className="max-h-full max-w-full object-contain transition-transform"
+                  style={{ transform: `scale(${imageScale / 100})` }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
+                100% keeps the uploaded image unchanged. Adjust the slider to scale it before adding it to the catalog.
+              </p>
+            </div>
+          )}
 
         </div>
 
