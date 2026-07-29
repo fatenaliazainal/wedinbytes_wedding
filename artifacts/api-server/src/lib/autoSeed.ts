@@ -60,6 +60,12 @@ const cardDesignValues = {
   openingAnimation: "doors",
 };
 
+const initialDesignImages: Record<string, string> = {
+  FL001: "/designs/design_1785311759226.png",
+  FL002: "/designs/design_1779761056298.png",
+  FL003: "/designs/design_1778770711132.png",
+};
+
 const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
 
 export async function autoSeedIfEmpty() {
@@ -189,6 +195,13 @@ export async function autoSeedIfEmpty() {
           .where(eq(cardDesignTable.id, design.id));
         logger.info("Auto-seed: card design values fixed.");
       }
+    }
+    // Keep the first three catalogue designs visually distinct.
+    for (const [designCode, imageUrl] of Object.entries(initialDesignImages)) {
+      await db
+        .update(cardDesignTable)
+        .set({ cardImageUrl: imageUrl, envelopeImageUrl: imageUrl })
+        .where(eq(cardDesignTable.designCode, designCode));
     }
     // --- Pricing packages: seed defaults if none exist ---
     const existingPackages = await db.select().from(pricingPackageTable).limit(1);

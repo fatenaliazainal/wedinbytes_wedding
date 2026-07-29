@@ -28,6 +28,12 @@ const designTemplate = {
   openingAnimation: "doors",
 };
 
+const initialDesignImages = [
+  "/designs/design_1785311759226.png",
+  "/designs/design_1779761056298.png",
+  "/designs/design_1778770711132.png",
+];
+
 const designNames = [
   "Garden Floral",
   "Hanging Floral",
@@ -131,6 +137,12 @@ async function seed() {
         name,
         isActive: index === 0,
         ...designTemplate,
+        ...(initialDesignImages[index]
+          ? {
+              cardImageUrl: initialDesignImages[index],
+              envelopeImageUrl: initialDesignImages[index],
+            }
+          : {}),
       }))
     )
     .onConflictDoUpdate({
