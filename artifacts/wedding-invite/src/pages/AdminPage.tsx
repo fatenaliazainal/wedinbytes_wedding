@@ -240,11 +240,9 @@ function ImageScaleControl({
           <img
             src={previewUrl}
             alt="Scaled image preview"
-            className="absolute left-1/2 top-1/2 max-h-none max-w-none"
+            className="absolute inset-0 h-full w-full object-cover transition-transform"
             style={{
-              width: "auto",
-              height: "auto",
-              transform: `translate(-50%, -50%) scale(${scale / 100})`,
+              transform: `scale(${scale / 100})`,
               transformOrigin: "center",
             }}
           />
@@ -293,8 +291,6 @@ async function uploadFile(file: File) {
 }
 
 async function scaleImageFile(file: File, scale: number): Promise<File> {
-  if (scale === 100) return file;
-
   const sourceUrl = URL.createObjectURL(file);
   try {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -303,21 +299,30 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
       element.onerror = () => reject(new Error("Unable to read image"));
       element.src = sourceUrl;
     });
+    // The invitation renderer uses object-cover inside a 3:4 mobile frame.
+    // Bake the same frame into the uploaded file so the renderer cannot
+    // re-fit a small scaled image back to full size.
     const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
+    canvas.width = 900;
+    canvas.height = 1200;
     const context = canvas.getContext("2d");
     if (!context) return file;
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    const width = image.naturalWidth * (scale / 100);
-    const height = image.naturalHeight * (scale / 100);
-    context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+    const coverScale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+    const coveredWidth = image.naturalWidth * coverScale * (scale / 100);
+    const coveredHeight = image.naturalHeight * coverScale * (scale / 100);
+    context.drawImage(
+      image,
+      (canvas.width - coveredWidth) / 2,
+      (canvas.height - coveredHeight) / 2,
+      coveredWidth,
+      coveredHeight,
+    );
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, file.type === "image/jpeg" ? "image/jpeg" : "image/png", 0.95),
+      canvas.toBlob(resolve, "image/png"),
     );
-    return blob ? new File([blob], file.name, { type: blob.type }) : file;
+    return blob ? new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.png`, { type: blob.type }) : file;
   } finally {
     URL.revokeObjectURL(sourceUrl);
   }
