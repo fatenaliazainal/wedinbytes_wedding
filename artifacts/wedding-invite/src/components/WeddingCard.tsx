@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
 import {
+  type CarouselApi,
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -30,38 +31,80 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 function GalleryCarousel({ images, label }: { images: string[]; label: string }) {
+  const [api, setApi] = React.useState<CarouselApi>();
+  const [activeIndex, setActiveIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!api) return;
+
+    const updateActiveSlide = () => {
+      setActiveIndex(api.selectedScrollSnap());
+    };
+
+    updateActiveSlide();
+    api.on("select", updateActiveSlide);
+    api.on("reInit", updateActiveSlide);
+
+    return () => {
+      api.off("select", updateActiveSlide);
+      api.off("reInit", updateActiveSlide);
+    };
+  }, [api]);
+
+  const galleryImages = images.filter(Boolean);
+
   return (
     <div className="w-full max-w-xs">
-      <Carousel>
+      <Carousel
+        setApi={setApi}
+        opts={{ align: "start", loop: galleryImages.length > 1, duration: 28 }}
+        className="group"
+      >
         <CarouselContent>
-          {images.slice(0, 4).map((url, idx) => {
+          {galleryImages.map((url, idx) => {
             const resolved = resolveImageUrl(url);
             return (
-              <CarouselItem key={idx}>
+              <CarouselItem key={`${url}-${idx}`} className="transition-transform duration-500 ease-out">
                 <img
                   src={resolved}
                   alt={`${label} ${idx + 1}`}
                   onError={(e) => fallbackToR2Proxy(e, url)}
-                  className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
+                  className="aspect-[4/3] w-full rounded-lg border border-primary/10 object-cover"
                   loading="lazy"
                 />
               </CarouselItem>
             );
           })}
         </CarouselContent>
-        {images.length > 1 && (
+        {galleryImages.length > 1 && (
           <>
             <CarouselPrevious
               aria-label="Previous gallery image"
-              className="!left-2 !right-auto !top-1/2 z-20 h-5 w-5 -translate-y-1/2 !border !border-black/10 !bg-white/90 !p-0 !text-black/55 !shadow-sm backdrop-blur-[2px] hover:!bg-white hover:!text-black/75 [&_svg]:!h-3 [&_svg]:!w-3 [&_svg]:!stroke-[1.5]"
+              className="!left-2 !right-auto !top-1/2 z-20 h-7 w-7 -translate-y-1/2 border-black/10 bg-white/90 p-0 text-black/55 opacity-0 shadow-sm backdrop-blur-[2px] transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:bg-white hover:text-black/75 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:stroke-[1.5]"
             />
             <CarouselNext
               aria-label="Next gallery image"
-              className="!right-2 !left-auto !top-1/2 z-20 h-5 w-5 -translate-y-1/2 !border !border-black/10 !bg-white/90 !p-0 !text-black/55 !shadow-sm backdrop-blur-[2px] hover:!bg-white hover:!text-black/75 [&_svg]:!h-3 [&_svg]:!w-3 [&_svg]:!stroke-[1.5]"
+              className="!right-2 !left-auto !top-1/2 z-20 h-7 w-7 -translate-y-1/2 border-black/10 bg-white/90 p-0 text-black/55 opacity-0 shadow-sm backdrop-blur-[2px] transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:bg-white hover:text-black/75 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:stroke-[1.5]"
             />
           </>
         )}
       </Carousel>
+      {galleryImages.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5" aria-label={`${label} pagination`}>
+          {galleryImages.map((url, idx) => (
+            <button
+              key={`dot-${url}-${idx}`}
+              type="button"
+              aria-label={`Go to ${label.toLowerCase()} ${idx + 1}`}
+              aria-current={activeIndex === idx ? "true" : undefined}
+              onClick={() => api?.scrollTo(idx)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeIndex === idx ? "w-5 bg-primary" : "w-1.5 bg-primary/25 hover:bg-primary/50"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
