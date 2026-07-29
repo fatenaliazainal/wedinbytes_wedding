@@ -345,8 +345,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
-  const sectionTitleCls = "text-xl text-primary";
-  const sectionTitleStyle: React.CSSProperties = { fontFamily: nameStyle.fontFamily };
+  const sectionTitleCls = "text-primary";
+  const sectionTitleStyle: React.CSSProperties = {
+    fontFamily: nameStyle.fontFamily,
+    fontSize: "var(--section-title-font-size, 1.25rem)",
+  };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   // Keep the two background groups explicit: the cover is group 1 and the
@@ -376,6 +379,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
 
   const mapsUrl = (inv.venueMapUrl as string) ||
     `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
+  const groomParents = invitation.groomParents?.trim() || "";
+  const brideParents = invitation.brideParents?.trim() || "";
 
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
@@ -428,16 +433,16 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
           <div className={detailBlock}>
             <p className="text-xl text-primary leading-snug" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
             <OrnamentDivider />
-            {(invitation.brideParents || invitation.groomParents) && (
+            {(brideParents || groomParents) && (
               <div className="space-y-1">
-                {invitation.groomParents && (
-                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.groomParents }} />
+                {groomParents && (
+                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: groomParents }} />
                 )}
-                {invitation.brideParents && invitation.groomParents && (
+                {brideParents && groomParents && (
                   <p className="text-primary text-sm font-semibold">&amp;</p>
                 )}
-                {invitation.brideParents && (
-                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: invitation.brideParents }} />
+                {brideParents && (
+                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: brideParents }} />
                 )}
               </div>
             )}

@@ -1063,6 +1063,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder={t("placeholders.eventTitle")} />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
+                  <Field label="Groom's Full Name">
+                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder={t("placeholders.groomFullName")} />
+                  </Field>
+                  <Field label="Bride's Full Name">
+                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder={t("placeholders.brideFullName")} />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Name">
                     <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder={t("placeholders.groomShortName")} />
                   </Field>
@@ -1216,6 +1224,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 <Field label="GPS / Google Maps Link">
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder={t("placeholders.mapsUrl")} />
                 </Field>
+                <Field label="Dress Code">
+                  <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder={t("placeholders.dressCode")} />
+                </Field>
               </>
             )}
 
@@ -1285,11 +1296,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     ))}
                   </div>
                 </div>
-                {activeFeatureNames.has("Dress Code") && (
-                  <Field label="Dress Code">
-                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder={t("placeholders.dressCode")} />
-                  </Field>
-                )}
               </>
             )}
 
@@ -1631,7 +1637,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     className="w-full accent-blue-500"
                   />
                 </Field>
-                <Field label="Badge Font Size (px)">
+                <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
                   <input
                     className={inputCls}
                     type="number"
@@ -1639,7 +1645,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     max={60}
                     value={design.badgeFontSize || 24}
                     onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
-                    placeholder={t("placeholders.badgeFontSize")}
+                    placeholder="24"
                   />
                 </Field>
                 <Field label="Open Button">
@@ -1798,6 +1804,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 "--name-font-family":   fontFamilyStack(design.nameFontFamily),
                 "--name-font-size":     `${Number(design.nameFontSize) || 38}px`,
                 "--badge-font-size":    `${Number(design.badgeFontSize) || 24}px`,
+                "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
                 "--name-color":         design.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
                 // Body text styling
                 "--body-font-family":   fontFamilyStack(design.bodyFontFamily),

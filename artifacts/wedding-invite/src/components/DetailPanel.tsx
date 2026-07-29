@@ -153,7 +153,6 @@ function SalamPanel({ invitation }: { invitation?: Invitation }) {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <Heart size={36} className="text-primary" />
       </div>
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>With Love</p>
       <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-3">
         <p className="text-sm text-foreground/80 leading-relaxed italic" style={{ fontFamily: bodyFont }}>
           "With heartfelt gratitude, we joyfully invite you
