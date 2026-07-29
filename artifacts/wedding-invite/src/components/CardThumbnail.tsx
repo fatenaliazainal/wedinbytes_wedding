@@ -9,7 +9,7 @@ interface CardThumbnailProps {
 
 const INNER_W = 320;
 const INNER_H = Math.round((INNER_W * 4) / 3);
-import { resolveImageUrl } from "@/lib/r2-url";
+import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 export function CardThumbnail({ invitation, design, containerWidth = 220 }: CardThumbnailProps) {
   const scale = containerWidth / INNER_W;
@@ -37,6 +37,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
           <img
             src={resolveImageUrl(design.cardImageUrl)}
             alt=""
+            onError={(e) => fallbackToR2Proxy(e, design.cardImageUrl)}
             draggable={false}
             style={{
               position: "absolute",

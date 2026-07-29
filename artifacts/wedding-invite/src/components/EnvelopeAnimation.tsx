@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DesignImage } from "@/components/DesignImage";
+import { fallbackToR2Proxy } from "@/lib/r2-url";
 import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeAnimationProps {
@@ -77,22 +78,11 @@ export function EnvelopeAnimation({
 
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div className="relative w-[130px] h-[130px] rounded-full bg-card/80 border border-primary/30 flex items-center justify-center shadow-md">
-                  <div className="absolute inset-2 border border-dashed border-primary/30 rounded-full pointer-events-none" />
-                  {logoInitialsUrl ? (
-                    <img src={logoInitialsUrl} alt="Logo initials" className="relative z-10 h-20 w-20 object-contain" />
-                  ) : (
-                  <span
-                    className="text-primary text-center leading-snug px-4 relative"
-                    style={{
-                      fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                      fontSize: initialsSize ? `${initialsSize}px` : "var(--envelope-initials-font-size, 24px)",
-                    }}
-                  >
-                    {names}
-                  </span>
-                  )}
-                </div>
+                <img
+                  src="/assets/wax-seal.png"
+                  alt="Wax seal"
+                  className="h-[155px] w-[155px] object-contain drop-shadow-xl"
+                />
               </div>
 
               {/* ── Top flap ── */}

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { fallbackToR2Proxy } from "@/lib/r2-url";
 
 interface EnvelopeDoorsProps {
   isOpened: boolean;
@@ -69,29 +70,11 @@ export function EnvelopeDoors({
           }`}
           onClick={!isOpened ? onOpen : undefined}
         >
-          <div
-            className="w-[140px] h-[140px] rounded-full border border-white/50 shadow-xl flex items-center justify-center flex-col relative overflow-hidden"
-            style={{
-              background: "rgba(255,255,255,0.35)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-            }}
-          >
-            <div className="absolute inset-2 border border-dashed border-primary/40 rounded-full" />
-            {logoInitialsUrl ? (
-              <img src={logoInitialsUrl} alt="Logo initials" className="relative z-10 h-20 w-20 object-contain" />
-            ) : (
-            <span
-              className="text-primary text-center px-4 leading-tight drop-shadow-sm"
-              style={{
-                fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                fontSize: initialsSize ? `${initialsSize}px` : "var(--envelope-initials-font-size, 24px)",
-              }}
-            >
-              {names}
-            </span>
-            )}
-          </div>
+          <img
+            src="/assets/wax-seal.png"
+            alt="Wax seal"
+            className="h-[170px] w-[170px] object-contain drop-shadow-xl"
+          />
 
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
