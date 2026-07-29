@@ -1,0 +1,63 @@
+The previous fix did NOT solve the issue.
+
+Please perform a proper root cause analysis instead of applying another CSS workaround.
+
+Issue:
+In the Editor Preview, the background image on Page 1 displays correctly.
+
+However, when I scroll to Page 2 (and subsequent pages), the background image becomes automatically zoomed in. This is incorrect.
+
+Expected behavior:
+- The background image should remain exactly the same on every page.
+- No zoom.
+- No additional cropping.
+- No scaling.
+- No resizing.
+- No changes to the image position.
+- Page 1 is the correct reference. Every other page should render the background exactly like Page 1.
+
+Please investigate the actual cause instead of forcing CSS values.
+
+Things to check:
+
+1. Compare the rendered DOM between Page 1 and Page 2.
+
+2. Compare the computed styles of both pages, including:
+   - background-size
+   - background-position
+   - background-repeat
+   - background-attachment
+   - transform
+   - scale
+   - zoom
+   - width
+   - height
+   - object-fit
+   - object-position
+
+3. Check whether any React state, useEffect(), scroll event, IntersectionObserver, Framer Motion, GSAP, animation, or page transition is modifying the background after scrolling.
+
+4. Check whether Page 2 is rendered inside a different container with different dimensions than Page 1.
+
+5. Check whether Page 1 and Page 2 use different rendering logic or different CSS classes.
+
+6. Verify the background image implementation on Page 1 as well to ensure it is using the correct rendering logic.
+
+Before making any changes, identify:
+- Why Page 1 displays correctly.
+- Why Page 2 becomes zoomed.
+- Which file is responsible.
+- Which code causes the zoom.
+
+Then fix ONLY that specific issue.
+
+IMPORTANT:
+- Do NOT redesign the editor.
+- Do NOT modify any other functionality.
+- Do NOT change page transitions.
+- Do NOT change animations.
+- Do NOT change preview scaling.
+- Do NOT refactor unrelated code.
+- Do NOT modify anything outside of the background image rendering.
+
+The only goal is to make the background image render identically across all pages while preserving every other existing feature.

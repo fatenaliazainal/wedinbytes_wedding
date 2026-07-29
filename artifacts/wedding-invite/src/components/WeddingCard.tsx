@@ -351,17 +351,14 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       </section>
 
       {/* ── PAGE 2: WEDDING DETAILS (scrollable) ── */}
-      <section
-        className="relative"
-        style={{
-          backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
-        }}
-      >
-        <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+      <section className="relative">
+        <div
+          className="sticky top-0 z-0 w-full -mb-[var(--card-viewport-height,100dvh)]"
+          style={{ height: "var(--card-viewport-height, 100dvh)" }}
+        >
+          <PageBackground imageUrl={bgUrl} />
+          <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+        </div>
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
