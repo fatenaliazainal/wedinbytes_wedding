@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import PricingTab from "@/components/PricingTab";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-import { resolveImageUrl } from "@/lib/r2-url";
+import { resolveImageUrl, fallbackToR2Proxy } from "@/lib/r2-url";
 
 type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
 
@@ -847,7 +847,12 @@ function DesignsTab() {
               {/* Thumbnail */}
               <div className="h-20 w-14 shrink-0 rounded-lg overflow-hidden border border-border bg-muted relative">
                 {d.cardImageUrl ? (
-                  <img src={resolveImageUrl(d.cardImageUrl)} alt={d.name} className="h-full w-full object-cover" />
+                  <img
+                    src={resolveImageUrl(d.cardImageUrl)}
+                    alt={d.name}
+                    className="h-full w-full object-cover"
+                    onError={(e) => fallbackToR2Proxy(e, d.cardImageUrl)}
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <PaintBucket size={16} className="text-muted-foreground" />
@@ -1186,7 +1191,7 @@ function RawCardTab() {
                       src={resolveImageUrl(card.path)}
                       alt={card.name}
                       className="h-full w-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      onError={(e) => fallbackToR2Proxy(e, card.path)}
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">—</div>
