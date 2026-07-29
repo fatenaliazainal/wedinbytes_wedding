@@ -16,7 +16,6 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 // Todo: move this to a helper since it's also used in InvitationPage, and ensure it's consistent with the URL used in the email template
 import { resolveImageUrl } from "@/lib/r2-url";
-import { publicInvitePath } from "@/lib/invite-url";
 
 interface Invitation {
   id: number;
@@ -105,8 +104,11 @@ export default function DashboardPage() {
     navigate("/");
   };
 
+  // Use the invitation token for dashboard actions. The readable date/name
+  // route is intentionally public-facing, but it is ambiguous when a buyer
+  // has multiple cards with the same names or event date.
   const inviteLinkFor = (card: Invitation) =>
-    `${window.location.origin}${BASE}${publicInvitePath(card)}`;
+    `${window.location.origin}${BASE}/invite/${encodeURIComponent(card.token)}`;
 
   const copyLink = (card: Invitation) => {
     navigator.clipboard.writeText(inviteLinkFor(card));
@@ -136,7 +138,7 @@ export default function DashboardPage() {
 
   const actionButtonsFor = (card: Invitation) => [
     { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
-    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}${publicInvitePath(card)}`, "_blank") },
+    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}/invite/${encodeURIComponent(card.token)}`, "_blank") },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: () => copyLink(card) },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },
@@ -357,7 +359,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-6">
                 {invitations.map((card) => {
-                  const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design;
+                  const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
                   const cardInviteLink = inviteLinkFor(card);
                   const cardDisplayName = `${card.groomName} & ${card.brideName}`;
                   const cardActionButtons = actionButtonsFor(card);
@@ -405,7 +407,7 @@ export default function DashboardPage() {
                         rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
                       />
                     </div>
-                    {!invitation.isPurchased && (
+                    {!card.isPurchased && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         style={{ transform: "rotate(-45deg)" }}
