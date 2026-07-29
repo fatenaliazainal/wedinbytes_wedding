@@ -15,7 +15,7 @@ interface EnvelopeDoorsProps {
 const frostedGlass: React.CSSProperties = {
   backdropFilter: "blur(18px) saturate(1.2)",
   WebkitBackdropFilter: "blur(18px) saturate(1.2)",
-  background: "rgba(255, 255, 255, 0.15)",
+  background: "rgba(255, 255, 255, 0.12)",
 };
 
 export function EnvelopeDoors({
