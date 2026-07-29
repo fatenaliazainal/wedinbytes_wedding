@@ -102,7 +102,6 @@ export default function InvitationPage() {
 
   // Opening animation and button text — invitation override → template → global design
   const openingAnimation = (inv?.openingAnimation as string | undefined) ?? templateDesign?.openingAnimation ?? design?.openingAnimation ?? "doors";
-  const openButtonText = (inv?.openButtonText as string | undefined) ?? "BUKA";
 
   // Card/envelope images always come from the matched template
   const resolvedCardImageUrl = resolveImageUrl(templateDesign?.cardImageUrl ?? design?.cardImageUrl);
@@ -293,7 +292,6 @@ export default function InvitationPage() {
            initialsImageScale={initialsImageScale}
            names={envelopeInitials}
            initialsSize={envelopeInitialsSize}
-          openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
         />
       ) : (
@@ -305,7 +303,6 @@ export default function InvitationPage() {
            initialsImageScale={initialsImageScale}
            names={envelopeInitials}
            initialsSize={envelopeInitialsSize}
-          openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
         />

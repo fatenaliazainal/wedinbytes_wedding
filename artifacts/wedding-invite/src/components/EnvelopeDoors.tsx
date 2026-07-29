@@ -9,7 +9,6 @@ interface EnvelopeDoorsProps {
   initialsImageUrl?: string;
   initialsImageScale?: number;
   envelopeImageUrl?: string;
-  openButtonText?: string;
   cardMaxWidth?: string;
 }
 
@@ -26,7 +25,6 @@ export function EnvelopeDoors({
   initialsSize,
   initialsImageUrl,
   initialsImageScale = 100,
-  openButtonText = "BUKA",
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
   const maxWidth = cardMaxWidth || "420px";
@@ -110,12 +108,6 @@ export function EnvelopeDoors({
             </motion.div>
           </div>
 
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="mt-5 px-8 py-2 bg-primary text-primary-foreground rounded-full tracking-widest text-sm shadow-md font-semibold"
-            dangerouslySetInnerHTML={{ __html: openButtonText }}
-          />
         </motion.div>
       </div>
     </div>

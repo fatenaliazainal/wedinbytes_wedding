@@ -11,7 +11,6 @@ interface EnvelopeAnimationProps {
   initialsImageUrl?: string;
   initialsImageScale?: number;
   envelopeImageUrl?: string;
-  openButtonText?: string;
 }
 
 export function EnvelopeAnimation({
@@ -22,7 +21,6 @@ export function EnvelopeAnimation({
   initialsImageUrl,
   initialsImageScale = 100,
   envelopeImageUrl,
-  openButtonText = "BUKA",
 }: EnvelopeAnimationProps) {
   const [phase, setPhase] = useState<"idle" | "flap" | "done">("idle");
   const bgImage = envelopeImageUrl || defaultEnvelopeRef;
@@ -161,23 +159,6 @@ export function EnvelopeAnimation({
               </div>
             </div>
 
-            {/* ── BUKA button ── */}
-            <motion.button
-              onClick={handleOpen}
-              animate={
-                phase === "idle"
-                  ? { scale: [1, 1.05, 1] }
-                  : { scale: 1, opacity: 0.4 }
-              }
-              transition={
-                phase === "idle"
-                  ? { repeat: Infinity, duration: 2 }
-                  : { duration: 0.2 }
-              }
-              disabled={phase !== "idle"}
-              className="mt-8 px-8 py-2 bg-primary text-primary-foreground rounded-full tracking-widest text-sm shadow-md font-semibold cursor-pointer disabled:cursor-default"
-              dangerouslySetInnerHTML={{ __html: openButtonText }}
-            />
           </div>
         </motion.div>
       )}

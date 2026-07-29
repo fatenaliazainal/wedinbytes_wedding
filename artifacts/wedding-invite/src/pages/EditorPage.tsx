@@ -1772,15 +1772,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     className="w-full accent-blue-500"
                   />
                 </Field>
-                <Field label="Open Button">
-                  <RichTextEditor
-                    value={design.openButtonText}
-                    onChange={(v) => setDesign((p) => ({ ...p, openButtonText: v }))}
-                    placeholder={t("placeholders.openButton")}
-                    multiLine={false}
-                    showFontSize
-                  />
-                </Field>
                 <Field label="Name Font Color">
                   <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
@@ -1964,7 +1955,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     initialsImageScale={inv.initialsImageScale}
-                    openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
                 ) : (
@@ -1979,7 +1969,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     initialsImageScale={inv.initialsImageScale}
-                    openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}
                   />
