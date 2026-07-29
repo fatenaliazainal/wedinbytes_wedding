@@ -206,6 +206,48 @@ function ImageUploadField({
   );
 }
 
+function ImageScaleControl({
+  previewUrl,
+  scale,
+  onScaleChange,
+}: {
+  previewUrl?: string;
+  scale: number;
+  onScaleChange: (scale: number) => void;
+}) {
+  if (!previewUrl) return null;
+
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+        <span>Image scale before saving</span>
+        <span className="font-mono text-foreground">{scale}%</span>
+      </div>
+      <input
+        type="range"
+        min="25"
+        max="200"
+        step="1"
+        value={scale}
+        onChange={(e) => onScaleChange(Number(e.target.value))}
+        className="mt-2 w-full accent-primary"
+        aria-label="Image scale before saving"
+      />
+      <div className="mt-3 flex h-44 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
+        <img
+          src={previewUrl}
+          alt="Scaled image preview"
+          className="max-h-full max-w-full object-contain transition-transform"
+          style={{ transform: `scale(${scale / 100})` }}
+        />
+      </div>
+      <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
+        100% keeps the uploaded image unchanged. Adjust the slider to scale it before saving.
+      </p>
+    </div>
+  );
+}
+
 async function uploadFile(file: File) {
   const fd = new FormData();
   fd.append("file", file);
@@ -351,6 +393,8 @@ function DesignForm({
   const [rawCards, setRawCards] = useState<RawCard[]>([]);
   const [cardPickerId, setCardPickerId] = useState("");
   const [envelopePickerId, setEnvelopePickerId] = useState("");
+  const [cardImageScale, setCardImageScale] = useState(100);
+  const [envelopeImageScale, setEnvelopeImageScale] = useState(100);
 
   useEffect(() => {
     fetch(`${BASE}/api/cards`, { credentials: "include" })
@@ -424,11 +468,11 @@ function DesignForm({
     try {
       let cardImageUrl = form.cardImageUrl;
       if (form.cardImageFile) {
-        cardImageUrl = await uploadFile(form.cardImageFile);
+        cardImageUrl = await uploadFile(await scaleImageFile(form.cardImageFile, cardImageScale));
       }
       let envelopeImageUrl = form.envelopeImageUrl;
       if (form.envelopeImageFile) {
-        envelopeImageUrl = await uploadFile(form.envelopeImageFile);
+        envelopeImageUrl = await uploadFile(await scaleImageFile(form.envelopeImageFile, envelopeImageScale));
       }
 
       const payload = {
@@ -575,7 +619,15 @@ function DesignForm({
             value={form.cardImageUrl}
             previewUrl={form.cardImagePreviewUrl}
             onChange={(url) => setForm((f) => ({ ...f, cardImageUrl: url, cardImageFile: null, cardImagePreviewUrl: "" }))}
-            onFileSelect={(file, previewUrl) => setForm((f) => ({ ...f, cardImageFile: file, cardImagePreviewUrl: previewUrl, cardImageUrl: file ? "" : f.cardImageUrl }))}
+            onFileSelect={(file, previewUrl) => {
+              setCardImageScale(100);
+              setForm((f) => ({ ...f, cardImageFile: file, cardImagePreviewUrl: previewUrl, cardImageUrl: file ? "" : f.cardImageUrl }));
+            }}
+          />
+          <ImageScaleControl
+            previewUrl={form.cardImagePreviewUrl}
+            scale={cardImageScale}
+            onScaleChange={setCardImageScale}
           />
 
           {/* Envelope image — background */}
@@ -584,7 +636,15 @@ function DesignForm({
             value={form.envelopeImageUrl}
             previewUrl={form.envelopeImagePreviewUrl}
             onChange={(url) => setForm((f) => ({ ...f, envelopeImageUrl: url, envelopeImageFile: null, envelopeImagePreviewUrl: "" }))}
-            onFileSelect={(file, previewUrl) => setForm((f) => ({ ...f, envelopeImageFile: file, envelopeImagePreviewUrl: previewUrl, envelopeImageUrl: file ? "" : f.envelopeImageUrl }))}
+            onFileSelect={(file, previewUrl) => {
+              setEnvelopeImageScale(100);
+              setForm((f) => ({ ...f, envelopeImageFile: file, envelopeImagePreviewUrl: previewUrl, envelopeImageUrl: file ? "" : f.envelopeImageUrl }));
+            }}
+          />
+          <ImageScaleControl
+            previewUrl={form.envelopeImagePreviewUrl}
+            scale={envelopeImageScale}
+            onScaleChange={setEnvelopeImageScale}
           />
 
           {/* Opening animation */}
@@ -863,7 +923,6 @@ function RawCardForm({
 }) {
   const [form, setForm] = useState<RawFormData>({ ...initial });
   const [saving, setSaving] = useState(false);
-  const [imageScale, setImageScale] = useState(100);
   const qc = useQueryClient();
 
   const set = (key: keyof RawFormData) => (val: string) =>
@@ -882,7 +941,7 @@ function RawCardForm({
       
       // For new cards, file is required; for updates, file is optional
       if (form.pathFile) {
-        fd.append("file", await scaleImageFile(form.pathFile, imageScale));
+        fd.append("file", form.pathFile);
       }
 
       const url = mode === "add"
@@ -949,40 +1008,8 @@ function RawCardForm({
             value={form.path}
             previewUrl={form.pathPreviewUrl}
             onChange={(url) => setForm((f) => ({ ...f, path: url, pathFile: null, pathPreviewUrl: "" }))}
-            onFileSelect={(file, previewUrl) => {
-              setImageScale(100);
-              setForm((f) => ({ ...f, pathFile: file, pathPreviewUrl: previewUrl, path: file ? "" : f.path }));
-            }}
+            onFileSelect={(file, previewUrl) => setForm((f) => ({ ...f, pathFile: file, pathPreviewUrl: previewUrl, path: file ? "" : f.path }))}
           />
-          {form.pathPreviewUrl && (
-            <div className="rounded-xl border border-border bg-muted/30 p-3">
-              <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-                <span>Image scale before saving</span>
-                <span className="font-mono text-foreground">{imageScale}%</span>
-              </div>
-              <input
-                type="range"
-                min="25"
-                max="200"
-                step="1"
-                value={imageScale}
-                onChange={(e) => setImageScale(Number(e.target.value))}
-                className="mt-2 w-full accent-primary"
-                aria-label="Raw card image scale"
-              />
-              <div className="mt-3 flex h-44 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
-                <img
-                  src={form.pathPreviewUrl}
-                  alt="Scaled raw card preview"
-                  className="max-h-full max-w-full object-contain transition-transform"
-                  style={{ transform: `scale(${imageScale / 100})` }}
-                />
-              </div>
-              <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
-                100% keeps the uploaded image unchanged. Adjust the slider to scale it before adding it to the catalog.
-              </p>
-            </div>
-          )}
 
         </div>
 
