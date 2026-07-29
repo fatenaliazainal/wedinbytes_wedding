@@ -77,7 +77,17 @@ export function EnvelopeAnimation({
 
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div
+                <motion.div
+                  animate={
+                    phase === "idle"
+                      ? { scale: [1, 1.05, 1] }
+                      : { scale: 1, opacity: 0.4 }
+                  }
+                  transition={
+                    phase === "idle"
+                      ? { repeat: Infinity, duration: 2 }
+                      : { duration: 0.2 }
+                  }
                   className="flex h-[87px] w-[87px] items-center justify-center rounded-full bg-white shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
                   aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
                 >
@@ -99,7 +109,7 @@ export function EnvelopeAnimation({
                       {names}
                     </span>
                   )}
-                </div>
+                </motion.div>
               </div>
 
               {/* ── Top flap ── */}

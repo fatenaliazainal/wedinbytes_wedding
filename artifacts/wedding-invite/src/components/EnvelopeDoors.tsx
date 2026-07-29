@@ -73,24 +73,38 @@ export function EnvelopeDoors({
             className="flex h-[90px] w-[90px] items-center justify-center rounded-full bg-white shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
             aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
-            {initialsImageUrl ? (
-              <img
-                src={initialsImageUrl}
-                alt="Uploaded initials"
-                className="h-[76%] w-[76%] object-contain"
-                draggable={false}
-              />
-            ) : (
-              <span
-                className="max-w-[82%] text-center leading-none text-[#5c4b52]"
-                style={{
-                  fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                  fontSize: initialsSize ? `${initialsSize}px` : "24px",
-                }}
-              >
-                {names}
-              </span>
-            )}
+            <motion.div
+              animate={
+                isOpened
+                  ? { scale: 1 }
+                  : { scale: [1, 1.05, 1] }
+              }
+              transition={
+                isOpened
+                  ? { duration: 0.2 }
+                  : { repeat: Infinity, duration: 2 }
+              }
+              className="flex h-full w-full items-center justify-center"
+            >
+              {initialsImageUrl ? (
+                <img
+                  src={initialsImageUrl}
+                  alt="Uploaded initials"
+                  className="h-[76%] w-[76%] object-contain"
+                  draggable={false}
+                />
+              ) : (
+                <span
+                  className="max-w-[82%] text-center leading-none text-[#5c4b52]"
+                  style={{
+                    fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                    fontSize: initialsSize ? `${initialsSize}px` : "24px",
+                  }}
+                >
+                  {names}
+                </span>
+              )}
+            </motion.div>
           </div>
 
           <motion.div
