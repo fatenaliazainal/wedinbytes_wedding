@@ -16,6 +16,7 @@ import type { PricingPackage } from "@workspace/api-client-react";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
+import { createTranslator } from "@/lib/translations";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
@@ -334,6 +335,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     cardImageUrl: "wed_card_design/20260531-041903-27796.jpg", envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
     cardMaxWidth: "420px",
   });
+  const t = createTranslator(inv.language);
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
@@ -1001,14 +1003,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {activeTab === "muka-depan" && (
               <>
                 <Field label="Event Title">
-                  <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder="Wedding Reception" />
+                  <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder={t("placeholders.eventTitle")} />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Name">
-                    <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder="Harris" />
+                    <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder={t("placeholders.groomShortName")} />
                   </Field>
                   <Field label="Bride's Name">
-                    <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder="Sarah" />
+                    <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder={t("placeholders.brideShortName")} />
                   </Field>
                 </div>
                 <Field label="Logo Initials">
@@ -1042,7 +1044,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </div>
                 </Field>
                 <Field label="Hashtag">
-                  <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder="#OurWedding" />
+                  <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder={t("placeholders.hashtag")} />
                 </Field>
                 <div className="flex items-center gap-3">
                   <input
@@ -1074,7 +1076,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <RichTextEditor
                     value={inv.groomParents}
                     onChange={(v) => setI("groomParents")(v)}
-                    placeholder="Mr. John Smith"
+                    placeholder={t("placeholders.groomParents")}
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "center" }}
@@ -1084,7 +1086,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <RichTextEditor
                     value={inv.brideParents}
                     onChange={(v) => setI("brideParents")(v)}
-                    placeholder="Mrs. Mary Smith"
+                    placeholder={t("placeholders.brideParents")}
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "center" }}
@@ -1101,10 +1103,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Full Name">
-                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder="John Smith" />
+                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder={t("placeholders.groomFullName")} />
                   </Field>
                   <Field label="Bride's Full Name">
-                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder="Sarah Lee" />
+                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder={t("placeholders.brideFullName")} />
                   </Field>
                 </div>
               </>
@@ -1118,7 +1120,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
                   </Field>
                   <Field label="Day (auto)">
-                    <input className={inputCls} value={inv.eventDay} readOnly placeholder="Auto from date" />
+                    <input className={inputCls} value={inv.eventDay} readOnly placeholder={t("placeholders.dayFromDate")} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -1130,16 +1132,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </Field>
                 </div>
                 <Field label="Readable Time">
-                  <input className={inputCls} value={inv.eventTime} readOnly placeholder="Auto from start/end" />
+                  <input className={inputCls} value={inv.eventTime} readOnly placeholder={t("placeholders.timeFromStartEnd")} />
                 </Field>
                 <Field label="Venue Name">
-                  <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder="Grand Ballroom, Hilton" />
+                  <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder={t("placeholders.venueName")} />
                 </Field>
                 <Field label="Venue Address">
                   <RichTextEditor
                     value={inv.venueAddress}
                     onChange={(v) => setI("venueAddress")(v)}
-                    placeholder={`Lot 143 Jalan Tegak,\nBatang Kali, Selangor`}
+                    placeholder={t("placeholders.venueAddress")}
                     multiLine
                     showFontSize
                     inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 16, textAlign: "center" }}
@@ -1147,15 +1149,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 </Field>
                 <Field label="City / State">
                   <div className="grid grid-cols-2 gap-3">
-                    <input className={inputCls} value={inv.venueCity} onChange={(e) => setI("venueCity")(e.target.value)} placeholder="Cheras" />
-                    <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder="Selangor" />
+                    <input className={inputCls} value={inv.venueCity} onChange={(e) => setI("venueCity")(e.target.value)} placeholder={t("placeholders.city")} />
+                    <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder={t("placeholders.state")} />
                   </div>
                 </Field>
                 <Field label="Islamic Date">
-                  <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder="5 Rabiulawal 1449H" />
+                  <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder={t("placeholders.islamicDate")} />
                 </Field>
                 <Field label="GPS / Google Maps Link">
-                  <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder="https://maps.google.com/..." />
+                  <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder={t("placeholders.mapsUrl")} />
                 </Field>
               </>
             )}
@@ -1207,7 +1209,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                               return { ...p, itinerary: next };
                             })
                           }
-                          placeholder="Event name"
+                          placeholder={t("placeholders.eventName")}
                         />
                         <button
                           type="button"
@@ -1228,7 +1230,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 </div>
                 {activeFeatureNames.has("Dress Code") && (
                   <Field label="Dress Code">
-                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder="Pastel / Formal" />
+                    <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder={t("placeholders.dressCode")} />
                   </Field>
                 )}
               </>
@@ -1316,7 +1318,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <RichTextEditor
                     value={inv.rsvpIntroText}
                     onChange={(v) => setInv((p) => ({ ...p, rsvpIntroText: v }))}
-                    placeholder="Please confirm your attendance..."
+                    placeholder={t("placeholders.rsvpMessage")}
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "left" }}
@@ -1329,7 +1331,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <RichTextEditor
                     value={inv.rsvpFormNote}
                     onChange={(v) => setInv((p) => ({ ...p, rsvpFormNote: v }))}
-                    placeholder="Note for guests..."
+                    placeholder={t("placeholders.rsvpNote")}
                     multiLine
                     showFontSize
                     inputStyle={{ textAlign: "left" }}
@@ -1344,7 +1346,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 <RichTextEditor
                   value={inv.message}
                   onChange={(v) => setI("message")(v)}
-                  placeholder="Wishes or additional note for guests..."
+                  placeholder={t("placeholders.wishes")}
                   multiLine
                   showFontSize
                   inputStyle={{ textAlign: "left" }}
@@ -1366,10 +1368,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <label htmlFor="showFooter" className="text-sm font-medium text-gray-700">Show footer branding</label>
                 </div>
                 <Field label="Footer Text">
-                  <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder="Dapatkan kad digital anda di:" />
+                  <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder={t("placeholders.footerText")} />
                 </Field>
                 <Field label="Footer URL">
-                    <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder="wedinbytes.com" />
+                    <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder={t("placeholders.footerUrl")} />
                 </Field>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Social Links</label>
@@ -1383,7 +1385,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                           next[idx] = { ...next[idx], platform: e.target.value };
                           setInv((p) => ({ ...p, socialLinks: next }));
                         }}
-                        placeholder="Platform (website, tiktok, instagram)"
+                         placeholder={t("placeholders.socialPlatform")}
                       />
                       <input
                         className={inputCls}
@@ -1393,7 +1395,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                           next[idx] = { ...next[idx], url: e.target.value };
                           setInv((p) => ({ ...p, socialLinks: next }));
                         }}
-                        placeholder="https://..."
+                         placeholder={t("placeholders.url")}
                       />
                     </div>
                   ))}
@@ -1421,7 +1423,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                         setActivePackageId(id);
                       }}
                     >
-                      <option value="">Select a package</option>
+                      <option value="">{t("placeholders.package")}</option>
                       {packages.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name} {p.price ? `– RM ${p.price}` : ""}
@@ -1580,14 +1582,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     max={60}
                     value={design.badgeFontSize || 24}
                     onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
-                    placeholder="24"
+                    placeholder={t("placeholders.badgeFontSize")}
                   />
                 </Field>
                 <Field label="Open Button">
                   <RichTextEditor
                     value={design.openButtonText}
                     onChange={(v) => setDesign((p) => ({ ...p, openButtonText: v }))}
-                    placeholder="BUKA"
+                    placeholder={t("placeholders.openButton")}
                     multiLine={false}
                     showFontSize
                   />
@@ -1649,7 +1651,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </div>
                 </Field>
                 <Field label="Song Link (YouTube)">
-                  <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder="e.g. https://www.youtube.com/watch?v=..." />
+                  <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
                 </Field>
                 {design.musicUrl && design.musicUrl.includes("youtube") && (
                   <div className="rounded overflow-hidden border border-gray-200">
