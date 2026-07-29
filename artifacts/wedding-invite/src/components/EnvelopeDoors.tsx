@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { WaxSeal } from "@/components/WaxSeal";
 
 interface EnvelopeDoorsProps {
   isOpened: boolean;
@@ -67,25 +68,7 @@ export function EnvelopeDoors({
           }`}
           onClick={!isOpened ? onOpen : undefined}
         >
-          <div
-            className="w-[140px] h-[140px] rounded-full border border-white/50 shadow-xl flex items-center justify-center flex-col relative overflow-hidden"
-            style={{
-              background: "rgba(255,255,255,0.35)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-            }}
-          >
-            <div className="absolute inset-2 border border-dashed border-primary/40 rounded-full" />
-            <span
-              className="text-primary text-center px-4 leading-tight drop-shadow-sm"
-              style={{
-                fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                fontSize: initialsSize ? `${initialsSize}px` : "var(--envelope-initials-font-size, 24px)",
-              }}
-            >
-              {names}
-            </span>
-          </div>
+          <WaxSeal names={names} initialsSize={initialsSize} className="h-[175px] w-[175px] drop-shadow-xl" />
 
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
