@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { Download, LogOut, Users } from "lucide-react";
+import { ArrowLeft, Download, LogOut, Users } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -99,6 +99,14 @@ export default function RsvpDashboardPage() {
         <button onClick={async () => { await logout(); navigate("/"); }} className="text-gray-500 hover:text-gray-900" title="Log Out"><LogOut size={18} /></button>
       } />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard")}
+          className="mb-5 inline-flex items-center gap-2 text-xs font-semibold tracking-wide text-gray-500 transition-colors hover:text-gray-900"
+        >
+          <ArrowLeft size={15} />
+          BACK TO BUYER DASHBOARD
+        </button>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">RSVP Dashboard</h1>
