@@ -412,7 +412,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             aria-hidden
             alt=""
             draggable={false}
-            onError={(event) => fallbackToR2Proxy(event, imageUrl)}
             className="absolute inset-0 w-full h-full object-cover select-none"
           />
         ) : (
@@ -438,7 +437,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             aria-hidden
             alt=""
             draggable={false}
-            onError={(event) => fallbackToR2Proxy(event, groupOneBackgroundUrl)}
             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
           />
         ) : (

@@ -5,4 +5,3 @@
 - [DB schema declarations](db-schema-declarations.md) — after changing Drizzle schema, rebuild the composite DB declarations before API typechecking.
 - [Admin order readiness](admin-order-readiness.md) — keep order/payment records additive and derive website status from purchase state plus an explicit admin status.
 - [Fixed scroll backdrop](fixed-scroll-backdrop.md) — long invitation content needs a viewport-height sticky image layer so its backdrop does not scale with content height.
-- [Upload storage boundaries](upload-storage-boundaries.md) — design, gallery, and logo uploads use R2 keys; admin and invitation ownership checks must remain enforced at upload/update boundaries.

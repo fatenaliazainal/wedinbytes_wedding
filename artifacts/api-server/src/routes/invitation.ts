@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { GetInvitationResponse } from "@workspace/api-zod";
 import { db, invitationTable } from "@workspace/db";
-import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 
 const router: IRouter = Router();
 
@@ -92,11 +91,7 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
 }
 
 function canManageInvitation(req: Request, row: typeof invitationTable.$inferSelect) {
-  return req.session.role === "admin" || Boolean(req.session.userId && row.userId === req.session.userId);
-}
-
-function isR2Key(value: string) {
-  return Boolean(value) && !value.startsWith("http://") && !value.startsWith("https://") && !value.startsWith("/");
+  return Boolean(req.session.userId && row.userId === req.session.userId);
 }
 
 // Create a new invitation for the logged-in buyer.
@@ -215,10 +210,6 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    if (!canManageInvitation(req, rows[0])) {
-      res.status(403).json({ error: "You do not own this invitation" });
-      return;
-    }
 
     // Build update object from allowed fields only
     const update: Record<string, unknown> = {};
@@ -247,28 +238,6 @@ router.patch("/invitation/:token", async (req, res) => {
       .set(update)
       .where(eq(invitationTable.token, token))
       .returning();
-
-    if (Array.isArray(update.galleryImages)) {
-      const previousImages = Array.isArray(rows[0].galleryImages) ? rows[0].galleryImages : [];
-      const nextImages = update.galleryImages as string[];
-      await Promise.all(
-        previousImages
-          .filter((image) => !nextImages.includes(image) && isR2Key(image))
-          .map((image) =>
-            deleteImage(image).catch((err) => {
-              req.log.error({ err, image }, "Failed to clean up removed gallery image");
-            }),
-          ),
-      );
-    }
-    if (typeof update.logoInitialsUrl === "string" && update.logoInitialsUrl !== rows[0].logoInitialsUrl) {
-      const previousLogo = rows[0].logoInitialsUrl;
-      if (previousLogo && isR2Key(previousLogo)) {
-        await deleteImage(previousLogo).catch((err) => {
-          req.log.error({ err, image: previousLogo }, "Failed to clean up replaced logo image");
-        });
-      }
-    }
 
     res.json(await publicInvitation(updated));
   } catch (err) {
