@@ -450,8 +450,7 @@ function DesignForm({
     setForm((f) => ({ ...f, [key]: val }));
 
   const buildR2Url = (path: string) => {
-    const base = (import.meta.env.VITE_R2_DOMAIN_URL ?? "").replace(/\/$/, "");
-    return path ? `${base}/${path.replace(/^\//, "")}` : "";
+    return resolveImageUrl(path) ?? "";
   };
 
   const findPickerIdByPath = (path: string) => rawCards.find((c) => c.path === path)?.id;
@@ -849,7 +848,14 @@ function DesignsTab() {
               {/* Thumbnail */}
               <div className="h-20 w-14 shrink-0 rounded-lg overflow-hidden border border-border bg-muted relative">
                 {d.cardImageUrl ? (
-                  <img src={resolveImageUrl(d.cardImageUrl)} alt={d.name} className="h-full w-full object-cover" />
+                  <img
+                    src={resolveImageUrl(d.cardImageUrl)}
+                    alt={d.name}
+                    className="h-full w-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <PaintBucket size={16} className="text-muted-foreground" />

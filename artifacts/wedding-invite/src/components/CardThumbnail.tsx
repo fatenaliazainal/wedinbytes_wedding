@@ -37,6 +37,9 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
           <img
             src={resolveImageUrl(design.cardImageUrl)}
             alt=""
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
             draggable={false}
             style={{
               position: "absolute",
