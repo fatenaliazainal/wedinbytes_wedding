@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1600" viewBox="0 0 900 1600">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf7"/>
+      <stop offset="1" stop-color="#f4f8ef"/>
+    </linearGradient>
+    <pattern id="grain" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="4" r="1" fill="#94a58d" opacity=".12"/>
+      <circle cx="14" cy="12" r=".8" fill="#b88989" opacity=".1"/>
+    </pattern>
+    <style>
+      .label { font-family: Arial, sans-serif; font-weight: 700; letter-spacing: 2px; }
+      .small { font-family: Arial, sans-serif; font-size: 22px; }
+    </style>
+  </defs>
+
+  <!-- Full artwork canvas: 900 x 1600 -->
+  <rect width="900" height="1600" fill="url(#paper)"/>
+  <rect width="900" height="1600" fill="url(#grain)"/>
+
+  <!-- Decorative example: safe to place background-only artwork here -->
+  <g opacity=".75" fill="none" stroke="#7d9b70" stroke-width="5">
+    <path d="M20 40 C140 120 120 210 230 275"/>
+    <path d="M880 40 C760 120 780 210 670 275"/>
+    <path d="M20 1560 C140 1480 120 1390 230 1325"/>
+    <path d="M880 1560 C760 1480 780 1390 670 1325"/>
+  </g>
+  <g fill="#d9959d" opacity=".8">
+    <circle cx="105" cy="130" r="28"/><circle cx="170" cy="205" r="20"/>
+    <circle cx="795" cy="130" r="28"/><circle cx="730" cy="205" r="20"/>
+    <circle cx="105" cy="1470" r="28"/><circle cx="170" cy="1395" r="20"/>
+    <circle cx="795" cy="1470" r="28"/><circle cx="730" cy="1395" r="20"/>
+  </g>
+  <g fill="#6f9670" opacity=".8">
+    <ellipse cx="70" cy="260" rx="18" ry="42" transform="rotate(-35 70 260)"/>
+    <ellipse cx="830" cy="260" rx="18" ry="42" transform="rotate(35 830 260)"/>
+    <ellipse cx="70" cy="1340" rx="18" ry="42" transform="rotate(35 70 1340)"/>
+    <ellipse cx="830" cy="1340" rx="18" ry="42" transform="rotate(-35 830 1340)"/>
+  </g>
+
+  <!-- Warning zones: 0-288 and 1312-1600 -->
+  <rect x="0" y="0" width="900" height="288" fill="#f59e0b" opacity=".10"/>
+  <rect x="0" y="1312" width="900" height="288" fill="#f59e0b" opacity=".10"/>
+  <line x1="0" y1="288" x2="900" y2="288" stroke="#d97706" stroke-width="3" stroke-dasharray="12 10"/>
+  <line x1="0" y1="1312" x2="900" y2="1312" stroke="#d97706" stroke-width="3" stroke-dasharray="12 10"/>
+
+  <!-- Safe content: x=72, y=288, w=756, h=1024 -->
+  <rect x="72" y="288" width="756" height="1024" fill="#10b981" opacity=".08" stroke="#047857" stroke-width="4" stroke-dasharray="12 8"/>
+  <rect x="72" y="288" width="756" height="1024" fill="none" stroke="#047857" stroke-width="2"/>
+
+  <!-- Bleed border -->
+  <rect x="14" y="14" width="872" height="1572" fill="none" stroke="#e11d48" stroke-width="12" opacity=".28"/>
+
+  <!-- Labels -->
+  <g>
+    <rect x="30" y="34" width="260" height="52" rx="10" fill="#d97706"/>
+    <text x="50" y="68" class="label" font-size="22" fill="white">WARNING · TOP</text>
+    <rect x="98" y="320" width="245" height="52" rx="10" fill="#047857"/>
+    <text x="120" y="354" class="label" font-size="22" fill="white">SAFE CONTENT</text>
+    <rect x="30" y="1514" width="310" height="52" rx="10" fill="#d97706"/>
+    <text x="50" y="1548" class="label" font-size="22" fill="white">WARNING · BOTTOM</text>
+    <rect x="704" y="760" width="140" height="48" rx="10" fill="#be123c"/>
+    <text x="774" y="790" class="label" font-size="18" fill="white" text-anchor="middle" transform="rotate(-90 774 790)">BLEED</text>
+  </g>
+
+  <!-- Sample content, all inside safe area -->
+  <g text-anchor="middle" fill="#31412e">
+    <text x="450" y="570" font-family="Georgia, serif" font-size="64" font-weight="700">NAMA PENGANTIN</text>
+    <text x="450" y="635" font-family="Georgia, serif" font-size="38" fill="#71856c">&amp;</text>
+    <text x="450" y="705" font-family="Georgia, serif" font-size="64" font-weight="700">NAMA PENGANTIN</text>
+    <line x1="300" y1="780" x2="600" y2="780" stroke="#71856c" stroke-width="3"/>
+    <text x="450" y="850" class="small" fill="#52634e">TARIKH · MASA · LOKASI</text>
+    <text x="450" y="1030" class="small" fill="#52634e">Letakkan teks, logo dan muka</text>
+    <text x="450" y="1065" class="small" fill="#52634e">di dalam kawasan hijau ini</text>
+  </g>
+
+  <!-- Measurement notes -->
+  <g class="small" fill="#374151">
+    <text x="450" y="175" text-anchor="middle">900 × 1600 px · RATIO 9:16</text>
+    <text x="450" y="1480" text-anchor="middle">Safe Area: 756 × 1024 px</text>
+  </g>
+</svg>

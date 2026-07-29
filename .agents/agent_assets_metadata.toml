@@ -30,3 +30,9 @@ id = "yBac3fzlNK-lMe2MjZ4ot"
 uri = "file://screenshots/invitation-gallery-final.jpg"
 type = "image"
 title = "Public card with gallery"
+
+[[outputs]]
+id = "FhzpFZ7tdnK5kVd4byOf5"
+uri = "file://attached_assets/canva-background-guide-900x1600.svg"
+type = "image"
+title = "Canva Background Guide — 900×1600 px"
