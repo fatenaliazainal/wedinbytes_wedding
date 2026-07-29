@@ -1905,12 +1905,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   interactive so buyers can continue preparing their invitation. */}
               {previewWasOpened && !inv.isPurchased && (
                 <div
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  style={{ transform: "rotate(-30deg)", zIndex: 40 }}
+                  className="absolute inset-x-0 top-1/2 z-40 flex -translate-y-1/2 items-center justify-center pointer-events-none"
+                  style={{ background: "rgba(80, 80, 80, 0.28)", height: 26 }}
                 >
                   <span
-                    className="select-none text-xs font-medium uppercase tracking-[0.35em] text-foreground/25"
-                    style={{ fontSize: 22, textShadow: "none" }}
+                    className="select-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/75"
                   >
                     PREVIEW
                   </span>

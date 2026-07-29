@@ -359,12 +359,11 @@ export default function InvitationPage() {
           payment is completed. The admin demo card is never watermarked. */}
       {resolvedToken !== "demo" && invitationRecord?.isPurchased !== true && (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
-          style={{ transform: "rotate(-30deg)" }}
+          className="fixed inset-x-0 top-1/2 z-40 flex -translate-y-1/2 items-center justify-center pointer-events-none"
+          style={{ background: "rgba(80, 80, 80, 0.28)", height: 30 }}
         >
           <span
-            className="font-black tracking-[0.3em] text-black/25 select-none"
-            style={{ fontSize: "clamp(2rem, 8vw, 5rem)", textShadow: "0 1px 3px rgba(255,255,255,0.45)" }}
+            className="select-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/75"
           >
             PREVIEW
           </span>
