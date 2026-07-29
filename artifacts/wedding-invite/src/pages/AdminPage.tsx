@@ -207,10 +207,12 @@ function ImageUploadField({
 }
 
 function ImageScaleControl({
+  label,
   previewUrl,
   scale,
   onScaleChange,
 }: {
+  label: string;
   previewUrl?: string;
   scale: number;
   onScaleChange: (scale: number) => void;
@@ -218,9 +220,9 @@ function ImageScaleControl({
   if (!previewUrl) return null;
 
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-3">
+    <div className="rounded-2xl border border-border bg-muted/30 p-4">
       <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-        <span>Image scale before saving</span>
+        <span>{label} scale before saving</span>
         <span className="font-mono text-foreground">{scale}%</span>
       </div>
       <input
@@ -233,8 +235,8 @@ function ImageScaleControl({
         className="mt-2 w-full accent-primary"
         aria-label="Image scale before saving"
       />
-      <div className="mt-3 flex justify-center overflow-hidden rounded-lg border border-border bg-[#e9e9e5] p-3">
-        <div className="relative h-64 w-32 overflow-hidden border-2 border-gray-800 bg-white shadow-sm">
+      <div className="mt-3 flex justify-center overflow-hidden rounded-xl border border-border bg-[#e9e9e5] p-5 sm:p-8">
+        <div className="relative h-[min(72vh,720px)] w-[min(360px,72vw)] overflow-hidden border-[4px] border-gray-800 bg-white shadow-lg">
           <img
             src={previewUrl}
             alt="Scaled image preview"
@@ -248,22 +250,22 @@ function ImageScaleControl({
           />
           <div className="pointer-events-none absolute inset-0 z-10">
             <div className="absolute inset-x-0 top-0 h-[18%] border-b border-dashed border-amber-500/80 bg-amber-300/10">
-              <span className="absolute left-1 top-1 rounded bg-amber-600 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+              <span className="absolute left-2 top-2 rounded bg-amber-600 px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
                 Warning · Top
               </span>
             </div>
             <div className="absolute inset-x-[8%] top-[18%] h-[64%] border border-dashed border-emerald-600/90 bg-emerald-300/10">
-              <span className="absolute left-1 top-1 rounded bg-emerald-700 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+              <span className="absolute left-2 top-2 rounded bg-emerald-700 px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
                 Safe Area
               </span>
             </div>
             <div className="absolute inset-x-0 bottom-0 h-[18%] border-t border-dashed border-amber-500/80 bg-amber-300/10">
-              <span className="absolute bottom-1 left-1 rounded bg-amber-600 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+              <span className="absolute bottom-2 left-2 rounded bg-amber-600 px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
                 Warning · Bottom
               </span>
             </div>
             <div className="absolute inset-0 border-[5px] border-rose-500/20">
-              <span className="absolute right-0 top-1/2 -rotate-90 rounded bg-rose-700 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+              <span className="absolute right-1 top-1/2 -rotate-90 rounded bg-rose-700 px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
                 Bleed
               </span>
             </div>
@@ -546,13 +548,13 @@ function DesignForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="min-h-screen bg-[#f5f5f3] px-4 py-6 sm:px-6 lg:px-10">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]"
+        className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between border-b border-border px-6 py-5 sm:px-8">
           <h2 className="text-base font-semibold">
             {mode === "add" ? "Add New Design" : "Edit Design"}
           </h2>
@@ -562,7 +564,7 @@ function DesignForm({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+        <div className="flex-1 space-y-5 overflow-y-visible px-6 py-6 sm:px-8 lg:px-12">
 
           {/* Auto code */}
           <CodeBadge code={displayCode} />
@@ -654,6 +656,7 @@ function DesignForm({
             }}
           />
           <ImageScaleControl
+            label="Card Image"
             previewUrl={form.cardImagePreviewUrl}
             scale={cardImageScale}
             onScaleChange={setCardImageScale}
@@ -671,6 +674,7 @@ function DesignForm({
             }}
           />
           <ImageScaleControl
+            label="Background Image"
             previewUrl={form.envelopeImagePreviewUrl}
             scale={envelopeImageScale}
             onScaleChange={setEnvelopeImageScale}
@@ -730,7 +734,7 @@ function DesignForm({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-border shrink-0 flex gap-3">
+        <div className="flex shrink-0 gap-3 border-t border-border px-6 py-5 sm:px-8">
           <button
             type="button"
             onClick={onClose}
@@ -770,6 +774,17 @@ function DesignsTab() {
   });
 
   const nextCode = `FL${String(designs.length + 1).padStart(3, "0")}`;
+
+  if (showAdd) {
+    return (
+      <DesignForm
+        mode="add"
+        initial={EMPTY_FORM}
+        autoCode={nextCode}
+        onClose={() => setShowAdd(false)}
+      />
+    );
+  }
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this design?")) return;
@@ -906,14 +921,6 @@ function DesignsTab() {
         </div>
       )}
 
-      {showAdd && (
-        <DesignForm
-          mode="add"
-          initial={EMPTY_FORM}
-          autoCode={nextCode}
-          onClose={() => setShowAdd(false)}
-        />
-      )}
       {editTarget && (
         <DesignForm
           mode="edit"
