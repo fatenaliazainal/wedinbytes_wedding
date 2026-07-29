@@ -39,6 +39,45 @@ router.get("/rsvp", async (req, res) => {
   }
 });
 
+// Buyer RSVP dashboard: return every owned card with only that card's RSVP rows.
+router.get("/rsvp/buyer", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      res.status(401).json({ error: "Tidak log masuk." });
+      return;
+    }
+    const invitations = await db
+      .select({
+        id: invitationTable.id,
+        token: invitationTable.token,
+        groomName: invitationTable.groomName,
+        brideName: invitationTable.brideName,
+        eventType: invitationTable.eventType,
+        eventDate: invitationTable.eventDate,
+        rsvpEnabled: invitationTable.rsvpEnabled,
+      })
+      .from(invitationTable)
+      .where(eq(invitationTable.userId, req.session.userId))
+      .orderBy(invitationTable.createdAt);
+
+    const cards = await Promise.all(invitations.map(async (invitation) => {
+      const rows = await db
+        .select()
+        .from(rsvpTable)
+        .where(eq(rsvpTable.invitationToken, invitation.token))
+        .orderBy(rsvpTable.createdAt);
+      return {
+        ...invitation,
+        rsvps: rows.map(normalizeRsvpForApi),
+      };
+    }));
+    res.json({ cards });
+  } catch (err) {
+    req.log.error({ err }, "Failed to load buyer RSVP dashboard");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/rsvp", async (req, res) => {
   try {
     const body = CreateRsvpBody.safeParse(req.body);

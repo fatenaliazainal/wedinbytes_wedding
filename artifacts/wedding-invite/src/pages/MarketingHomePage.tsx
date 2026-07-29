@@ -74,8 +74,8 @@ export default function MarketingHomePage() {
   const [navOpen, setNavOpen] = useState(false);
 
   const goToEditor = useCallback((code?: string) => {
-    if (code) navigate(`/editor?designCode=${encodeURIComponent(code)}`);
-    else navigate("/editor");
+    if (code) navigate(`/editor?new=1&designCode=${encodeURIComponent(code)}`);
+    else navigate("/editor?new=1");
   }, [navigate]);
 
   const { data: designs = [], isLoading } = useListDesigns();

@@ -57,6 +57,7 @@ export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [design, setDesign] = useState<Design | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("orders");
@@ -76,16 +77,17 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         const [invRes, designRes, allDesRes] = await Promise.all([
-          fetch(`${BASE}/api/invitation-by-user/${user.id}`, { credentials: "include", cache: "no-store" }),
+          fetch(`${BASE}/api/invitations-by-user/${user.id}`, { credentials: "include", cache: "no-store" }),
           fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
           fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
         ]);
-        const invData = invRes.ok ? await invRes.json() : null;
+        const invData = invRes.ok ? await invRes.json() as Invitation[] : [];
         const globalDesign = designRes.ok ? await designRes.json() : null;
         const allDesigns: Design[] = allDesRes.ok ? await allDesRes.json() : [];
-        if (invData) setInvitation(invData);
+        setInvitations(invData);
+        setInvitation(invData[0] ?? null);
         // Resolve the design template matching the invitation's designCode
-        const tpl = allDesigns.find((d) => d.designCode === invData?.designCode);
+        const tpl = allDesigns.find((d) => d.designCode === invData[0]?.designCode);
         setDesign(tpl ?? globalDesign ?? null);
       } catch (err) {
         console.error(err);
@@ -139,9 +141,9 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const actionButtons = [
-    { icon: Edit2,  label: "Edit",  onClick: () => navigate("/editor") },
+    { icon: Edit2,  label: "Edit",  onClick: () => invitation && navigate(`/editor?token=${encodeURIComponent(invitation.token)}`) },
     { icon: Eye,    label: "View",  onClick: () => invitation && window.open(`${BASE}${publicInvitePath(invitation)}`, "_blank"), disabled: !invitation },
-    { icon: Users,  label: "RSVP",  onClick: () => navigate("/admin") },
+    { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: copyLink, disabled: !invitation },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!"), disabled: !invitation },
     { icon: Lock,   label: "Lock",  onClick: () => {
@@ -335,7 +337,7 @@ export default function DashboardPage() {
             <div className="p-4 sm:p-6">
               <div className="flex justify-end mb-5">
                 <button
-                  onClick={() => navigate("/editor")}
+                  onClick={() => navigate("/editor?new=1")}
                   className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded text-xs font-bold tracking-wider hover:bg-gray-700 transition-colors"
                 >
                   <Plus size={14} />
@@ -353,11 +355,29 @@ export default function DashboardPage() {
               ) : !invitation ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3 text-gray-400">
                   <p className="text-sm text-center">You don't have any invitation cards yet.</p>
-                  <button onClick={() => navigate("/editor")} className="text-sm text-gray-700 underline">
+                  <button onClick={() => navigate("/editor?new=1")} className="text-sm text-gray-700 underline">
                     Create your first card →
                   </button>
                 </div>
               ) : (
+                <>
+                {invitations.length > 1 && (
+                  <div className="mb-5 flex flex-wrap gap-2 border-b border-gray-100 pb-4">
+                    {invitations.map((card) => (
+                      <button
+                        key={card.token}
+                        onClick={() => setInvitation(card)}
+                        className={`rounded-full border px-3 py-1.5 text-xs ${
+                          invitation.token === card.token
+                            ? "border-gray-900 bg-gray-900 text-white"
+                            : "border-gray-200 bg-white text-gray-600"
+                        }`}
+                      >
+                        {card.groomName} &amp; {card.brideName}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 items-start">
 
                   {/* Phone mockup */}
@@ -477,6 +497,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
+                </>
               )}
             </div>
           )}

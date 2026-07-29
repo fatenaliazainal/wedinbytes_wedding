@@ -366,10 +366,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     if (mode === "buyer" && !user) return;
     if (!silent) setDataLoading(true);
     try {
+      const params = new URLSearchParams(window.location.search);
+      const isNewCard = mode === "buyer" && params.get("new") === "1";
+      const requestedToken = mode === "buyer" ? params.get("token") : null;
       const [invRes, designRes, allDesRes, pricingRes, adminFooterRes] = await Promise.all([
-        mode === "demo"
+        isNewCard
+          ? Promise.resolve(new Response(null, { status: 404 }))
+          : mode === "demo"
           ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
-          : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
+          : requestedToken
+            ? fetch(`${BASE}/api/invitation/${encodeURIComponent(requestedToken)}`, { credentials: "include", cache: "no-store" })
+            : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
         mode === "buyer" ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
@@ -580,6 +587,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     setSaving(true);
     try {
       const token = mode === "demo" ? "demo" : inv.token;
+      let saveToken = token;
 
       // If buyer has no invitation yet, create one first
       if (mode === "buyer" && !token) {
@@ -606,10 +614,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         }
         const created = await createRes.json();
         const newToken = created.token as string;
+        saveToken = newToken;
         setInv((p) => ({ ...p, token: newToken }));
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.delete("new");
+        currentParams.set("token", newToken);
+        const nextQuery = currentParams.toString();
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`,
+        );
       }
-
-      const saveToken = mode === "demo" ? "demo" : (token || inv.token);
 
       // All fields — invitation content AND buyer design overrides — go to the invitation record.
       // The global card_design table is never touched by the buyer, so the demo stays intact.

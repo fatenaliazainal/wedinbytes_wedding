@@ -14,6 +14,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import EditorPage from "@/pages/EditorPage";
 import DashboardPage from "@/pages/DashboardPage";
+import RsvpDashboardPage from "@/pages/RsvpDashboardPage";
 import MarketingHomePage from "@/pages/MarketingHomePage";
 import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/rsvp" component={RsvpDashboardPage} />
       <Route component={NotFound} />
     </Switch>
   );

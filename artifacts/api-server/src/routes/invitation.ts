@@ -94,18 +94,12 @@ function canManageInvitation(req: Request, row: typeof invitationTable.$inferSel
   return Boolean(req.session.userId && row.userId === req.session.userId);
 }
 
-// Create a new invitation for the logged-in buyer (idempotent — returns existing if already has one)
+// Create a new invitation for the logged-in buyer.
+// Each request intentionally creates a separate card; buyers can own multiple invitations.
 router.post("/invitation", async (req, res) => {
   try {
     if (!req.session.userId) {
       res.status(401).json({ error: "Tidak log masuk." });
-      return;
-    }
-    // Return existing invitation if the user already has one
-    const existing = await db.select().from(invitationTable)
-      .where(eq(invitationTable.userId, req.session.userId)).limit(1);
-    if (existing.length > 0) {
-      res.json(existing[0]);
       return;
     }
     const token = randomUUID().replace(/-/g, "").slice(0, 16);
@@ -136,6 +130,30 @@ router.post("/invitation", async (req, res) => {
     res.status(201).json(created);
   } catch (err) {
     req.log.error({ err }, "Failed to create invitation");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// List all invitations owned by the logged-in buyer.
+router.get("/invitations-by-user/:userId", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    if (isNaN(userId)) {
+      res.status(400).json({ error: "Invalid user id" });
+      return;
+    }
+    if (!req.session.userId || req.session.userId !== userId) {
+      res.status(403).json({ error: "You do not own these invitations" });
+      return;
+    }
+    const rows = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.userId, userId))
+      .orderBy(invitationTable.createdAt);
+    res.json(await Promise.all(rows.map(publicInvitation)));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list invitations by user");
     res.status(500).json({ error: "Internal server error" });
   }
 });

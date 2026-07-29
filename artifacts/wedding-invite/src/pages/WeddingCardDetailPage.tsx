@@ -144,8 +144,8 @@ export default function WeddingCardDetailPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (card?.designCode) navigate(`/editor?designCode=${encodeURIComponent(card.designCode)}`);
-                      else navigate("/editor");
+                      if (card?.designCode) navigate(`/editor?new=1&designCode=${encodeURIComponent(card.designCode)}`);
+                      else navigate("/editor?new=1");
                     }}
                     className="inline-flex items-center gap-2 rounded-full bg-[#222] px-5 py-3 text-sm font-medium text-white shadow-sm"
                   >
@@ -201,8 +201,8 @@ export default function WeddingCardDetailPage() {
           <button
             type="button"
             onClick={() => {
-              if (card?.designCode) navigate(`/editor?designCode=${encodeURIComponent(card.designCode)}`);
-              else navigate("/editor");
+               if (card?.designCode) navigate(`/editor?new=1&designCode=${encodeURIComponent(card.designCode)}`);
+               else navigate("/editor?new=1");
             }}
             className="flex-1 rounded-full bg-[#222] py-3 text-base font-semibold text-white shadow-sm"
           >

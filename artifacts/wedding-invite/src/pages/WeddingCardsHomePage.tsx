@@ -72,8 +72,8 @@ export default function WeddingCardsHomePage() {
   }
 
   function goToEditor(designCode?: string) {
-    if (designCode) navigate(`/editor?designCode=${encodeURIComponent(designCode)}`);
-    else navigate("/editor");
+    if (designCode) navigate(`/editor?new=1&designCode=${encodeURIComponent(designCode)}`);
+    else navigate("/editor?new=1");
   }
 
   return (
