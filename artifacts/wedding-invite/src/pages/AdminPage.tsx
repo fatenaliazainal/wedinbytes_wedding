@@ -124,7 +124,7 @@ function ImageUploadField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
-  const displayUrl =  previewUrl || localPreviewUrl || value;
+  const displayUrl = previewUrl || localPreviewUrl || resolveImageUrl(value);
 
   useEffect(() => {
     return () => {
@@ -148,7 +148,12 @@ function ImageUploadField({
       {/* Preview */}
       {displayUrl && (
         <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-muted">
-          <img src={displayUrl} alt="" className="w-full h-full object-cover" />
+          <img
+            src={displayUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            onError={(e) => fallbackToR2Proxy(e, value)}
+          />
           <button
             type="button"
             onClick={() => {
@@ -447,18 +452,13 @@ function DesignForm({
   const set = (key: keyof DesignFormData) => (val: string) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  const buildR2Url = (path: string) => {
-    const base = (import.meta.env.VITE_R2_DOMAIN_URL ?? "").replace(/\/$/, "");
-    return path ? `${base}/${path.replace(/^\//, "")}` : "";
-  };
-
   const findPickerIdByPath = (path: string) => rawCards.find((c) => c.path === path)?.id;
 
   const selectedCard = cardPickerId ? rawCards.find((c) => String(c.id) === cardPickerId) : undefined;
-  const selectedCardPreviewUrl = selectedCard?.path ? buildR2Url(selectedCard.path) : "";
+  const selectedCardPreviewUrl = selectedCard?.path ? resolveImageUrl(selectedCard.path) : "";
 
   const selectedEnvelope = envelopePickerId ? rawCards.find((c) => String(c.id) === envelopePickerId) : undefined;
-  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? buildR2Url(selectedEnvelope.path) : "";
+  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? resolveImageUrl(selectedEnvelope.path) : "";
 
   useEffect(() => {
     if (!cardPickerId && form.cardImageUrl) {
@@ -623,7 +623,7 @@ function DesignForm({
                   src={selectedCardPreviewUrl}
                   alt={selectedCard?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  onError={(e) => fallbackToR2Proxy(e, selectedCard?.path)}
                 />
               </div>
             ) : null}
@@ -648,7 +648,7 @@ function DesignForm({
                   src={selectedEnvelopePreviewUrl}
                   alt={selectedEnvelope?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  onError={(e) => fallbackToR2Proxy(e, selectedEnvelope?.path)}
                 />
               </div>
             ) : null}
