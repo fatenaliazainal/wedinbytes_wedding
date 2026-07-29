@@ -17,6 +17,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
+import { extractYouTubeId } from "@/lib/youtube";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
@@ -513,9 +514,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           colorCard:        d.colorCard         ?? tpl.colorCard,
           cardImageUrl:     tpl.cardImageUrl,
           envelopeImageUrl: tpl.envelopeImageUrl,
-          musicUrl:         tpl.musicUrl,
-          musicTitle:       tpl.musicTitle,
-          musicArtist:      tpl.musicArtist,
+          musicUrl:         d.musicUrl || tpl.musicUrl,
+          musicTitle:       d.musicTitle || tpl.musicTitle,
+          musicArtist:      d.musicArtist || tpl.musicArtist,
         });
       } else {
         // No invitation yet — use URL param design (if any) or global admin design as preview defaults
@@ -1727,12 +1728,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 <Field label="Song Link (YouTube)">
                   <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
                 </Field>
-                {design.musicUrl && design.musicUrl.includes("youtube") && (
+                {extractYouTubeId(design.musicUrl) && (
                   <div className="rounded overflow-hidden border border-gray-200">
                     <iframe
                       width="100%"
                       height="200"
-                      src={`https://www.youtube.com/embed/${design.musicUrl.split("v=")[1]?.split("&")[0]}`}
+                      src={`https://www.youtube.com/embed/${extractYouTubeId(design.musicUrl)}`}
                       allow="autoplay"
                       className="block"
                     />

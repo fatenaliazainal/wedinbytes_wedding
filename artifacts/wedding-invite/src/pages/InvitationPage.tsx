@@ -30,11 +30,7 @@ function fontFamilyStack(fontName?: string | null): string {
 import { RotateCcw, Volume2, VolumeX, LockKeyhole } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-  return match ? match[1] : null;
-}
+import { extractYouTubeId } from "@/lib/youtube";
 
 export default function InvitationPage() {
   const { token, dateCode, slug } = useParams<{ token?: string; dateCode?: string; slug?: string }>();
