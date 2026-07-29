@@ -28,7 +28,6 @@ const TABS = [
   { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
   { id: "kehadiran", label: "RSVP" },
-  { id: "ucapan", label: "WISHES" },
   { id: "footer", label: "FOOTER" },
 ];
 
@@ -37,7 +36,6 @@ const TABS = [
 const TAB_FEATURE_MAP: Record<string, string[]> = {
   "tarikh-lokasi": ["Location & Navigation", "Calendar"],
   kehadiran: ["RSVP / Wishes"],
-  ucapan: ["Contact"],
   galeri: ["Photo Gallery", "Money Gift"],
 };
 
