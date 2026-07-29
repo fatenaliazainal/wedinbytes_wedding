@@ -713,6 +713,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         coverBrideName: inv.coverBrideName || null,
         envelopeInitials: inv.envelopeInitials || null,
         envelopeInitialsSize: String(Number(inv.envelopeInitialsSize) || 24),
+        initialsImageUrl: inv.initialsImageUrl || null,
         page2Initials: inv.page2Initials || null,
         initialsImageScale: Math.min(140, Math.max(50, Number(inv.initialsImageScale) || 100)),
         eventStartDateTime: inv.eventStartDateTime || null,
@@ -1115,6 +1116,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <p className="text-xs text-gray-400">
                     Teks ini dipaparkan dalam bulatan jika tiada artwork initials.
                   </p>
+                  <label className="mt-3 block text-xs text-gray-500">
+                    Initial cover size: {Number(inv.envelopeInitialsSize) || 24}px
+                    <input
+                      type="range"
+                      min="12"
+                      max="48"
+                      step="1"
+                      value={Number(inv.envelopeInitialsSize) || 24}
+                      onChange={(e) => setInv((p) => ({ ...p, envelopeInitialsSize: e.target.value }))}
+                      className="mt-1 w-full accent-gray-700"
+                    />
+                  </label>
                 </Field>
                 <Field label="Upload your logo (Optional)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
@@ -1153,6 +1166,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                           className="mt-1 w-full accent-gray-700"
                         />
                       </label>
+                      <button
+                        type="button"
+                        className="mt-3 rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                        onClick={() => setInv((p) => ({ ...p, initialsImageUrl: "" }))}
+                      >
+                        Remove logo
+                      </button>
                     </>
                   )}
                 </Field>
