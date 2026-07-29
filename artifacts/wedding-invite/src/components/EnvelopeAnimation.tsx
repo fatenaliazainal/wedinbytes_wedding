@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DesignImage } from "@/components/DesignImage";
+import { fallbackToR2Proxy } from "@/lib/r2-url";
 import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeAnimationProps {
@@ -53,6 +54,14 @@ export function EnvelopeAnimation({
             >
               {/* ── Body ── */}
               <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src={bgImage}
+                  alt=""
+                  aria-hidden
+                  draggable={false}
+                  onError={(event) => fallbackToR2Proxy(event, envelopeImageUrl)}
+                  className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+                />
                 <DesignImage src={bgImage} opacity={0.25} />
                 <div className="absolute inset-0 bg-secondary/80" />
               </div>
@@ -112,6 +121,14 @@ export function EnvelopeAnimation({
                     backfaceVisibility: "hidden",
                   }}
                 >
+                  <img
+                    src={bgImage}
+                    alt=""
+                    aria-hidden
+                    draggable={false}
+                    onError={(event) => fallbackToR2Proxy(event, envelopeImageUrl)}
+                    className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+                  />
                   <DesignImage src={bgImage} opacity={0.2} />
                 </div>
                 {/* Back face of flap (shown after flip) */}

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { fallbackToR2Proxy } from "@/lib/r2-url";
 
 interface EnvelopeDoorsProps {
   isOpened: boolean;
@@ -23,6 +24,7 @@ export function EnvelopeDoors({
   onOpen,
   names,
   initialsSize,
+  envelopeImageUrl,
   openButtonText = "BUKA",
   logoInitialsUrl,
   cardMaxWidth,
@@ -46,7 +48,18 @@ export function EnvelopeDoors({
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
           onClick={!isOpened ? onOpen : undefined}
-        />
+        >
+          {envelopeImageUrl && (
+            <img
+              src={envelopeImageUrl}
+              alt=""
+              aria-hidden
+              draggable={false}
+              onError={(event) => fallbackToR2Proxy(event, envelopeImageUrl)}
+              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+            />
+          )}
+        </motion.div>
 
         {/* Right Door */}
         <motion.div
@@ -58,7 +71,18 @@ export function EnvelopeDoors({
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
           onClick={!isOpened ? onOpen : undefined}
-        />
+        >
+          {envelopeImageUrl && (
+            <img
+              src={envelopeImageUrl}
+              alt=""
+              aria-hidden
+              draggable={false}
+              onError={(event) => fallbackToR2Proxy(event, envelopeImageUrl)}
+              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+            />
+          )}
+        </motion.div>
 
         {/* Central badge/seal */}
         <motion.div

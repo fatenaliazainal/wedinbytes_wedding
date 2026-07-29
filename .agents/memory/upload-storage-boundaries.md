@@ -7,4 +7,4 @@ Uploaded design, gallery, and logo files must use R2 object keys rather than dep
 
 **Why:** Deployment-local files do not reliably persist, and accepting an invitation token from the client without checking ownership permits cross-account uploads or edits.
 
-**How to apply:** Keep browser image resolution on public R2 domains or the same-origin proxy; validate allowed object prefixes in the proxy and preserve cleanup when records or image references are deleted.
+**How to apply:** Keep browser image resolution on the same-origin proxy for R2 object keys; validate allowed object prefixes in the proxy and preserve cleanup when records or image references are deleted. Public R2 domains may work server-side but fail inside the proxied browser preview.
