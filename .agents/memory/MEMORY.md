@@ -4,3 +4,4 @@
 - [Zod optional vs null](zod-optional-null.md) — Zod `.optional()` rejects `null`; normalize DB rows or use `.nullish()` when parsing nullable columns.
 - [DB schema declarations](db-schema-declarations.md) — after changing Drizzle schema, rebuild the composite DB declarations before API typechecking.
 - [Admin order readiness](admin-order-readiness.md) — keep order/payment records additive and derive website status from purchase state plus an explicit admin status.
+- [Fixed scroll backdrop](fixed-scroll-backdrop.md) — long invitation content needs a viewport-height sticky image layer so its backdrop does not scale with content height.

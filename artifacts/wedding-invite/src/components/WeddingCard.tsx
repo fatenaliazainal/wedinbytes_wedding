@@ -309,14 +309,20 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
-      <>
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-secondary bg-cover bg-center bg-no-repeat"
-          style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
-        />
-        {overlay && <div className="absolute inset-0 bg-white/70 pointer-events-none" />}
-      </>
+      <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            aria-hidden
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover select-none"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-secondary" />
+        )}
+        {overlay && <div className="absolute inset-0 bg-white/70" />}
+      </div>
     );
   }
 
@@ -365,9 +371,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       </section>
 
       {/* ── BACKGROUND GROUP 2 / ALL REMAINING INVITATION SECTIONS ── */}
-      <section
-        className="relative"
-      >
+      <section className="relative">
         <PageBackground imageUrl={groupTwoBackgroundUrl} overlay />
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
