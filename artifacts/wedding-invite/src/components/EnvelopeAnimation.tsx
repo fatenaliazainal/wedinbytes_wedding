@@ -78,7 +78,7 @@ export function EnvelopeAnimation({
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div
-                  className="flex h-[145px] w-[145px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
+                  className="flex h-[87px] w-[87px] items-center justify-center rounded-full bg-white shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
                   aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
                 >
                   {initialsImageUrl ? (
