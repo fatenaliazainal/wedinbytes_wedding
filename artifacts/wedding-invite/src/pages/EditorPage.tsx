@@ -384,12 +384,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       ]);
       const loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
       setPackages(loadedPackages);
-      const adminFooter = adminFooterRes.ok ? await adminFooterRes.json() as {
-        showFooter?: boolean;
-        footerText?: string | null;
-        footerUrl?: string | null;
-        socialLinks?: { platform: string; url: string }[] | null;
-      } : null;
+      const adminDefaults = adminFooterRes.ok
+        ? await adminFooterRes.json() as Record<string, unknown>
+        : null;
       // Global (active) design — fallback for colours and images
       let gd: Record<string, string> = {};
       if (designRes.ok) gd = await designRes.json();
@@ -473,11 +470,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
           // Buyer editors always inherit the current Admin footer defaults.
-          showFooter: mode === "buyer" ? (adminFooter?.showFooter ?? true) : (d.showFooter ?? false),
-          footerText: mode === "buyer" ? (adminFooter?.footerText ?? "Dapatkan kad digital anda di:") : (d.footerText ?? ""),
-          footerUrl: mode === "buyer" ? (adminFooter?.footerUrl ?? "wedinbytes.com") : (d.footerUrl ?? ""),
+          showFooter: mode === "buyer" ? (adminDefaults?.showFooter as boolean ?? true) : (d.showFooter ?? false),
+          footerText: mode === "buyer" ? (adminDefaults?.footerText as string ?? "Dapatkan kad digital anda di:") : (d.footerText ?? ""),
+          footerUrl: mode === "buyer" ? (adminDefaults?.footerUrl as string ?? "wedinbytes.com") : (d.footerUrl ?? ""),
           socialLinks: mode === "buyer"
-            ? (Array.isArray(adminFooter?.socialLinks) ? adminFooter.socialLinks : [])
+            ? (Array.isArray(adminDefaults?.socialLinks)
+              ? adminDefaults.socialLinks as { platform: string; url: string }[]
+              : [])
             : (Array.isArray(d.socialLinks) ? d.socialLinks : [
             { platform: "website", url: "" },
             { platform: "tiktok", url: "" },
@@ -544,6 +543,48 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           musicTitle:       tplFallback.musicTitle,
           musicArtist:      tplFallback.musicArtist,
         }));
+
+        // New buyer cards use the admin demo invitation as their editable
+        // content template. Customer-specific details remain blank.
+        if (mode === "buyer" && isNewCard && adminDefaults) {
+          setInv((prev) => ({
+            ...prev,
+            eventType: typeof adminDefaults.eventType === "string" ? adminDefaults.eventType : prev.eventType,
+            eventTime: typeof adminDefaults.eventTime === "string" ? adminDefaults.eventTime : prev.eventTime,
+            eventStartTime: typeof adminDefaults.eventStartTime === "string" ? adminDefaults.eventStartTime : prev.eventStartTime,
+            eventEndTime: typeof adminDefaults.eventEndTime === "string" ? adminDefaults.eventEndTime : prev.eventEndTime,
+            coverTitle: typeof adminDefaults.coverTitle === "string" ? adminDefaults.coverTitle : prev.coverTitle,
+            additionalInfo: typeof adminDefaults.additionalInfo === "string" ? adminDefaults.additionalInfo : prev.additionalInfo,
+            hashtag: typeof adminDefaults.hashtag === "string" ? adminDefaults.hashtag : prev.hashtag,
+            language: adminDefaults.language === "en" || adminDefaults.language === "ms" ? adminDefaults.language : prev.language,
+            showFrontText: typeof adminDefaults.showFrontText === "boolean" ? adminDefaults.showFrontText : prev.showFrontText,
+            greetingText: typeof adminDefaults.greetingText === "string" ? adminDefaults.greetingText : prev.greetingText,
+            doaText: typeof adminDefaults.doaText === "string" ? adminDefaults.doaText : prev.doaText,
+            invitationText: typeof adminDefaults.invitationText === "string" ? adminDefaults.invitationText : prev.invitationText,
+            hostName: typeof adminDefaults.hostName === "string" ? adminDefaults.hostName : prev.hostName,
+            hostCount: typeof adminDefaults.hostCount === "number" ? adminDefaults.hostCount : prev.hostCount,
+            venueHijriDate: typeof adminDefaults.venueHijriDate === "string" ? adminDefaults.venueHijriDate : prev.venueHijriDate,
+            schedule: typeof adminDefaults.schedule === "string" ? adminDefaults.schedule : prev.schedule,
+            itinerary: Array.isArray(adminDefaults.itinerary)
+              ? adminDefaults.itinerary as { time: string; event: string }[]
+              : prev.itinerary,
+            dresscode: typeof adminDefaults.dresscode === "string" ? adminDefaults.dresscode : prev.dresscode,
+            message: typeof adminDefaults.message === "string" ? adminDefaults.message : prev.message,
+            rsvpEnabled: typeof adminDefaults.rsvpEnabled === "boolean" ? adminDefaults.rsvpEnabled : prev.rsvpEnabled,
+            rsvpAdditionalInfo: typeof adminDefaults.rsvpAdditionalInfo === "string" ? adminDefaults.rsvpAdditionalInfo : prev.rsvpAdditionalInfo,
+            rsvpIntroText: typeof adminDefaults.rsvpIntroText === "string" ? adminDefaults.rsvpIntroText : prev.rsvpIntroText,
+            rsvpFormNote: typeof adminDefaults.rsvpFormNote === "string" ? adminDefaults.rsvpFormNote : prev.rsvpFormNote,
+            rsvpMaxOverallGuests: typeof adminDefaults.rsvpMaxOverallGuests === "number" ? adminDefaults.rsvpMaxOverallGuests : prev.rsvpMaxOverallGuests,
+            rsvpMaxGuestsPerInvitation: typeof adminDefaults.rsvpMaxGuestsPerInvitation === "number" ? adminDefaults.rsvpMaxGuestsPerInvitation : prev.rsvpMaxGuestsPerInvitation,
+            rsvpTimeSlots: typeof adminDefaults.rsvpTimeSlots === "string" ? adminDefaults.rsvpTimeSlots : prev.rsvpTimeSlots,
+            showFooter: typeof adminDefaults.showFooter === "boolean" ? adminDefaults.showFooter : prev.showFooter,
+            footerText: typeof adminDefaults.footerText === "string" ? adminDefaults.footerText : prev.footerText,
+            footerUrl: typeof adminDefaults.footerUrl === "string" ? adminDefaults.footerUrl : prev.footerUrl,
+            socialLinks: Array.isArray(adminDefaults.socialLinks)
+              ? adminDefaults.socialLinks as { platform: string; url: string }[]
+              : prev.socialLinks,
+          }));
+        }
       }
 
       // Determine selected package: URL param ?package= wins, then invitation.packageId, then first active package.
