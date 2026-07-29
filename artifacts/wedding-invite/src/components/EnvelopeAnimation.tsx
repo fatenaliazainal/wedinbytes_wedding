@@ -6,6 +6,8 @@ import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb4
 interface EnvelopeAnimationProps {
   isOpened: boolean;
   onOpen: () => void;
+  names?: string;
+  initialsSize?: string;
   initialsImageUrl?: string;
   envelopeImageUrl?: string;
   openButtonText?: string;
@@ -14,6 +16,8 @@ interface EnvelopeAnimationProps {
 export function EnvelopeAnimation({
   isOpened,
   onOpen,
+  names = "",
+  initialsSize,
   initialsImageUrl,
   envelopeImageUrl,
   openButtonText = "BUKA",
@@ -74,18 +78,26 @@ export function EnvelopeAnimation({
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div
-                  className="flex h-[170px] w-[170px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
+                  className="flex h-[145px] w-[145px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
                   aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
                 >
                   {initialsImageUrl ? (
                     <img
                       src={initialsImageUrl}
                       alt="Uploaded initials"
-                      className="h-[78%] w-[78%] object-contain"
+                      className="h-[76%] w-[76%] object-contain"
                       draggable={false}
                     />
                   ) : (
-                    <span className="sr-only">Envelope initials</span>
+                    <span
+                      className="max-w-[82%] text-center leading-none text-[#5c4b52]"
+                      style={{
+                        fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                        fontSize: initialsSize ? `${initialsSize}px` : "24px",
+                      }}
+                    >
+                      {names}
+                    </span>
                   )}
                 </div>
               </div>

@@ -1102,6 +1102,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.coverBrideName} onChange={(e) => setI("coverBrideName")(e.target.value)} placeholder="Contoh: F" />
                   </Field>
                 </div>
+                <Field label="Cover Initials (Optional)">
+                  <input
+                    className={inputCls}
+                    value={inv.envelopeInitials}
+                    onChange={(e) => setI("envelopeInitials")(e.target.value)}
+                    placeholder="Contoh: S & H"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Teks ini dipaparkan dalam bulatan jika tiada artwork initials.
+                  </p>
+                </Field>
                 <Field label="Upload Initial Artwork (Optional)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace Initial Artwork" : "Choose Initial Artwork"}</span>
@@ -1931,6 +1942,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       setPreviewWasOpened(true);
                       setPreviewOpened(true);
                     }}
+                    names={inv.envelopeInitials}
+                    initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
@@ -1943,6 +1956,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       setPreviewWasOpened(true);
                       setPreviewOpened(true);
                     }}
+                    names={inv.envelopeInitials}
+                    initialsSize={inv.envelopeInitialsSize}
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}

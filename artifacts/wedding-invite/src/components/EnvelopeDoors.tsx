@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 interface EnvelopeDoorsProps {
   isOpened: boolean;
   onOpen: () => void;
+  names?: string;
+  initialsSize?: string;
   initialsImageUrl?: string;
   envelopeImageUrl?: string;
   openButtonText?: string;
@@ -19,6 +21,8 @@ const frostedGlass: React.CSSProperties = {
 export function EnvelopeDoors({
   isOpened,
   onOpen,
+  names = "",
+  initialsSize,
   initialsImageUrl,
   openButtonText = "BUKA",
   cardMaxWidth,
@@ -66,18 +70,26 @@ export function EnvelopeDoors({
           onClick={!isOpened ? onOpen : undefined}
         >
           <div
-            className="flex h-[175px] w-[175px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
+            className="flex h-[150px] w-[150px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
             aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
             {initialsImageUrl ? (
               <img
                 src={initialsImageUrl}
                 alt="Uploaded initials"
-                className="h-[78%] w-[78%] object-contain"
+                className="h-[76%] w-[76%] object-contain"
                 draggable={false}
               />
             ) : (
-              <span className="sr-only">Envelope initials</span>
+              <span
+                className="max-w-[82%] text-center leading-none text-[#5c4b52]"
+                style={{
+                  fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                  fontSize: initialsSize ? `${initialsSize}px` : "24px",
+                }}
+              >
+                {names}
+              </span>
             )}
           </div>
 

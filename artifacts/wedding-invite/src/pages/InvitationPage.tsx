@@ -289,6 +289,8 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
+           names={envelopeInitials}
+           initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
         />
@@ -298,6 +300,8 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
+           names={envelopeInitials}
+           initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
