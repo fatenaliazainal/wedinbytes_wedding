@@ -359,14 +359,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-6">
                 {invitations.map((card) => {
-                   // Older invitations may not have a designCode (or may reference
-                   // a design that was renamed). Keep their dashboard preview useful
-                   // by falling back to the active design already loaded above.
-                   const cardDesign =
-                     designs.find((item) => item.designCode === card.designCode) ??
-                     design ??
-                     designs[0] ??
-                     null;
+                  const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
                   const cardInviteLink = inviteLinkFor(card);
                   const cardDisplayName = `${card.groomName} & ${card.brideName}`;
                   const cardActionButtons = actionButtonsFor(card);

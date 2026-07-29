@@ -2,9 +2,6 @@ import { db, invitationTable, cardDesignTable, userTable, pricingPackageTable, p
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { logger } from "./logger";
-import fs from "fs/promises";
-import path from "path";
-import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
 
 const invitationBase = {
   groomName: "Hidayat",
@@ -61,6 +58,12 @@ const cardDesignValues = {
   fontBody: "Lato",
   cardMaxWidth: "420px",
   openingAnimation: "doors",
+};
+
+const initialDesignImages: Record<string, string> = {
+  FL001: "/designs/design_1785311759226.png",
+  FL002: "/designs/design_1779761056298.png",
+  FL003: "/designs/design_1778770711132.png",
 };
 
 const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
@@ -171,61 +174,34 @@ export async function autoSeedIfEmpty() {
       logger.info("Auto-seed: seeding card design...");
       await db.insert(cardDesignTable).values(cardDesignValues);
       logger.info("Auto-seed: card design seeded.");
-    }
-
-    // Migrate legacy local design assets to R2 once. Existing R2 keys are preserved.
-    if (isR2Configured()) {
-      const designs = await db.select().from(cardDesignTable);
-      const localDesignDir = path.resolve(process.cwd(), "../wedding-invite/public/designs");
-      const contentTypeFor = (filePath: string): "image/png" | "image/jpeg" | "image/webp" | "image/gif" => {
-        const extension = path.extname(filePath).toLowerCase();
-        return extension === ".jpg" || extension === ".jpeg"
-          ? "image/jpeg"
-          : extension === ".webp"
-            ? "image/webp"
-            : extension === ".gif"
-              ? "image/gif"
-              : "image/png";
-      };
-
-      for (const design of designs) {
-        const cardPath = design.cardImageUrl ?? "";
-        const envelopePath = design.envelopeImageUrl ?? "";
-        const cardFile = cardPath.startsWith("/designs/") ? path.join(localDesignDir, path.basename(cardPath)) : null;
-        const envelopeFile = envelopePath.startsWith("/designs/") ? path.join(localDesignDir, path.basename(envelopePath)) : null;
-        if (!cardFile && !envelopeFile) continue;
-
-        try {
-          const cardKey = cardFile
-            ? await uploadImage({
-                fileName: path.basename(cardFile),
-                fileBuffer: await fs.readFile(cardFile),
-                contentType: contentTypeFor(cardFile),
-                folder: "wed_card_design",
-                metadata: { source: "legacy-design-migration", designCode: design.designCode ?? "" },
-              })
-            : cardPath;
-          const envelopeKey = envelopeFile
-            ? cardFile && envelopePath === cardPath
-              ? cardKey
-              : await uploadImage({
-                  fileName: path.basename(envelopeFile),
-                  fileBuffer: await fs.readFile(envelopeFile),
-                  contentType: contentTypeFor(envelopeFile),
-                  folder: "wed_card_design",
-                  metadata: { source: "legacy-design-migration", designCode: design.designCode ?? "" },
-                })
-            : envelopePath;
-
-          await db
-            .update(cardDesignTable)
-            .set({ cardImageUrl: cardKey, envelopeImageUrl: envelopeKey })
-            .where(eq(cardDesignTable.id, design.id));
-          logger.info({ designCode: design.designCode }, "Auto-seed: migrated legacy design assets to R2.");
-        } catch (err) {
-          logger.warn({ err, designCode: design.designCode }, "Auto-seed: legacy design migration skipped.");
-        }
+    } else {
+      // Fix any incorrect or missing values from previous seeds
+      const design = existingDesigns[0];
+      const needsFix =
+        design.cardImageUrl !== cardDesignValues.cardImageUrl ||
+        design.envelopeImageUrl !== cardDesignValues.envelopeImageUrl ||
+        design.musicUrl !== cardDesignValues.musicUrl ||
+        !design.designCode;
+      if (needsFix) {
+        logger.info("Auto-seed: fixing card design values...");
+        await db
+          .update(cardDesignTable)
+          .set({
+            cardImageUrl: cardDesignValues.cardImageUrl,
+            envelopeImageUrl: cardDesignValues.envelopeImageUrl,
+            musicUrl: cardDesignValues.musicUrl,
+            designCode: design.designCode ?? cardDesignValues.designCode,
+          })
+          .where(eq(cardDesignTable.id, design.id));
+        logger.info("Auto-seed: card design values fixed.");
       }
+    }
+    // Keep the first three catalogue designs visually distinct.
+    for (const [designCode, imageUrl] of Object.entries(initialDesignImages)) {
+      await db
+        .update(cardDesignTable)
+        .set({ cardImageUrl: imageUrl, envelopeImageUrl: imageUrl })
+        .where(eq(cardDesignTable.designCode, designCode));
     }
     // --- Pricing packages: seed defaults if none exist ---
     const existingPackages = await db.select().from(pricingPackageTable).limit(1);

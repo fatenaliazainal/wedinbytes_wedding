@@ -3,14 +3,29 @@ import { GetActiveDesignResponse, ListDesignsResponse, ActivateDesignResponse } 
 import { db, cardDesignTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import multer from "multer";
-import { uploadImage, isR2Configured } from "../services/cloudflare/r2-storage-admin";
+import path from "path";
+import fs from "fs";
 
 const router: IRouter = Router();
 
-const storage = multer.memoryStorage();
+// Uploads directory — served as static assets by the wedding-invite Vite dev server.
+// process.cwd() = artifacts/api-server (set by pnpm filter), so ../wedding-invite resolves correctly.
+const UPLOADS_DIR = path.resolve(process.cwd(), "../wedding-invite/public/designs");
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `design_${Date.now()}${ext}`);
+  },
+});
+
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
   fileFilter: (_req, file, cb) => {
     const ok = /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype);
     cb(null, ok);
@@ -45,24 +60,8 @@ router.post("/upload", (req, res, next) => {
       res.status(400).json({ error: "No valid image uploaded (jpeg/png/webp/gif, max 20 MB)" });
       return;
     }
-    if (!isR2Configured()) {
-      res.status(503).json({ error: "Photo storage is not configured. Configure the R2 secrets before uploading designs." });
-      return;
-    }
-    const file = req.file;
-    const contentType = file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
-    uploadImage({
-      fileName: file.originalname,
-      fileBuffer: file.buffer,
-      contentType,
-      folder: "wed_card_design",
-      metadata: { source: "card-design" },
-    })
-      .then((key) => res.json({ url: key }))
-      .catch((uploadError) => {
-        req.log.error({ err: uploadError }, "Failed to upload card design image to R2");
-        res.status(500).json({ error: "Failed to upload design image to R2." });
-      });
+    const url = `/designs/${req.file.filename}`;
+    res.json({ url });
   });
 });
 

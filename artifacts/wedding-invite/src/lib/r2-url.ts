@@ -40,6 +40,5 @@ export function fallbackToR2Proxy(
     image.src = fallback;
   } else {
     image.onerror = null;
-    image.style.display = "none";
   }
 }
