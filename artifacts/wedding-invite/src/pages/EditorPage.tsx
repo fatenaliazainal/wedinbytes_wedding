@@ -835,8 +835,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
   async function uploadInitialsFile(file: File | null) {
     if (!file) return;
-    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      toast.error("Initial artwork mesti PNG, JPEG atau WebP.");
+    if (file.type !== "image/png") {
+      toast.error("Initial artwork mesti PNG dengan transparent background.");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -863,7 +863,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         return;
       }
       setInv((p) => ({ ...p, initialsImageUrl: data.key || "" }));
-      toast.success("Initial artwork berjaya disimpan dalam order.");
+      toast.success("Initial artwork berjaya disimpan.");
     } catch {
       toast.error("Network error semasa upload artwork initials.");
     } finally {
@@ -1118,7 +1118,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace Initial Artwork" : "Choose Initial Artwork"}</span>
                     <input
                       type="file"
-                      accept="image/png,image/jpeg,image/webp"
+                      accept="image/png"
                       className="hidden"
                       disabled={uploadingInitials}
                       onChange={(e) => {
@@ -1128,7 +1128,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     />
                   </label>
                   <p className="text-xs text-gray-400">
-                    Optional. Sila gunakan artwork dengan transparent background (PNG disyorkan). Maksimum 2 MB.
+                    Optional. Sila gunakan PNG dengan transparent background. Maksimum 2 MB.
                   </p>
                   {inv.initialsImageUrl && (
                     <img

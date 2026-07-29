@@ -24,9 +24,23 @@ const logoUpload = multer({
     cb(null, ok);
   },
 });
+const initialsUpload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, file.mimetype === "image/png"),
+});
 
 function canManageInvitation(req: any, invitation: typeof invitationTable.$inferSelect) {
   return req.session?.role === "admin" || Boolean(req.session?.userId && invitation.userId === req.session.userId);
+}
+
+// PNG color types 4 and 6 contain an alpha channel. This deliberately rejects
+// opaque PNGs so initials artwork cannot appear with an unwanted background.
+function hasPngAlphaChannel(buffer: Buffer) {
+  return buffer.length >= 26
+    && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    && buffer.toString("ascii", 12, 16) === "IHDR"
+    && (buffer[25] === 4 || buffer[25] === 6);
 }
 
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
@@ -215,14 +229,14 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
 // ── Upload optional initials artwork for the invitation's own order ──────────
 // The storage record belongs to the order, not card_design or invitation. An
 // invitation may have more than one order, so the newest linked order is used.
-router.post("/order-initials-upload", logoUpload.single("file"), async (req, res) => {
+router.post("/order-initials-upload", initialsUpload.single("file"), async (req, res) => {
   if (!isR2Configured()) {
     res.status(503).json({ error: "Photo storage is not configured." });
     return;
   }
   try {
     if (!req.file) {
-      res.status(400).json({ error: "Initials image is required (PNG/JPEG/WebP, max 2 MB)." });
+      res.status(400).json({ error: "Initials image is required (transparent PNG, max 2 MB)." });
       return;
     }
     const invitationToken = typeof req.body.invitationToken === "string"
@@ -247,40 +261,32 @@ router.post("/order-initials-upload", logoUpload.single("file"), async (req, res
       return;
     }
 
-    const [order] = await db
-      .select()
-      .from(orderTable)
-      .where(eq(orderTable.invitationId, invitation.id))
-      .orderBy(desc(orderTable.createdAt))
-      .limit(1);
-    if (!order) {
-      res.status(409).json({ error: "Please create an order before uploading initials artwork." });
+    if (req.file.mimetype !== "image/png" || !hasPngAlphaChannel(req.file.buffer)) {
+      res.status(400).json({ error: "Initials artwork mesti PNG dengan transparent background." });
       return;
     }
 
-    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp";
-    const extension = mimeType === "image/jpeg" ? "jpg" : mimeType.replace("image/", "");
+    const mimeType = "image/png" as const;
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
-      folder: `orders/${order.id}`,
-      objectKey: `initials.${extension}`,
+      folder: `initials/${invitation.token}`,
+      objectKey: "initials.png",
       metadata: {
         uploadedAt: new Date().toISOString(),
-        type: "order-initials",
-        orderId: String(order.id),
+        type: "invitation-initials",
         invitationToken,
       },
     });
 
-    const [updatedOrder] = await db
-      .update(orderTable)
-      .set({ initialsImageUrl: imageKey, updatedAt: new Date() })
-      .where(eq(orderTable.id, order.id))
-      .returning({ id: orderTable.id, initialsImageUrl: orderTable.initialsImageUrl });
+    const [updatedInvitation] = await db
+      .update(invitationTable)
+      .set({ initialsImageUrl: imageKey })
+      .where(eq(invitationTable.id, invitation.id))
+      .returning({ id: invitationTable.id, initialsImageUrl: invitationTable.initialsImageUrl });
 
-    res.json({ orderId: updatedOrder.id, key: updatedOrder.initialsImageUrl });
+    res.json({ invitationId: updatedInvitation.id, key: updatedInvitation.initialsImageUrl });
   } catch (err) {
     req.log.error({ err }, "Failed to upload order initials");
     res.status(500).json({ error: "Failed to upload initials artwork." });

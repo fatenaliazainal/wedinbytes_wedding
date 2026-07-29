@@ -1,9 +1,9 @@
 import { Router, type IRouter, type Request } from "express";
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { db, invitationTable, orderTable } from "@workspace/db";
+import { db, invitationTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -40,7 +40,7 @@ const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
   "groomParents","brideParents","contactPhone","contacts","dresscode","message","galleryImages",
-  "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","coverGroomName","coverBrideName","envelopeInitials","envelopeInitialsSize","page2Initials","logoInitialsUrl",
+  "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","coverGroomName","coverBrideName","envelopeInitials","envelopeInitialsSize","page2Initials","logoInitialsUrl","initialsImageUrl",
   "eventStartDateTime","eventEndDateTime",
   "eventStartTime","eventEndTime",
   "itinerary",
@@ -66,13 +66,7 @@ const ALLOWED_FIELDS = [
 
 async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   const { lockPinHash: _lockPinHash, ...safe } = row;
-  const [latestOrder] = await db
-    .select({ initialsImageUrl: orderTable.initialsImageUrl })
-    .from(orderTable)
-    .where(eq(orderTable.invitationId, row.id))
-    .orderBy(desc(orderTable.createdAt))
-    .limit(1);
-  (safe as Record<string, unknown>).initialsImageUrl = latestOrder?.initialsImageUrl ?? null;
+  (safe as Record<string, unknown>).initialsImageUrl = row.initialsImageUrl ?? null;
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
   // cannot override the current admin default.
