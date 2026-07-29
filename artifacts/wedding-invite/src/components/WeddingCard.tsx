@@ -401,13 +401,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   // scrollable invitation details are group 2. Older templates may only have
   // one image, so each group falls back to the other image for compatibility.
   const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
-  // Do not render the same artwork as both the cover and the Page 2 backdrop.
-  // This prevents a duplicated/overlaid image when both design fields point
-  // to the same uploaded R2 object.
-  const groupTwoBackgroundUrl =
-    envelopeImageUrl && envelopeImageUrl !== cardImageUrl
-      ? envelopeImageUrl
-      : undefined;
+  const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
@@ -419,7 +413,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             alt=""
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover select-none"
-            onError={(event) => fallbackToR2Proxy(event, imageUrl)}
           />
         ) : (
           <div className="absolute inset-0 bg-secondary" />
@@ -445,7 +438,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             alt=""
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-            onError={(event) => fallbackToR2Proxy(event, groupOneBackgroundUrl)}
           />
         ) : (
           <div className="absolute inset-0 bg-secondary" />

@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import PricingTab from "@/components/PricingTab";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-import { resolveImageUrl, fallbackToR2Proxy } from "@/lib/r2-url";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
 
@@ -124,7 +124,7 @@ function ImageUploadField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
-  const displayUrl = previewUrl || localPreviewUrl || resolveImageUrl(value);
+  const displayUrl =  previewUrl || localPreviewUrl || value;
 
   useEffect(() => {
     return () => {
@@ -148,12 +148,7 @@ function ImageUploadField({
       {/* Preview */}
       {displayUrl && (
         <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-muted">
-          <img
-            src={displayUrl}
-            alt=""
-            className="w-full h-full object-cover"
-            onError={(e) => fallbackToR2Proxy(e, value)}
-          />
+          <img src={displayUrl} alt="" className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={() => {
@@ -452,13 +447,18 @@ function DesignForm({
   const set = (key: keyof DesignFormData) => (val: string) =>
     setForm((f) => ({ ...f, [key]: val }));
 
+  const buildR2Url = (path: string) => {
+    const base = (import.meta.env.VITE_R2_DOMAIN_URL ?? "").replace(/\/$/, "");
+    return path ? `${base}/${path.replace(/^\//, "")}` : "";
+  };
+
   const findPickerIdByPath = (path: string) => rawCards.find((c) => c.path === path)?.id;
 
   const selectedCard = cardPickerId ? rawCards.find((c) => String(c.id) === cardPickerId) : undefined;
-  const selectedCardPreviewUrl = selectedCard?.path ? resolveImageUrl(selectedCard.path) : "";
+  const selectedCardPreviewUrl = selectedCard?.path ? buildR2Url(selectedCard.path) : "";
 
   const selectedEnvelope = envelopePickerId ? rawCards.find((c) => String(c.id) === envelopePickerId) : undefined;
-  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? resolveImageUrl(selectedEnvelope.path) : "";
+  const selectedEnvelopePreviewUrl = selectedEnvelope?.path ? buildR2Url(selectedEnvelope.path) : "";
 
   useEffect(() => {
     if (!cardPickerId && form.cardImageUrl) {
@@ -623,7 +623,7 @@ function DesignForm({
                   src={selectedCardPreviewUrl}
                   alt={selectedCard?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => fallbackToR2Proxy(e, selectedCard?.path)}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
               </div>
             ) : null}
@@ -648,7 +648,7 @@ function DesignForm({
                   src={selectedEnvelopePreviewUrl}
                   alt={selectedEnvelope?.name}
                   className="max-h-52 rounded-xl object-contain border border-border shadow-sm"
-                  onError={(e) => fallbackToR2Proxy(e, selectedEnvelope?.path)}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
               </div>
             ) : null}
@@ -847,12 +847,7 @@ function DesignsTab() {
               {/* Thumbnail */}
               <div className="h-20 w-14 shrink-0 rounded-lg overflow-hidden border border-border bg-muted relative">
                 {d.cardImageUrl ? (
-                  <img
-                    src={resolveImageUrl(d.cardImageUrl)}
-                    alt={d.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => fallbackToR2Proxy(e, d.cardImageUrl)}
-                  />
+                  <img src={resolveImageUrl(d.cardImageUrl)} alt={d.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <PaintBucket size={16} className="text-muted-foreground" />
@@ -1191,7 +1186,7 @@ function RawCardTab() {
                       src={resolveImageUrl(card.path)}
                       alt={card.name}
                       className="h-full w-full object-cover"
-                      onError={(e) => fallbackToR2Proxy(e, card.path)}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">—</div>

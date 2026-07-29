@@ -5,4 +5,3 @@
 - [DB schema declarations](db-schema-declarations.md) — after changing Drizzle schema, rebuild the composite DB declarations before API typechecking.
 - [Admin order readiness](admin-order-readiness.md) — keep order/payment records additive and derive website status from purchase state plus an explicit admin status.
 - [Fixed scroll backdrop](fixed-scroll-backdrop.md) — long invitation content needs a viewport-height sticky image layer so its backdrop does not scale with content height.
-- [R2 image preview fallback](r2-image-preview-fallback.md) — saved R2 object-key previews need the shared resolver and same-origin proxy fallback.

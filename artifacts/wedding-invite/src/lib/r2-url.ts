@@ -23,22 +23,10 @@ export function resolveImageUrl(path: string | null | undefined): string | undef
  * temporary public-domain issue.
  */
 export function resolveImageFallbackUrl(path: string | null | undefined): string | undefined {
-  if (!path || path.startsWith("/")) {
+  if (!path || path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) {
     return undefined;
   }
-  let objectKey = path;
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    try {
-      const url = new URL(path);
-      const configuredDomain = R2_DOMAIN.replace(/\/$/, "");
-      const configuredUrl = configuredDomain ? new URL(configuredDomain) : null;
-      if (!configuredUrl || url.origin !== configuredUrl.origin) return undefined;
-      objectKey = url.pathname.replace(/^\/+/, "");
-    } catch {
-      return undefined;
-    }
-  }
-  return objectKey ? `/api/r2?key=${encodeURIComponent(objectKey)}` : undefined;
+  return `/api/r2?key=${encodeURIComponent(path)}`;
 }
 
 export function fallbackToR2Proxy(
