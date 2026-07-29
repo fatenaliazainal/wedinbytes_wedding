@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { db, cardTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, cardTable, invitationTable, orderTable } from "@workspace/db";
+import { desc, eq } from "drizzle-orm";
 import multer from "multer";
 import { deleteImage, uploadImage, downloadImage, getImagePublicUrl, isR2Configured } from "../services/cloudflare/r2-storage-admin";
 
@@ -24,6 +24,10 @@ const logoUpload = multer({
     cb(null, ok);
   },
 });
+
+function canManageInvitation(req: any, invitation: typeof invitationTable.$inferSelect) {
+  return req.session?.role === "admin" || Boolean(req.session?.userId && invitation.userId === req.session.userId);
+}
 
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
@@ -205,6 +209,81 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to upload initials logo");
     res.status(500).json({ error: "Failed to upload logo" });
+  }
+});
+
+// ── Upload optional initials artwork for the invitation's own order ──────────
+// The storage record belongs to the order, not card_design or invitation. An
+// invitation may have more than one order, so the newest linked order is used.
+router.post("/order-initials-upload", logoUpload.single("file"), async (req, res) => {
+  if (!isR2Configured()) {
+    res.status(503).json({ error: "Photo storage is not configured." });
+    return;
+  }
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "Initials image is required (PNG/JPEG/WebP, max 2 MB)." });
+      return;
+    }
+    const invitationToken = typeof req.body.invitationToken === "string"
+      ? req.body.invitationToken.trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required." });
+      return;
+    }
+
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found." });
+      return;
+    }
+    if (!canManageInvitation(req, invitation)) {
+      res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
+
+    const [order] = await db
+      .select()
+      .from(orderTable)
+      .where(eq(orderTable.invitationId, invitation.id))
+      .orderBy(desc(orderTable.createdAt))
+      .limit(1);
+    if (!order) {
+      res.status(409).json({ error: "Please create an order before uploading initials artwork." });
+      return;
+    }
+
+    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp";
+    const extension = mimeType === "image/jpeg" ? "jpg" : mimeType.replace("image/", "");
+    const imageKey = await uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: mimeType,
+      folder: `orders/${order.id}`,
+      objectKey: `initials.${extension}`,
+      metadata: {
+        uploadedAt: new Date().toISOString(),
+        type: "order-initials",
+        orderId: String(order.id),
+        invitationToken,
+      },
+    });
+
+    const [updatedOrder] = await db
+      .update(orderTable)
+      .set({ initialsImageUrl: imageKey, updatedAt: new Date() })
+      .where(eq(orderTable.id, order.id))
+      .returning({ id: orderTable.id, initialsImageUrl: orderTable.initialsImageUrl });
+
+    res.json({ orderId: updatedOrder.id, key: updatedOrder.initialsImageUrl });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload order initials");
+    res.status(500).json({ error: "Failed to upload initials artwork." });
   }
 });
 

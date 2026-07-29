@@ -7,3 +7,4 @@
 - [Fixed scroll backdrop](fixed-scroll-backdrop.md) — long invitation content needs a viewport-height sticky image layer so its backdrop does not scale with content height.
 - [R2 image viewing](r2-image-viewing.md) — browser-facing R2 object keys use the same-origin API proxy so public-domain and CORS configuration cannot hide uploaded designs.
 - [Admin-managed design persistence](admin-managed-design-persistence.md) — startup seed must create catalogue defaults only when empty and never overwrite saved Card Design edits.
+- [Order-owned initials artwork](order-owned-initials-artwork.md) — optional initials uploads belong to the linked order in R2, never to shared card designs.

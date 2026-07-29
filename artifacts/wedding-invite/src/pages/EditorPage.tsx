@@ -131,6 +131,7 @@ interface InvData {
   coverBrideName: string;
   envelopeInitials: string;
   envelopeInitialsSize: string;
+  initialsImageUrl: string;
   page2Initials: string;
   eventStartDateTime: string;
   eventEndDateTime: string;
@@ -282,6 +283,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [previewOpened, setPreviewOpened] = useState(true);
   const [previewWasOpened, setPreviewWasOpened] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingInitials, setUploadingInitials] = useState(false);
   const [previewActiveTab, setPreviewActiveTab] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -312,7 +314,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", page2Initials: "",
+    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", initialsImageUrl: "", page2Initials: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -451,6 +453,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           coverGroomName: d.coverGroomName ?? "", coverBrideName: d.coverBrideName ?? "",
           envelopeInitials: d.envelopeInitials ?? "",
           envelopeInitialsSize: d.envelopeInitialsSize ? String(d.envelopeInitialsSize) : "24",
+          initialsImageUrl: d.initialsImageUrl ?? "",
           page2Initials: d.page2Initials ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
@@ -830,6 +833,44 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     }
   }
 
+  async function uploadInitialsFile(file: File | null) {
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      toast.error("Initial artwork mesti PNG, JPEG atau WebP.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Initial artwork maksimum 2 MB.");
+      return;
+    }
+    if (!inv.token) {
+      toast.error("Simpan kad dahulu sebelum upload artwork initials.");
+      return;
+    }
+    setUploadingInitials(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("invitationToken", inv.token);
+      const res = await fetch(`${BASE}/api/order-initials-upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Initial artwork upload gagal.");
+        return;
+      }
+      setInv((p) => ({ ...p, initialsImageUrl: data.key || "" }));
+      toast.success("Initial artwork berjaya disimpan dalam order.");
+    } catch {
+      toast.error("Network error semasa upload artwork initials.");
+    } finally {
+      setUploadingInitials(false);
+    }
+  }
+
   const navItems = [
     { label: "HOME",       onClick: () => { navigate("/dashboard"); setNavOpen(false); } },
     { label: "CATALOG",    onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
@@ -1061,19 +1102,30 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     <input className={inputCls} value={inv.coverBrideName} onChange={(e) => setI("coverBrideName")(e.target.value)} placeholder="Contoh: F" />
                   </Field>
                 </div>
-                <Field label="Envelope Initials">
-                  <input className={inputCls} value={inv.envelopeInitials} onChange={(e) => setI("envelopeInitials")(e.target.value)} placeholder="Contoh: M & F" />
-                </Field>
-                <Field label={`Envelope Initials Size${inv.envelopeInitialsSize ? ` — ${inv.envelopeInitialsSize}px` : ""}`}>
-                  <input
-                    type="range"
-                    min="12"
-                    max="64"
-                    step="1"
-                    value={Number(inv.envelopeInitialsSize) || 24}
-                    onChange={(e) => setInv((p) => ({ ...p, envelopeInitialsSize: e.target.value }))}
-                    className="w-full accent-gray-700"
-                  />
+                <Field label="Upload Initial Artwork (Optional)">
+                  <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace Initial Artwork" : "Choose Initial Artwork"}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      disabled={uploadingInitials}
+                      onChange={(e) => {
+                        void uploadInitialsFile(e.target.files?.[0] ?? null);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+                  <p className="text-xs text-gray-400">
+                    Optional. Sila gunakan artwork dengan transparent background (PNG disyorkan). Maksimum 2 MB.
+                  </p>
+                  {inv.initialsImageUrl && (
+                    <img
+                      src={resolveImageUrl(inv.initialsImageUrl)}
+                      alt="Uploaded initials preview"
+                      className="mt-2 h-24 w-24 object-contain"
+                    />
+                  )}
                 </Field>
                 <Field label="Hashtag">
                   <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder={t("placeholders.hashtag")} />
@@ -1879,8 +1931,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       setPreviewWasOpened(true);
                       setPreviewOpened(true);
                     }}
-                    names={inv.envelopeInitials}
-                    initialsSize={inv.envelopeInitialsSize}
+                    initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                   />
@@ -1892,8 +1943,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                       setPreviewWasOpened(true);
                       setPreviewOpened(true);
                     }}
-                    names={inv.envelopeInitials}
-                    initialsSize={inv.envelopeInitialsSize}
+                    initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}

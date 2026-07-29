@@ -11,6 +11,9 @@ export const orderTable = pgTable("order", {
   paymentReference: text("payment_reference"),
   paymentGateway: text("payment_gateway"),
   amount: text("amount").notNull().default("0"),
+  // Optional buyer-supplied initials artwork. Stored on the order so each
+  // purchase keeps its own upload and never changes a shared design template.
+  initialsImageUrl: text("initials_image_url"),
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

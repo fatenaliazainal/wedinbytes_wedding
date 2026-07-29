@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DesignImage } from "@/components/DesignImage";
-import { WaxSeal } from "@/components/WaxSeal";
 import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeAnimationProps {
   isOpened: boolean;
   onOpen: () => void;
-  names: string;
-  initialsSize?: string;
+  initialsImageUrl?: string;
   envelopeImageUrl?: string;
   openButtonText?: string;
 }
@@ -16,8 +14,7 @@ interface EnvelopeAnimationProps {
 export function EnvelopeAnimation({
   isOpened,
   onOpen,
-  names,
-  initialsSize,
+  initialsImageUrl,
   envelopeImageUrl,
   openButtonText = "BUKA",
 }: EnvelopeAnimationProps) {
@@ -76,7 +73,16 @@ export function EnvelopeAnimation({
 
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
-                <WaxSeal names={names} initialsSize={initialsSize} className="h-[170px] w-[170px]" />
+                {initialsImageUrl ? (
+                  <img
+                    src={initialsImageUrl}
+                    alt="Uploaded initials"
+                    className="h-[170px] w-[170px] object-contain"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="h-[170px] w-[170px]" aria-hidden="true" />
+                )}
               </div>
 
               {/* ── Top flap ── */}

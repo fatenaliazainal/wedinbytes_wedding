@@ -233,6 +233,7 @@ export default function InvitationPage() {
     : "A & H";
   const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
+  const initialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
 
   const cardFontVars = {
     "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
@@ -287,8 +288,7 @@ export default function InvitationPage() {
           key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-          names={envelopeInitials}
-          initialsSize={envelopeInitialsSize}
+           initialsImageUrl={initialsImageUrl || undefined}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
         />
@@ -297,8 +297,7 @@ export default function InvitationPage() {
           key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-          names={envelopeInitials}
-          initialsSize={envelopeInitialsSize}
+           initialsImageUrl={initialsImageUrl || undefined}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}

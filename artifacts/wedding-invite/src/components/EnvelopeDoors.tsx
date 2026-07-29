@@ -1,12 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { WaxSeal } from "@/components/WaxSeal";
 
 interface EnvelopeDoorsProps {
   isOpened: boolean;
   onOpen: () => void;
-  names: string;
-  initialsSize?: string;
+  initialsImageUrl?: string;
   envelopeImageUrl?: string;
   openButtonText?: string;
   cardMaxWidth?: string;
@@ -21,8 +19,7 @@ const frostedGlass: React.CSSProperties = {
 export function EnvelopeDoors({
   isOpened,
   onOpen,
-  names,
-  initialsSize,
+  initialsImageUrl,
   openButtonText = "BUKA",
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
@@ -68,7 +65,16 @@ export function EnvelopeDoors({
           }`}
           onClick={!isOpened ? onOpen : undefined}
         >
-          <WaxSeal names={names} initialsSize={initialsSize} className="h-[175px] w-[175px] drop-shadow-xl" />
+          {initialsImageUrl ? (
+            <img
+              src={initialsImageUrl}
+              alt="Uploaded initials"
+              className="h-[175px] w-[175px] object-contain drop-shadow-xl"
+              draggable={false}
+            />
+          ) : (
+            <div className="h-[175px] w-[175px]" aria-hidden="true" />
+          )}
 
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}

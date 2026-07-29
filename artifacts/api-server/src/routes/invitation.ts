@@ -1,9 +1,9 @@
 import { Router, type IRouter, type Request } from "express";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { db, invitationTable } from "@workspace/db";
+import { db, invitationTable, orderTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -66,6 +66,13 @@ const ALLOWED_FIELDS = [
 
 async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   const { lockPinHash: _lockPinHash, ...safe } = row;
+  const [latestOrder] = await db
+    .select({ initialsImageUrl: orderTable.initialsImageUrl })
+    .from(orderTable)
+    .where(eq(orderTable.invitationId, row.id))
+    .orderBy(desc(orderTable.createdAt))
+    .limit(1);
+  (safe as Record<string, unknown>).initialsImageUrl = latestOrder?.initialsImageUrl ?? null;
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
   // cannot override the current admin default.
