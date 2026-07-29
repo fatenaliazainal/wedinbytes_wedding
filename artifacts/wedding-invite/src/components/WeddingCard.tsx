@@ -355,9 +355,14 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
         className="relative"
         style={{
           backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
-          backgroundSize: "cover",
+          // Page 2 is content-height and much taller than the portrait artwork.
+          // `cover` scales by height and crops the image horizontally, which
+          // makes the artwork look zoomed in. Stretching the background to the
+          // full section keeps the complete artwork visible.
+          backgroundSize: bgUrl ? "100% 100%" : undefined,
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "scroll",
           backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
         }}
       >
