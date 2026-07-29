@@ -73,16 +73,21 @@ export function EnvelopeAnimation({
 
               {/* ── Names on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
-                {initialsImageUrl ? (
-                  <img
-                    src={initialsImageUrl}
-                    alt="Uploaded initials"
-                    className="h-[170px] w-[170px] object-contain"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="h-[170px] w-[170px]" aria-hidden="true" />
-                )}
+                <div
+                  className="flex h-[170px] w-[170px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
+                  aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+                >
+                  {initialsImageUrl ? (
+                    <img
+                      src={initialsImageUrl}
+                      alt="Uploaded initials"
+                      className="h-[78%] w-[78%] object-contain"
+                      draggable={false}
+                    />
+                  ) : (
+                    <span className="sr-only">Envelope initials</span>
+                  )}
+                </div>
               </div>
 
               {/* ── Top flap ── */}

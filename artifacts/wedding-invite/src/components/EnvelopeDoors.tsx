@@ -65,16 +65,21 @@ export function EnvelopeDoors({
           }`}
           onClick={!isOpened ? onOpen : undefined}
         >
-          {initialsImageUrl ? (
-            <img
-              src={initialsImageUrl}
-              alt="Uploaded initials"
-              className="h-[175px] w-[175px] object-contain drop-shadow-xl"
-              draggable={false}
-            />
-          ) : (
-            <div className="h-[175px] w-[175px]" aria-hidden="true" />
-          )}
+          <div
+            className="flex h-[175px] w-[175px] items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.2)]"
+            aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+          >
+            {initialsImageUrl ? (
+              <img
+                src={initialsImageUrl}
+                alt="Uploaded initials"
+                className="h-[78%] w-[78%] object-contain"
+                draggable={false}
+              />
+            ) : (
+              <span className="sr-only">Envelope initials</span>
+            )}
+          </div>
 
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
