@@ -312,7 +312,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       <>
         <div
           aria-hidden
-          className="absolute inset-0 bg-secondary bg-cover bg-center bg-no-repeat bg-fixed"
+          className="absolute inset-0 bg-secondary bg-cover bg-center bg-no-repeat"
           style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
         />
         {overlay && <div className="absolute inset-0 bg-white/70 pointer-events-none" />}
