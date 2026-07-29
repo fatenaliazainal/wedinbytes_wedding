@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
 import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 interface WeddingCardProps {
@@ -51,28 +52,50 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
 
   return (
     <div className="w-full max-w-xs">
-      <div ref={viewportRef} className="overflow-hidden">
-        <div className="flex -ml-4">
-          {galleryImages.map((url, idx) => {
-            const resolved = resolveImageUrl(url);
-            return (
-              <div
-                key={`${url}-${idx}`}
-                role="group"
-                aria-roledescription="slide"
-                className="min-w-0 shrink-0 grow-0 basis-full pl-4"
-              >
-                <img
-                  src={resolved}
-                  alt={`${label} ${idx + 1}`}
-                  onError={(e) => fallbackToR2Proxy(e, url)}
-                  className="aspect-[4/3] w-full rounded-lg border border-primary/10 object-cover"
-                  loading="lazy"
-                />
-              </div>
-            );
-          })}
+      <div className="relative">
+        <div ref={viewportRef} className="overflow-hidden">
+          <div className="flex -ml-4">
+            {galleryImages.map((url, idx) => {
+              const resolved = resolveImageUrl(url);
+              return (
+                <div
+                  key={`${url}-${idx}`}
+                  role="group"
+                  aria-roledescription="slide"
+                  className="min-w-0 shrink-0 grow-0 basis-full pl-4"
+                >
+                  <img
+                    src={resolved}
+                    alt={`${label} ${idx + 1}`}
+                    onError={(e) => fallbackToR2Proxy(e, url)}
+                    className="aspect-[4/3] w-full rounded-lg border border-primary/10 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
+        {galleryImages.length > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label={`Previous ${label.toLowerCase()}`}
+              onClick={() => emblaApi?.scrollPrev()}
+              className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black/60 shadow-sm backdrop-blur-[2px] transition-colors hover:bg-white hover:text-black"
+            >
+              <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+            <button
+              type="button"
+              aria-label={`Next ${label.toLowerCase()}`}
+              onClick={() => emblaApi?.scrollNext()}
+              className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black/60 shadow-sm backdrop-blur-[2px] transition-colors hover:bg-white hover:text-black"
+            >
+              <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          </>
+        )}
       </div>
       {galleryImages.length > 1 && (
         <div className="mt-3 flex items-center justify-center gap-1.5" aria-label={`${label} pagination`}>
