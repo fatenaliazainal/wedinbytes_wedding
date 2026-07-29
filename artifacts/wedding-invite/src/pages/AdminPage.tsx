@@ -233,16 +233,45 @@ function ImageScaleControl({
         className="mt-2 w-full accent-primary"
         aria-label="Image scale before saving"
       />
-      <div className="mt-3 flex h-44 items-center justify-center overflow-hidden rounded-lg border border-border bg-white">
-        <img
-          src={previewUrl}
-          alt="Scaled image preview"
-          className="max-h-full max-w-full object-contain transition-transform"
-          style={{ transform: `scale(${scale / 100})` }}
-        />
+      <div className="mt-3 flex justify-center overflow-hidden rounded-lg border border-border bg-[#e9e9e5] p-3">
+        <div className="relative h-64 w-32 overflow-hidden border-2 border-gray-800 bg-white shadow-sm">
+          <img
+            src={previewUrl}
+            alt="Scaled image preview"
+            className="absolute left-1/2 top-1/2 max-h-none max-w-none"
+            style={{
+              width: "auto",
+              height: "auto",
+              transform: `translate(-50%, -50%) scale(${scale / 100})`,
+              transformOrigin: "center",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-0 z-10">
+            <div className="absolute inset-x-0 top-0 h-[18%] border-b border-dashed border-amber-500/80 bg-amber-300/10">
+              <span className="absolute left-1 top-1 rounded bg-amber-600 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+                Warning · Top
+              </span>
+            </div>
+            <div className="absolute inset-x-[8%] top-[18%] h-[64%] border border-dashed border-emerald-600/90 bg-emerald-300/10">
+              <span className="absolute left-1 top-1 rounded bg-emerald-700 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+                Safe Area
+              </span>
+            </div>
+            <div className="absolute inset-x-0 bottom-0 h-[18%] border-t border-dashed border-amber-500/80 bg-amber-300/10">
+              <span className="absolute bottom-1 left-1 rounded bg-amber-600 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+                Warning · Bottom
+              </span>
+            </div>
+            <div className="absolute inset-0 border-[5px] border-rose-500/20">
+              <span className="absolute right-0 top-1/2 -rotate-90 rounded bg-rose-700 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wide text-white">
+                Bleed
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
       <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
-        100% keeps the uploaded image unchanged. Adjust the slider to scale it before saving.
+        100% keeps the uploaded image unchanged. Keep text, faces, and decorations inside the green Safe Area.
       </p>
     </div>
   );
