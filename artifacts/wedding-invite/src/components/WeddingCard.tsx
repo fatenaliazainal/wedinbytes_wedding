@@ -42,7 +42,7 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
                   src={resolved}
                   alt={`${label} ${idx + 1}`}
                   onError={(e) => fallbackToR2Proxy(e, url)}
-                   className="block w-full h-auto rounded-lg border border-primary/10"
+                  className="w-full aspect-[4/3] object-cover rounded-lg border border-primary/10"
                   loading="lazy"
                 />
               </CarouselItem>
@@ -293,8 +293,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   };
   const bodyFontFamily = "var(--body-font-family, 'Dancing Script', cursive)";
 
-  const sectionBase = "relative w-full";
-  const coverPanelBase = "absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-7 py-10 gap-4 w-full";
+  const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
+  const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
   const sectionTitleCls = "text-xl text-primary";
@@ -303,16 +303,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
   const bgUrl = cardImageUrl || envelopeImageUrl;
 
-  function PageArtwork({ imageUrl }: { imageUrl?: string }) {
-    if (!imageUrl) return <div className="block w-full aspect-[3/5] bg-secondary" />;
+  function PageBackground({ imageUrl }: { imageUrl?: string }) {
+    if (!imageUrl) return <div className="absolute inset-0 bg-secondary" />;
     return (
       <img
         src={imageUrl}
         aria-hidden
         alt=""
         draggable={false}
-        className="block w-full h-auto select-none pointer-events-none"
-        onError={(e) => fallbackToR2Proxy(e, imageUrl)}
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
       />
     );
   }
@@ -324,7 +323,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
       {/* ── PAGE 1: MAIN INVITATION / COVER ── */}
       <section className={sectionBase}>
-         <PageArtwork imageUrl={bgUrl} />
+        <PageBackground imageUrl={bgUrl} />
         {logoInitialsUrl && (
           <img
             src={logoInitialsUrl}
@@ -352,8 +351,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       </section>
 
       {/* ── PAGE 2: WEDDING DETAILS (scrollable) ── */}
-       <section className="relative bg-secondary/30">
-         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
+      <section
+        className="relative"
+        style={{
+          backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
+        }}
+      >
+        <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
           {/* Invitation Text */}
