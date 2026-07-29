@@ -291,8 +291,10 @@ async function uploadFile(file: File) {
     body: fd,
   });
   if (!res.ok) throw new Error("Upload failed");
-  const data = await res.json() as { url: string };
-  return data.url;
+  const data = await res.json() as { key?: string; url?: string };
+  const key = data.key ?? data.url;
+  if (!key) throw new Error("Upload response did not include an image key");
+  return key;
 }
 
 async function scaleImageFile(file: File, scale: number): Promise<File> {
