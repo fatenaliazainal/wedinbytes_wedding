@@ -127,6 +127,8 @@ interface InvData {
   coupleCount: number;
   groomInitial: string;
   brideInitial: string;
+  coverGroomName: string;
+  coverBrideName: string;
   envelopeInitials: string;
   page2Initials: string;
   logoInitialsUrl: string;
@@ -309,7 +311,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", envelopeInitials: "", page2Initials: "", logoInitialsUrl: "",
+    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", page2Initials: "", logoInitialsUrl: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -445,6 +447,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           brideShortName: d.brideShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[0]?.trim() ?? "",
           coupleCount: d.coupleCount ?? 1,
           groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
+          coverGroomName: d.coverGroomName ?? "", coverBrideName: d.coverBrideName ?? "",
           envelopeInitials: d.envelopeInitials ?? "", page2Initials: d.page2Initials ?? "",
           logoInitialsUrl: d.logoInitialsUrl ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
@@ -699,6 +702,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         coupleCount: inv.coupleCount,
         groomInitial: inv.groomInitial || null,
         brideInitial: inv.brideInitial || null,
+        coverGroomName: inv.coverGroomName || null,
+        coverBrideName: inv.coverBrideName || null,
         envelopeInitials: inv.envelopeInitials || null,
         page2Initials: inv.page2Initials || null,
         logoInitialsUrl: inv.logoInitialsUrl || null,
@@ -1077,11 +1082,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Groom's Name">
-                    <input className={inputCls} value={inv.groomShortName} onChange={(e) => setI("groomShortName")(e.target.value)} placeholder={t("placeholders.groomShortName")} />
+                  <Field label="Cover Groom Name">
+                    <input className={inputCls} value={inv.coverGroomName} onChange={(e) => setI("coverGroomName")(e.target.value)} placeholder="Contoh: M" />
                   </Field>
-                  <Field label="Bride's Name">
-                    <input className={inputCls} value={inv.brideShortName} onChange={(e) => setI("brideShortName")(e.target.value)} placeholder={t("placeholders.brideShortName")} />
+                  <Field label="Cover Bride Name">
+                    <input className={inputCls} value={inv.coverBrideName} onChange={(e) => setI("coverBrideName")(e.target.value)} placeholder="Contoh: F" />
                   </Field>
                 </div>
                 <Field label="Envelope Initials">

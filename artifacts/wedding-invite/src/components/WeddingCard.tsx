@@ -333,6 +333,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
   const brideName = invitation.brideName?.trim() || brideShort || coupleParts[1] || "";
   const groomInitial = (inv.groomInitial as string | undefined)?.trim() || groomName.charAt(0).toUpperCase();
   const brideInitial = (inv.brideInitial as string | undefined)?.trim() || brideName.charAt(0).toUpperCase();
+  const coverGroomName = (inv.coverGroomName as string | undefined)?.trim() || groomInitial;
+  const coverBrideName = (inv.coverBrideName as string | undefined)?.trim() || brideInitial;
   const page2Initials = (inv.page2Initials as string | undefined)?.trim() || `${groomInitial} & ${brideInitial}`;
 
   const nameStyle: React.CSSProperties = {
@@ -410,13 +412,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
         {showFrontText && (
           <div className={coverPanelBase}>
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{groomInitial}</h1>
-            {(brideInitial && groomInitial) && (
+            <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
+            {(coverBrideName && coverGroomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
                 &amp;
               </span>
             )}
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">{brideInitial}</h1>
+            <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">{coverBrideName}</h1>
             <p className="text-xs font-semibold tracking-[0.3em] text-foreground/70 uppercase">{invitation.eventDay}</p>
             <p className="text-sm text-foreground/80 mt-1 mb-5 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
             {hashtag && (

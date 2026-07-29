@@ -42,6 +42,8 @@ export const invitationTable = pgTable("invitation", {
   coupleCount: integer("couple_count").default(1),
   groomInitial: text("groom_initial"),
   brideInitial: text("bride_initial"),
+  coverGroomName: text("cover_groom_name"),
+  coverBrideName: text("cover_bride_name"),
   envelopeInitials: text("envelope_initials"),
   page2Initials: text("page2_initials"),
   logoInitialsUrl: text("logo_initials_url"),
