@@ -413,6 +413,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             alt=""
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover select-none"
+            onError={(event) => fallbackToR2Proxy(event, imageUrl)}
           />
         ) : (
           <div className="absolute inset-0 bg-secondary" />
@@ -438,6 +439,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
             alt=""
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+            onError={(event) => fallbackToR2Proxy(event, groupOneBackgroundUrl)}
           />
         ) : (
           <div className="absolute inset-0 bg-secondary" />

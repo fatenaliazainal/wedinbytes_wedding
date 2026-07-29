@@ -1,4 +1,5 @@
 import React from "react";
+import { fallbackToR2Proxy } from "@/lib/r2-url";
 
 type ObjectPosition = "center" | "left center" | "right center" | "top center" | "bottom center";
 
@@ -30,6 +31,7 @@ export function DesignImage({
       draggable={false}
       className={`absolute inset-0 w-full h-full object-cover pointer-events-none select-none ${className}`}
       style={{ opacity, objectPosition, ...style }}
+      onError={(event) => fallbackToR2Proxy(event, src)}
     />
   );
 }
