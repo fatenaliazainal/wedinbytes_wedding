@@ -22,7 +22,7 @@ export function WaxSeal({ names, initialsSize, className = "" }: WaxSealProps) {
         className="absolute inset-0"
         style={{
           backgroundColor: "hsl(var(--primary))",
-          opacity: 0.24,
+          opacity: 0.5,
           maskImage: `url(${waxSealAsset})`,
           WebkitMaskImage: `url(${waxSealAsset})`,
           maskSize: "contain",

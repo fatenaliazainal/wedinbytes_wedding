@@ -60,12 +60,6 @@ const cardDesignValues = {
   openingAnimation: "doors",
 };
 
-const initialDesignImages: Record<string, string> = {
-  FL001: "/designs/design_1785311759226.png",
-  FL002: "/designs/design_1779761056298.png",
-  FL003: "/designs/design_1778770711132.png",
-};
-
 const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
 
 export async function autoSeedIfEmpty() {
@@ -165,7 +159,9 @@ export async function autoSeedIfEmpty() {
       }
     }
 
-    // --- Card design: always ensure correct values exist ---
+    // --- Card design: seed defaults only when the catalogue is empty ---
+    // Existing designs are admin-managed. Never "repair" or replace their
+    // images/settings on startup, otherwise a restart would undo saved edits.
     const existingDesigns = await db
       .select()
       .from(cardDesignTable)
@@ -175,33 +171,10 @@ export async function autoSeedIfEmpty() {
       await db.insert(cardDesignTable).values(cardDesignValues);
       logger.info("Auto-seed: card design seeded.");
     } else {
-      // Fix any incorrect or missing values from previous seeds
-      const design = existingDesigns[0];
-      const needsFix =
-        design.cardImageUrl !== cardDesignValues.cardImageUrl ||
-        design.envelopeImageUrl !== cardDesignValues.envelopeImageUrl ||
-        design.musicUrl !== cardDesignValues.musicUrl ||
-        !design.designCode;
-      if (needsFix) {
-        logger.info("Auto-seed: fixing card design values...");
-        await db
-          .update(cardDesignTable)
-          .set({
-            cardImageUrl: cardDesignValues.cardImageUrl,
-            envelopeImageUrl: cardDesignValues.envelopeImageUrl,
-            musicUrl: cardDesignValues.musicUrl,
-            designCode: design.designCode ?? cardDesignValues.designCode,
-          })
-          .where(eq(cardDesignTable.id, design.id));
-        logger.info("Auto-seed: card design values fixed.");
-      }
-    }
-    // Keep the first three catalogue designs visually distinct.
-    for (const [designCode, imageUrl] of Object.entries(initialDesignImages)) {
-      await db
-        .update(cardDesignTable)
-        .set({ cardImageUrl: imageUrl, envelopeImageUrl: imageUrl })
-        .where(eq(cardDesignTable.designCode, designCode));
+      logger.info(
+        { count: existingDesigns.length },
+        "Auto-seed: preserving existing card designs.",
+      );
     }
     // --- Pricing packages: seed defaults if none exist ---
     const existingPackages = await db.select().from(pricingPackageTable).limit(1);
