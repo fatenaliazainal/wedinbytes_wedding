@@ -351,20 +351,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
       </section>
 
       {/* ── PAGE 2: WEDDING DETAILS (scrollable) ── */}
-      <section className="relative grid overflow-hidden bg-secondary">
-        {bgUrl ? (
-          <img
-            src={bgUrl}
-            aria-hidden
-            alt=""
-            draggable={false}
-            className="col-start-1 row-start-1 block h-auto w-full self-start select-none pointer-events-none"
-          />
-        ) : (
-          <div className="col-start-1 row-start-1 h-full w-full bg-secondary" />
-        )}
-        <div className="col-start-1 row-start-1 z-[1] bg-white/70 pointer-events-none" />
-        <div className="relative z-10 col-start-1 row-start-1 flex flex-col items-center gap-14 py-16 px-6">
+      <section
+        className="relative"
+        style={{
+          backgroundImage: bgUrl ? `url(${bgUrl})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          backgroundColor: bgUrl ? undefined : "hsl(var(--secondary))",
+        }}
+      >
+        <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
           {/* Invitation Text */}
