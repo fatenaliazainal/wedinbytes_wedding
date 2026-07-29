@@ -240,7 +240,7 @@ function ImageScaleControl({
           <img
             src={previewUrl}
             alt="Scaled image preview"
-            className="absolute inset-0 h-full w-full object-cover transition-transform"
+            className="absolute inset-0 h-full w-full object-contain transition-transform"
             style={{
               transform: `scale(${scale / 100})`,
               transformOrigin: "center",
@@ -273,6 +273,11 @@ function ImageScaleControl({
       <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
         100% keeps the uploaded image unchanged. Keep text, faces, and decorations inside the green Safe Area.
       </p>
+      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] leading-4 text-emerald-900">
+        <p className="font-semibold">Recommended artwork size: 900 × 1200 px (3:4)</p>
+        <p>Safe Area: approximately 756 × 768 px, starting 72 px from the left/right and 216 px from the top.</p>
+        <p className="mt-1">Create your artwork on this full canvas. The image will not be cropped before scaling.</p>
+      </div>
     </div>
   );
 }
@@ -308,9 +313,9 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
     const context = canvas.getContext("2d");
     if (!context) return file;
 
-    const coverScale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
-    const coveredWidth = image.naturalWidth * coverScale * (scale / 100);
-    const coveredHeight = image.naturalHeight * coverScale * (scale / 100);
+    const containScale = Math.min(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+    const coveredWidth = image.naturalWidth * containScale * (scale / 100);
+    const coveredHeight = image.naturalHeight * containScale * (scale / 100);
     context.drawImage(
       image,
       (canvas.width - coveredWidth) / 2,
