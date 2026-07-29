@@ -45,6 +45,7 @@ export const invitationTable = pgTable("invitation", {
   coverGroomName: text("cover_groom_name"),
   coverBrideName: text("cover_bride_name"),
   envelopeInitials: text("envelope_initials"),
+  envelopeInitialsSize: text("envelope_initials_size"),
   page2Initials: text("page2_initials"),
   logoInitialsUrl: text("logo_initials_url"),
   eventStartDateTime: text("event_start_date_time"),

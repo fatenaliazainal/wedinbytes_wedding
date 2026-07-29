@@ -130,6 +130,7 @@ interface InvData {
   coverGroomName: string;
   coverBrideName: string;
   envelopeInitials: string;
+  envelopeInitialsSize: string;
   page2Initials: string;
   logoInitialsUrl: string;
   eventStartDateTime: string;
@@ -311,7 +312,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
     dresscode: "", message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", page2Initials: "", logoInitialsUrl: "",
+    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", page2Initials: "", logoInitialsUrl: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
     additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
@@ -448,7 +449,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
           coupleCount: d.coupleCount ?? 1,
           groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
           coverGroomName: d.coverGroomName ?? "", coverBrideName: d.coverBrideName ?? "",
-          envelopeInitials: d.envelopeInitials ?? "", page2Initials: d.page2Initials ?? "",
+          envelopeInitials: d.envelopeInitials ?? "",
+          envelopeInitialsSize: d.envelopeInitialsSize ? String(d.envelopeInitialsSize) : "24",
+          page2Initials: d.page2Initials ?? "",
           logoInitialsUrl: d.logoInitialsUrl ?? "",
           eventStartDateTime: d.eventStartDateTime ?? "",
           eventEndDateTime: d.eventEndDateTime ?? "",
@@ -705,6 +708,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
         coverGroomName: inv.coverGroomName || null,
         coverBrideName: inv.coverBrideName || null,
         envelopeInitials: inv.envelopeInitials || null,
+        envelopeInitialsSize: String(Number(inv.envelopeInitialsSize) || 24),
         page2Initials: inv.page2Initials || null,
         logoInitialsUrl: inv.logoInitialsUrl || null,
         eventStartDateTime: inv.eventStartDateTime || null,
@@ -1091,6 +1095,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                 </div>
                 <Field label="Envelope Initials">
                   <input className={inputCls} value={inv.envelopeInitials} onChange={(e) => setI("envelopeInitials")(e.target.value)} placeholder="Contoh: M & F" />
+                </Field>
+                <Field label={`Envelope Initials Size${inv.envelopeInitialsSize ? ` — ${inv.envelopeInitialsSize}px` : ""}`}>
+                  <input
+                    type="range"
+                    min="12"
+                    max="64"
+                    step="1"
+                    value={Number(inv.envelopeInitialsSize) || 24}
+                    onChange={(e) => setInv((p) => ({ ...p, envelopeInitialsSize: e.target.value }))}
+                    className="w-full accent-gray-700"
+                  />
                 </Field>
                 <Field label="Logo Initials">
                   <div className="space-y-2">
@@ -1851,7 +1866,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     key={`env-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
                     onOpen={() => setPreviewOpened(true)}
-                    names={inv.envelopeInitials || `${inv.groomInitial || (inv.groomName || "N").charAt(0)} & ${inv.brideInitial || (inv.brideName || "A").charAt(0)}`}
+                    names={inv.envelopeInitials}
+                    initialsSize={inv.envelopeInitialsSize}
                     openButtonText={design.openButtonText || "BUKA"}
                     logoInitialsUrl={inv.logoInitialsUrl ? resolveImageUrl(inv.logoInitialsUrl) : undefined}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
@@ -1861,7 +1877,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     key={`doors-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
                     onOpen={() => setPreviewOpened(true)}
-                    names={inv.envelopeInitials || `${inv.groomInitial || (inv.groomName || "N").charAt(0)} & ${inv.brideInitial || (inv.brideName || "A").charAt(0)}`}
+                    names={inv.envelopeInitials}
+                    initialsSize={inv.envelopeInitialsSize}
                     openButtonText={design.openButtonText || "BUKA"}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
                     cardMaxWidth={design.cardMaxWidth}

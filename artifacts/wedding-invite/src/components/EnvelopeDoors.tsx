@@ -5,6 +5,7 @@ interface EnvelopeDoorsProps {
   isOpened: boolean;
   onOpen: () => void;
   names: string;
+  initialsSize?: string;
   envelopeImageUrl?: string;
   logoInitialsUrl?: string;
   openButtonText?: string;
@@ -21,6 +22,7 @@ export function EnvelopeDoors({
   isOpened,
   onOpen,
   names,
+  initialsSize,
   openButtonText = "BUKA",
   logoInitialsUrl,
   cardMaxWidth,
@@ -83,7 +85,7 @@ export function EnvelopeDoors({
               className="text-primary text-center px-4 leading-tight drop-shadow-sm"
               style={{
                 fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                fontSize: "var(--badge-font-size, 24px)",
+                fontSize: initialsSize ? `${initialsSize}px` : "var(--envelope-initials-font-size, 24px)",
               }}
             >
               {names}

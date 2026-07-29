@@ -7,6 +7,7 @@ interface EnvelopeAnimationProps {
   isOpened: boolean;
   onOpen: () => void;
   names: string;
+  initialsSize?: string;
   envelopeImageUrl?: string;
   logoInitialsUrl?: string;
   openButtonText?: string;
@@ -16,6 +17,7 @@ export function EnvelopeAnimation({
   isOpened,
   onOpen,
   names,
+  initialsSize,
   envelopeImageUrl,
   openButtonText = "BUKA",
   logoInitialsUrl,
@@ -84,7 +86,7 @@ export function EnvelopeAnimation({
                     className="text-primary text-center leading-snug px-4 relative"
                     style={{
                       fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
-                      fontSize: "var(--badge-font-size, 24px)",
+                      fontSize: initialsSize ? `${initialsSize}px` : "var(--envelope-initials-font-size, 24px)",
                     }}
                   >
                     {names}

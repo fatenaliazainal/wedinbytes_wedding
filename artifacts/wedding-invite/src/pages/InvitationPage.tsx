@@ -231,9 +231,8 @@ export default function InvitationPage() {
       ? `${shortGroom || invitation.groomName} & ${shortBride || invitation.brideName}`
       : `${invitation.groomName} & ${invitation.brideName}`
     : "A & H";
-  const envelopeInitials =
-    (invitationRecord?.envelopeInitials as string | undefined)?.trim() ||
-    `${(invitationRecord?.groomInitial as string | undefined)?.trim() || invitation?.groomName?.trim()?.charAt(0) || ""} & ${(invitationRecord?.brideInitial as string | undefined)?.trim() || invitation?.brideName?.trim()?.charAt(0) || ""}`;
+  const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
+  const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
   const logoInitialsUrl = (invitationRecord?.logoInitialsUrl as string | undefined) || undefined;
 
   const cardFontVars = {
@@ -289,7 +288,8 @@ export default function InvitationPage() {
           key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-          names={envelopeInitials || coupleNames}
+          names={envelopeInitials}
+          initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           logoInitialsUrl={logoInitialsUrl ? resolveImageUrl(logoInitialsUrl) : undefined}
@@ -299,7 +299,8 @@ export default function InvitationPage() {
           key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-          names={envelopeInitials || coupleNames}
+          names={envelopeInitials}
+          initialsSize={envelopeInitialsSize}
           openButtonText={openButtonText}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}

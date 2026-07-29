@@ -438,7 +438,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
           <div className={detailBlock}>
             <p className="text-xl text-primary leading-snug" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
             <OrnamentDivider />
-            <p className="text-2xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{page2Initials}</p>
             {(brideParents || groomParents) && (
               <div className="space-y-1">
                 {groomParents && (
