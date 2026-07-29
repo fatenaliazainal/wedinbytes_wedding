@@ -327,7 +327,17 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
       {/* ── BACKGROUND GROUP 1 / COVER ── */}
       <section className={sectionBase}>
-        <PageBackground imageUrl={groupOneBackgroundUrl} />
+        {groupOneBackgroundUrl ? (
+          <img
+            src={groupOneBackgroundUrl}
+            aria-hidden
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-secondary" />
+        )}
         {logoInitialsUrl && (
           <img
             src={logoInitialsUrl}
