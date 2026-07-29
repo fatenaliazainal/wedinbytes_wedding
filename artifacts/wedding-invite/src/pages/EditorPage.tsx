@@ -1909,7 +1909,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   style={{ transform: "rotate(-30deg)", zIndex: 40 }}
                 >
                   <span
-                    className="text-white/40 font-black tracking-[0.3em] select-none"
+                    className="text-white/10 font-black tracking-[0.3em] select-none"
                     style={{ fontSize: 52, textShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
                   >
                     PREVIEW
