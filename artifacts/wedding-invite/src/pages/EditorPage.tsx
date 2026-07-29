@@ -1399,17 +1399,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             {/* ── KEHADIRAN ── */}
             {activeTab === "kehadiran" && (
               <div className="space-y-4">
-                <Field label="RSVP">
+                <Field label="RSVP - Yes / No">
                   <select
                     className={inputCls}
-                    value={inv.rsvpEnabled ? "Ada" : "Tiada"}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpEnabled: e.target.value === "Ada" }))}
+                    value={inv.rsvpEnabled ? "yes" : "no"}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpEnabled: e.target.value === "yes" }))}
                   >
-                    <option value="Ada">Ada</option>
-                    <option value="Tiada">Tiada</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
                   </select>
                 </Field>
-                <Field label="RSVP Message">
+                <Field label="Ayat RSVP">
                   <RichTextEditor
                     value={inv.rsvpIntroText}
                     onChange={(v) => setInv((p) => ({ ...p, rsvpIntroText: v }))}
@@ -1419,17 +1419,25 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                     inputStyle={{ textAlign: "left" }}
                   />
                 </Field>
-                <Field label="RSVP Deadline">
+                <Field label="Tarikh Akhir RSVP">
                   <input type="datetime-local" className={inputCls} value={inv.rsvpDeadline} onChange={(e) => setInv((p) => ({ ...p, rsvpDeadline: e.target.value }))} />
                 </Field>
-                <Field label="RSVP Note">
-                  <RichTextEditor
-                    value={inv.rsvpFormNote}
-                    onChange={(v) => setInv((p) => ({ ...p, rsvpFormNote: v }))}
-                    placeholder={t("placeholders.rsvpNote")}
-                    multiLine
-                    showFontSize
-                    inputStyle={{ textAlign: "left" }}
+                <Field label="Had Keseluruhan Tetamu*">
+                  <input
+                    type="number"
+                    min={1}
+                    className={inputCls}
+                    value={inv.rsvpMaxOverallGuests}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxOverallGuests: Math.max(1, Number(e.target.value) || 1) }))}
+                  />
+                </Field>
+                <Field label="Had Tetamu Setiap Jemputan*">
+                  <input
+                    type="number"
+                    min={1}
+                    className={inputCls}
+                    value={inv.rsvpMaxGuestsPerInvitation}
+                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxGuestsPerInvitation: Math.max(1, Number(e.target.value) || 1) }))}
                   />
                 </Field>
               </div>

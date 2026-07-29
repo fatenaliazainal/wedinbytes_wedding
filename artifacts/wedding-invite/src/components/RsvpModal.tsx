@@ -48,13 +48,52 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
   const resolvedToken = token ?? (inv?.token as string | undefined) ?? "";
 
   const enabled = inv?.rsvpEnabled === true;
-  const additionalInfo = (inv?.rsvpAdditionalInfo as string | undefined) ?? "";
   const deadline = (inv?.rsvpDeadline as string | undefined) ? new Date(inv?.rsvpDeadline as string) : null;
   const introText = (inv?.rsvpIntroText as string | undefined) ?? "";
-  const formNote = (inv?.rsvpFormNote as string | undefined) ?? "";
+  const language = inv?.language === "en" ? "en" : "ms";
+  const copy = language === "en"
+    ? {
+        title: "Attendance Confirmation",
+        defaultIntro: "Please confirm your attendance.",
+        name: "Name",
+        namePlaceholder: "Your name",
+        attendance: "Will you be attending?",
+        yes: "Yes",
+        no: "No",
+        guests: "Number of guests",
+        wishes: "Message (optional)",
+        wishesPlaceholder: "Leave a message for the couple...",
+        close: "Close",
+        cancel: "Cancel",
+        submit: "Submit",
+        success: "Thank you! Your RSVP has been submitted.",
+        disabled: "RSVP is currently unavailable.",
+        deadline: "The RSVP deadline has passed.",
+        overallLimit: "The guest limit has been reached.",
+        perInvitationLimit: "The maximum number of guests per invitation has been reached.",
+      }
+    : {
+        title: "Pengesahan Kehadiran",
+        defaultIntro: "Sila sahkan kehadiran anda.",
+        name: "Nama",
+        namePlaceholder: "Nama anda",
+        attendance: "Adakah anda akan hadir?",
+        yes: "Ya",
+        no: "Tidak",
+        guests: "Bilangan tetamu",
+        wishes: "Ucapan (jika ada)",
+        wishesPlaceholder: "Tinggalkan ucapan untuk pengantin...",
+        close: "Tutup",
+        cancel: "Batal",
+        submit: "Hantar",
+        success: "Terima kasih! RSVP anda telah dihantar.",
+        disabled: "RSVP tidak dibuka buat masa ini.",
+        deadline: "Tempoh RSVP telah tamat.",
+        overallLimit: "Had keseluruhan tetamu telah dicapai.",
+        perInvitationLimit: "Had tetamu untuk jemputan ini telah dicapai.",
+      };
   const maxGuestsPerInvitation = Math.max(1, Number(inv?.rsvpMaxGuestsPerInvitation ?? 10));
   const maxOverallGuests = Math.max(0, Number(inv?.rsvpMaxOverallGuests ?? 1000));
-  const timeSlots = parseTimeSlots(inv?.rsvpTimeSlots);
 
   const isDeadlinePassed = deadline ? deadline.getTime() < Date.now() : false;
   const { data: rsvpCount } = useGetRsvpCount(resolvedToken ? { invitationToken: resolvedToken } : undefined);
@@ -80,7 +119,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
       name: "",
       attending: "yes",
       numberOfGuests: 1,
-      timeSlot: timeSlots[0] ?? "",
+      timeSlot: "",
       message: "",
     },
   });
@@ -91,11 +130,11 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
         name: "",
         attending: "yes",
         numberOfGuests: 1,
-        timeSlot: timeSlots[0] ?? "",
+        timeSlot: "",
         message: "",
       });
     }
-  }, [isOpen, timeSlots.join(",")]);
+  }, [isOpen]);
 
   const onSubmit = (values: FormValues) => {
     if (!resolvedToken) {
@@ -109,7 +148,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
           name: values.name,
           attending: values.attending === "yes",
           numberOfGuests: values.numberOfGuests,
-          timeSlot: timeSlots.length > 0 ? values.timeSlot : undefined,
+           timeSlot: undefined,
           message: values.message,
         },
       },
@@ -117,30 +156,33 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListRsvpsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetRsvpCountQueryKey(resolvedToken ? { invitationToken: resolvedToken } : undefined) });
-          toast.success("Terima kasih! RSVP anda telah dihantar.");
+           toast.success(copy.success);
           onClose();
           form.reset();
         },
         onError: (error) => {
           const err = error as { response?: { data?: { error?: string } } };
-          toast.error(err?.response?.data?.error ?? "Ralat berlaku. Sila cuba lagi.");
+          const serverMessage = err?.response?.data?.error;
+          const message = serverMessage === "Guest limit has been reached"
+            ? copy.overallLimit
+            : serverMessage?.startsWith("Maximum")
+              ? copy.perInvitationLimit
+              : serverMessage ?? (language === "en" ? "Something went wrong. Please try again." : "Ralat berlaku. Sila cuba lagi.");
+          toast.error(message);
         }
       }
     );
   };
 
   const closedState = !enabled || isDeadlinePassed || isOverallLimitReached;
-  let closedTitle = "Attendance (RSVP)";
-  let closedMessage = introText || "Please confirm your attendance before the event.";
+  let closedTitle = copy.title;
+  let closedMessage = introText || copy.defaultIntro;
   if (!enabled) {
-    closedTitle = "RSVP";
-    closedMessage = "RSVP tidak dibuka buat masa ini.";
+    closedMessage = copy.disabled;
   } else if (isDeadlinePassed) {
-    closedTitle = "RSVP Closed";
-    closedMessage = "Tempoh RSVP telah tamat.";
+    closedMessage = copy.deadline;
   } else if (isOverallLimitReached) {
-    closedTitle = "Guest limit has been reached";
-    closedMessage = "Had kehaduran tetamu telah mencapai had maksima.";
+    closedMessage = copy.overallLimit;
   }
 
   return (
@@ -154,26 +196,18 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
             {closedTitle}
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground" style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}>
-            {closedMessage}
+            {closedState ? closedMessage : (introText || copy.defaultIntro)}
           </DialogDescription>
         </DialogHeader>
 
         {closedState ? (
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} className="w-full">
-              Tutup
+              <Button type="button" variant="outline" onClick={onClose} className="w-full">
+                {copy.close}
             </Button>
           </DialogFooter>
         ) : (
           <>
-            {additionalInfo && (
-              <div
-                className="text-sm text-muted-foreground"
-                style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
-                dangerouslySetInnerHTML={{ __html: additionalInfo }}
-              />
-            )}
-
             <Form {...form}>
               <form className="space-y-5 mt-2">
                 <FormField
@@ -181,9 +215,9 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nama</FormLabel>
+                  <FormLabel>{copy.name}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nama anda" {...field} className="bg-background" />
+                        <Input placeholder={copy.namePlaceholder} {...field} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -195,7 +229,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                   name="attending"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Adakah anda akan hadir?</FormLabel>
+                       <FormLabel>{copy.attendance}</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -206,13 +240,13 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                             <FormControl>
                               <RadioGroupItem value="yes" />
                             </FormControl>
-                            <FormLabel className="font-normal">Ya, saya akan hadir</FormLabel>
+                             <FormLabel className="font-normal">{copy.yes}</FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl>
                               <RadioGroupItem value="no" />
                             </FormControl>
-                            <FormLabel className="font-normal">Maaf, saya tidak dapat hadir</FormLabel>
+                             <FormLabel className="font-normal">{copy.no}</FormLabel>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
@@ -221,40 +255,21 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                   )}
                 />
 
-                {timeSlots.length > 0 && (
-                  <FormField
-                    control={form.control}
-                    name="timeSlot"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Slot Masa</FormLabel>
-                        <FormControl>
-                          <select
-                            {...field}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          >
-                            <option value="">Pilih slot masa</option>
-                            {timeSlots.map((slot) => (
-                              <option key={slot} value={slot}>{slot}</option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
                 {form.watch("attending") === "yes" && (
                   <FormField
                     control={form.control}
                     name="numberOfGuests"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bilangan Kehadiran</FormLabel>
+                         <FormLabel>{copy.guests}</FormLabel>
                         <FormControl>
                           <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background" />
                         </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        {language === "en"
+                          ? `Maximum ${maxGuestsPerInvitation} guests for this invitation.`
+                          : `Maksimum ${maxGuestsPerInvitation} tetamu untuk jemputan ini.`}
+                      </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -266,10 +281,10 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ucapan (Jika ada)</FormLabel>
+                      <FormLabel>{copy.wishes}</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Tinggalkan ucapan untuk pengantin..."
+                           placeholder={copy.wishesPlaceholder}
                           className="resize-none bg-background"
                           {...field}
                         />
@@ -279,19 +294,12 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                   )}
                 />
 
-                {formNote && (
-                  <div
-                    className="text-xs text-muted-foreground"
-                    style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
-                    dangerouslySetInnerHTML={{ __html: formNote }}
-                  />
-                )}
               </form>
             </Form>
 
             <DialogFooter className="gap-2 pt-2">
               <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
-                Batal
+                {copy.cancel}
               </Button>
               <Button
                 type="submit"
@@ -300,7 +308,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
                 onClick={form.handleSubmit(onSubmit)}
               >
                 {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-                Hantar
+                 {copy.submit}
               </Button>
             </DialogFooter>
           </>

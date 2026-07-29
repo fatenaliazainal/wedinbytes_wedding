@@ -617,15 +617,12 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
           </div>
           </RevealOnScroll>
 
-          <RevealOnScroll>
-          {/* Wishes / Guestbook */}
-          <div className={detailBlock}>
-            <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
-            <OrnamentDivider />
-            {(inv.message as string) && (
-              <p className="text-sm text-foreground/70 mb-4" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: inv.message as string }} />
-            )}
-            {guestWishes && guestWishes.length > 0 ? (
+          {guestWishes && guestWishes.length > 0 && (
+            <RevealOnScroll>
+            {/* Wishes / Guestbook */}
+            <div className={detailBlock}>
+              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
+              <OrnamentDivider />
               <div className="w-full max-w-xs">
                 <div className="max-h-64 overflow-y-auto pr-1 space-y-3">
                   {guestWishes.map((wish, idx) => (
@@ -643,11 +640,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, logoIn
                   ))}
                 </div>
               </div>
-            ) : (
-              <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.guestWishes}</p>
-            )}
-          </div>
-          </RevealOnScroll>
+            </div>
+            </RevealOnScroll>
+          )}
 
           <RevealOnScroll>
           {/* Gallery */}
