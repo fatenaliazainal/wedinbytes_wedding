@@ -280,6 +280,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
+  const [previewWasOpened, setPreviewWasOpened] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [previewActiveTab, setPreviewActiveTab] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
@@ -1611,6 +1612,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                             musicArtist:      picked.musicArtist      ?? "",
                           }));
                           setPreviewOpened(true);
+                          setPreviewWasOpened(false);
                         } else {
                           setDesign((p) => ({ ...p, designCode: e.target.value }));
                         }
@@ -1873,7 +1875,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <EnvelopeAnimation
                     key={`env-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
-                    onOpen={() => setPreviewOpened(true)}
+                    onOpen={() => {
+                      setPreviewWasOpened(true);
+                      setPreviewOpened(true);
+                    }}
                     names={inv.envelopeInitials}
                     initialsSize={inv.envelopeInitialsSize}
                     openButtonText={design.openButtonText || "BUKA"}
@@ -1883,7 +1888,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <EnvelopeDoors
                     key={`doors-${activeTab}-${design.designCode}`}
                     isOpened={previewOpened}
-                    onOpen={() => setPreviewOpened(true)}
+                    onOpen={() => {
+                      setPreviewWasOpened(true);
+                      setPreviewOpened(true);
+                    }}
                     names={inv.envelopeInitials}
                     initialsSize={inv.envelopeInitialsSize}
                     openButtonText={design.openButtonText || "BUKA"}
@@ -1895,7 +1903,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
               {/* Unpaid cards are clearly marked as previews. The editor remains
                   interactive so buyers can continue preparing their invitation. */}
-              {!inv.isPurchased && (
+              {previewWasOpened && !inv.isPurchased && (
                 <div
                   className="absolute inset-0 flex items-center justify-center pointer-events-none"
                   style={{ transform: "rotate(-30deg)", zIndex: 40 }}
