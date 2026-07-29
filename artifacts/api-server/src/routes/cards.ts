@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, cardTable } from "@workspace/db";
+import { db, cardTable, invitationTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import multer from "multer";
 import { deleteImage, uploadImage, downloadImage, getImagePublicUrl, isR2Configured } from "../services/cloudflare/r2-storage-admin";
@@ -25,11 +25,32 @@ const logoUpload = multer({
   },
 });
 
+function adminGuard(req: { session?: { role?: string } }, res: { status: (code: number) => { json: (body: unknown) => void } }) {
+  if (req.session?.role !== "admin") {
+    res.status(403).json({ error: "Admin access only" });
+    return false;
+  }
+  return true;
+}
+
+async function canUploadForInvitation(req: { session?: { userId?: number; role?: string } }, token: string) {
+  if (!token || token === "unknown") return false;
+  if (req.session?.role === "admin") return true;
+  if (!req.session?.userId) return false;
+  const [invitation] = await db
+    .select({ userId: invitationTable.userId })
+    .from(invitationTable)
+    .where(eq(invitationTable.token, token))
+    .limit(1);
+  return invitation?.userId === req.session.userId;
+}
+
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
 router.get("/r2", async (req, res) => {
   const key = typeof req.query.key === "string" ? req.query.key : "";
-  if (!key || key.includes("..") || key.startsWith("/")) {
+  const allowedPrefix = /^(wed_card_design|gallery|logos)\//;
+  if (!key || key.includes("..") || key.startsWith("/") || !allowedPrefix.test(key)) {
     res.status(400).json({ error: "A valid R2 object key is required" });
     return;
   }
@@ -57,6 +78,7 @@ function stripNulls<T extends Record<string, unknown>>(obj: T): T {
 // ── List all cards (for Raw Card tab in admin) ────────────────────────────────
 // Returns card rows mapped to { id, name, path, category, publicUrl }
 router.get("/cards", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const rows = await db
       .select({
@@ -89,6 +111,7 @@ router.get("/cards", async (req, res) => {
 
 // ── Create raw card with image upload ────────────────────────────────────────
 router.post("/raw-card", upload.single("file"), async (req, res) => {
+  if (!adminGuard(req, res)) return;
   if (!isR2Configured()) {
     res.status(503).json({
       error:
@@ -127,19 +150,87 @@ router.post("/raw-card", upload.single("file"), async (req, res) => {
     });
 
     // Save card record to database
-    const [created] = await db
-      .insert(cardTable)
-      .values({
-        name: body.name.trim() as string,
-        path: imageKey,
-        category: (body.category as string) || "design",
-      })
-      .returning();
+    let created: typeof cardTable.$inferSelect;
+    try {
+      [created] = await db
+        .insert(cardTable)
+        .values({
+          name: body.name.trim() as string,
+          path: imageKey,
+          category: (body.category as string) || "design",
+        })
+        .returning();
+    } catch (dbError) {
+      await deleteImage(imageKey).catch((cleanupError) =>
+        req.log.error({ err: cleanupError, imageKey }, "Failed to clean up card image after DB failure"),
+      );
+      throw dbError;
+    }
 
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create raw card");
     res.status(500).json({ error: "Failed to create card" });
+  }
+});
+
+// ── Replace a raw card image and/or metadata ──────────────────────────────────
+router.patch("/raw-card/:id", upload.single("file"), async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  if (!isR2Configured()) {
+    res.status(503).json({ error: "Photo storage is not configured." });
+    return;
+  }
+
+  try {
+    const id = Number.parseInt(String(req.params.id), 10);
+    if (!Number.isInteger(id)) {
+      res.status(400).json({ error: "Invalid card id" });
+      return;
+    }
+    const [card] = await db.select().from(cardTable).where(eq(cardTable.id, id)).limit(1);
+    if (!card) {
+      res.status(404).json({ error: "Card not found" });
+      return;
+    }
+
+    const body = req.body as Record<string, unknown>;
+    const update: Partial<typeof cardTable.$inferInsert> = {};
+    if (typeof body.name === "string" && body.name.trim()) update.name = body.name.trim();
+    if (typeof body.category === "string" && body.category.trim()) update.category = body.category.trim();
+
+    let newImageKey: string | undefined;
+    if (req.file) {
+      const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+      newImageKey = await uploadImage({
+        fileName: req.file.originalname,
+        fileBuffer: req.file.buffer,
+        contentType: mimeType,
+        folder: "wed_card_design",
+        metadata: { name: typeof body.name === "string" ? body.name.trim() : card.name },
+      });
+      update.path = newImageKey;
+    }
+    if (Object.keys(update).length === 0) {
+      res.status(400).json({ error: "No valid fields to update" });
+      return;
+    }
+
+    try {
+      const [updated] = await db.update(cardTable).set(update).where(eq(cardTable.id, id)).returning();
+      if (newImageKey && card.path && isR2StorageKey(card.path)) {
+        await deleteImage(card.path).catch((err) =>
+          req.log.error({ err, imageKey: card.path }, "Failed to clean up replaced card image"),
+        );
+      }
+      res.json(stripNulls(updated));
+    } catch (dbError) {
+      if (newImageKey) await deleteImage(newImageKey).catch(() => undefined);
+      throw dbError;
+    }
+  } catch (err) {
+    req.log.error({ err }, "Failed to update raw card");
+    res.status(500).json({ error: "Failed to update card" });
   }
 });
 
@@ -165,7 +256,11 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       return;
     }
 
-    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
+    const invitationToken = req.body.invitationToken || req.query.invitationToken || "";
+    if (typeof invitationToken !== "string" || !(await canUploadForInvitation(req, invitationToken))) {
+      res.status(403).json({ error: "You do not own this invitation" });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
@@ -193,7 +288,11 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
       return;
     }
     const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp";
-    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
+    const invitationToken = req.body.invitationToken || req.query.invitationToken || "";
+    if (typeof invitationToken !== "string" || !(await canUploadForInvitation(req, invitationToken))) {
+      res.status(403).json({ error: "You do not own this invitation" });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
@@ -210,6 +309,7 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
 
 // ── Delete raw card ──────────────────────────────────────────────────────────
 router.delete("/raw-card/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -274,5 +374,9 @@ router.delete("/raw-card/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete card" });
   }
 });
+
+function isR2StorageKey(value: string) {
+  return Boolean(value) && !value.startsWith("http://") && !value.startsWith("https://") && !value.startsWith("/");
+}
 
 export default router;

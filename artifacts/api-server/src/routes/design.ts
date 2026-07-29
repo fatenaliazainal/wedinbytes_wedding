@@ -3,28 +3,12 @@ import { GetActiveDesignResponse, ListDesignsResponse, ActivateDesignResponse } 
 import { db, cardDesignTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { uploadImage, isR2Configured } from "../services/cloudflare/r2-storage-admin";
 
 const router: IRouter = Router();
 
-// Uploads directory — served as static assets by the wedding-invite Vite dev server.
-// process.cwd() = artifacts/api-server (set by pnpm filter), so ../wedding-invite resolves correctly.
-const UPLOADS_DIR = path.resolve(process.cwd(), "../wedding-invite/public/designs");
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `design_${Date.now()}${ext}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
   fileFilter: (_req, file, cb) => {
     const ok = /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype);
@@ -45,8 +29,17 @@ function stripNulls<T extends Record<string, unknown>>(obj: T): T {
   ) as T;
 }
 
+function adminGuard(req: { session?: { role?: string } }, res: { status: (code: number) => { json: (body: unknown) => void } }) {
+  if (req.session?.role !== "admin") {
+    res.status(403).json({ error: "Admin access only" });
+    return false;
+  }
+  return true;
+}
+
 // ── Upload image ─────────────────────────────────────────────────────────────
 router.post("/upload", (req, res, next) => {
+  if (!adminGuard(req, res)) return;
   upload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -60,8 +53,21 @@ router.post("/upload", (req, res, next) => {
       res.status(400).json({ error: "No valid image uploaded (jpeg/png/webp/gif, max 20 MB)" });
       return;
     }
-    const url = `/designs/${req.file.filename}`;
-    res.json({ url });
+    if (!isR2Configured()) {
+      res.status(503).json({ error: "Photo storage is not configured." });
+      return;
+    }
+    uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+      folder: "wed_card_design",
+    })
+      .then((key) => res.json({ url: key }))
+      .catch((uploadError) => {
+        req.log.error({ err: uploadError }, "Failed to upload design image");
+        res.status(500).json({ error: "Failed to upload design image" });
+      });
   });
 });
 
@@ -93,6 +99,7 @@ router.get("/design", async (req, res) => {
 
 // ── Create design ────────────────────────────────────────────────────────────
 router.post("/design", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const body = req.body as Record<string, unknown>;
     if (!body.name || typeof body.name !== "string" || !body.name.trim()) {
@@ -126,6 +133,7 @@ router.post("/design", async (req, res) => {
 
 // ── Update design ────────────────────────────────────────────────────────────
 router.patch("/design/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -159,6 +167,7 @@ router.patch("/design/:id", async (req, res) => {
 
 // ── Activate design ──────────────────────────────────────────────────────────
 router.post("/design/:id/activate", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -185,6 +194,7 @@ router.post("/design/:id/activate", async (req, res) => {
 
 // ── Delete design ────────────────────────────────────────────────────────────
 router.delete("/design/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
