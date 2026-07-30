@@ -1305,12 +1305,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 16, textAlign: "center" }}
                   />
                 </Field>
-                <Field label="City / State">
-                  <div className="grid grid-cols-2 gap-3">
-                    <input className={inputCls} value={inv.venueCity} onChange={(e) => setI("venueCity")(e.target.value)} placeholder={t("placeholders.city")} />
-                    <input className={inputCls} value={inv.venueState} onChange={(e) => setI("venueState")(e.target.value)} placeholder={t("placeholders.state")} />
-                  </div>
-                </Field>
                 <Field label="Islamic Date">
                   <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder={t("placeholders.islamicDate")} />
                 </Field>
