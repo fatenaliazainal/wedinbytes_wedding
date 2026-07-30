@@ -446,7 +446,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             ? responseData.find((item: { token?: string }) => item.token === requestedToken)
             : responseData[0])
           : responseData;
-        if (!loadedInv && mode === "business" && !requestedToken) {
+        if (!loadedInv && mode === "business" && !requestedToken && !isNewCard) {
           setDataLoading(false);
           return;
         }
