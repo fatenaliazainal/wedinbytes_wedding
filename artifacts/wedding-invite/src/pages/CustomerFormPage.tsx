@@ -11,7 +11,7 @@ type FormField = {
   type: "text" | "email" | "date" | "tel" | "url" | "textarea" | "checkbox";
   required?: boolean;
   placeholder?: string;
-  defaultValue?: string | boolean;
+  defaultValue?: string | boolean | number;
   validation?: { minLength?: number; maxLength?: number; pattern?: string };
 };
 
@@ -25,7 +25,7 @@ type FormDetails = {
 export default function CustomerFormPage() {
   const { token } = useParams<{ token: string }>();
   const [details, setDetails] = useState<FormDetails | null>(null);
-  const [values, setValues] = useState<Record<string, string | boolean | string[]>>({});
+  const [values, setValues] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -49,9 +49,19 @@ export default function CustomerFormPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const updateValue = (key: string, value: string | boolean | string[]) => {
+  const updateValue = (key: string, value: unknown) => {
     setValues((current) => ({ ...current, [key]: value }));
   };
+
+  function updateStructuredValue(key: string, index: number, value: Record<string, string>) {
+    const current = Array.isArray(values[key]) ? values[key] as Record<string, string>[] : [];
+    updateValue(key, current.map((item, itemIndex) => itemIndex === index ? { ...item, ...value } : item));
+  }
+
+  function addStructuredValue(key: string, value: Record<string, string>) {
+    const current = Array.isArray(values[key]) ? values[key] as Record<string, string>[] : [];
+    updateValue(key, [...current, value]);
+  }
 
   async function uploadGalleryFiles(files: FileList | null, fieldKey: string) {
     if (!files || !token) return;
@@ -183,6 +193,112 @@ export default function CustomerFormPage() {
                         )}
                         {galleryError && <p className="text-sm text-red-600">{galleryError}</p>}
                       </div>
+                    ) : field.key === "itinerary" ? (
+                      <div className="space-y-3">
+                        {(Array.isArray(values[field.key]) ? values[field.key] as Record<string, string>[] : []).map((item, index) => (
+                          <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-2">
+                            <input
+                              type="time"
+                              value={item.time || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { time: event.target.value })}
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                            <input
+                              value={item.event || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { event: event.target.value })}
+                              placeholder="Event name"
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateValue(field.key, (values[field.key] as Record<string, string>[]).filter((_, itemIndex) => itemIndex !== index))}
+                              className="rounded-lg px-2 text-sm text-red-500 hover:bg-red-50"
+                              aria-label={`Remove programme item ${index + 1}`}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addStructuredValue(field.key, { time: "", event: "" })}
+                          className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          + Add programme item
+                        </button>
+                      </div>
+                    ) : field.key === "contacts" ? (
+                      <div className="space-y-3">
+                        {(Array.isArray(values[field.key]) ? values[field.key] as Record<string, string>[] : []).map((item, index) => (
+                          <div key={index} className="rounded-lg border border-gray-200 p-3 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-medium text-gray-500">Contact {index + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateValue(field.key, (values[field.key] as Record<string, string>[]).filter((_, itemIndex) => itemIndex !== index))}
+                                className="text-xs text-red-500"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <input
+                              value={item.name || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { name: event.target.value })}
+                              placeholder="Contact name"
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                            <input
+                              type="tel"
+                              value={item.phone || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { phone: event.target.value })}
+                              placeholder="0123456789"
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addStructuredValue(field.key, { name: "", phone: "" })}
+                          className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          + Add contact
+                        </button>
+                      </div>
+                    ) : field.key === "socialLinks" ? (
+                      <div className="space-y-3">
+                        {(Array.isArray(values[field.key]) ? values[field.key] as Record<string, string>[] : []).map((item, index) => (
+                          <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-2">
+                            <input
+                              value={item.platform || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { platform: event.target.value })}
+                              placeholder="Platform"
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                            <input
+                              type="url"
+                              value={item.url || ""}
+                              onChange={(event) => updateStructuredValue(field.key, index, { url: event.target.value })}
+                              placeholder="https://..."
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-gray-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateValue(field.key, (values[field.key] as Record<string, string>[]).filter((_, itemIndex) => itemIndex !== index))}
+                              className="rounded-lg px-2 text-sm text-red-500 hover:bg-red-50"
+                              aria-label={`Remove social link ${index + 1}`}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addStructuredValue(field.key, { platform: "", url: "" })}
+                          className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          + Add social link
+                        </button>
+                      </div>
                     ) : field.type === "textarea" ? (
                       <textarea
                         required={field.required}
@@ -206,7 +322,15 @@ export default function CustomerFormPage() {
                       </span>
                     ) : (
                       <input
-                        type={field.type}
+                        type={
+                          field.key === "eventStartTime" || field.key === "eventEndTime"
+                            ? "time"
+                            : field.key === "rsvpDeadline"
+                              ? "datetime-local"
+                              : field.key === "rsvpMaxOverallGuests" || field.key === "rsvpMaxGuestsPerInvitation"
+                                ? "number"
+                                : field.type
+                        }
                         required={field.required}
                         value={String(values[field.key] ?? "")}
                         onChange={(event) => updateValue(field.key, event.target.value)}

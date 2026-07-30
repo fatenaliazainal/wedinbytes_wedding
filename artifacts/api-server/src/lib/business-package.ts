@@ -2,19 +2,44 @@ import type { PricingFormConfig, PricingFormField } from "@workspace/db";
 
 export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
   fields: [
+    { key: "coverTitle", label: "Event title", type: "text", invitationField: "coverTitle" },
     { key: "groomName", label: "Groom name", type: "text", required: true, invitationField: "groomName" },
     { key: "brideName", label: "Bride name", type: "text", required: true, invitationField: "brideName" },
+    { key: "coverGroomName", label: "Cover groom name", type: "text", invitationField: "coverGroomName" },
+    { key: "coverBrideName", label: "Cover bride name", type: "text", invitationField: "coverBrideName" },
+    { key: "envelopeInitials", label: "Cover initials", type: "text", invitationField: "envelopeInitials" },
+    { key: "hashtag", label: "Hashtag", type: "text", invitationField: "hashtag" },
+    { key: "showFrontText", label: "Show front page", type: "checkbox", defaultValue: true, invitationField: "showFrontText" },
+    { key: "greetingText", label: "Greeting", type: "textarea", invitationField: "greetingText" },
+    { key: "groomParents", label: "Groom's parents", type: "textarea", invitationField: "groomParents" },
+    { key: "brideParents", label: "Bride's parents", type: "textarea", invitationField: "brideParents" },
+    { key: "invitationText", label: "Invitation text", type: "textarea", invitationField: "invitationText" },
+    { key: "page2Initials", label: "Page 2 initials", type: "text", invitationField: "page2Initials" },
     { key: "eventDate", label: "Wedding date", type: "date", required: true, invitationField: "eventDate" },
     { key: "eventType", label: "Event type", type: "text", defaultValue: "Walimatul Urus", invitationField: "eventType" },
+    { key: "eventStartTime", label: "Start time", type: "text", invitationField: "eventStartTime" },
+    { key: "eventEndTime", label: "End time", type: "text", invitationField: "eventEndTime" },
     { key: "venueName", label: "Venue", type: "text", required: true, invitationField: "venueName" },
     { key: "venueAddress", label: "Venue address", type: "textarea", invitationField: "venueAddress" },
+    { key: "venueHijriDate", label: "Islamic date", type: "text", invitationField: "venueHijriDate" },
     { key: "venueMapUrl", label: "Google Maps link", type: "url", invitationField: "venueMapUrl" },
-    { key: "groomParents", label: "Groom's parents", type: "text", invitationField: "groomParents" },
-    { key: "brideParents", label: "Bride's parents", type: "text", invitationField: "brideParents" },
+    { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
+    { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
+    { key: "doaText", label: "Doa", type: "textarea", invitationField: "doaText" },
     { key: "message", label: "Short message", type: "textarea", invitationField: "message" },
     { key: "contactPhone", label: "Contact phone", type: "tel", required: true, invitationField: "contactPhone" },
+    { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
     { key: "email", label: "Customer email", type: "email" },
-    { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
+    { key: "galleryImages", label: "Photo gallery", type: "textarea", invitationField: "galleryImages" },
+    { key: "rsvpEnabled", label: "Enable RSVP", type: "checkbox", invitationField: "rsvpEnabled" },
+    { key: "rsvpIntroText", label: "RSVP message", type: "textarea", invitationField: "rsvpIntroText" },
+    { key: "rsvpDeadline", label: "RSVP deadline", type: "text", invitationField: "rsvpDeadline" },
+    { key: "rsvpMaxOverallGuests", label: "Overall guest limit", type: "text", defaultValue: "1000", invitationField: "rsvpMaxOverallGuests" },
+    { key: "rsvpMaxGuestsPerInvitation", label: "Guest limit per invitation", type: "text", defaultValue: "10", invitationField: "rsvpMaxGuestsPerInvitation" },
+    { key: "showFooter", label: "Show footer branding", type: "checkbox", defaultValue: true, invitationField: "showFooter" },
+    { key: "footerText", label: "Footer text", type: "text", invitationField: "footerText" },
+    { key: "footerUrl", label: "Footer URL", type: "url", invitationField: "footerUrl" },
+    { key: "socialLinks", label: "Social links", type: "textarea", invitationField: "socialLinks" },
   ],
   hiddenFields: {
     eventDay: "",
@@ -44,6 +69,9 @@ const INVITATION_FIELDS = new Set([
   "showFooter", "footerText", "footerUrl", "socialLinks",
 ]);
 
+const STRUCTURED_FIELD_KEYS = new Set(["itinerary", "contacts", "socialLinks"]);
+const NUMERIC_FIELD_KEYS = new Set(["rsvpMaxOverallGuests", "rsvpMaxGuestsPerInvitation"]);
+
 function invitationFieldName(value: unknown) {
   if (typeof value !== "string") return undefined;
   const raw = value.trim();
@@ -55,7 +83,7 @@ function invitationFieldName(value: unknown) {
 export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
   if (!value || typeof value !== "object") return DEFAULT_BUSINESS_FORM_CONFIG;
   const raw = value as { fields?: unknown; hiddenFields?: unknown };
-  const fields = Array.isArray(raw.fields)
+  const configuredFields = Array.isArray(raw.fields)
     ? raw.fields
       .filter((field): field is PricingFormField => Boolean(field) && typeof field === "object")
       .map((field) => ({
@@ -78,6 +106,11 @@ export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
       }))
       .filter((field) => field.key && field.label && ["text", "email", "date", "tel", "url", "textarea", "checkbox"].includes(field.type))
     : [];
+  const configuredKeys = new Set(configuredFields.map((field) => field.key));
+  const fields = [
+    ...configuredFields,
+    ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) => !configuredKeys.has(field.key)),
+  ];
   const hiddenFields = raw.hiddenFields && typeof raw.hiddenFields === "object" && !Array.isArray(raw.hiddenFields)
     ? Object.fromEntries(
       Object.entries(raw.hiddenFields as Record<string, unknown>)
@@ -105,7 +138,7 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
       errors.push(`${field.label} is required.`);
       continue;
     }
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) && field.key === "galleryImages") {
       const images = value
         .filter((item): item is string => typeof item === "string")
         .map((item) => item.trim())
@@ -115,6 +148,39 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
         errors.push(`${field.label} is required.`);
       }
       cleaned[field.key] = images;
+    } else if (Array.isArray(value) && STRUCTURED_FIELD_KEYS.has(field.key)) {
+      if (field.key === "itinerary") {
+        cleaned[field.key] = value
+          .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+          .map((item) => ({
+            time: typeof item.time === "string" ? item.time.trim() : "",
+            event: typeof item.event === "string" ? item.event.trim() : "",
+          }))
+          .filter((item) => item.time || item.event) as unknown as string[];
+      } else if (field.key === "contacts") {
+        cleaned[field.key] = value
+          .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+          .map((item) => ({
+            name: typeof item.name === "string" ? item.name.trim() : "",
+            phone: typeof item.phone === "string" ? item.phone.trim() : "",
+          }))
+          .filter((item) => item.name || item.phone) as unknown as string[];
+      } else {
+        cleaned[field.key] = value
+          .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+          .map((item) => ({
+            platform: typeof item.platform === "string" ? item.platform.trim() : "",
+            url: typeof item.url === "string" ? item.url.trim() : "",
+          }))
+          .filter((item) => item.platform || item.url) as unknown as string[];
+      }
+    } else if (NUMERIC_FIELD_KEYS.has(field.key)) {
+      const numericValue = typeof value === "number" ? value : Number(value);
+      if (!Number.isFinite(numericValue) || numericValue < 1) {
+        errors.push(`${field.label} must be a positive number.`);
+      } else {
+        cleaned[field.key] = Math.floor(numericValue);
+      }
     } else if (typeof value === "string") {
       const trimmed = value.trim();
       if (field.validation?.minLength !== undefined && trimmed.length < field.validation.minLength) {
