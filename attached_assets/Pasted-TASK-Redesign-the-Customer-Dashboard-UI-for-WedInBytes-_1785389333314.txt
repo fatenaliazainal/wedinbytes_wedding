@@ -1,0 +1,243 @@
+TASK:
+Redesign the Customer Dashboard UI for WedInBytes.
+
+OBJECTIVE:
+The current dashboard layout is too similar to another digital invitation website. I want a completely fresh, original, modern, and premium UI that reflects the WedInBytes brand.
+
+IMPORTANT:
+This task is a VISUAL UI redesign ONLY.
+
+DO NOT change, refactor, optimize, rename, or modify any existing functionality.
+
+DO NOT modify:
+- Backend
+- API
+- Database
+- Authentication
+- Business logic
+- Routes
+- Existing components' functionality
+- Payment flow
+- RSVP
+- Share
+- QR
+- Lock
+- Delete
+- Preview
+- Edit
+- Invitation URL logic
+- Copy link functionality
+- Expiry calculation
+- Responsive behavior that already works
+
+Only redesign the visual appearance.
+
+====================================================
+DESIGN STYLE
+====================================================
+
+Design inspiration:
+- Linear
+- Notion
+- Framer
+- Stripe Dashboard
+- Vercel
+
+Overall feeling:
+- Premium
+- Elegant
+- Minimal
+- Modern SaaS
+- Spacious
+- Professional
+- Clean
+
+Use the existing WedInBytes branding and Poppins font.
+
+====================================================
+LAYOUT
+====================================================
+
+Instead of a plain list of invitations, redesign every invitation as a premium dashboard card.
+
+Each card should have:
+
+LEFT
+- Larger phone preview (around 110–130px wide)
+- Rounded phone image
+- Center vertically
+
+CENTER
+Large invitation title
+
+Below it:
+Created Date
+Expiry Date
+
+Use subtle icons beside each information.
+
+Instead of showing everything in one paragraph, create clear information groups.
+
+Below that:
+
+Invitation Link
+
+Display inside a modern rounded container with:
+🔗 URL
+Copy button
+
+Instead of looking like an input field.
+
+BOTTOM
+
+Arrange actions into modern icon buttons.
+
+Examples:
+
+✏ Edit
+👁 Preview
+👥 RSVP
+🔗 Share
+▣ QR
+🔒 Lock
+🗑 Delete
+
+Each action should have:
+
+rounded hover effect
+
+small tooltip
+
+consistent spacing
+
+====================================================
+PAYMENT
+====================================================
+
+Move the Pay Now button to the top-right of the card.
+
+Display a payment badge.
+
+Examples:
+
+● Active
+
+or
+
+Unpaid
+
+with Pay Now button beside it.
+
+====================================================
+CARD DESIGN
+====================================================
+
+Each invitation card should have:
+
+24px border radius
+
+Soft shadow
+
+White background
+
+Hover animation
+
+Lift slightly on hover
+
+Padding around 28–32px
+
+More whitespace between sections
+
+====================================================
+TYPOGRAPHY
+====================================================
+
+Invitation title:
+Bold
+Larger
+
+Information labels:
+Small uppercase
+Muted grey
+
+Values:
+Readable
+Medium weight
+
+====================================================
+BUTTONS
+====================================================
+
+Primary button:
+Dark navy (existing brand color)
+
+Secondary actions:
+Ghost buttons
+
+Delete:
+Only red on hover.
+
+====================================================
+SPACING
+====================================================
+
+Increase spacing everywhere.
+
+Avoid cramped layout.
+
+Everything should breathe.
+
+====================================================
+VISUAL DETAILS
+====================================================
+
+Use subtle separators instead of thick borders.
+
+Use rounded chips.
+
+Use icons consistently.
+
+Improve alignment.
+
+Create a premium SaaS feeling.
+
+====================================================
+RESPONSIVE
+====================================================
+
+Desktop:
+2-column layout inside card.
+
+Tablet:
+Stack naturally.
+
+Mobile:
+Everything becomes vertical without breaking functionality.
+
+====================================================
+DO NOT COPY
+====================================================
+
+Do NOT copy KadKahwinMy.
+
+Create an original WedInBytes dashboard.
+
+The new UI should immediately look different from any competitor.
+
+====================================================
+BEFORE CODING
+====================================================
+
+First identify ONLY the UI components that need updating.
+
+Modify ONLY those files.
+
+Do not touch unrelated files.
+
+Do not rewrite working code.
+
+Do not refactor existing logic.
+
+Do not change functionality.
+
+Only improve the UI.
