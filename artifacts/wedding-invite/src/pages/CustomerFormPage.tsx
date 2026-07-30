@@ -18,6 +18,7 @@ type FormField = {
 
 type FormDetails = {
   businessName: string;
+  logoUrl?: string | null;
   packageName: string;
   packageDescription: string;
   formConfig: { fields: FormField[] };
@@ -120,6 +121,15 @@ export default function CustomerFormPage() {
     <div className="min-h-[100dvh] bg-[#faf9f7] px-4 py-10">
       <div className="mx-auto w-full max-w-2xl">
         <div className="mb-8 text-center">
+          {details?.logoUrl && (
+            <div className="mx-auto mb-5 flex h-24 w-40 items-center justify-center">
+              <img
+                src={resolveImageUrl(details.logoUrl)}
+                alt={`${details.businessName || "Business"} logo`}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          )}
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">WedInBytes</p>
           <h1 className="mt-3 text-3xl font-serif text-gray-900">
             {details?.businessName ? `Invitation details for ${details.businessName}` : "Customer details"}

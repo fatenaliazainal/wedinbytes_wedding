@@ -28,3 +28,15 @@ Required customer contact number belongs near the top of the business order form
 **Why:** Customers could mistake the form as missing contact information when the required field was only visible much further down the page.
 
 **How to apply:** Normalize configured package forms so `contactPhone` is always present, required, labeled “Contact number”, and positioned after the first two couple-name fields.
+
+Public customer forms should collect the primary contact number and the repeatable “Contact persons” section; the Doa field is intentionally excluded, while legacy invitation data remains supported.
+
+**Why:** The customer needs to provide contact details for the invitation, while Doa is not part of the requested customer-facing content.
+
+**How to apply:** Keep `contactPhone` and `contacts` in normalized Business package form fields, filter `doaText`, and do not remove either contact field from invitation schemas or existing stored records.
+
+Standard registration creates a Buyer account without exposing an account-type selector; Business Account roles remain managed through the existing administrative flow.
+
+**Why:** New customers should not be asked to choose an internal account workflow during ordinary signup.
+
+**How to apply:** Keep the signup request on the default Buyer role and preserve backend/admin support for Business Account users.

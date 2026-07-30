@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { ChevronRight, ShoppingBag, Heart, User, PenLine, Mail, Smartphone, Users, ExternalLink, Instagram } from "lucide-react";
+import { ChevronRight, ShoppingBag, Heart, User, PenLine, Mail, Smartphone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -80,11 +80,6 @@ type Collaboration = {
   instagram?: string | null;
 };
 
-function linkUrl(value?: string | null) {
-  if (!value) return "";
-  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
-}
-
 export default function MarketingHomePage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
@@ -107,6 +102,7 @@ export default function MarketingHomePage() {
   }, []);
 
   const previewCards = designs.slice(0, 8);
+  const logoCollaborations = collaborations.filter((business) => business.logoUrl);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -320,25 +316,25 @@ export default function MarketingHomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Collaborations & Businesses</h2>
             <p className="mt-2 text-sm text-gray-500 max-w-lg mx-auto">Meet the talented businesses creating beautiful celebrations with WedInBytes.</p>
           </div>
-          {collaborations.length === 0 ? (
+          {logoCollaborations.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center text-sm text-gray-400">Our collaboration partners will appear here soon.</div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {collaborations.map((business) => (
-                <div key={business.slug} className="rounded-2xl border border-gray-100 bg-gray-50 p-4 hover:bg-white hover:shadow-md transition-all">
-                  <a href={`/business/${encodeURIComponent(business.slug)}`} className="block">
-                    <div className="h-28 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
-                      {business.logoUrl ? <img src={resolveImageUrl(business.logoUrl)} alt={business.businessName} className="h-full w-full object-contain p-4" /> : <span className="text-3xl font-serif text-gray-300">{business.businessName.charAt(0)}</span>}
-                    </div>
-                    <h3 className="mt-4 text-sm font-semibold text-gray-900 truncate">{business.businessName}</h3>
-                    <p className="mt-1 text-xs text-gray-500 truncate">{business.businessType || business.displayName}</p>
-                  </a>
-                  <div className="mt-3 flex items-center gap-3 text-xs">
-                    <a href={`/business/${encodeURIComponent(business.slug)}`} className="text-rose-700 font-semibold">View profile</a>
-                    {business.website && <a href={linkUrl(business.website)} target="_blank" rel="noreferrer" aria-label={`Visit ${business.businessName} website`} className="text-gray-400 hover:text-gray-800"><ExternalLink size={13} /></a>}
-                    {business.instagram && <a href={linkUrl(business.instagram)} target="_blank" rel="noreferrer" aria-label={`Visit ${business.businessName} Instagram`} className="text-gray-400 hover:text-gray-800"><Instagram size={13} /></a>}
-                  </div>
-                </div>
+            <div className="flex gap-4 overflow-x-auto px-1 pb-3 snap-x snap-mandatory scrollbar-thin">
+              {logoCollaborations.map((business) => (
+                <a
+                  key={business.slug}
+                  href={`/business/${encodeURIComponent(business.slug)}`}
+                  aria-label={`View ${business.businessName} business profile`}
+                  title={business.businessName}
+                  className="flex h-32 w-44 shrink-0 snap-start items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-300"
+                >
+                  <img
+                    src={resolveImageUrl(business.logoUrl ?? "")}
+                    alt={`${business.businessName} logo`}
+                    loading="lazy"
+                    className="h-full w-full object-contain"
+                  />
+                </a>
               ))}
             </div>
           )}

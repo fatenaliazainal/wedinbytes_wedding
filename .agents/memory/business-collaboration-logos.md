@@ -8,3 +8,15 @@ Business Account collaboration logos are uploaded as transparent PNGs and displa
 **Why:** A valid logo upload initially succeeded but browser display failed because the new `business-logos/` prefix was not included in the existing proxy allow-list.
 
 **How to apply:** When adding or changing public business media, keep the upload prefix, public response field, frontend URL resolver, and R2 proxy allow-list in sync; verify the proxy returns the image, not only that the upload returns success.
+
+The homepage collaboration strip is logo-only: businesses with a logo appear in a horizontal snap-scrolling carousel, and each logo links directly to that business's public profile.
+
+**Why:** The requested homepage treatment is a visual network showcase rather than a text-heavy business directory.
+
+**How to apply:** Filter out businesses without `logoUrl`, keep the logo as the full clickable tile, and use the public `/business/{slug}` route for navigation.
+
+Public customer form headers also show the business logo when one has been uploaded; forms without a logo keep the normal header without an empty placeholder.
+
+**Why:** Customers should immediately recognize which business sent the form, while businesses that have not uploaded branding should not get unnecessary blank space.
+
+**How to apply:** Include the safe public `logoUrl` in the form-share response and render it through the same-origin R2 resolver only when present.

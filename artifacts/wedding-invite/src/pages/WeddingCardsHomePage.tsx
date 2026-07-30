@@ -20,27 +20,14 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "REVIEWS", href: "/reviews" },
 ];
 
-function IPhoneFrame({ children }: { children: React.ReactNode }) {
+function CardPreviewFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="relative mx-auto bg-gray-900 shadow-xl"
+      className="relative mx-auto aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-xl bg-transparent shadow-[0_8px_22px_rgba(31,41,55,0.18)] transition-shadow group-hover:shadow-[0_12px_28px_rgba(31,41,55,0.24)]"
       style={{
-        width: 90,
-        height: 182,
-        borderRadius: 18,
-        border: "4px solid #1f2937",
-        overflow: "hidden",
         flexShrink: 0,
       }}
     >
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
-        style={{ width: 26, height: 10, borderRadius: "0 0 8px 8px" }}
-      />
-      <div
-        className="absolute bottom-1.5 left-1/2 -translate-x-1/2 bg-white/30 rounded-full"
-        style={{ width: 26, height: 3 }}
-      />
       <div className="absolute inset-0">{children}</div>
     </div>
   );
@@ -205,16 +192,16 @@ export default function WeddingCardsHomePage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
-                    className="group"
+                    className="group block w-full max-w-[220px]"
                     aria-label={`Open live demo for ${design.name}`}
                   >
-                    <IPhoneFrame>
+                    <CardPreviewFrame>
                       {demoInvitation ? (
-                        <CardThumbnail invitation={demoInvitation} design={design} containerWidth={82} />
+                        <CardThumbnail invitation={demoInvitation} design={design} containerWidth={220} />
                       ) : (
                         <div className="w-full h-full" style={{ background: design.colorBackground ? `hsl(${design.colorBackground})` : "#f6f1e7" }} />
                       )}
-                    </IPhoneFrame>
+                    </CardPreviewFrame>
                   </button>
 
                   <div className="text-center">

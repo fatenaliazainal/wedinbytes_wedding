@@ -18,7 +18,6 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "venueMapUrl", label: "Google Maps link", type: "url", invitationField: "venueMapUrl" },
     { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
-    { key: "doaText", label: "Doa", type: "textarea", invitationField: "doaText" },
     { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
     { key: "email", label: "Customer email", type: "email" },
@@ -37,6 +36,7 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
 };
 
 const REMOVED_BUSINESS_FORM_KEYS = new Set([
+  "doaText",
   "message",
   "coverGroomName",
   "coverBrideName",

@@ -17,3 +17,4 @@
 - [Payment history](business-payment-history.md) — Buyer and Business Accounts need read-only histories of their completed invitation payments, not subscription or billing management.
 - [ToyyPay payment integration](toyyibpay-integration.md) — gateway bills use persisted package prices, verified callbacks/status, and activate invitations only after payment verification.
 - [Business collaboration logos](business-collaboration-logos.md) — business logo object keys must remain allowed by the same-origin R2 proxy used by public homepage cards.
+- [Catalog preview style](catalog-preview-style.md) — public card catalog uses direct portrait invitation previews with soft shadows instead of phone frames.

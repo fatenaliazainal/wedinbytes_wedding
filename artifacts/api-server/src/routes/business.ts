@@ -384,6 +384,7 @@ router.get("/business/form-shares/:token", async (req, res) => {
       packageId: businessFormShareTable.packageId,
       businessId: businessFormShareTable.businessId,
       businessName: businessProfileTable.businessName,
+      logoUrl: businessProfileTable.logoUrl,
       packageName: pricingPackageTable.name,
       packageDescription: pricingPackageTable.description,
       formConfig: pricingPackageTable.formConfig,
@@ -403,6 +404,7 @@ router.get("/business/form-shares/:token", async (req, res) => {
     res.json({
       token: share.token,
       businessName: share.businessName,
+      logoUrl: share.logoUrl,
       packageId: share.packageId,
       packageName: share.packageName,
       packageDescription: share.packageDescription,
