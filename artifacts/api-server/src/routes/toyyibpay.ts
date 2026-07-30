@@ -16,6 +16,8 @@ import {
   isValidToyyibPayCallbackHash,
   isToyyibPayConfigured,
 } from "../services/toyyibpay";
+import { sendPaymentConfirmationEmail, isEmailConfigured } from "../services/email";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -62,6 +64,66 @@ async function findOwnedOrder(req: any, orderId: number) {
   return undefined;
 }
 
+async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$inferSelect) {
+  if (!isEmailConfigured()) return;
+
+  const siteBaseUrl = (
+    process.env.TOYYIBPAY_PUBLIC_BASE_URL?.replace(/\/+$/, "") ||
+    "https://wedinstudio.replit.app"
+  );
+
+  // Fetch invitation token and buyer/owner info in parallel
+  const [invitationRow, packageRow] = await Promise.all([
+    order.invitationId
+      ? db
+          .select({ token: invitationTable.token, userId: invitationTable.userId, businessId: invitationTable.businessId })
+          .from(invitationTable)
+          .where(eq(invitationTable.id, order.invitationId))
+          .limit(1)
+          .then((rows) => rows[0])
+      : Promise.resolve(undefined),
+    order.packageId
+      ? db
+          .select({ name: pricingPackageTable.name })
+          .from(pricingPackageTable)
+          .where(eq(pricingPackageTable.id, order.packageId))
+          .limit(1)
+          .then((rows) => rows[0])
+      : Promise.resolve(undefined),
+  ]);
+
+  if (!invitationRow?.token) return;
+
+  // Determine the recipient: buyer user or business account owner
+  let recipientUserId: number | null | undefined = order.userId;
+  if (!recipientUserId && invitationRow.businessId) {
+    const [bp] = await db
+      .select({ userId: businessProfileTable.userId })
+      .from(businessProfileTable)
+      .where(eq(businessProfileTable.id, invitationRow.businessId))
+      .limit(1);
+    recipientUserId = bp?.userId;
+  }
+  if (!recipientUserId) return;
+
+  const [user] = await db
+    .select({ email: userTable.email, name: userTable.name })
+    .from(userTable)
+    .where(eq(userTable.id, recipientUserId))
+    .limit(1);
+  if (!user?.email) return;
+
+  await sendPaymentConfirmationEmail({
+    recipientEmail: user.email,
+    recipientName: user.name,
+    paymentReference: order.paymentReference ?? "",
+    amount: order.amount,
+    packageName: packageRow?.name ?? "Wedding Invitation",
+    invitationToken: invitationRow.token,
+    siteBaseUrl,
+  });
+}
+
 async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCode: string) {
   const transactions = await getToyyibPayTransactions(billCode);
   const transaction = transactions.find((item) =>
@@ -93,11 +155,20 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
     .where(eq(orderTable.id, order.id))
     .returning();
 
+  const wasAlreadyPaid = order.paymentStatus === "PAID";
+
   if (paymentStatus === "PAID" && order.invitationId) {
     await db
       .update(invitationTable)
       .set({ isPurchased: true })
       .where(eq(invitationTable.id, order.invitationId));
+
+    // Send confirmation email only on the first transition to PAID
+    if (!wasAlreadyPaid) {
+      sendPaymentConfirmationEmailForOrder(order).catch((err) => {
+        logger.error({ err, orderId: order.id }, "Failed to send payment confirmation email");
+      });
+    }
   }
 
   return { status: paymentStatus, updated: Boolean(updated) };
