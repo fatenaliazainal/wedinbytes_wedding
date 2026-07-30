@@ -855,47 +855,47 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <section className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6" data-testid="personal-information-card">
-                <div className="mb-4 flex items-start gap-3">
+              <section className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-3 shadow-sm sm:p-5" data-testid="personal-information-card">
+                <div className="mb-3 flex items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600"><User size={19} /></div>
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">Personal Information</h3>
                     <p className="mt-1 text-sm text-slate-500">Keep your account details up to date.</p>
                   </div>
                 </div>
-                <form onSubmit={saveProfile} className="flex flex-1 flex-col gap-3">
+                <form onSubmit={saveProfile} className="flex flex-1 flex-col gap-2">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Full Name</span>
-                    <input value={profileName} onChange={(event) => setProfileName(event.target.value)} required maxLength={120} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
+                    <span className="mb-1 block text-sm font-semibold text-slate-700">Full Name</span>
+                    <input value={profileName} onChange={(event) => setProfileName(event.target.value)} required maxLength={120} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
                   </label>
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Email Address</span>
-                    <input type="email" value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} required maxLength={254} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
+                    <span className="mb-1 block text-sm font-semibold text-slate-700">Email Address</span>
+                    <input type="email" value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} required maxLength={254} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
                   </label>
-                  <div className="mt-auto flex justify-end pt-2">
-                    <button type="submit" disabled={profileSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
+                  <div className="mt-auto flex justify-end pt-1">
+                    <button type="submit" disabled={profileSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
                       <Save size={16} /> {profileSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </form>
               </section>
 
-              <section className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6" data-testid="change-password-card">
-                <div className="mb-4 flex items-start gap-3">
+              <section className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-3 shadow-sm sm:p-5" data-testid="change-password-card">
+                <div className="mb-3 flex items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><KeyRound size={19} /></div>
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">Change Password</h3>
                     <p className="mt-1 text-sm text-slate-500">Use a strong password to protect your account.</p>
                   </div>
                 </div>
-                <form onSubmit={updatePassword} className="flex flex-1 flex-col gap-3">
+                <form onSubmit={updatePassword} className="flex flex-1 flex-col gap-2">
                   {([
                     ["currentPassword", "Current Password"],
                     ["newPassword", "New Password"],
                     ["confirmPassword", "Confirm New Password"],
                   ] as [PasswordField, string][]).map(([field, label]) => (
                     <label key={field} className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">{label}</span>
+                      <span className="mb-1 block text-sm font-semibold text-slate-700">{label}</span>
                       <span className="relative block">
                         <input
                           type={passwordVisibility[field] ? "text" : "password"}
@@ -904,7 +904,7 @@ export default function DashboardPage() {
                           minLength={6}
                           required
                           autoComplete={field === "currentPassword" ? "current-password" : "new-password"}
-                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 pr-11 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                         />
                         <button type="button" onClick={() => setPasswordVisibility((current) => ({ ...current, [field]: !current[field] }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700" aria-label={passwordVisibility[field] ? `Hide ${label}` : `Show ${label}`}>
                           {passwordVisibility[field] ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -912,8 +912,8 @@ export default function DashboardPage() {
                       </span>
                     </label>
                   ))}
-                  <div className="mt-auto flex justify-end pt-2">
-                    <button type="submit" disabled={passwordSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
+                  <div className="mt-auto flex justify-end pt-1">
+                    <button type="submit" disabled={passwordSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
                       <KeyRound size={16} /> {passwordSaving ? "Updating..." : "Update Password"}
                     </button>
                   </div>
