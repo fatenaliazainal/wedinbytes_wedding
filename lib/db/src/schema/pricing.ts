@@ -1,6 +1,28 @@
-import { pgTable, serial, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+
+export type PricingFormFieldType = "text" | "email" | "date" | "tel" | "url" | "textarea" | "checkbox";
+
+export type PricingFormField = {
+  key: string;
+  label: string;
+  type: PricingFormFieldType;
+  required?: boolean;
+  placeholder?: string;
+  defaultValue?: string | boolean;
+  invitationField?: string;
+  validation?: {
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+  };
+};
+
+export type PricingFormConfig = {
+  fields: PricingFormField[];
+  hiddenFields?: Record<string, string | boolean | number | null>;
+};
 
 export const pricingPackageTable = pgTable("pricing_package", {
   id: serial("id").primaryKey(),
@@ -12,6 +34,7 @@ export const pricingPackageTable = pgTable("pricing_package", {
   isFeatured: boolean("is_featured").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
+  formConfig: jsonb("form_config").$type<PricingFormConfig>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

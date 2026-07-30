@@ -121,6 +121,8 @@ export interface UpdateBusinessProfileBody {
   businessHours?: string | null;
 }
 
+export type BusinessClientCustomerData = { [key: string]: unknown };
+
 export interface BusinessClient {
   id: number;
   businessId: number;
@@ -131,9 +133,17 @@ export interface BusinessClient {
   eventDate?: string | null;
   notes?: string | null;
   status: string;
+  packageId?: number | null;
+  invitationId?: number | null;
+  customerData?: BusinessClientCustomerData;
+  invitationToken?: string | null;
 }
 
+export type CreateBusinessClientBodyCustomerData = { [key: string]: unknown };
+
 export interface CreateBusinessClientBody {
+  packageId: number;
+  customerData: CreateBusinessClientBodyCustomerData;
   brideName?: string;
   groomName?: string;
   phone?: string | null;
@@ -238,6 +248,8 @@ export interface ErrorResponse {
   details?: string;
 }
 
+export type PricingPackageFormConfig = { [key: string]: unknown };
+
 export interface PricingFeature {
   id: number;
   packageId: number;
@@ -258,10 +270,13 @@ export interface PricingPackage {
   isFeatured: boolean;
   isActive: boolean;
   sortOrder: number;
+  formConfig: PricingPackageFormConfig;
   features: PricingFeature[];
   createdAt: string;
   updatedAt: string;
 }
+
+export type CreatePricingPackageBodyFormConfig = { [key: string]: unknown };
 
 export interface CreatePricingPackageBody {
   name: string;
@@ -271,7 +286,10 @@ export interface CreatePricingPackageBody {
   showBadge?: boolean;
   isFeatured?: boolean;
   isActive?: boolean;
+  formConfig?: CreatePricingPackageBodyFormConfig;
 }
+
+export type UpdatePricingPackageBodyFormConfig = { [key: string]: unknown };
 
 export interface UpdatePricingPackageBody {
   name?: string;
@@ -282,6 +300,7 @@ export interface UpdatePricingPackageBody {
   isFeatured?: boolean;
   isActive?: boolean;
   sortOrder?: number;
+  formConfig?: UpdatePricingPackageBodyFormConfig;
 }
 
 export interface CreatePricingFeatureBody {

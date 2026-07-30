@@ -2,6 +2,7 @@ import { db, invitationTable, cardDesignTable, userTable, pricingPackageTable, p
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { logger } from "./logger";
+import { DEFAULT_BUSINESS_FORM_CONFIG } from "./business-package";
 
 const invitationBase = {
   groomName: "Hidayat",
@@ -191,6 +192,7 @@ export async function autoSeedIfEmpty() {
           isFeatured: false,
           isActive: true,
           sortOrder: 1,
+           formConfig: DEFAULT_BUSINESS_FORM_CONFIG,
         })
         .returning();
       const [premium] = await db
@@ -204,6 +206,13 @@ export async function autoSeedIfEmpty() {
           isFeatured: true,
           isActive: true,
           sortOrder: 2,
+           formConfig: {
+             ...DEFAULT_BUSINESS_FORM_CONFIG,
+             fields: [
+               ...DEFAULT_BUSINESS_FORM_CONFIG.fields,
+               { key: "galleryImages", label: "Photo gallery", type: "textarea", invitationField: "galleryImages" },
+             ],
+           },
         })
         .returning();
 
@@ -225,6 +234,22 @@ export async function autoSeedIfEmpty() {
         { packageId: premium.id, name: "Dress Code", icon: "Shirt", sortOrder: 9 },
       ]);
       logger.info("Auto-seed: default pricing packages seeded.");
+    } else {
+      const packageRows = await db.select().from(pricingPackageTable);
+      for (const pkg of packageRows) {
+        if (pkg.formConfig) continue;
+        const formConfig = pkg.name.toLowerCase().includes("premium")
+          ? {
+            ...DEFAULT_BUSINESS_FORM_CONFIG,
+            fields: [
+              ...DEFAULT_BUSINESS_FORM_CONFIG.fields,
+              { key: "galleryImages", label: "Photo gallery", type: "textarea" as const, invitationField: "galleryImages" },
+            ],
+          }
+          : DEFAULT_BUSINESS_FORM_CONFIG;
+        await db.update(pricingPackageTable).set({ formConfig, updatedAt: new Date() })
+          .where(eq(pricingPackageTable.id, pkg.id));
+      }
     }
 
   } catch (err) {

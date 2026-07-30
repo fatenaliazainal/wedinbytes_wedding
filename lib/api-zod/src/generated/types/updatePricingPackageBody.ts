@@ -5,6 +5,7 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdatePricingPackageBodyFormConfig } from './updatePricingPackageBodyFormConfig';
 
 export interface UpdatePricingPackageBody {
   name?: string;
@@ -15,4 +16,5 @@ export interface UpdatePricingPackageBody {
   isFeatured?: boolean;
   isActive?: boolean;
   sortOrder?: number;
+  formConfig?: UpdatePricingPackageBodyFormConfig;
 }

@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, boolean, timestamp, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, boolean, timestamp, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -38,12 +38,15 @@ export type BusinessProfile = typeof businessProfileTable.$inferSelect;
 export const businessClientTable = pgTable("business_client", {
   id: serial("id").primaryKey(),
   businessId: integer("business_id").notNull(),
+  packageId: integer("package_id"),
+  invitationId: integer("invitation_id"),
   brideName: text("bride_name").notNull().default(""),
   groomName: text("groom_name").notNull().default(""),
   phone: text("phone"),
   email: text("email"),
   eventDate: text("event_date"),
   notes: text("notes"),
+  customerData: jsonb("customer_data").$type<Record<string, string | boolean | number | null>>(),
   status: text("status").notNull().default("ACTIVE"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

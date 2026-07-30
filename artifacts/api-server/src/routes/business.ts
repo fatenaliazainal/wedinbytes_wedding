@@ -1,13 +1,16 @@
 import { Router, type IRouter } from "express";
 import { and, count, eq, ilike, or } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import {
   businessClientTable,
   businessProfileTable,
   db,
   invitationTable,
+  pricingPackageTable,
   userTable,
 } from "@workspace/db";
 import { auditEvent } from "../lib/security";
+import { normalizeBusinessFormConfig, mapBusinessCustomerToInvitation, validateBusinessCustomerData } from "../lib/business-package";
 
 const router: IRouter = Router();
 
@@ -152,18 +155,80 @@ router.post("/business/clients", async (req, res) => {
       return;
     }
     const body = req.body as Record<string, unknown>;
-    const [created] = await db.insert(businessClientTable).values({
+    const packageId = Number(body.packageId);
+    if (!Number.isInteger(packageId)) {
+      res.status(400).json({ error: "Select a package before saving the customer." });
+      return;
+    }
+    const [selectedPackage] = await db.select().from(pricingPackageTable)
+      .where(and(eq(pricingPackageTable.id, packageId), eq(pricingPackageTable.isActive, true))).limit(1);
+    if (!selectedPackage) {
+      res.status(400).json({ error: "The selected package is not available." });
+      return;
+    }
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const { errors, cleaned } = validateBusinessCustomerData(formConfig, body.customerData);
+    if (errors.length) {
+      res.status(400).json({ error: errors.join(" ") });
+      return;
+    }
+    const mappedInvitation = mapBusinessCustomerToInvitation(formConfig, cleaned);
+    const invitationValues = {
+      groomName: String(mappedInvitation.groomName ?? "").trim(),
+      brideName: String(mappedInvitation.brideName ?? "").trim(),
+      eventType: String(mappedInvitation.eventType ?? "Walimatul Urus").trim(),
+      eventDate: String(mappedInvitation.eventDate ?? "").trim(),
+      eventDay: String(mappedInvitation.eventDay ?? "").trim(),
+      eventTime: String(mappedInvitation.eventTime ?? "11:00 pagi – 4:00 petang").trim(),
+      venueName: String(mappedInvitation.venueName ?? "").trim(),
+      venueAddress: String(mappedInvitation.venueAddress ?? "").trim(),
+      venueCity: String(mappedInvitation.venueCity ?? "").trim(),
+      venueState: String(mappedInvitation.venueState ?? "").trim(),
+      venueMapUrl: mappedInvitation.venueMapUrl ? String(mappedInvitation.venueMapUrl).trim() : null,
+      groomParents: mappedInvitation.groomParents ? String(mappedInvitation.groomParents).trim() : null,
+      brideParents: mappedInvitation.brideParents ? String(mappedInvitation.brideParents).trim() : null,
+      contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),
+      dresscode: mappedInvitation.dresscode ? String(mappedInvitation.dresscode).trim() : null,
+      message: mappedInvitation.message ? String(mappedInvitation.message).trim() : null,
+      designCode: mappedInvitation.designCode ? String(mappedInvitation.designCode).trim() : null,
+      galleryImages: Array.isArray(mappedInvitation.galleryImages) ? mappedInvitation.galleryImages : null,
       businessId: profile.id,
-      brideName: typeof body.brideName === "string" ? body.brideName.trim() : "",
-      groomName: typeof body.groomName === "string" ? body.groomName.trim() : "",
-      phone: typeof body.phone === "string" ? body.phone.trim() : null,
-      email: typeof body.email === "string" ? body.email.trim() : null,
-      eventDate: typeof body.eventDate === "string" ? body.eventDate.trim() : null,
-      notes: typeof body.notes === "string" ? body.notes.trim() : null,
-      status: typeof body.status === "string" && body.status.trim() ? body.status.trim() : "ACTIVE",
-    }).returning();
-    auditEvent(req, "business.client_create", { businessId: profile.id, clientId: created.id });
-    res.status(201).json(created);
+      packageId,
+      websiteStatus: "ACTIVE",
+    };
+    const { client, invitation } = await db.transaction(async (tx) => {
+      const [created] = await tx.insert(businessClientTable).values({
+        businessId: profile.id,
+        packageId,
+        brideName: invitationValues.brideName,
+        groomName: invitationValues.groomName,
+        phone: typeof cleaned.contactPhone === "string" ? cleaned.contactPhone.trim() : null,
+        email: typeof cleaned.email === "string" ? cleaned.email.trim() : null,
+        eventDate: invitationValues.eventDate || null,
+        notes: typeof body.notes === "string" ? body.notes.trim() : null,
+        customerData: cleaned,
+        status: typeof body.status === "string" && body.status.trim() ? body.status.trim() : "ACTIVE",
+      }).returning();
+      let invitation: typeof invitationTable.$inferSelect | undefined;
+      for (let attempt = 0; attempt < 5 && !invitation; attempt += 1) {
+        try {
+          [invitation] = await tx.insert(invitationTable).values({
+            token: randomUUID().replace(/-/g, "").slice(0, 16),
+            userId: null,
+            ...invitationValues,
+          }).returning();
+        } catch (error) {
+          if ((error as { code?: string })?.code !== "23505" || attempt === 4) throw error;
+        }
+      }
+      if (!invitation) throw new Error("Unable to allocate a unique invitation token.");
+      const [linkedClient] = await tx.update(businessClientTable)
+        .set({ invitationId: invitation.id, updatedAt: new Date() })
+        .where(eq(businessClientTable.id, created.id)).returning();
+      return { client: linkedClient ?? created, invitation };
+    });
+    auditEvent(req, "business.client_create", { businessId: profile.id, clientId: client.id });
+    res.status(201).json({ ...client, invitationToken: invitation.token });
   } catch (err) {
     req.log.error({ err }, "Failed to create business client");
     res.status(500).json({ error: "Internal server error" });

@@ -11,3 +11,4 @@
 - [Security hardening boundaries](security-hardening-boundaries.md) — public invitation responses must omit ownership/private RSVP fields; owner/admin checks belong on every invitation mutation.
 - [Business response boundaries](business-response-boundaries.md) — public business profiles and invitation business summaries are separate safe contracts; never include ownership or internal IDs.
 - [Managed artifact workflows](managed-artifact-workflows.md) — keep generated artifact ports and avoid duplicate frontend launchers.
+- [Business package forms](business-package-forms.md) — Business Account customer creation is driven by persisted package form configuration, with server-side validation and invitation mapping.

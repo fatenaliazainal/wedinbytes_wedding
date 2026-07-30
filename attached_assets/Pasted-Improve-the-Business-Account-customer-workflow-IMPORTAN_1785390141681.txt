@@ -1,0 +1,170 @@
+Improve the Business Account customer workflow.
+
+IMPORTANT
+
+Do NOT create one fixed Customer Form.
+
+The Customer Form must be generated dynamically based on the selected package.
+
+==================================================
+PACKAGE FIRST
+==================================================
+
+Workflow
+
+New Customer
+
+↓
+
+Select Package
+
+↓
+
+Load Package-specific Customer Form
+
+↓
+
+Customer completes form
+
+↓
+
+Save Customer
+
+↓
+
+Create Invitation
+
+↓
+
+Populate invitation automatically
+
+==================================================
+PACKAGE CONFIGURATION
+==================================================
+
+The form should be driven by package configuration.
+
+Do NOT hardcode form logic.
+
+Every package defines:
+
+Visible fields
+
+Required fields
+
+Hidden fields
+
+Default values
+
+Validation rules
+
+When creating the Customer Form, the UI should render only the fields required by that package.
+
+==================================================
+EXAMPLE
+
+Website Invitation
+
+Bride & Groom
+
+Parents
+
+Wedding Date
+
+Venue
+
+Google Maps
+
+Programme
+
+Prayer
+
+Countdown
+
+RSVP
+
+Gallery
+
+Contacts
+
+Music
+
+Dress Code
+
+Theme
+
+==================================================
+
+Motion Video
+
+Bride & Groom
+
+Parents
+
+Wedding Date
+
+Venue
+
+Short Message
+
+Song
+
+Photo
+
+Dress Code
+
+==================================================
+
+Do NOT display fields that are not used by that package.
+
+==================================================
+CREATE INVITATION
+==================================================
+
+When Create Invitation is clicked
+
+Automatically map every Customer field into the corresponding Invitation field.
+
+Only populate fields supported by that package.
+
+Ignore unsupported fields.
+
+==================================================
+EDITOR
+==================================================
+
+When opening the Invitation Editor
+
+All applicable fields should already be populated.
+
+The Business Account should only need to:
+
+Select Design
+
+Adjust Layout
+
+Upload Design Assets
+
+Minor wording changes
+
+Not re-enter customer information.
+
+==================================================
+FUTURE READY
+==================================================
+
+The architecture must allow future packages to define their own forms without modifying the frontend logic.
+
+New packages should only require configuration, not new hardcoded UI.
+
+==================================================
+BACKWARD COMPATIBILITY
+==================================================
+
+Do NOT affect the existing Buyer workflow.
+
+Buyer continues using the current editor.
+
+Only Business Account uses this dynamic Customer Form workflow.
+
+Reuse the existing invitation model and UI wherever possible.

@@ -5,6 +5,7 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { BusinessClientCustomerData } from './businessClientCustomerData';
 
 export interface BusinessClient {
   id: number;
@@ -16,4 +17,8 @@ export interface BusinessClient {
   eventDate?: string | null;
   notes?: string | null;
   status: string;
+  packageId?: number | null;
+  invitationId?: number | null;
+  customerData?: BusinessClientCustomerData;
+  invitationToken?: string | null;
 }

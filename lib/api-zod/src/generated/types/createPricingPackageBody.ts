@@ -5,6 +5,7 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { CreatePricingPackageBodyFormConfig } from './createPricingPackageBodyFormConfig';
 
 export interface CreatePricingPackageBody {
   name: string;
@@ -14,4 +15,5 @@ export interface CreatePricingPackageBody {
   showBadge?: boolean;
   isFeatured?: boolean;
   isActive?: boolean;
+  formConfig?: CreatePricingPackageBodyFormConfig;
 }

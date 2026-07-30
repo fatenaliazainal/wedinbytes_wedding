@@ -5,8 +5,11 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateBusinessClientBodyCustomerData } from './createBusinessClientBodyCustomerData';
 
 export interface CreateBusinessClientBody {
+  packageId: number;
+  customerData: CreateBusinessClientBodyCustomerData;
   brideName?: string;
   groomName?: string;
   phone?: string | null;

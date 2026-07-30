@@ -398,7 +398,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
-        mode === "buyer" ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
+          (mode === "buyer" || mode === "business") ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
         mode === "buyer" ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("{}")),
       ]);
       const loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
@@ -624,7 +624,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       }
 
       // Determine selected package: URL param ?package= wins, then invitation.packageId, then first active package.
-      if (mode === "buyer" && loadedPackages.length > 0) {
+      if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
         const urlPackage = new URLSearchParams(window.location.search).get("package");
         const pkgId = urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null);
         const resolvedPkg = loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);

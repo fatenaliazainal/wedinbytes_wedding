@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, sql, asc } from "drizzle-orm";
 import { db, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
+import { DEFAULT_BUSINESS_FORM_CONFIG, normalizeBusinessFormConfig } from "../lib/business-package";
 
 const router: IRouter = Router();
 
@@ -34,6 +35,7 @@ router.get("/pricing", async (req, res) => {
 
     const result = packages.map((pkg) => ({
       ...pkg,
+      formConfig: normalizeBusinessFormConfig(pkg.formConfig),
       features: featuresByPackage.get(pkg.id) ?? [],
     }));
 
@@ -66,6 +68,7 @@ router.get("/admin/pricing", async (req, res) => {
 
     const result = packages.map((pkg) => ({
       ...pkg,
+      formConfig: normalizeBusinessFormConfig(pkg.formConfig),
       features: featuresByPackage.get(pkg.id) ?? [],
     }));
 
@@ -102,6 +105,7 @@ router.post("/admin/pricing", async (req, res) => {
         isFeatured: Boolean(body.isFeatured ?? false),
         isActive: Boolean(body.isActive ?? true),
         sortOrder,
+        formConfig: normalizeBusinessFormConfig(body.formConfig ?? DEFAULT_BUSINESS_FORM_CONFIG),
       })
       .returning();
     res.status(201).json({ ...created, features: [] });
@@ -126,6 +130,7 @@ router.patch("/admin/pricing/:id", async (req, res) => {
     for (const field of fields) {
       if (field in body) update[field] = body[field];
     }
+    if ("formConfig" in body) update.formConfig = normalizeBusinessFormConfig(body.formConfig);
     if (Object.keys(update).length === 0) {
       res.status(400).json({ error: "No valid fields to update" });
       return;

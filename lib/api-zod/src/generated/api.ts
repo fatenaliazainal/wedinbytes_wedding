@@ -186,7 +186,11 @@ export const ListBusinessClientsResponseItem = zod.object({
   "email": zod.string().nullish(),
   "eventDate": zod.string().nullish(),
   "notes": zod.string().nullish(),
-  "status": zod.string()
+  "status": zod.string(),
+  "packageId": zod.number().nullish(),
+  "invitationId": zod.number().nullish(),
+  "customerData": zod.record(zod.string(), zod.unknown()).optional(),
+  "invitationToken": zod.string().nullish()
 })
 export const ListBusinessClientsResponse = zod.array(ListBusinessClientsResponseItem)
 
@@ -195,6 +199,8 @@ export const ListBusinessClientsResponse = zod.array(ListBusinessClientsResponse
  * @summary Create a Business Account client
  */
 export const CreateBusinessClientBody = zod.object({
+  "packageId": zod.number(),
+  "customerData": zod.record(zod.string(), zod.unknown()),
   "brideName": zod.string().optional(),
   "groomName": zod.string().optional(),
   "phone": zod.string().nullish(),
@@ -213,6 +219,8 @@ export const UpdateBusinessClientParams = zod.object({
 })
 
 export const UpdateBusinessClientBody = zod.object({
+  "packageId": zod.number(),
+  "customerData": zod.record(zod.string(), zod.unknown()),
   "brideName": zod.string().optional(),
   "groomName": zod.string().optional(),
   "phone": zod.string().nullish(),
@@ -231,7 +239,11 @@ export const UpdateBusinessClientResponse = zod.object({
   "email": zod.string().nullish(),
   "eventDate": zod.string().nullish(),
   "notes": zod.string().nullish(),
-  "status": zod.string()
+  "status": zod.string(),
+  "packageId": zod.number().nullish(),
+  "invitationId": zod.number().nullish(),
+  "customerData": zod.record(zod.string(), zod.unknown()).optional(),
+  "invitationToken": zod.string().nullish()
 })
 
 
@@ -503,6 +515,7 @@ export const ListPricingResponseItem = zod.object({
   "isFeatured": zod.boolean(),
   "isActive": zod.boolean(),
   "sortOrder": zod.number(),
+  "formConfig": zod.record(zod.string(), zod.unknown()),
   "features": zod.array(zod.object({
   "id": zod.number(),
   "packageId": zod.number(),
@@ -531,6 +544,7 @@ export const ListAdminPricingResponseItem = zod.object({
   "isFeatured": zod.boolean(),
   "isActive": zod.boolean(),
   "sortOrder": zod.number(),
+  "formConfig": zod.record(zod.string(), zod.unknown()),
   "features": zod.array(zod.object({
   "id": zod.number(),
   "packageId": zod.number(),
@@ -556,7 +570,8 @@ export const CreatePricingPackageBody = zod.object({
   "badgeText": zod.string().optional(),
   "showBadge": zod.boolean().optional(),
   "isFeatured": zod.boolean().optional(),
-  "isActive": zod.boolean().optional()
+  "isActive": zod.boolean().optional(),
+  "formConfig": zod.record(zod.string(), zod.unknown()).optional()
 })
 
 
@@ -575,7 +590,8 @@ export const UpdatePricingPackageBody = zod.object({
   "showBadge": zod.boolean().optional(),
   "isFeatured": zod.boolean().optional(),
   "isActive": zod.boolean().optional(),
-  "sortOrder": zod.number().optional()
+  "sortOrder": zod.number().optional(),
+  "formConfig": zod.record(zod.string(), zod.unknown()).optional()
 })
 
 export const UpdatePricingPackageResponse = zod.object({
@@ -588,6 +604,7 @@ export const UpdatePricingPackageResponse = zod.object({
   "isFeatured": zod.boolean(),
   "isActive": zod.boolean(),
   "sortOrder": zod.number(),
+  "formConfig": zod.record(zod.string(), zod.unknown()),
   "features": zod.array(zod.object({
   "id": zod.number(),
   "packageId": zod.number(),

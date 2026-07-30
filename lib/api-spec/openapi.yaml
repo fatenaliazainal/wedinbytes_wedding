@@ -940,6 +940,18 @@ components:
           nullable: true
         status:
           type: string
+        packageId:
+          type: integer
+          nullable: true
+        invitationId:
+          type: integer
+          nullable: true
+        customerData:
+          type: object
+          additionalProperties: true
+        invitationToken:
+          type: string
+          nullable: true
       required:
         - id
         - businessId
@@ -950,6 +962,11 @@ components:
     CreateBusinessClientBody:
       type: object
       properties:
+        packageId:
+          type: integer
+        customerData:
+          type: object
+          additionalProperties: true
         brideName:
           type: string
         groomName:
@@ -968,6 +985,9 @@ components:
           nullable: true
         status:
           type: string
+      required:
+        - packageId
+        - customerData
 
     UpdateBusinessClientBody:
       allOf:
@@ -1158,6 +1178,9 @@ components:
           type: boolean
         sortOrder:
           type: integer
+        formConfig:
+          type: object
+          additionalProperties: true
         features:
           type: array
           items:
@@ -1177,6 +1200,7 @@ components:
         - isActive
         - sortOrder
         - features
+        - formConfig
         - createdAt
         - updatedAt
 
@@ -1223,6 +1247,9 @@ components:
           type: boolean
         isActive:
           type: boolean
+        formConfig:
+          type: object
+          additionalProperties: true
       required:
         - name
         - price
@@ -1246,6 +1273,9 @@ components:
           type: boolean
         sortOrder:
           type: integer
+        formConfig:
+          type: object
+          additionalProperties: true
 
     CreatePricingFeatureBody:
       type: object

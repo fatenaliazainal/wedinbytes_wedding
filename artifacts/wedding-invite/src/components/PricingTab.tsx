@@ -70,6 +70,7 @@ interface PackageFormData {
   showBadge: boolean;
   isFeatured: boolean;
   isActive: boolean;
+  formConfigJson: string;
 }
 
 interface FeatureFormData {
@@ -125,6 +126,20 @@ function PackageModal({
             <Toggle label="Show Badge" checked={form.showBadge} onChange={(v) => set("showBadge")(v)} />
             <Toggle label="Featured" checked={form.isFeatured} onChange={(v) => set("isFeatured")(v)} />
             <Toggle label="Active" checked={form.isActive} onChange={(v) => set("isActive")(v)} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Business customer form configuration</label>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Configure the fields shown after a Business Account selects this package.
+            </p>
+            <textarea
+              className={`${textareaCls} font-mono text-xs`}
+              rows={10}
+              value={form.formConfigJson}
+              onChange={(e) => set("formConfigJson")(e.target.value)}
+              spellCheck={false}
+              placeholder={'{"fields":[],"hiddenFields":{}}'}
+            />
           </div>
         </div>
         <div className="px-6 py-4 border-t border-border flex justify-end gap-2 shrink-0">
@@ -220,16 +235,23 @@ export default function PricingTab() {
   }
 
   async function handleSavePackage(form: PackageFormData) {
-    const payload = {
-      name: form.name.trim(),
-      price: form.price.trim(),
-      description: form.description.trim(),
-      badgeText: form.badgeText.trim(),
-      showBadge: form.showBadge,
-      isFeatured: form.isFeatured,
-      isActive: form.isActive,
-    };
     try {
+      const payload = {
+        name: form.name.trim(),
+        price: form.price.trim(),
+        description: form.description.trim(),
+        badgeText: form.badgeText.trim(),
+        showBadge: form.showBadge,
+        isFeatured: form.isFeatured,
+        isActive: form.isActive,
+        formConfig: (() => {
+        try {
+          return JSON.parse(form.formConfigJson);
+        } catch {
+          throw new Error("Customer form configuration must be valid JSON.");
+        }
+        })(),
+      };
       if (form.id) {
         await updatePackage.mutateAsync({ id: form.id, data: payload });
         toast.success("Package updated");
@@ -239,8 +261,8 @@ export default function PricingTab() {
       }
       setPackageModal(null);
       invalidate();
-    } catch {
-      toast.error("Failed to save package");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save package");
     }
   }
 
@@ -339,7 +361,10 @@ export default function PricingTab() {
           <p className="text-xs text-muted-foreground">Manage packages and features shown on the public price list.</p>
         </div>
         <button
-          onClick={() => setPackageModal({ name: "", price: "", description: "", badgeText: "", showBadge: false, isFeatured: false, isActive: true })}
+          onClick={() => setPackageModal({
+            name: "", price: "", description: "", badgeText: "", showBadge: false,
+            isFeatured: false, isActive: true, formConfigJson: '{"fields":[],"hiddenFields":{}}',
+          })}
           disabled={anyLoading}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
@@ -398,6 +423,7 @@ export default function PricingTab() {
                     showBadge: pkg.showBadge,
                     isFeatured: pkg.isFeatured,
                     isActive: pkg.isActive,
+                    formConfigJson: JSON.stringify(pkg.formConfig ?? { fields: [], hiddenFields: {} }, null, 2),
                   })}
                   className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
                   title="Edit package"

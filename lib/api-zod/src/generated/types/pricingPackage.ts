@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PricingFeature } from './pricingFeature';
+import type { PricingPackageFormConfig } from './pricingPackageFormConfig';
 
 export interface PricingPackage {
   id: number;
@@ -17,6 +18,7 @@ export interface PricingPackage {
   isFeatured: boolean;
   isActive: boolean;
   sortOrder: number;
+  formConfig: PricingPackageFormConfig;
   features: PricingFeature[];
   createdAt: string;
   updatedAt: string;
