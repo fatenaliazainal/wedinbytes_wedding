@@ -20,14 +20,14 @@ const NAV_ITEMS: SiteNavItem[] = [
 type FormState = {
   businessName: string;
   businessType: string;
-  slug: string;
+  businessLink: string;
 };
 
 export default function BusinessProfilePage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [navOpen, setNavOpen] = useState(false);
-  const [form, setForm] = useState<FormState>({ businessName: "", businessType: "", slug: "" });
+  const [form, setForm] = useState<FormState>({ businessName: "", businessType: "", businessLink: "" });
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,7 +49,7 @@ export default function BusinessProfilePage() {
         setForm({
           businessName: data.businessName ?? "",
           businessType: data.businessType ?? "",
-          slug: data.slug ?? "",
+          businessLink: data.slug ?? "",
         });
       })
       .catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Unable to load profile."))
@@ -60,7 +60,7 @@ export default function BusinessProfilePage() {
     return <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]"><div className="h-8 w-8 rounded-full border-b-2 border-gray-900 animate-spin" /></div>;
   }
 
-  const businessLink = `${window.location.origin}${BASE}/business/${encodeURIComponent(form.slug)}`;
+  const publicBusinessLink = `${window.location.origin}${BASE}/business/${encodeURIComponent(form.businessLink)}`;
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -70,11 +70,11 @@ export default function BusinessProfilePage() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName: form.businessName, businessType: form.businessType }),
+        body: JSON.stringify({ businessName: form.businessName, businessType: form.businessType, slug: form.businessLink }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Unable to save profile.");
-      setForm((current) => ({ ...current, businessName: data.businessName ?? current.businessName, businessType: data.businessType ?? current.businessType, slug: data.slug ?? current.slug }));
+      setForm((current) => ({ ...current, businessName: data.businessName ?? current.businessName, businessType: data.businessType ?? current.businessType, businessLink: data.slug ?? current.businessLink }));
       toast.success("Business profile saved.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to save profile.");
@@ -165,10 +165,11 @@ export default function BusinessProfilePage() {
             <div>
               <span className="mb-1 block text-sm font-medium text-gray-700">Business link</span>
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
-                <input readOnly value={businessLink} onClick={(event) => event.currentTarget.select()} className="min-w-0 flex-1 bg-transparent text-sm text-gray-600 outline-none" aria-label="Business link" />
-                <a href={businessLink} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-gray-900" aria-label="Open business link"><ExternalLink size={15} /></a>
+                <span className="shrink-0 text-sm text-gray-400">{window.location.origin}{BASE}/business/</span>
+                <input value={form.businessLink} onChange={(event) => setForm({ ...form, businessLink: event.target.value })} placeholder="your-business-name" className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none" aria-label="Business link" required />
+                <a href={publicBusinessLink} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-gray-900" aria-label="Open business link"><ExternalLink size={15} /></a>
               </div>
-              <p className="mt-1 text-xs text-gray-400">This public link is generated automatically for your business.</p>
+              <p className="mt-1 text-xs text-gray-400">Masukkan nama custom untuk pautan business anda. Gunakan huruf, nombor atau tanda sempang.</p>
             </div>
           </section>
 

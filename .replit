@@ -3,7 +3,7 @@ modules = ["nodejs-20", "web", "bash", "python-base-3.13", "postgresql-16"]
 [deployment]
 router = "application"
 deploymentTarget = "autoscale"
-run = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+run = ["env", "NODE_ENV=production", "node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
 build = ["pnpm", "run", "build:deploy"]
 
 [deployment.postBuild]

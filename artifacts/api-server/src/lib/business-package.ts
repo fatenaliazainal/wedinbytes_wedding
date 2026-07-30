@@ -19,7 +19,7 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
     { key: "doaText", label: "Doa", type: "textarea", invitationField: "doaText" },
-    { key: "contactPhone", label: "Contact phone", type: "tel", required: true, invitationField: "contactPhone" },
+    { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
     { key: "email", label: "Customer email", type: "email" },
     { key: "galleryImages", label: "Photo gallery", type: "textarea", invitationField: "galleryImages" },
@@ -120,12 +120,21 @@ export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
       )
     : [];
   const configuredKeys = new Set(configuredFields.map((field) => field.key));
-  const fields = [
+  const fieldsWithoutDefaults = [
     ...configuredFields,
     ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) =>
       !configuredKeys.has(field.key) && !REMOVED_BUSINESS_FORM_KEYS.has(field.key),
     ),
   ];
+  const contactField = fieldsWithoutDefaults.find((field) => field.key === "contactPhone")
+    ?? DEFAULT_BUSINESS_FORM_CONFIG.fields.find((field) => field.key === "contactPhone");
+  const fields = contactField
+    ? [
+      ...fieldsWithoutDefaults.filter((field) => field.key !== "contactPhone").slice(0, 2),
+      { ...contactField, label: "Contact number", required: true },
+      ...fieldsWithoutDefaults.filter((field) => field.key !== "contactPhone").slice(2),
+    ]
+    : fieldsWithoutDefaults;
   const hiddenFields = raw.hiddenFields && typeof raw.hiddenFields === "object" && !Array.isArray(raw.hiddenFields)
     ? Object.fromEntries(
       Object.entries(raw.hiddenFields as Record<string, unknown>)

@@ -140,6 +140,23 @@ function slugPart(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeBusinessLink(value: unknown) {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed);
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    const businessIndex = segments.indexOf("business");
+    if (businessIndex >= 0 && segments[businessIndex + 1]) {
+      return slugPart(segments[businessIndex + 1]);
+    }
+  } catch {
+    // Treat non-URL input as the custom public link name.
+  }
+  return slugPart(trimmed.replace(/^\/+|\/+$/g, "").replace(/^business\//i, ""));
+}
+
 function publicBusiness(profile: typeof businessProfileTable.$inferSelect, invitationCount?: number) {
   const {
     userId: _userId,
@@ -213,6 +230,14 @@ router.patch("/business/me", async (req, res) => {
       const value = body[field];
       update[field] = value === null || typeof value === "string" ? value : String(value);
     }
+    if ("slug" in body) {
+      const slug = normalizeBusinessLink(body.slug);
+      if (!slug || slug.length < 2 || slug.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+        res.status(400).json({ error: "Business link must use letters, numbers and hyphens only." });
+        return;
+      }
+      update.slug = slug;
+    }
     if (!Object.keys(update).length) {
       res.status(400).json({ error: "No valid profile fields to update" });
       return;
@@ -224,7 +249,7 @@ router.patch("/business/me", async (req, res) => {
     res.json(await profileWithInvitationCount(updated));
   } catch (err) {
     if ((err as { code?: string })?.code === "23505") {
-      res.status(409).json({ error: "That business slug is already in use" });
+      res.status(409).json({ error: "That business link is already in use" });
       return;
     }
     req.log.error({ err }, "Failed to update business profile");
