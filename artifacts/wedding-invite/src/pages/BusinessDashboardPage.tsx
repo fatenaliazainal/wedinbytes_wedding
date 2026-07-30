@@ -295,6 +295,12 @@ export default function BusinessDashboardPage() {
                   {label}
                 </button>
               ))}
+              <button
+                onClick={() => navigate("/business/profile")}
+                className="text-left rounded-lg px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-100"
+              >
+                Profile Details
+              </button>
             </nav>
           </aside>
 
