@@ -28,6 +28,23 @@ async function expireStaleOrders(invitationIds: number[]) {
     );
 }
 
+async function expireAllStaleOrders() {
+  const cutoff = new Date(Date.now() - BILL_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+  await db
+    .update(orderTable)
+    .set({ paymentStatus: "EXPIRED", updatedAt: new Date() })
+    .where(
+      and(
+        eq(orderTable.paymentStatus, "PENDING"),
+        lt(orderTable.createdAt, cutoff),
+      ),
+    );
+}
+
+// Run a global expiry sweep on startup and then every hour
+expireAllStaleOrders().catch(() => {});
+setInterval(() => expireAllStaleOrders().catch(() => {}), 60 * 60 * 1000);
+
 function adminGuard(req: any, res: any) {
   if (req.session?.role !== "admin") {
     res.status(403).json({ error: "Admin access only" });
@@ -170,6 +187,7 @@ router.get("/business/payment-history", async (req, res) => {
 });
 
 async function readOrderRows() {
+  await expireAllStaleOrders();
   const [orders, users, invitations, packages] = await Promise.all([
     db.select().from(orderTable).orderBy(desc(orderTable.createdAt)),
     db.select().from(userTable),
