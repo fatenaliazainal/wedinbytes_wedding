@@ -212,6 +212,43 @@ export const CreateBusinessClientBody = zod.object({
 
 
 /**
+ * @summary Create a shareable customer form link
+ */
+export const CreateBusinessFormShareBody = zod.object({
+  "packageId": zod.number()
+})
+
+
+/**
+ * @summary Get a public customer form configuration
+ */
+export const GetBusinessFormShareParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetBusinessFormShareResponse = zod.object({
+  "token": zod.string(),
+  "businessName": zod.string(),
+  "packageId": zod.number(),
+  "packageName": zod.string(),
+  "packageDescription": zod.string().optional(),
+  "formConfig": zod.record(zod.string(), zod.unknown())
+})
+
+
+/**
+ * @summary Submit customer details through a shared form
+ */
+export const SubmitBusinessFormShareParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const SubmitBusinessFormShareBody = zod.object({
+  "customerData": zod.record(zod.string(), zod.unknown())
+})
+
+
+/**
  * @summary Update a Business Account client
  */
 export const UpdateBusinessClientParams = zod.object({
@@ -256,6 +293,33 @@ export const DeleteBusinessClientParams = zod.object({
 
 export const DeleteBusinessClientResponse = zod.object({
   "success": zod.boolean()
+})
+
+
+/**
+ * @summary Create an invitation from a submitted customer
+ */
+export const CreateInvitationForBusinessClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateInvitationForBusinessClientResponse = zod.object({
+  "invitationToken": zod.string(),
+  "client": zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "brideName": zod.string(),
+  "groomName": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "eventDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "status": zod.string(),
+  "packageId": zod.number().nullish(),
+  "invitationId": zod.number().nullish(),
+  "customerData": zod.record(zod.string(), zod.unknown()).optional(),
+  "invitationToken": zod.string().nullish()
+})
 })
 
 

@@ -3,13 +3,14 @@ import { and, count, eq, ilike, or } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import {
   businessClientTable,
+  businessFormShareTable,
   businessProfileTable,
   db,
   invitationTable,
   pricingPackageTable,
   userTable,
 } from "@workspace/db";
-import { auditEvent } from "../lib/security";
+import { auditEvent, customerFormSubmitRateLimit } from "../lib/security";
 import { normalizeBusinessFormConfig, mapBusinessCustomerToInvitation, validateBusinessCustomerData } from "../lib/business-package";
 
 const router: IRouter = Router();
@@ -19,6 +20,33 @@ const PROFILE_FIELDS = [
   "whatsapp", "email", "website", "instagram", "facebook", "tiktok",
   "logoUrl", "coverImage", "address", "googleMapsUrl", "businessHours", "slug",
 ] as const;
+
+function invitationValuesFromCustomer(formConfig: ReturnType<typeof normalizeBusinessFormConfig>, cleaned: Record<string, unknown>, profileId: number, packageId: number) {
+  const mappedInvitation = mapBusinessCustomerToInvitation(formConfig, cleaned);
+  return {
+    groomName: String(mappedInvitation.groomName ?? "").trim(),
+    brideName: String(mappedInvitation.brideName ?? "").trim(),
+    eventType: String(mappedInvitation.eventType ?? "Walimatul Urus").trim(),
+    eventDate: String(mappedInvitation.eventDate ?? "").trim(),
+    eventDay: String(mappedInvitation.eventDay ?? "").trim(),
+    eventTime: String(mappedInvitation.eventTime ?? "11:00 pagi – 4:00 petang").trim(),
+    venueName: String(mappedInvitation.venueName ?? "").trim(),
+    venueAddress: String(mappedInvitation.venueAddress ?? "").trim(),
+    venueCity: String(mappedInvitation.venueCity ?? "").trim(),
+    venueState: String(mappedInvitation.venueState ?? "").trim(),
+    venueMapUrl: mappedInvitation.venueMapUrl ? String(mappedInvitation.venueMapUrl).trim() : null,
+    groomParents: mappedInvitation.groomParents ? String(mappedInvitation.groomParents).trim() : null,
+    brideParents: mappedInvitation.brideParents ? String(mappedInvitation.brideParents).trim() : null,
+    contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),
+    dresscode: mappedInvitation.dresscode ? String(mappedInvitation.dresscode).trim() : null,
+    message: mappedInvitation.message ? String(mappedInvitation.message).trim() : null,
+    designCode: mappedInvitation.designCode ? String(mappedInvitation.designCode).trim() : null,
+    galleryImages: Array.isArray(mappedInvitation.galleryImages) ? mappedInvitation.galleryImages : null,
+    businessId: profileId,
+    packageId,
+    websiteStatus: "ACTIVE",
+  };
+}
 
 function slugPart(value: string) {
   return value
@@ -137,11 +165,210 @@ router.get("/business/clients", async (req, res) => {
       res.status(404).json({ error: "Business profile not found" });
       return;
     }
-    res.json(await db.select().from(businessClientTable)
+    const rows = await db.select({
+      client: businessClientTable,
+      invitationToken: invitationTable.token,
+    }).from(businessClientTable)
+      .leftJoin(invitationTable, eq(businessClientTable.invitationId, invitationTable.id))
       .where(eq(businessClientTable.businessId, profile.id))
-      .orderBy(businessClientTable.createdAt));
+      .orderBy(businessClientTable.createdAt);
+    res.json(rows.map(({ client, invitationToken }) => ({ ...client, invitationToken: invitationToken ?? null })));
   } catch (err) {
     req.log.error({ err }, "Failed to list business clients");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/business/form-shares", async (req, res) => {
+  if (!requireBusiness(req, res)) return;
+  try {
+    const profile = await getOrCreateBusinessProfile(req.session.userId);
+    const packageId = Number((req.body as Record<string, unknown>).packageId);
+    if (!profile || !Number.isInteger(packageId)) {
+      res.status(400).json({ error: "Select a package before sharing the customer form." });
+      return;
+    }
+    const [selectedPackage] = await db.select({ id: pricingPackageTable.id })
+      .from(pricingPackageTable)
+      .where(and(eq(pricingPackageTable.id, packageId), eq(pricingPackageTable.isActive, true)))
+      .limit(1);
+    if (!selectedPackage) {
+      res.status(400).json({ error: "The selected package is not available." });
+      return;
+    }
+    const [share] = await db.insert(businessFormShareTable).values({
+      businessId: profile.id,
+      packageId,
+      token: randomUUID().replace(/-/g, ""),
+    }).returning();
+    auditEvent(req, "business.customer_form_share_create", { businessId: profile.id, shareId: share.id, packageId });
+    res.status(201).json({ token: share.token, packageId: share.packageId });
+  } catch (err) {
+    req.log.error({ err }, "Failed to create customer form share");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/business/form-shares/:token", async (req, res) => {
+  try {
+    const token = typeof req.params.token === "string" ? req.params.token : "";
+    if (!token) {
+      res.status(400).json({ error: "Invalid customer form token." });
+      return;
+    }
+    const [share] = await db.select({
+      token: businessFormShareTable.token,
+      packageId: businessFormShareTable.packageId,
+      businessId: businessFormShareTable.businessId,
+      businessName: businessProfileTable.businessName,
+      packageName: pricingPackageTable.name,
+      packageDescription: pricingPackageTable.description,
+      formConfig: pricingPackageTable.formConfig,
+    }).from(businessFormShareTable)
+      .innerJoin(businessProfileTable, eq(businessProfileTable.id, businessFormShareTable.businessId))
+      .innerJoin(pricingPackageTable, eq(pricingPackageTable.id, businessFormShareTable.packageId))
+      .where(and(
+        eq(businessFormShareTable.token, token),
+        eq(businessFormShareTable.isActive, true),
+        eq(pricingPackageTable.isActive, true),
+      ))
+      .limit(1);
+    if (!share) {
+      res.status(404).json({ error: "Customer form link not found." });
+      return;
+    }
+    res.json({
+      token: share.token,
+      businessName: share.businessName,
+      packageId: share.packageId,
+      packageName: share.packageName,
+      packageDescription: share.packageDescription,
+      formConfig: normalizeBusinessFormConfig(share.formConfig),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to load customer form share");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/business/form-shares/:token/submit", customerFormSubmitRateLimit, async (req, res) => {
+  try {
+    const token = typeof req.params.token === "string" ? req.params.token : "";
+    if (!token) {
+      res.status(400).json({ error: "Invalid customer form token." });
+      return;
+    }
+    const [share] = await db.select({
+      businessId: businessFormShareTable.businessId,
+      packageId: businessFormShareTable.packageId,
+    }).from(businessFormShareTable)
+      .innerJoin(pricingPackageTable, eq(pricingPackageTable.id, businessFormShareTable.packageId))
+      .where(and(
+        eq(businessFormShareTable.token, token),
+        eq(businessFormShareTable.isActive, true),
+        eq(pricingPackageTable.isActive, true),
+      ))
+      .limit(1);
+    if (!share) {
+      res.status(404).json({ error: "Customer form link not found." });
+      return;
+    }
+    const [selectedPackage] = await db.select().from(pricingPackageTable)
+      .where(eq(pricingPackageTable.id, share.packageId)).limit(1);
+    if (!selectedPackage) {
+      res.status(404).json({ error: "The selected package is no longer available." });
+      return;
+    }
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const { errors, cleaned } = validateBusinessCustomerData(formConfig, (req.body as Record<string, unknown>).customerData);
+    if (errors.length) {
+      res.status(400).json({ error: errors.join(" ") });
+      return;
+    }
+    const mapped = invitationValuesFromCustomer(formConfig, cleaned, share.businessId, share.packageId);
+    const [client] = await db.insert(businessClientTable).values({
+      businessId: share.businessId,
+      packageId: share.packageId,
+      brideName: mapped.brideName,
+      groomName: mapped.groomName,
+      phone: typeof cleaned.contactPhone === "string" ? cleaned.contactPhone.trim() : null,
+      email: typeof cleaned.email === "string" ? cleaned.email.trim() : null,
+      eventDate: mapped.eventDate || null,
+      customerData: cleaned,
+      status: "PENDING_INVITATION",
+    }).returning();
+    res.status(201).json({ id: client.id, message: "Your details have been submitted successfully." });
+  } catch (err) {
+    req.log.error({ err }, "Failed to submit customer form");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/business/clients/:id/create-invitation", async (req, res) => {
+  if (!requireBusiness(req, res)) return;
+  try {
+    const profile = await getOrCreateBusinessProfile(req.session.userId);
+    const clientId = Number(req.params.id);
+    if (!profile || !Number.isInteger(clientId)) {
+      res.status(400).json({ error: "Invalid client id." });
+      return;
+    }
+    const [client] = await db.select().from(businessClientTable)
+      .where(and(eq(businessClientTable.id, clientId), eq(businessClientTable.businessId, profile.id)))
+      .limit(1);
+    if (!client) {
+      res.status(404).json({ error: "Client not found." });
+      return;
+    }
+    if (client.invitationId) {
+      const [existingInvitation] = await db.select({ token: invitationTable.token })
+        .from(invitationTable).where(eq(invitationTable.id, client.invitationId)).limit(1);
+      if (existingInvitation) {
+        res.json({ invitationToken: existingInvitation.token, client });
+        return;
+      }
+    }
+    if (!client.packageId || !client.customerData) {
+      res.status(400).json({ error: "This client does not have enough form data to create an invitation." });
+      return;
+    }
+    const [selectedPackage] = await db.select().from(pricingPackageTable)
+      .where(and(eq(pricingPackageTable.id, client.packageId), eq(pricingPackageTable.isActive, true))).limit(1);
+    if (!selectedPackage) {
+      res.status(400).json({ error: "The client's package is no longer available." });
+      return;
+    }
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const { errors, cleaned } = validateBusinessCustomerData(formConfig, client.customerData);
+    if (errors.length) {
+      res.status(400).json({ error: errors.join(" ") });
+      return;
+    }
+    const invitationValues = invitationValuesFromCustomer(formConfig, cleaned, profile.id, client.packageId);
+    const { invitation, updatedClient } = await db.transaction(async (tx) => {
+      let createdInvitation: typeof invitationTable.$inferSelect | undefined;
+      for (let attempt = 0; attempt < 5 && !createdInvitation; attempt += 1) {
+        try {
+          [createdInvitation] = await tx.insert(invitationTable).values({
+            token: randomUUID().replace(/-/g, "").slice(0, 16),
+            userId: null,
+            ...invitationValues,
+          }).returning();
+        } catch (error) {
+          if ((error as { code?: string })?.code !== "23505" || attempt === 4) throw error;
+        }
+      }
+      if (!createdInvitation) throw new Error("Unable to allocate a unique invitation token.");
+      const [updated] = await tx.update(businessClientTable)
+        .set({ invitationId: createdInvitation.id, status: "INVITATION_CREATED", updatedAt: new Date() })
+        .where(and(eq(businessClientTable.id, client.id), eq(businessClientTable.businessId, profile.id)))
+        .returning();
+      return { invitation: createdInvitation, updatedClient: updated ?? client };
+    });
+    auditEvent(req, "business.client_invitation_create", { businessId: profile.id, clientId: client.id, invitationId: invitation.id });
+    res.status(201).json({ invitationToken: invitation.token, client: updatedClient });
+  } catch (err) {
+    req.log.error({ err }, "Failed to create invitation for business client");
     res.status(500).json({ error: "Internal server error" });
   }
 });

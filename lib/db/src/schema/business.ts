@@ -54,7 +54,19 @@ export const businessClientTable = pgTable("business_client", {
   unique("business_client_business_id_id").on(table.businessId, table.id),
 ]);
 
+export const businessFormShareTable = pgTable("business_form_share", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull(),
+  packageId: integer("package_id").notNull(),
+  token: text("token").notNull().unique(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  unique("business_form_share_business_id_id").on(table.businessId, table.id),
+]);
+
 export const insertBusinessClientSchema = createInsertSchema(businessClientTable)
   .omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertBusinessClient = z.infer<typeof insertBusinessClientSchema>;
 export type BusinessClient = typeof businessClientTable.$inferSelect;
+export type BusinessFormShare = typeof businessFormShareTable.$inferSelect;

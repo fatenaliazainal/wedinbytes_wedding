@@ -185,6 +185,76 @@ paths:
               schema:
                 $ref: "#/components/schemas/BusinessClient"
 
+  /business/form-shares:
+    post:
+      operationId: createBusinessFormShare
+      tags: [business]
+      summary: Create a shareable customer form link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [packageId]
+              properties:
+                packageId:
+                  type: integer
+      responses:
+        "201":
+          description: Shareable customer form link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessFormShare"
+
+  /business/form-shares/{token}:
+    get:
+      operationId: getBusinessFormShare
+      tags: [business]
+      summary: Get a public customer form configuration
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer form configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCustomerForm"
+    post:
+      operationId: submitBusinessFormShare
+      tags: [business]
+      summary: Submit customer details through a shared form
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerData]
+              properties:
+                customerData:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "201":
+          description: Customer submission created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /business/clients/{id}:
     patch:
       operationId: updateBusinessClient
@@ -226,6 +296,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+
+  /business/clients/{id}/create-invitation:
+    post:
+      operationId: createInvitationForBusinessClient
+      tags: [business]
+      summary: Create an invitation from a submitted customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Invitation created from customer data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessClientInvitationResult"
+        "200":
+          description: Existing invitation returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessClientInvitationResult"
 
   /business/invitations:
     get:
@@ -958,6 +1053,42 @@ components:
         - brideName
         - groomName
         - status
+
+    BusinessFormShare:
+      type: object
+      properties:
+        token:
+          type: string
+        packageId:
+          type: integer
+      required: [token, packageId]
+
+    PublicCustomerForm:
+      type: object
+      properties:
+        token:
+          type: string
+        businessName:
+          type: string
+        packageId:
+          type: integer
+        packageName:
+          type: string
+        packageDescription:
+          type: string
+        formConfig:
+          type: object
+          additionalProperties: true
+      required: [token, businessName, packageId, packageName, formConfig]
+
+    BusinessClientInvitationResult:
+      type: object
+      properties:
+        invitationToken:
+          type: string
+        client:
+          $ref: "#/components/schemas/BusinessClient"
+      required: [invitationToken, client]
 
     CreateBusinessClientBody:
       type: object

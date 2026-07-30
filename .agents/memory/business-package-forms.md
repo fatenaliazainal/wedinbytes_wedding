@@ -7,4 +7,6 @@ Persisted pricing-package form configuration is the single source of truth for t
 
 **Why:** Business packages will evolve independently of the frontend, and hardcoded package-name branches would make new or edited packages silently produce incomplete customer records.
 
-**How to apply:** Keep Buyer creation/editor behavior separate. When a Business Account creates a customer, save the selected package and raw cleaned customer data, create the mapped business-owned invitation in the same transaction, link the invitation back to the client, and return its token for the existing Business Editor route.
+**How to apply:** Keep Buyer creation/editor behavior separate. The Event Planner first creates a persisted package-specific share link; a public customer submission saves only the cleaned customer record. Create and link the mapped business-owned invitation only after the owner explicitly requests it, then return its token for the existing Business Editor route. Keep the legacy authenticated client endpoint functional for existing records.
+
+**Why:** Customer details must be collected by the customer before an Event Planner creates an invitation; generating invitations during link creation or public submission creates premature and potentially incomplete records.

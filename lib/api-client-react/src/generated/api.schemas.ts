@@ -139,6 +139,27 @@ export interface BusinessClient {
   invitationToken?: string | null;
 }
 
+export interface BusinessFormShare {
+  token: string;
+  packageId: number;
+}
+
+export type PublicCustomerFormFormConfig = { [key: string]: unknown };
+
+export interface PublicCustomerForm {
+  token: string;
+  businessName: string;
+  packageId: number;
+  packageName: string;
+  packageDescription?: string;
+  formConfig: PublicCustomerFormFormConfig;
+}
+
+export interface BusinessClientInvitationResult {
+  invitationToken: string;
+  client: BusinessClient;
+}
+
 export type CreateBusinessClientBodyCustomerData = { [key: string]: unknown };
 
 export interface CreateBusinessClientBody {
@@ -317,6 +338,16 @@ export interface UpdatePricingFeatureBody {
 export interface SuccessResponse {
   success: boolean;
 }
+
+export type CreateBusinessFormShareBody = {
+  packageId: number;
+};
+
+export type SubmitBusinessFormShareBodyCustomerData = { [key: string]: unknown };
+
+export type SubmitBusinessFormShareBody = {
+  customerData: SubmitBusinessFormShareBodyCustomerData;
+};
 
 export type SearchBusinessesParams = {
 q?: string;

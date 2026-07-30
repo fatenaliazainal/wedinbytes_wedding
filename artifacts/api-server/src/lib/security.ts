@@ -90,6 +90,14 @@ export const reviewSubmitRateLimit = rateLimit({
   message: { error: "Too many review submissions. Please try again later." },
 });
 
+export const customerFormSubmitRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many form submissions. Please try again later." },
+});
+
 export function regenerateSession(
   req: Request,
   userId: number,

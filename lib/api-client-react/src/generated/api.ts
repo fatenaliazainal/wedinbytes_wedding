@@ -21,10 +21,13 @@ import type {
 
 import type {
   BusinessClient,
+  BusinessClientInvitationResult,
+  BusinessFormShare,
   BusinessInvitation,
   BusinessProfile,
   CardDesign,
   CreateBusinessClientBody,
+  CreateBusinessFormShareBody,
   CreatePricingFeatureBody,
   CreatePricingPackageBody,
   CreateRsvpBody,
@@ -35,9 +38,11 @@ import type {
   PricingFeature,
   PricingPackage,
   PublicBusinessProfile,
+  PublicCustomerForm,
   Rsvp,
   RsvpCount,
   SearchBusinessesParams,
+  SubmitBusinessFormShareBody,
   SuccessResponse,
   UpdateBusinessClientBody,
   UpdateBusinessProfileBody,
@@ -648,6 +653,224 @@ export const useCreateBusinessClient = <TError = ErrorType<unknown>,
       return useMutation(getCreateBusinessClientMutationOptions(options));
     }
 
+export const getCreateBusinessFormShareUrl = () => {
+
+
+
+
+  return `/api/business/form-shares`
+}
+
+/**
+ * @summary Create a shareable customer form link
+ */
+export const createBusinessFormShare = async (createBusinessFormShareBody: CreateBusinessFormShareBody, options?: RequestInit): Promise<BusinessFormShare> => {
+
+  return customFetch<BusinessFormShare>(getCreateBusinessFormShareUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createBusinessFormShareBody)
+  }
+);}
+
+
+
+
+export const getCreateBusinessFormShareMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBusinessFormShare>>, TError,{data: BodyType<CreateBusinessFormShareBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBusinessFormShare>>, TError,{data: BodyType<CreateBusinessFormShareBody>}, TContext> => {
+
+const mutationKey = ['createBusinessFormShare'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBusinessFormShare>>, {data: BodyType<CreateBusinessFormShareBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBusinessFormShare(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBusinessFormShareMutationResult = NonNullable<Awaited<ReturnType<typeof createBusinessFormShare>>>
+    export type CreateBusinessFormShareMutationBody = BodyType<CreateBusinessFormShareBody>
+    export type CreateBusinessFormShareMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a shareable customer form link
+ */
+export const useCreateBusinessFormShare = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBusinessFormShare>>, TError,{data: BodyType<CreateBusinessFormShareBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBusinessFormShare>>,
+        TError,
+        {data: BodyType<CreateBusinessFormShareBody>},
+        TContext
+      > => {
+      return useMutation(getCreateBusinessFormShareMutationOptions(options));
+    }
+
+export const getGetBusinessFormShareUrl = (token: string,) => {
+
+
+
+
+  return `/api/business/form-shares/${token}`
+}
+
+/**
+ * @summary Get a public customer form configuration
+ */
+export const getBusinessFormShare = async (token: string, options?: RequestInit): Promise<PublicCustomerForm> => {
+
+  return customFetch<PublicCustomerForm>(getGetBusinessFormShareUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBusinessFormShareQueryKey = (token: string,) => {
+    return [
+    `/api/business/form-shares/${token}`
+    ] as const;
+    }
+
+
+export const getGetBusinessFormShareQueryOptions = <TData = Awaited<ReturnType<typeof getBusinessFormShare>>, TError = ErrorType<unknown>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessFormShare>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBusinessFormShareQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBusinessFormShare>>> = ({ signal }) => getBusinessFormShare(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: token !== null && token !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBusinessFormShare>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBusinessFormShareQueryResult = NonNullable<Awaited<ReturnType<typeof getBusinessFormShare>>>
+export type GetBusinessFormShareQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get a public customer form configuration
+ */
+
+export function useGetBusinessFormShare<TData = Awaited<ReturnType<typeof getBusinessFormShare>>, TError = ErrorType<unknown>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessFormShare>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBusinessFormShareQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getSubmitBusinessFormShareUrl = (token: string,) => {
+
+
+
+
+  return `/api/business/form-shares/${token}`
+}
+
+/**
+ * @summary Submit customer details through a shared form
+ */
+export const submitBusinessFormShare = async (token: string,
+    submitBusinessFormShareBody: SubmitBusinessFormShareBody, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getSubmitBusinessFormShareUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(submitBusinessFormShareBody)
+  }
+);}
+
+
+
+
+export const getSubmitBusinessFormShareMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitBusinessFormShare>>, TError,{token: string;data: BodyType<SubmitBusinessFormShareBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitBusinessFormShare>>, TError,{token: string;data: BodyType<SubmitBusinessFormShareBody>}, TContext> => {
+
+const mutationKey = ['submitBusinessFormShare'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitBusinessFormShare>>, {token: string;data: BodyType<SubmitBusinessFormShareBody>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  submitBusinessFormShare(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitBusinessFormShareMutationResult = NonNullable<Awaited<ReturnType<typeof submitBusinessFormShare>>>
+    export type SubmitBusinessFormShareMutationBody = BodyType<SubmitBusinessFormShareBody>
+    export type SubmitBusinessFormShareMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Submit customer details through a shared form
+ */
+export const useSubmitBusinessFormShare = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitBusinessFormShare>>, TError,{token: string;data: BodyType<SubmitBusinessFormShareBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitBusinessFormShare>>,
+        TError,
+        {token: string;data: BodyType<SubmitBusinessFormShareBody>},
+        TContext
+      > => {
+      return useMutation(getSubmitBusinessFormShareMutationOptions(options));
+    }
+
 export const getUpdateBusinessClientUrl = (id: number,) => {
 
 
@@ -787,6 +1010,76 @@ export const useDeleteBusinessClient = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteBusinessClientMutationOptions(options));
+    }
+
+export const getCreateInvitationForBusinessClientUrl = (id: number,) => {
+
+
+
+
+  return `/api/business/clients/${id}/create-invitation`
+}
+
+/**
+ * @summary Create an invitation from a submitted customer
+ */
+export const createInvitationForBusinessClient = async (id: number, options?: RequestInit): Promise<BusinessClientInvitationResult> => {
+
+  return customFetch<BusinessClientInvitationResult>(getCreateInvitationForBusinessClientUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCreateInvitationForBusinessClientMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvitationForBusinessClient>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createInvitationForBusinessClient>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['createInvitationForBusinessClient'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvitationForBusinessClient>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  createInvitationForBusinessClient(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateInvitationForBusinessClientMutationResult = NonNullable<Awaited<ReturnType<typeof createInvitationForBusinessClient>>>
+
+    export type CreateInvitationForBusinessClientMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an invitation from a submitted customer
+ */
+export const useCreateInvitationForBusinessClient = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvitationForBusinessClient>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createInvitationForBusinessClient>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getCreateInvitationForBusinessClientMutationOptions(options));
     }
 
 export const getListBusinessInvitationsUrl = () => {
