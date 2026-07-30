@@ -436,27 +436,6 @@ export default function DashboardPage() {
         {/* ── Main panel ── */}
         {activeSection === "orders" && (
           <div className="space-y-8">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-              {[
-                { label: "Total Invites", value: stats.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
-                { label: "Active", value: stats.active, icon: Activity, color: "text-green-600", bg: "bg-green-50", border: "border-green-100" },
-                { label: "Pending Payment", value: stats.pending, icon: CreditCard, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
-                { label: "Expired", value: stats.expired, icon: AlertCircle, color: "text-red-600", bg: "bg-red-50", border: "border-red-100" },
-                { label: "Total RSVP", value: "-", icon: Users, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100" },
-              ].map((s, i) => (
-                <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col transition-shadow hover:shadow-md">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${s.bg} ${s.color} border ${s.border}`}>
-                      <s.icon size={14} strokeWidth={2.5} />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{s.label}</span>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{s.value}</div>
-                </div>
-              ))}
-            </div>
-
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900" />
