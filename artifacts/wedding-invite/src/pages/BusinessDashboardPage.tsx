@@ -258,7 +258,15 @@ export default function BusinessDashboardPage() {
                               </p>
                             </div>
                             <div className="flex items-center justify-between gap-4 sm:justify-end">
-                               {payment.paymentStatus.toUpperCase() === "PAID" ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span> : payment.paymentStatus.toUpperCase() === "PENDING" ? <button onClick={() => void startPayment({ orderId: payment.id })} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-60"><CreditCard size={12} /> {paymentStartingFor === payment.id ? "Starting..." : "Pay Now"}</button> : <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">Failed</span>}
+                               {payment.paymentStatus.toUpperCase() === "PAID" ? (
+                               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span>
+                             ) : payment.paymentStatus.toUpperCase() === "PENDING" ? (
+                               <button onClick={() => void startPayment({ orderId: payment.id })} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-60"><CreditCard size={12} /> {paymentStartingFor === payment.id ? "Starting..." : "Pay Now"}</button>
+                             ) : payment.paymentStatus.toUpperCase() === "EXPIRED" ? (
+                               <button onClick={() => void (payment.invitation?.id ? startPayment({ invitationId: payment.invitation.id }) : undefined)} disabled={!payment.invitation?.id || paymentStartingFor === payment.invitation?.id} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-600 disabled:opacity-50"><CreditCard size={12} /> Retry Payment</button>
+                             ) : (
+                               <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">Failed</span>
+                             )}
                               <span className="text-lg font-semibold text-gray-900">RM {Number(payment.amount || 0).toFixed(2)}</span>
                             </div>
                           </div>

@@ -1467,6 +1467,7 @@ function OrdersTab() {
   const [selected, setSelected] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [togglingStatus, setTogglingStatus] = useState(false);
+  const [patchingPayment, setPatchingPayment] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -1483,6 +1484,26 @@ function OrdersTab() {
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, [search, paymentStatus, invitationStatus]);
+
+  const handlePatchPaymentStatus = async (order: AdminOrder, newStatus: "PAID" | "EXPIRED") => {
+    setPatchingPayment(true);
+    try {
+      const res = await fetch(`${BASE}/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentStatus: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update payment status");
+      toast.success(`Payment status set to ${newStatus}.`);
+      await load();
+      setSelected(null);
+    } catch {
+      toast.error("Failed to update payment status.");
+    } finally {
+      setPatchingPayment(false);
+    }
+  };
 
   const handleToggleWebsiteStatus = async (order: AdminOrder) => {
     if (!order.invitation) return;
@@ -1579,6 +1600,29 @@ function OrdersTab() {
                 <p>{selected.package?.name ?? "—"}</p>
               </div>
             </div>
+            {!["PAID", "REFUNDED"].includes(selected.paymentStatus) && (
+              <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
+                <p className="text-xs font-medium text-muted-foreground mb-3">Mark payment as</p>
+                <div className="flex gap-2">
+                  <button
+                    disabled={patchingPayment || selected.paymentStatus === "PAID"}
+                    onClick={() => void handlePatchPaymentStatus(selected, "PAID")}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 transition-colors"
+                  >
+                    {patchingPayment ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                    Mark Paid
+                  </button>
+                  <button
+                    disabled={patchingPayment || selected.paymentStatus === "EXPIRED"}
+                    onClick={() => void handlePatchPaymentStatus(selected, "EXPIRED")}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/60 disabled:opacity-40 transition-colors"
+                  >
+                    {patchingPayment ? <Loader2 size={12} className="animate-spin" /> : <Ban size={12} />}
+                    Mark Expired
+                  </button>
+                </div>
+              </div>
+            )}
             {selected.invitation && (
               <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-center justify-between mb-3">

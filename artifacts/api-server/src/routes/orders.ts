@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import {
   businessProfileTable,
   db,
@@ -10,6 +10,23 @@ import {
 } from "@workspace/db";
 
 const router: IRouter = Router();
+
+const BILL_EXPIRY_DAYS = 3;
+
+async function expireStaleOrders(invitationIds: number[]) {
+  if (!invitationIds.length) return;
+  const cutoff = new Date(Date.now() - BILL_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+  await db
+    .update(orderTable)
+    .set({ paymentStatus: "EXPIRED", updatedAt: new Date() })
+    .where(
+      and(
+        inArray(orderTable.invitationId, invitationIds),
+        eq(orderTable.paymentStatus, "PENDING"),
+        lt(orderTable.createdAt, cutoff),
+      ),
+    );
+}
 
 function adminGuard(req: any, res: any) {
   if (req.session?.role !== "admin") {
@@ -47,6 +64,7 @@ router.get("/buyer/payment-history", async (req, res) => {
     }
 
     const invitationIds = invitations.map((invitation) => invitation.id);
+    await expireStaleOrders(invitationIds);
     const [orders, packages] = await Promise.all([
       db
         .select()
@@ -115,6 +133,7 @@ router.get("/business/payment-history", async (req, res) => {
     }
 
     const invitationIds = invitations.map((invitation) => invitation.id);
+    await expireStaleOrders(invitationIds);
     const [orders, packages] = await Promise.all([
       db
         .select()
@@ -316,6 +335,43 @@ router.patch("/admin/users/:id/role", async (req, res) => {
     return;
   }
   res.json(updated);
+});
+
+router.patch("/admin/orders/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  const status = String(req.body?.paymentStatus ?? "");
+  if (!Number.isInteger(id) || !["PAID", "EXPIRED"].includes(status)) {
+    res.status(400).json({ error: "paymentStatus must be PAID or EXPIRED" });
+    return;
+  }
+  try {
+    const [current] = await db.select().from(orderTable).where(eq(orderTable.id, id)).limit(1);
+    if (!current) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    const now = new Date();
+    const [updated] = await db
+      .update(orderTable)
+      .set({
+        paymentStatus: status,
+        paidAt: status === "PAID" ? (current.paidAt ?? now) : current.paidAt,
+        updatedAt: now,
+      })
+      .where(eq(orderTable.id, id))
+      .returning();
+    if (status === "PAID" && current.invitationId) {
+      await db
+        .update(invitationTable)
+        .set({ isPurchased: true })
+        .where(eq(invitationTable.id, current.invitationId));
+    }
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to patch order status");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.patch("/admin/invitations/:id/status", async (req, res) => {
