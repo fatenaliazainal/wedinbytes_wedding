@@ -20,9 +20,9 @@ import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 import Page2DesignGuidePage from "@/pages/Page2DesignGuidePage";
-import PlannerDashboardPage from "@/pages/PlannerDashboardPage";
-import PlannerProfilePage from "@/pages/PlannerProfilePage";
-import PublicPlannerProfilePage from "@/pages/PublicPlannerProfilePage";
+import BusinessDashboardPage from "@/pages/BusinessDashboardPage";
+import BusinessProfilePage from "@/pages/BusinessProfilePage";
+import PublicBusinessProfilePage from "@/pages/PublicBusinessProfilePage";
 
 function PublicInvitationRoute() {
   return <InvitationPage />;
@@ -32,6 +32,10 @@ const queryClient = new QueryClient();
 
 function EditorRoute() {
   return <EditorPage mode="buyer" />;
+}
+
+function BusinessEditorRoute() {
+  return <EditorPage mode="business" />;
 }
 
 function AdminEditorRoute() {
@@ -64,9 +68,10 @@ function Router() {
       <Route path="/register" component={RegisterPage} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/rsvp" component={RsvpDashboardPage} />
-      <Route path="/planner/dashboard" component={PlannerDashboardPage} />
-      <Route path="/planner/profile" component={PlannerProfilePage} />
-      <Route path="/planner/:slug" component={PublicPlannerProfilePage} />
+      <Route path="/business/dashboard" component={BusinessDashboardPage} />
+      <Route path="/business/profile" component={BusinessProfilePage} />
+      <Route path="/business/editor" component={BusinessEditorRoute} />
+      <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

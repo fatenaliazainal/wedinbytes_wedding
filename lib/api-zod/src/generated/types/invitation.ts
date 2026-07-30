@@ -5,8 +5,8 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { BusinessInvitationSummary } from './businessInvitationSummary';
 import type { InvitationContactsItem } from './invitationContactsItem';
-import type { InvitationPlannerSummary } from './invitationPlannerSummary';
 
 export interface Invitation {
   id: number;
@@ -35,5 +35,5 @@ export interface Invitation {
   galleryImages?: string[];
   language?: string;
   packageId?: number | null;
-  eventPlanner?: InvitationPlannerSummary | null;
+  business?: BusinessInvitationSummary | null;
 }

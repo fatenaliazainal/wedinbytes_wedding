@@ -55,8 +55,9 @@ export const GetInvitationResponse = zod.object({
   "galleryImages": zod.array(zod.string()).optional().describe('Array of gallery image URLs or R2 keys'),
   "language": zod.string().default(getInvitationResponseLanguageDefault),
   "packageId": zod.number().nullish(),
-  "eventPlanner": zod.object({
-  "companyName": zod.string(),
+  "business": zod.object({
+  "businessName": zod.string(),
+  "businessType": zod.string(),
   "displayName": zod.string(),
   "slug": zod.string(),
   "description": zod.string().nullish(),
@@ -69,113 +70,31 @@ export const GetInvitationResponse = zod.object({
 
 
 /**
- * @summary Assign an active Event Planner to an owned invitation
- */
-export const AssignPlannerParams = zod.object({
-  "token": zod.coerce.string()
-})
-
-export const AssignPlannerBody = zod.object({
-  "plannerId": zod.number().optional(),
-  "slug": zod.string().optional()
-}).describe('Provide either plannerId or slug.')
-
-export const AssignPlannerResponse = zod.object({
-  "invitation": zod.object({
-
-}).passthrough(),
-  "planner": zod.object({
-  "id": zod.number(),
-  "companyName": zod.string(),
-  "displayName": zod.string(),
-  "slug": zod.string(),
-  "description": zod.string().nullish(),
-  "phone": zod.string().nullish(),
-  "whatsapp": zod.string().nullish(),
-  "email": zod.string().nullish(),
-  "website": zod.string().nullish(),
-  "instagram": zod.string().nullish(),
-  "facebook": zod.string().nullish(),
-  "tiktok": zod.string().nullish(),
-  "logoUrl": zod.string().nullish(),
-  "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
-  "googleMapsUrl": zod.string().nullish(),
-  "businessHours": zod.string().nullish(),
-  "isVerified": zod.boolean(),
-  "invitationCount": zod.number().optional()
-})
-})
-
-
-/**
- * @summary Remove the Event Planner from an owned invitation
- */
-export const RemovePlannerParams = zod.object({
-  "token": zod.coerce.string()
-})
-
-export const RemovePlannerResponse = zod.object({
-  "success": zod.boolean()
-})
-
-
-/**
- * @summary Search active Event Planner profiles
- */
-export const SearchPlannersQueryParams = zod.object({
-  "q": zod.coerce.string().optional()
-})
-
-export const SearchPlannersResponseItem = zod.object({
-  "id": zod.number(),
-  "companyName": zod.string(),
-  "displayName": zod.string(),
-  "slug": zod.string(),
-  "description": zod.string().nullish(),
-  "phone": zod.string().nullish(),
-  "whatsapp": zod.string().nullish(),
-  "email": zod.string().nullish(),
-  "website": zod.string().nullish(),
-  "instagram": zod.string().nullish(),
-  "facebook": zod.string().nullish(),
-  "tiktok": zod.string().nullish(),
-  "logoUrl": zod.string().nullish(),
-  "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
-  "googleMapsUrl": zod.string().nullish(),
-  "businessHours": zod.string().nullish(),
-  "isVerified": zod.boolean(),
-  "invitationCount": zod.number().optional()
-})
-export const SearchPlannersResponse = zod.array(SearchPlannersResponseItem)
-
-
-/**
- * @summary Promote a Buyer to Event Planner or return them to Buyer
+ * @summary Promote a Buyer to Business Account or return them to Buyer
  */
 export const UpdateUserRoleParams = zod.object({
   "id": zod.coerce.number()
 })
 
 export const UpdateUserRoleBody = zod.object({
-  "role": zod.enum(['buyer', 'event_planner'])
+  "role": zod.enum(['buyer', 'business_account'])
 })
 
 export const UpdateUserRoleResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string(),
-  "role": zod.enum(['buyer', 'event_planner'])
+  "role": zod.enum(['buyer', 'business_account'])
 })
 
 
 /**
- * @summary Get the logged-in planner profile
+ * @summary Get the logged-in Business Account profile
  */
-export const GetMyPlannerProfileResponse = zod.object({
+export const GetMyBusinessProfileResponse = zod.object({
   "id": zod.number(),
-  "companyName": zod.string(),
+  "businessName": zod.string(),
+  "businessType": zod.string(),
   "displayName": zod.string(),
   "slug": zod.string(),
   "description": zod.string().nullish(),
@@ -188,7 +107,7 @@ export const GetMyPlannerProfileResponse = zod.object({
   "tiktok": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
+  "address": zod.string().nullish(),
   "googleMapsUrl": zod.string().nullish(),
   "businessHours": zod.string().nullish(),
   "isVerified": zod.boolean(),
@@ -197,10 +116,11 @@ export const GetMyPlannerProfileResponse = zod.object({
 
 
 /**
- * @summary Update the logged-in planner profile
+ * @summary Update the logged-in Business Account profile
  */
-export const UpdateMyPlannerProfileBody = zod.object({
-  "companyName": zod.string().optional(),
+export const UpdateMyBusinessProfileBody = zod.object({
+  "businessName": zod.string().optional(),
+  "businessType": zod.string().optional(),
   "displayName": zod.string().optional(),
   "slug": zod.string().optional(),
   "description": zod.string().nullish(),
@@ -213,14 +133,15 @@ export const UpdateMyPlannerProfileBody = zod.object({
   "tiktok": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
+  "address": zod.string().nullish(),
   "googleMapsUrl": zod.string().nullish(),
   "businessHours": zod.string().nullish()
 })
 
-export const UpdateMyPlannerProfileResponse = zod.object({
+export const UpdateMyBusinessProfileResponse = zod.object({
   "id": zod.number(),
-  "companyName": zod.string(),
+  "businessName": zod.string(),
+  "businessType": zod.string(),
   "displayName": zod.string(),
   "slug": zod.string(),
   "description": zod.string().nullish(),
@@ -233,7 +154,7 @@ export const UpdateMyPlannerProfileResponse = zod.object({
   "tiktok": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
+  "address": zod.string().nullish(),
   "googleMapsUrl": zod.string().nullish(),
   "businessHours": zod.string().nullish(),
   "isVerified": zod.boolean(),
@@ -242,35 +163,138 @@ export const UpdateMyPlannerProfileResponse = zod.object({
 
 
 /**
- * @summary List invitations assigned to the logged-in planner
+ * @summary List clients owned by the logged-in Business Account
  */
-export const ListPlannerInvitationsResponseItem = zod.object({
+export const ListBusinessClientsResponseItem = zod.object({
   "id": zod.number(),
-  "token": zod.string(),
+  "businessId": zod.number(),
+  "brideName": zod.string(),
+  "groomName": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "eventDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "status": zod.string()
+})
+export const ListBusinessClientsResponse = zod.array(ListBusinessClientsResponseItem)
+
+
+/**
+ * @summary Create a Business Account client
+ */
+export const CreateBusinessClientBody = zod.object({
+  "brideName": zod.string().optional(),
+  "groomName": zod.string().optional(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "eventDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "status": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a Business Account client
+ */
+export const UpdateBusinessClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateBusinessClientBody = zod.object({
+  "brideName": zod.string().optional(),
+  "groomName": zod.string().optional(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "eventDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "status": zod.string().optional()
+})
+
+export const UpdateBusinessClientResponse = zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "brideName": zod.string(),
+  "groomName": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "eventDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "status": zod.string()
+})
+
+
+/**
+ * @summary Delete a Business Account client
+ */
+export const DeleteBusinessClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteBusinessClientResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary List invitations owned by the logged-in Business Account
+ */
+export const listBusinessInvitationsResponseOneContactsMax = 4;
+
+export const listBusinessInvitationsResponseOneLanguageDefault = `ms`;
+
+export const ListBusinessInvitationsResponseItem = zod.object({
+  "id": zod.number(),
   "groomName": zod.string(),
   "brideName": zod.string(),
   "eventType": zod.string(),
   "eventDate": zod.string(),
-  "eventDay": zod.string().optional(),
-  "eventTime": zod.string().optional(),
-  "venueName": zod.string().optional(),
-  "venueCity": zod.string().optional(),
-  "venueState": zod.string().optional(),
-  "websiteStatus": zod.string().optional(),
-  "createdAt": zod.string()
+  "eventDay": zod.string(),
+  "eventTime": zod.string(),
+  "venueName": zod.string(),
+  "venueAddress": zod.string(),
+  "venueCity": zod.string(),
+  "venueState": zod.string(),
+  "venueMapUrl": zod.string().optional(),
+  "groomParents": zod.string().optional(),
+  "brideParents": zod.string().optional(),
+  "contactPhone": zod.string(),
+  "contacts": zod.array(zod.object({
+  "name": zod.string(),
+  "phone": zod.string()
+})).max(listBusinessInvitationsResponseOneContactsMax).optional(),
+  "dresscode": zod.string().optional(),
+  "message": zod.string().optional(),
+  "coverTitle": zod.string().optional(),
+  "hashtag": zod.string().optional(),
+  "doaText": zod.string().optional(),
+  "galleryImages": zod.array(zod.string()).optional().describe('Array of gallery image URLs or R2 keys'),
+  "language": zod.string().default(listBusinessInvitationsResponseOneLanguageDefault),
+  "packageId": zod.number().nullish(),
+  "business": zod.object({
+  "businessName": zod.string(),
+  "businessType": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "logoUrl": zod.string().nullish()
+}).nullish()
 })
-export const ListPlannerInvitationsResponse = zod.array(ListPlannerInvitationsResponseItem)
+export const ListBusinessInvitationsResponse = zod.array(ListBusinessInvitationsResponseItem)
 
 
 /**
- * @summary Get a public Event Planner profile by slug
+ * @summary Search active public Business Account profiles
  */
-export const GetPlannerProfileParams = zod.object({
-  "slug": zod.coerce.string()
+export const SearchBusinessesQueryParams = zod.object({
+  "q": zod.coerce.string().optional()
 })
 
-export const GetPlannerProfileResponse = zod.object({
-  "companyName": zod.string(),
+export const SearchBusinessesResponseItem = zod.object({
+  "businessName": zod.string(),
+  "businessType": zod.string(),
   "displayName": zod.string(),
   "slug": zod.string(),
   "description": zod.string().nullish(),
@@ -283,7 +307,38 @@ export const GetPlannerProfileResponse = zod.object({
   "tiktok": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "coverImage": zod.string().nullish(),
-  "businessAddress": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
+})
+export const SearchBusinessesResponse = zod.array(SearchBusinessesResponseItem)
+
+
+/**
+ * @summary Get a public Business Account profile by slug
+ */
+export const GetBusinessProfileParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const GetBusinessProfileResponse = zod.object({
+  "businessName": zod.string(),
+  "businessType": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "address": zod.string().nullish(),
   "googleMapsUrl": zod.string().nullish(),
   "businessHours": zod.string().nullish(),
   "isVerified": zod.boolean(),

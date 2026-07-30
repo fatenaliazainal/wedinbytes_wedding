@@ -6,8 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface InvitationPlannerSummary {
-  companyName: string;
+export interface BusinessInvitationSummary {
+  businessName: string;
+  businessType: string;
   displayName: string;
   slug: string;
   description?: string | null;

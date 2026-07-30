@@ -1,0 +1,394 @@
+STOP the current implementation.
+
+Do NOT continue building the previous Event Planner collaboration system.
+
+The previous implementation misunderstood the business requirements.
+
+Read this carefully and refactor the implementation before continuing.
+
+==================================================
+NEW BUSINESS MODEL
+==================================================
+
+WedInBytes has TWO different customer types.
+
+1. Buyer
+2. Business Account
+
+Business Account is NOT a collaborator.
+
+Business Account is NOT assigned by Buyer.
+
+Business Account does NOT edit Buyer invitations.
+
+Business Account is NOT linked to Buyer invitations.
+
+Please remove that architecture.
+
+==================================================
+CUSTOMER TYPES
+==================================================
+
+Guest
+
+Buyer
+
+Business Account
+
+Admin
+
+Business Account replaces the previous Event Planner role.
+
+Business Account may choose a business category.
+
+Examples:
+
+Event Planner
+
+Wedding Organizer
+
+Bridal Boutique
+
+Wedding Hall
+
+Photographer
+
+Videographer
+
+Freelancer
+
+Other
+
+Do NOT hardcode Event Planner into the architecture.
+
+The system must support future business categories.
+
+==================================================
+BUSINESS ACCOUNT PURPOSE
+==================================================
+
+Business Account is another paying customer of WedInBytes.
+
+They purchase a different subscription/package than Buyer.
+
+They use WedInBytes to create wedding invitations for THEIR OWN CLIENTS.
+
+They are NOT invited by Buyers.
+
+They are NOT collaborators.
+
+==================================================
+INVITATION OWNERSHIP
+==================================================
+
+Business Account owns the invitations it creates.
+
+Buyer owns the invitations they create.
+
+There is never shared ownership.
+
+There is never invitation collaboration.
+
+Every invitation has exactly one owner.
+
+==================================================
+REMOVE PREVIOUS IMPLEMENTATION
+==================================================
+
+Remove or refactor any code related to:
+
+Assign Planner
+
+Remove Planner
+
+Planner Collaboration
+
+Planner Permission
+
+Planner Invitation Assignment
+
+Planner Access To Buyer Invitation
+
+Planner Selector
+
+Collaborator Section
+
+Planner Relationship inside Invitation
+
+Do not leave unused code.
+
+==================================================
+DATABASE
+==================================================
+
+Instead of planner assignment, create a Business Profile.
+
+Suggested table:
+
+business_profile
+
+Fields:
+
+id
+
+userId
+
+businessName
+
+businessType
+
+displayName
+
+slug
+
+description
+
+phone
+
+whatsapp
+
+email
+
+website
+
+instagram
+
+facebook
+
+tiktok
+
+logoUrl
+
+coverImage
+
+address
+
+googleMapsUrl
+
+businessHours
+
+isVerified
+
+isActive
+
+createdAt
+
+updatedAt
+
+One Business Profile belongs to one user.
+
+==================================================
+CLIENT MANAGEMENT
+==================================================
+
+Business Accounts manage clients.
+
+Create new table:
+
+business_client
+
+Suggested fields
+
+id
+
+businessId
+
+brideName
+
+groomName
+
+phone
+
+email
+
+eventDate
+
+notes
+
+status
+
+createdAt
+
+updatedAt
+
+Business Account can create unlimited clients according to their subscription.
+
+Buyer does NOT have Clients.
+
+==================================================
+INVITATIONS
+==================================================
+
+Business Account creates invitations directly from their dashboard.
+
+Each invitation belongs to:
+
+buyer user
+
+OR
+
+business account
+
+Never both.
+
+Use the existing invitation architecture where possible.
+
+Do NOT duplicate invitation tables.
+
+==================================================
+BUSINESS DASHBOARD
+==================================================
+
+Create a separate dashboard.
+
+Reuse Buyer dashboard styling.
+
+Menu:
+
+Dashboard
+
+Clients
+
+Invitations
+
+Analytics
+
+Subscription
+
+Business Profile
+
+Settings
+
+Keep UI consistent with existing design.
+
+==================================================
+BUSINESS BENEFITS
+==================================================
+
+Business Accounts receive additional features.
+
+Examples
+
+Manage many invitations
+
+Client management
+
+Invitation analytics
+
+Duplicate invitations
+
+Business branding
+
+Higher limits
+
+Subscription management
+
+Future team management
+
+Buyer should NOT receive these features.
+
+==================================================
+INVITATION DISPLAY
+==================================================
+
+When invitation owner is Business Account
+
+Show at footer
+
+Created by
+
+Business Name
+
+Business Logo
+
+WhatsApp
+
+Website
+
+Instagram
+
+If Buyer owns invitation
+
+Keep existing footer.
+
+Do not expose business information.
+
+==================================================
+AUTHENTICATION
+==================================================
+
+Reuse existing authentication.
+
+Do not duplicate login.
+
+Business Account logs in exactly like Buyer.
+
+Role determines dashboard.
+
+==================================================
+SUBSCRIPTIONS
+==================================================
+
+Prepare architecture for different subscription plans.
+
+Buyer plans
+
+Business plans
+
+Different limits.
+
+Do not implement payment logic now.
+
+Only prepare clean architecture.
+
+==================================================
+ARCHITECTURE
+==================================================
+
+Study the existing project before changing code.
+
+Reuse existing:
+
+Components
+
+API structure
+
+Authentication
+
+Database style
+
+Routing
+
+Forms
+
+Cards
+
+Tables
+
+Buttons
+
+Dialogs
+
+Never redesign the application.
+
+Everything must feel native to WedInBytes.
+
+==================================================
+FINAL REPORT
+==================================================
+
+After refactoring provide:
+
+Files modified
+
+Database changes
+
+Removed code
+
+New routes
+
+Permission changes
+
+Anything requiring migration
+
+List every place where the old Planner Collaboration implementation was removed.

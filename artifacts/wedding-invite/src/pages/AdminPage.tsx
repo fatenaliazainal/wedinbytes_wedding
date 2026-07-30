@@ -1625,7 +1625,7 @@ function CustomersTab() {
     }, 200);
     return () => window.clearTimeout(timer);
   }, [search]);
-  const updateRole = async (customer: AdminCustomer, role: "buyer" | "event_planner") => {
+  const updateRole = async (customer: AdminCustomer, role: "buyer" | "business_account") => {
     try {
       const response = await fetch(`${BASE}/api/admin/users/${customer.id}/role`, {
         method: "PATCH",
@@ -1636,14 +1636,14 @@ function CustomersTab() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to update role.");
       setCustomers((previous) => previous.map((item) => item.id === customer.id ? { ...item, role } : item));
-      toast.success(role === "event_planner" ? "Account promoted to Event Planner." : "Account returned to Buyer.");
+      toast.success(role === "business_account" ? "Account promoted to Business Account." : "Account returned to Buyer.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update role.");
     }
   };
   return <div className="space-y-5">
     <div className="relative"><Search size={15} className="absolute left-3 top-3 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customer name or email..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" /></div>
-    <div className="overflow-x-auto rounded-2xl border border-border bg-card">{loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading customers…</div> : customers.length === 0 ? <div className="py-16 text-center"><UserRound size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No customer accounts yet</p><p className="mt-1 text-xs text-muted-foreground">Registered Buyer and Event Planner accounts will appear here.</p></div> : <table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Customer","Role","Orders","Total paid","Websites","Registered"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead><tbody className="divide-y divide-border">{customers.map((customer) => <tr key={customer.id} className="hover:bg-muted/40"><td className="px-4 py-3"><p className="font-medium">{customer.name}</p><p className="text-xs text-muted-foreground">{customer.email}</p></td><td className="px-4 py-3"><select value={customer.role === "event_planner" ? "event_planner" : "buyer"} onChange={(event) => updateRole(customer, event.target.value as "buyer" | "event_planner")} className="rounded-md border border-border bg-background px-2 py-1 text-xs"><option value="buyer">Buyer</option><option value="event_planner">Event Planner</option></select></td><td className="px-4 py-3">{customer.totalOrders}</td><td className="px-4 py-3">{customer.totalPaid.toFixed(2)}</td><td className="px-4 py-3">{customer.websites.length}</td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(customer.createdAt).toLocaleDateString("ms-MY")}</td></tr>)}</tbody></table>}</div>
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card">{loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading customers…</div> : customers.length === 0 ? <div className="py-16 text-center"><UserRound size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No customer accounts yet</p><p className="mt-1 text-xs text-muted-foreground">Registered Buyer and Business Account customers will appear here.</p></div> : <table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Customer","Role","Orders","Total paid","Websites","Registered"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead><tbody className="divide-y divide-border">{customers.map((customer) => <tr key={customer.id} className="hover:bg-muted/40"><td className="px-4 py-3"><p className="font-medium">{customer.name}</p><p className="text-xs text-muted-foreground">{customer.email}</p></td><td className="px-4 py-3"><select value={customer.role === "business_account" ? "business_account" : "buyer"} onChange={(event) => updateRole(customer, event.target.value as "buyer" | "business_account")} className="rounded-md border border-border bg-background px-2 py-1 text-xs"><option value="buyer">Buyer</option><option value="business_account">Business Account</option></select></td><td className="px-4 py-3">{customer.totalOrders}</td><td className="px-4 py-3">{customer.totalPaid.toFixed(2)}</td><td className="px-4 py-3">{customer.websites.length}</td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(customer.createdAt).toLocaleDateString("ms-MY")}</td></tr>)}</tbody></table>}</div>
   </div>;
 }
 

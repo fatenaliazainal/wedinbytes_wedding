@@ -163,8 +163,8 @@ router.patch("/admin/users/:id/role", async (req, res) => {
   if (!adminGuard(req, res)) return;
   const id = Number(req.params.id);
   const role = String(req.body?.role ?? "");
-  if (!Number.isInteger(id) || !["buyer", "event_planner"].includes(role)) {
-    res.status(400).json({ error: "Role must be buyer or event_planner" });
+  if (!Number.isInteger(id) || !["buyer", "business_account"].includes(role)) {
+    res.status(400).json({ error: "Role must be buyer or business_account" });
     return;
   }
   const [target] = await db

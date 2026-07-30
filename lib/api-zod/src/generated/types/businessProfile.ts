@@ -6,9 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface PlannerProfile {
+export interface BusinessProfile {
   id: number;
-  companyName: string;
+  businessName: string;
+  businessType: string;
   displayName: string;
   slug: string;
   description?: string | null;
@@ -21,7 +22,7 @@ export interface PlannerProfile {
   tiktok?: string | null;
   logoUrl?: string | null;
   coverImage?: string | null;
-  businessAddress?: string | null;
+  address?: string | null;
   googleMapsUrl?: string | null;
   businessHours?: string | null;
   isVerified: boolean;

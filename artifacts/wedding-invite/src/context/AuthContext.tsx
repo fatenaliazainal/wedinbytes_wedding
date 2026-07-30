@@ -14,7 +14,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   adminLogin: (password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (email: string, password: string, name: string, accountType?: "buyer" | "business_account") => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -65,12 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data);
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, name: string, accountType: "buyer" | "business_account" = "buyer") => {
     const res = await fetch(`${BASE}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, accountType }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Pendaftaran gagal.");

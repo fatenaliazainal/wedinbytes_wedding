@@ -16,8 +16,8 @@ tags:
     description: RSVP operations
   - name: design
     description: Card design operations
-  - name: planner
-    description: Event Planner profile and collaboration operations
+  - name: business
+    description: Business Account profiles, clients and invitations
 paths:
   /healthz:
     get:
@@ -57,88 +57,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /invitation/{token}/assign-planner:
-    post:
-      operationId: assignPlanner
-      tags: [planner]
-      summary: Assign an active Event Planner to an owned invitation
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AssignPlannerBody"
-      responses:
-        "200":
-          description: Planner assigned
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PlannerAssignmentResponse"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /invitation/{token}/remove-planner:
-    post:
-      operationId: removePlanner
-      tags: [planner]
-      summary: Remove the Event Planner from an owned invitation
-      parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Planner removed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessResponse"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /planner/search:
-    get:
-      operationId: searchPlanners
-      tags: [planner]
-      summary: Search active Event Planner profiles
-      parameters:
-        - name: q
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Active planner profiles
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PlannerProfile"
-
   /admin/users/{id}/role:
     patch:
       operationId: updateUserRole
-      tags: [planner]
-      summary: Promote a Buyer to Event Planner or return them to Buyer
+      tags: [business]
+      summary: Promote a Buyer to Business Account or return them to Buyer
       parameters:
         - name: id
           in: path
@@ -165,56 +88,151 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /planner/me:
+  /business/me:
     get:
-      operationId: getMyPlannerProfile
-      tags: [planner]
-      summary: Get the logged-in planner profile
+      operationId: getMyBusinessProfile
+      tags: [business]
+      summary: Get the logged-in Business Account profile
       responses:
         "200":
-          description: Planner profile
+          description: Business profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PlannerProfile"
+                $ref: "#/components/schemas/BusinessProfile"
     patch:
-      operationId: updateMyPlannerProfile
-      tags: [planner]
-      summary: Update the logged-in planner profile
+      operationId: updateMyBusinessProfile
+      tags: [business]
+      summary: Update the logged-in Business Account profile
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdatePlannerProfileBody"
+              $ref: "#/components/schemas/UpdateBusinessProfileBody"
       responses:
         "200":
-          description: Updated planner profile
+          description: Updated business profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PlannerProfile"
+                $ref: "#/components/schemas/BusinessProfile"
 
-  /planner/invitations:
+  /business/clients:
     get:
-      operationId: listPlannerInvitations
-      tags: [planner]
-      summary: List invitations assigned to the logged-in planner
+      operationId: listBusinessClients
+      tags: [business]
+      summary: List clients owned by the logged-in Business Account
       responses:
         "200":
-          description: Assigned invitations
+          description: Business clients
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PlannerInvitation"
+                  $ref: "#/components/schemas/BusinessClient"
+    post:
+      operationId: createBusinessClient
+      tags: [business]
+      summary: Create a Business Account client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBusinessClientBody"
+      responses:
+        "201":
+          description: Created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessClient"
 
-  /planner/{slug}:
+  /business/clients/{id}:
+    patch:
+      operationId: updateBusinessClient
+      tags: [business]
+      summary: Update a Business Account client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBusinessClientBody"
+      responses:
+        "200":
+          description: Updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessClient"
+    delete:
+      operationId: deleteBusinessClient
+      tags: [business]
+      summary: Delete a Business Account client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /business/invitations:
     get:
-      operationId: getPlannerProfile
-      tags: [planner]
-      summary: Get a public Event Planner profile by slug
+      operationId: listBusinessInvitations
+      tags: [business]
+      summary: List invitations owned by the logged-in Business Account
+      responses:
+        "200":
+          description: Business-owned invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BusinessInvitation"
+
+  /business/search:
+    get:
+      operationId: searchBusinesses
+      tags: [business]
+      summary: Search active public Business Account profiles
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Business profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicBusinessProfile"
+
+  /business/{slug}:
+    get:
+      operationId: getBusinessProfile
+      tags: [business]
+      summary: Get a public Business Account profile by slug
       parameters:
         - name: slug
           in: path
@@ -223,13 +241,13 @@ paths:
             type: string
       responses:
         "200":
-          description: Public planner profile
+          description: Public business profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublicPlannerProfile"
+                $ref: "#/components/schemas/PublicBusinessProfile"
         "404":
-          description: Planner profile not found
+          description: Business profile not found
           content:
             application/json:
               schema:
@@ -636,9 +654,9 @@ components:
         packageId:
           type: integer
           nullable: true
-        eventPlanner:
+        business:
           allOf:
-            - $ref: "#/components/schemas/InvitationPlannerSummary"
+            - $ref: "#/components/schemas/BusinessInvitationSummary"
           nullable: true
       required:
         - id
@@ -654,12 +672,14 @@ components:
         - venueState
         - contactPhone
 
-    PlannerProfile:
+    BusinessProfile:
       type: object
       properties:
         id:
           type: integer
-        companyName:
+        businessName:
+          type: string
+        businessType:
           type: string
         displayName:
           type: string
@@ -695,7 +715,7 @@ components:
         coverImage:
           type: string
           nullable: true
-        businessAddress:
+        address:
           type: string
           nullable: true
         googleMapsUrl:
@@ -710,15 +730,18 @@ components:
           type: integer
       required:
         - id
-        - companyName
+        - businessName
+        - businessType
         - displayName
         - slug
         - isVerified
 
-    PublicPlannerProfile:
+    PublicBusinessProfile:
       type: object
       properties:
-        companyName:
+        businessName:
+          type: string
+        businessType:
           type: string
         displayName:
           type: string
@@ -754,7 +777,7 @@ components:
         coverImage:
           type: string
           nullable: true
-        businessAddress:
+        address:
           type: string
           nullable: true
         googleMapsUrl:
@@ -768,15 +791,18 @@ components:
         invitationCount:
           type: integer
       required:
-        - companyName
+        - businessName
+        - businessType
         - displayName
         - slug
         - isVerified
 
-    InvitationPlannerSummary:
+    BusinessInvitationSummary:
       type: object
       properties:
-        companyName:
+        businessName:
+          type: string
+        businessType:
           type: string
         displayName:
           type: string
@@ -798,14 +824,17 @@ components:
           type: string
           nullable: true
       required:
-        - companyName
+        - businessName
+        - businessType
         - displayName
         - slug
 
-    UpdatePlannerProfileBody:
+    UpdateBusinessProfileBody:
       type: object
       properties:
-        companyName:
+        businessName:
+          type: string
+        businessType:
           type: string
         displayName:
           type: string
@@ -841,7 +870,7 @@ components:
         coverImage:
           type: string
           nullable: true
-        businessAddress:
+        address:
           type: string
           nullable: true
         googleMapsUrl:
@@ -851,14 +880,73 @@ components:
           type: string
           nullable: true
 
-    AssignPlannerBody:
+    BusinessClient:
       type: object
       properties:
-        plannerId:
+        id:
           type: integer
-        slug:
+        businessId:
+          type: integer
+        brideName:
           type: string
-      description: Provide either plannerId or slug.
+        groomName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        eventDate:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        status:
+          type: string
+      required:
+        - id
+        - businessId
+        - brideName
+        - groomName
+        - status
+
+    CreateBusinessClientBody:
+      type: object
+      properties:
+        brideName:
+          type: string
+        groomName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        eventDate:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        status:
+          type: string
+
+    UpdateBusinessClientBody:
+      allOf:
+        - $ref: "#/components/schemas/CreateBusinessClientBody"
+
+    BusinessInvitation:
+      allOf:
+        - $ref: "#/components/schemas/Invitation"
+
+    UserRole:
+      type: string
+      enum:
+        - buyer
+        - business_account
 
     UpdateUserRoleBody:
       type: object
@@ -867,7 +955,7 @@ components:
           type: string
           enum:
             - buyer
-            - event_planner
+            - business_account
       required:
         - role
 
@@ -884,61 +972,12 @@ components:
           type: string
           enum:
             - buyer
-            - event_planner
+            - business_account
       required:
         - id
         - name
         - email
         - role
-
-    PlannerAssignmentResponse:
-      type: object
-      properties:
-        invitation:
-          type: object
-        planner:
-          $ref: "#/components/schemas/PlannerProfile"
-      required:
-        - invitation
-        - planner
-
-    PlannerInvitation:
-      type: object
-      properties:
-        id:
-          type: integer
-        token:
-          type: string
-        groomName:
-          type: string
-        brideName:
-          type: string
-        eventType:
-          type: string
-        eventDate:
-          type: string
-        eventDay:
-          type: string
-        eventTime:
-          type: string
-        venueName:
-          type: string
-        venueCity:
-          type: string
-        venueState:
-          type: string
-        websiteStatus:
-          type: string
-        createdAt:
-          type: string
-      required:
-        - id
-        - token
-        - groomName
-        - brideName
-        - eventType
-        - eventDate
-        - createdAt
 
     Rsvp:
       type: object

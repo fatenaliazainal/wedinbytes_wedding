@@ -1,0 +1,127 @@
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/context/AuthContext";
+import SiteHeader, { type SiteNavItem } from "@/components/SiteHeader";
+import SharedNavDrawer from "@/components/SharedNavDrawer";
+import SiteFooter from "@/components/SiteFooter";
+import { ArrowRight, BriefcaseBusiness, Calendar, CheckCircle2, LogOut, Plus, Settings, Trash2, User, Users } from "lucide-react";
+import { toast } from "sonner";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const NAV_ITEMS: SiteNavItem[] = [
+  { label: "HOME", href: "/" },
+  { label: "CATALOG", href: "/weddingcards/home" },
+  { label: "PRICE LIST", href: "/pricing" },
+  { label: "FAQs", href: "/faq" },
+  { label: "REVIEWS", href: "/reviews" },
+];
+
+type BusinessProfile = {
+  businessName: string; businessType: string; displayName: string; slug: string;
+  description?: string | null; logoUrl?: string | null; invitationCount?: number;
+};
+type Client = { id: number; brideName: string; groomName: string; phone?: string | null; email?: string | null; eventDate?: string | null; notes?: string | null; status: string };
+type Invitation = { id: number; token: string; brideName: string; groomName: string; eventDate?: string | null; eventType: string; venueCity?: string | null };
+
+export default function BusinessDashboardPage() {
+  const { user, loading: authLoading, logout } = useAuth();
+  const [, navigate] = useLocation();
+  const [navOpen, setNavOpen] = useState(false);
+  const [profile, setProfile] = useState<BusinessProfile | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [section, setSection] = useState<"dashboard" | "clients" | "invitations" | "analytics" | "subscription" | "settings">("dashboard");
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientDate, setClientDate] = useState("");
+  const [busy, setBusy] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== "business_account")) {
+      navigate(user ? "/dashboard" : "/login");
+    }
+  }, [authLoading, user, navigate]);
+
+  const load = async () => {
+    setBusy(true);
+    try {
+      const [profileRes, clientsRes, invitationsRes] = await Promise.all([
+        fetch(`${BASE}/api/business/me`, { credentials: "include", cache: "no-store" }),
+        fetch(`${BASE}/api/business/clients`, { credentials: "include", cache: "no-store" }),
+        fetch(`${BASE}/api/business/invitations`, { credentials: "include", cache: "no-store" }),
+      ]);
+      if (!profileRes.ok) throw new Error("Unable to load Business Profile.");
+      setProfile(await profileRes.json());
+      setClients(clientsRes.ok ? await clientsRes.json() : []);
+      setInvitations(invitationsRes.ok ? await invitationsRes.json() : []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to load dashboard.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => { if (user?.role === "business_account") void load(); }, [user?.role]);
+
+  const upcoming = useMemo(() => invitations.filter((item) => item.eventDate && new Date(item.eventDate) >= new Date()).length, [invitations]);
+  const addClient = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!clientName.trim()) return;
+    const [groomName, brideName = ""] = clientName.split("&").map((value) => value.trim());
+    const response = await fetch(`${BASE}/api/business/clients`, {
+      method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groomName, brideName, email: clientEmail || null, eventDate: clientDate || null }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) { toast.error(data.error || "Unable to add client."); return; }
+    setClients((items) => [...items, data]);
+    setClientName(""); setClientEmail(""); setClientDate("");
+    toast.success("Client added.");
+  };
+  const deleteClient = async (id: number) => {
+    const response = await fetch(`${BASE}/api/business/clients/${id}`, { method: "DELETE", credentials: "include" });
+    if (!response.ok) { toast.error("Unable to remove client."); return; }
+    setClients((items) => items.filter((item) => item.id !== id));
+  };
+  const handleLogout = async () => { await logout(); navigate("/"); };
+
+  if (authLoading || busy || !user || user.role !== "business_account") {
+    return <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]"><div className="h-8 w-8 rounded-full border-b-2 border-gray-900 animate-spin" /></div>;
+  }
+
+  const sections = [
+    ["dashboard", "Dashboard"], ["clients", "Clients"], ["invitations", "Invitations"],
+    ["analytics", "Analytics"], ["subscription", "Subscription"], ["settings", "Settings"],
+  ] as const;
+
+  return (
+    <div className="min-h-screen bg-[#fdfdfc] flex flex-col font-sans">
+      <SiteHeader navItems={NAV_ITEMS} navOpen={navOpen} setNavOpen={setNavOpen} rightSlot={<><button onClick={() => navigate("/business/profile")} className="text-gray-500 hover:text-gray-900"><User size={18} /></button><button onClick={handleLogout} className="text-gray-500 hover:text-gray-900"><LogOut size={18} /></button></>} />
+      <SharedNavDrawer navItems={NAV_ITEMS} navOpen={navOpen} setNavOpen={setNavOpen} />
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="lg:w-56 shrink-0">
+            <div className="mb-6"><p className="text-xs uppercase tracking-widest text-gray-400">Business Account</p><h1 className="mt-1 text-2xl font-serif text-gray-900">{profile?.businessName || user.name}</h1></div>
+            <nav className="grid grid-cols-2 lg:grid-cols-1 gap-1">
+              {sections.map(([id, label]) => <button key={id} onClick={() => setSection(id)} className={`text-left rounded-lg px-3 py-2.5 text-sm ${section === id ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}>{label}</button>)}
+            </nav>
+          </aside>
+          <section className="flex-1 min-w-0">
+            {section === "dashboard" && <><div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8"><div><h2 className="text-3xl font-serif text-gray-900">Welcome back</h2><p className="mt-1 text-sm text-gray-500">{profile?.displayName || user.name}. Manage your clients and invitations in one place.</p></div><button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white"><Plus size={16} /> New invitation</button></div>
+              <div className="grid sm:grid-cols-3 gap-4 mb-8">{([
+                { Icon: Calendar, value: invitations.length, label: "Total invitations" },
+                { Icon: Users, value: clients.length, label: "Clients" },
+                { Icon: CheckCircle2, value: upcoming, label: "Upcoming events" },
+              ] as const).map(({ Icon, value, label }) => <div key={label} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"><Icon size={20} className="text-gray-500" /><p className="mt-4 text-2xl font-bold text-gray-900">{value}</p><p className="text-xs uppercase tracking-wider text-gray-500">{label}</p></div>)}</div>
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"><div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center"><h3 className="font-semibold text-gray-900">Recent invitations</h3><button onClick={() => setSection("invitations")} className="text-xs text-gray-500 hover:text-gray-900">View all</button></div>{invitations.slice(0, 5).map((item) => <div key={item.id} className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4"><div><p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.eventType}</p></div><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-gray-700 inline-flex gap-1 items-center">View <ArrowRight size={13} /></a></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet. Create one for your first client.</p>}</div>
+            </>}
+            {section === "clients" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Clients</h2><p className="text-sm text-gray-500 mt-1">Keep client details separate from invitation ownership.</p></div></div><form onSubmit={addClient} className="bg-white border border-gray-200 rounded-xl p-5 grid sm:grid-cols-4 gap-3 mb-5"><input value={clientName} onChange={(e) => setClientName(e.target.value)} required placeholder="Couple names (Groom & Bride)" className="border rounded-lg px-3 py-2 text-sm sm:col-span-2" /><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} type="email" placeholder="Email" className="border rounded-lg px-3 py-2 text-sm" /><input value={clientDate} onChange={(e) => setClientDate(e.target.value)} type="date" className="border rounded-lg px-3 py-2 text-sm" /><button className="sm:col-span-4 justify-self-start bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold">Add client</button></form><div className="bg-white border border-gray-200 rounded-xl divide-y">{clients.map((client) => <div key={client.id} className="p-4 flex items-center justify-between gap-4"><div><p className="font-medium">{client.groomName} & {client.brideName}</p><p className="text-xs text-gray-500">{client.email || "No email"} · {client.eventDate || "Date not set"}</p></div><button onClick={() => void deleteClient(client.id)} className="text-gray-400 hover:text-red-600" aria-label="Delete client"><Trash2 size={16} /></button></div>)}{!clients.length && <p className="p-8 text-sm text-gray-500 text-center">No clients added yet.</p>}</div></>}
+            {section === "invitations" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Invitations</h2><p className="text-sm text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> Create</button></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{invitations.map((item) => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div><div className="flex gap-3 text-xs font-semibold"><button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a></div></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}</div></>}
+            {(section === "analytics" || section === "subscription" || section === "settings") && <div className="bg-white rounded-xl border border-gray-200 p-8"><BriefcaseBusiness size={24} className="text-gray-400" /><h2 className="mt-4 text-2xl font-serif text-gray-900">{sections.find(([id]) => id === section)?.[1]}</h2><p className="mt-2 text-sm text-gray-500">This Business Account area is ready for the next product phase. Payment and analytics logic remain intentionally deferred.</p>{section === "settings" && <button onClick={() => navigate("/business/profile")} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white"><Settings size={15} /> Edit business profile</button>}</div>}
+          </section>
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}

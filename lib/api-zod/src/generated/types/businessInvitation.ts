@@ -5,7 +5,6 @@
  * Wedding Invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { Invitation } from './invitation';
 
-export type SearchPlannersParams = {
-q?: string;
-};
+export type BusinessInvitation = Invitation;

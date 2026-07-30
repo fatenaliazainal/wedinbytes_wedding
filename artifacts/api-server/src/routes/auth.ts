@@ -21,7 +21,8 @@ declare module "express-session" {
 
 router.post("/auth/register", registerRateLimit, async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+      const { email, password, name } = req.body;
+      const requestedRole = req.body?.accountType === "business_account" ? "business_account" : "buyer";
     if (!email || !password || !name) {
       res.status(400).json({ error: "Email, kata laluan dan nama diperlukan." });
       return;
@@ -42,7 +43,7 @@ router.post("/auth/register", registerRateLimit, async (req, res) => {
       email: email.toLowerCase().trim(),
       passwordHash,
       name: name.trim(),
-      role: "buyer",
+      role: requestedRole,
     }).returning();
 
     await regenerateSession(req, user.id, user.role);

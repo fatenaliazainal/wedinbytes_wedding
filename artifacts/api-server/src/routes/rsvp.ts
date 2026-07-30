@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountResponse } from "@workspace/api-zod";
 import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
-import { auditEvent, rsvpSubmitRateLimit } from "../lib/security";
+import { auditEvent, canManageInvitation, rsvpSubmitRateLimit } from "../lib/security";
 
 const router: IRouter = Router();
 
@@ -28,7 +28,7 @@ router.get("/rsvp", async (req, res) => {
   try {
     const invitationToken = req.query.invitationToken as string | undefined;
     if (invitationToken) {
-      const [invitation] = await db.select({ userId: invitationTable.userId })
+      const [invitation] = await db.select()
         .from(invitationTable)
         .where(eq(invitationTable.token, invitationToken))
         .limit(1);
@@ -36,7 +36,7 @@ router.get("/rsvp", async (req, res) => {
         res.status(404).json({ error: "Invitation not found" });
         return;
       }
-      if (!req.session.userId || (req.session.role !== "admin" && invitation.userId !== req.session.userId)) {
+      if (!(await canManageInvitation(req, invitation))) {
         res.status(403).json({ error: "RSVP responses are private to the invitation owner." });
         return;
       }

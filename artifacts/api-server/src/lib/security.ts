@@ -1,12 +1,21 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { rateLimit } from "express-rate-limit";
+import { db, businessProfileTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
-export function canManageInvitation(
+export async function canManageInvitation(
   req: Request,
-  invitation: { userId: number | null },
-): boolean {
-  return req.session.role === "admin"
-    || Boolean(req.session.userId && invitation.userId === req.session.userId);
+  invitation: { userId: number | null; businessId?: number | null },
+): Promise<boolean> {
+  if (req.session.role === "admin") return true;
+  if (!req.session.userId) return false;
+  if (invitation.userId === req.session.userId) return true;
+  if (req.session.role !== "business_account" || !invitation.businessId) return false;
+  const [profile] = await db.select({ userId: businessProfileTable.userId })
+    .from(businessProfileTable)
+    .where(eq(businessProfileTable.id, invitation.businessId))
+    .limit(1);
+  return profile?.userId === req.session.userId;
 }
 
 export const requireAdmin: RequestHandler = (req, res, next) => {

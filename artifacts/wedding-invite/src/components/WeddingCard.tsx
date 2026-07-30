@@ -425,9 +425,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
     `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
   const groomParents = invitation.groomParents?.trim() || "";
   const brideParents = invitation.brideParents?.trim() || "";
-  const planner = inv.eventPlanner && typeof inv.eventPlanner === "object"
-    ? inv.eventPlanner as {
-        companyName?: string;
+  const business = inv.business && typeof inv.business === "object"
+    ? inv.business as {
+        businessName?: string;
+        businessType?: string;
         displayName?: string;
         slug?: string;
         logoUrl?: string | null;
@@ -440,13 +441,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
     if (!value) return "";
     return /^https?:\/\//i.test(value) ? value : `https://${value}`;
   };
-  const whatsappUrl = planner?.whatsapp
-    ? `https://wa.me/${planner.whatsapp.replace(/\D/g, "")}`
+  const whatsappUrl = business?.whatsapp
+    ? `https://wa.me/${business.whatsapp.replace(/\D/g, "")}`
     : "";
-  const instagramUrl = planner?.instagram
-    ? (/^https?:\/\//i.test(planner.instagram)
-      ? planner.instagram
-      : `https://instagram.com/${planner.instagram.replace(/^@/, "")}`)
+  const instagramUrl = business?.instagram
+    ? (/^https?:\/\//i.test(business.instagram)
+      ? business.instagram
+      : `https://instagram.com/${business.instagram.replace(/^@/, "")}`)
     : "";
 
   return (
@@ -676,26 +677,31 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           </RevealOnScroll>
 
           <RevealOnScroll>
-          {planner && (
+          {business && (
             <div className={detailBlock}>
               <OrnamentDivider />
               <div className="rounded-2xl border border-primary/15 bg-card/70 px-5 py-5 text-center shadow-sm">
-                <p className={detailLabel}>Wedding Planner</p>
+                <p className={detailLabel}>Invitation by Business</p>
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  {planner.logoUrl ? (
-                    <img src={resolveImageUrl(planner.logoUrl)} alt="" className="h-12 w-12 rounded-full object-cover border border-primary/15" />
+                  {business.logoUrl ? (
+                    <img src={resolveImageUrl(business.logoUrl)} alt="" className="h-12 w-12 rounded-full object-cover border border-primary/15" />
                   ) : (
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                      {(planner.companyName || "P").charAt(0).toUpperCase()}
+                      {(business.businessName || "B").charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="text-left">
                     <p className="font-semibold text-foreground" style={{ fontFamily: bodyFontFamily }}>
-                      {planner.companyName || "Event Planner"}
+                      {business.businessName || "Business Account"}
                     </p>
-                    {planner.displayName && (
+                    {business.displayName && (
                       <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>
-                        {planner.displayName}
+                        {business.displayName}
+                      </p>
+                    )}
+                    {business.businessType && (
+                      <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>
+                        {business.businessType}
                       </p>
                     )}
                   </div>
@@ -711,8 +717,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                       <Instagram className="h-5 w-5" />
                     </a>
                   )}
-                  {externalUrl(planner.website) && (
-                    <a href={externalUrl(planner.website)} target="_blank" rel="noopener noreferrer" aria-label="Website" className="text-foreground/70 hover:text-primary">
+                  {externalUrl(business.website) && (
+                    <a href={externalUrl(business.website)} target="_blank" rel="noopener noreferrer" aria-label="Website" className="text-foreground/70 hover:text-primary">
                       <Globe className="h-5 w-5" />
                     </a>
                   )}

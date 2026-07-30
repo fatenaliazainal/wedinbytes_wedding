@@ -204,7 +204,7 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       res.status(404).json({ error: "Invitation not found." });
       return;
     }
-    if (!canManageInvitation(req, invitation)) {
+    if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation." });
       return;
     }
@@ -252,7 +252,7 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
       res.status(404).json({ error: "Invitation not found." });
       return;
     }
-    if (!canManageInvitation(req, invitation)) {
+    if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation." });
       return;
     }
@@ -307,7 +307,7 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
       res.status(404).json({ error: "Invitation not found." });
       return;
     }
-    if (!canManageInvitation(req, invitation)) {
+    if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation." });
       return;
     }

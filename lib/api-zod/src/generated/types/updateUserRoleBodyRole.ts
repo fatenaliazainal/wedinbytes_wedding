@@ -11,5 +11,5 @@ export type UpdateUserRoleBodyRole = typeof UpdateUserRoleBodyRole[keyof typeof 
 
 export const UpdateUserRoleBodyRole = {
   buyer: 'buyer',
-  event_planner: 'event_planner',
+  business_account: 'business_account',
 } as const;

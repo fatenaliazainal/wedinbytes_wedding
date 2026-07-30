@@ -136,9 +136,10 @@ The frontend uses Wouter routing.
 | `/dashboard` | Buyer's cards, links, RSVP and profile | Buyer |
 | `/editor` | Buyer invitation editor | Buyer |
 | `/rsvp` | Buyer's RSVP dashboard | Buyer |
-| `/planner/dashboard` | Assigned invitations, planner statistics and profile shortcut | Event Planner |
-| `/planner/profile` | Event Planner public profile editor | Event Planner |
-| `/planner/:slug` | Public Event Planner profile | Public |
+| `/business/dashboard` | Business Account clients, invitations, analytics and settings | Business Account |
+| `/business/profile` | Business Account public profile and branding editor | Business Account |
+| `/business/editor` | Business-owned invitation editor | Business Account |
+| `/business/:slug` | Public Business Account profile | Public |
 | `/admin/login` | Admin login | Public entry point |
 | `/admin` | Admin management dashboard | Admin |
 | `/admin/editor` | Admin editor | Admin |
@@ -159,7 +160,7 @@ If a route is not matched, the app renders the not-found page.
 3. Normalizes the email to lowercase.
 4. Rejects an existing email.
 5. Hashes the password with bcrypt.
-6. Creates the user with role `buyer`.
+6. Creates the user with the requested role: `buyer` by default, or `business_account` when selected during registration.
 7. Stores `userId` and `role` in the server session.
 
 ### Buyer login
@@ -188,17 +189,19 @@ The admin login page is separate from buyer login, but both use the same session
 
 The session is backed by PostgreSQL using `express-session` and `connect-pg-simple`.
 
-### Event Planner role
+### Business Account role
 
-Public registration always creates a `buyer` account. An admin promotes an existing non-admin account from the Admin **Customers** section; the allowed account roles are `buyer` and `event_planner`. The admin-only endpoint is `PATCH /api/admin/users/:id/role`.
+Registration accepts `buyer` or `business_account`. Admin role management supports those two customer roles; admin accounts cannot be changed through the normal role endpoint. The admin-only endpoint is `PATCH /api/admin/users/:id/role`.
 
-Event Planner accounts can:
+Business Account profiles are created lazily on first access to a business endpoint. A Business Account can:
 
-- edit their own planner profile through `GET/PATCH /api/planner/me`;
-- view only invitations assigned to their planner profile through `GET /api/planner/invitations`;
-- appear in active planner search and on a public `/planner/:slug` page.
+- edit its public profile through `GET/PATCH /api/business/me`;
+- manage scoped client records through `GET/POST/PATCH/DELETE /api/business/clients`;
+- own invitations through `GET /api/business/invitations` and the shared invitation editor;
+- appear in active Business Account search and on a public `/business/:slug` page;
+- read private RSVP responses for its own invitations through the shared RSVP ownership check.
 
-They cannot become invitation owners, delete invitations, or assign/remove planners.
+Business invitations have `businessId` ownership and no buyer `userId`. Buyer and Business Account invitations use the same invitation table and editor architecture, while buyer-only admin footer defaults remain unchanged.
 
 ---
 
@@ -769,12 +772,12 @@ Stores account identity, password hash, name and role.
 Important roles:
 
 - `buyer`;
-- `event_planner`;
+- `business_account`;
 - `admin`.
 
 ### `invitation`
 
-Stores the complete buyer-owned card:
+Stores the complete buyer-owned or Business Account-owned card:
 
 - ownership and token;
 - purchase/website status;
@@ -787,14 +790,19 @@ Stores the complete buyer-owned card:
 - design overrides;
 - music;
 - footer/branding fields;
-- nullable `eventPlannerId` collaboration reference;
+- nullable `userId` for Buyer ownership;
+- nullable `businessId` for Business Account ownership;
 - optional lock hash.
 
-### `event_planner_profile`
+### `business_profile`
 
-Stores the public business profile for an Event Planner. The profile is linked one-to-one to a user account and contains company identity, slug, contact/social links, branding URLs, address, hours, verification and active flags.
+Stores the public Business Account identity and branding. The profile is linked one-to-one to a Business Account user and contains the business name, extensible category, slug, contact/social links, branding URLs, address, hours, verification and active flags.
 
-Buyer and Admin sessions may assign or remove an active planner from an invitation. The Buyer remains the invitation owner. Public invitation responses expose only safe planner profile fields and never expose planner user IDs.
+### `business_client`
+
+Stores client records scoped to one Business Account. Client records are separate from invitation ownership and are never exposed through public invitation responses.
+
+Business Account summaries embedded in public invitation responses contain only safe branding/contact fields. They never expose user IDs, profile IDs, ownership fields, active-state flags, PIN hashes or other internal metadata.
 
 ### `card_design`
 

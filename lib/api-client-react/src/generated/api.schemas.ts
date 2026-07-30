@@ -14,8 +14,9 @@ export type InvitationContactsItem = {
   phone: string;
 };
 
-export interface InvitationPlannerSummary {
-  companyName: string;
+export interface BusinessInvitationSummary {
+  businessName: string;
+  businessType: string;
   displayName: string;
   slug: string;
   description?: string | null;
@@ -52,12 +53,13 @@ export interface Invitation {
   galleryImages?: string[];
   language?: string;
   packageId?: number | null;
-  eventPlanner?: InvitationPlannerSummary | null;
+  business?: BusinessInvitationSummary | null;
 }
 
-export interface PlannerProfile {
+export interface BusinessProfile {
   id: number;
-  companyName: string;
+  businessName: string;
+  businessType: string;
   displayName: string;
   slug: string;
   description?: string | null;
@@ -70,15 +72,16 @@ export interface PlannerProfile {
   tiktok?: string | null;
   logoUrl?: string | null;
   coverImage?: string | null;
-  businessAddress?: string | null;
+  address?: string | null;
   googleMapsUrl?: string | null;
   businessHours?: string | null;
   isVerified: boolean;
   invitationCount?: number;
 }
 
-export interface PublicPlannerProfile {
-  companyName: string;
+export interface PublicBusinessProfile {
+  businessName: string;
+  businessType: string;
   displayName: string;
   slug: string;
   description?: string | null;
@@ -91,15 +94,16 @@ export interface PublicPlannerProfile {
   tiktok?: string | null;
   logoUrl?: string | null;
   coverImage?: string | null;
-  businessAddress?: string | null;
+  address?: string | null;
   googleMapsUrl?: string | null;
   businessHours?: string | null;
   isVerified: boolean;
   invitationCount?: number;
 }
 
-export interface UpdatePlannerProfileBody {
-  companyName?: string;
+export interface UpdateBusinessProfileBody {
+  businessName?: string;
+  businessType?: string;
   displayName?: string;
   slug?: string;
   description?: string | null;
@@ -112,25 +116,51 @@ export interface UpdatePlannerProfileBody {
   tiktok?: string | null;
   logoUrl?: string | null;
   coverImage?: string | null;
-  businessAddress?: string | null;
+  address?: string | null;
   googleMapsUrl?: string | null;
   businessHours?: string | null;
 }
 
-/**
- * Provide either plannerId or slug.
- */
-export interface AssignPlannerBody {
-  plannerId?: number;
-  slug?: string;
+export interface BusinessClient {
+  id: number;
+  businessId: number;
+  brideName: string;
+  groomName: string;
+  phone?: string | null;
+  email?: string | null;
+  eventDate?: string | null;
+  notes?: string | null;
+  status: string;
 }
+
+export interface CreateBusinessClientBody {
+  brideName?: string;
+  groomName?: string;
+  phone?: string | null;
+  email?: string | null;
+  eventDate?: string | null;
+  notes?: string | null;
+  status?: string;
+}
+
+export type UpdateBusinessClientBody = CreateBusinessClientBody;
+
+export type BusinessInvitation = Invitation;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
+
+
+export const UserRole = {
+  buyer: 'buyer',
+  business_account: 'business_account',
+} as const;
 
 export type UpdateUserRoleBodyRole = typeof UpdateUserRoleBodyRole[keyof typeof UpdateUserRoleBodyRole];
 
 
 export const UpdateUserRoleBodyRole = {
   buyer: 'buyer',
-  event_planner: 'event_planner',
+  business_account: 'business_account',
 } as const;
 
 export interface UpdateUserRoleBody {
@@ -142,7 +172,7 @@ export type UserRoleResponseRole = typeof UserRoleResponseRole[keyof typeof User
 
 export const UserRoleResponseRole = {
   buyer: 'buyer',
-  event_planner: 'event_planner',
+  business_account: 'business_account',
 } as const;
 
 export interface UserRoleResponse {
@@ -150,29 +180,6 @@ export interface UserRoleResponse {
   name: string;
   email: string;
   role: UserRoleResponseRole;
-}
-
-export type PlannerAssignmentResponseInvitation = { [key: string]: unknown };
-
-export interface PlannerAssignmentResponse {
-  invitation: PlannerAssignmentResponseInvitation;
-  planner: PlannerProfile;
-}
-
-export interface PlannerInvitation {
-  id: number;
-  token: string;
-  groomName: string;
-  brideName: string;
-  eventType: string;
-  eventDate: string;
-  eventDay?: string;
-  eventTime?: string;
-  venueName?: string;
-  venueCity?: string;
-  venueState?: string;
-  websiteStatus?: string;
-  createdAt: string;
 }
 
 export interface Rsvp {
@@ -292,7 +299,7 @@ export interface SuccessResponse {
   success: boolean;
 }
 
-export type SearchPlannersParams = {
+export type SearchBusinessesParams = {
 q?: string;
 };
 

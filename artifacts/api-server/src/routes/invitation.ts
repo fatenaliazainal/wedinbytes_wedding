@@ -4,9 +4,10 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { db, eventPlannerProfileTable, invitationTable } from "@workspace/db";
+import { businessProfileTable, db, invitationTable } from "@workspace/db";
 import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
+import { getOrCreateBusinessProfile } from "./business";
 
 const router: IRouter = Router();
 
@@ -71,14 +72,14 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   const {
     lockPinHash: _lockPinHash,
     userId: _userId,
-    eventPlannerId: _eventPlannerId,
+    businessId: _businessId,
     ...safe
   } = row;
   (safe as Record<string, unknown>).initialsImageUrl = row.initialsImageUrl ?? null;
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
   // cannot override the current admin default.
-  if (row.token !== "demo") {
+  if (row.token !== "demo" && !row.businessId) {
     const [adminDefaults] = await db
       .select({
         showFooter: invitationTable.showFooter,
@@ -96,43 +97,30 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
       safe.socialLinks = adminDefaults.socialLinks;
     }
   }
-  let planner: Record<string, unknown> | null = null;
-  if (row.eventPlannerId) {
+  let business: Record<string, unknown> | null = null;
+  if (row.businessId) {
     const [profile] = await db
-      .select()
-      .from(eventPlannerProfileTable)
+      .select({
+        businessName: businessProfileTable.businessName,
+        businessType: businessProfileTable.businessType,
+        displayName: businessProfileTable.displayName,
+        slug: businessProfileTable.slug,
+        whatsapp: businessProfileTable.whatsapp,
+        instagram: businessProfileTable.instagram,
+        website: businessProfileTable.website,
+        logoUrl: businessProfileTable.logoUrl,
+      })
+      .from(businessProfileTable)
       .where(and(
-        eq(eventPlannerProfileTable.id, row.eventPlannerId),
-        eq(eventPlannerProfileTable.isActive, true),
+        eq(businessProfileTable.id, row.businessId),
+        eq(businessProfileTable.isActive, true),
       ))
       .limit(1);
     if (profile) {
-      const {
-        userId: _plannerUserId,
-        isActive: _plannerActive,
-        id: _plannerId,
-        description,
-        whatsapp,
-        instagram,
-        website,
-        logoUrl,
-        companyName,
-        displayName,
-        slug,
-      } = profile;
-      planner = {
-        companyName,
-        displayName,
-        slug,
-        description,
-        whatsapp,
-        instagram,
-        website,
-        logoUrl,
-      };
+      business = profile;
     }
   }
-  return { ...safe, isLocked: Boolean(row.lockPinHash), eventPlanner: planner };
+  return { ...safe, isLocked: Boolean(row.lockPinHash), business: business };
 }
 
 // Create a new invitation for the logged-in buyer.
@@ -145,12 +133,22 @@ router.post("/invitation", async (req, res) => {
     }
     const body = req.body as Record<string, unknown>;
     let created: typeof invitationTable.$inferSelect | undefined;
+    let businessId: number | null = null;
+    if (req.session.role === "business_account") {
+      const profile = await getOrCreateBusinessProfile(req.session.userId);
+      if (!profile) {
+        res.status(404).json({ error: "Business profile could not be created." });
+        return;
+      }
+      businessId = profile.id;
+    }
     for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
       const token = randomUUID().replace(/-/g, "").slice(0, 16);
       try {
         [created] = await db.insert(invitationTable).values({
           token,
-          userId: req.session.userId,
+           userId: req.session.role === "business_account" ? null : req.session.userId,
+           businessId,
           groomName:    (body.groomName    as string) || "Pengantin Lelaki",
           brideName:    (body.brideName    as string) || "Pengantin Perempuan",
           eventType:    (body.eventType    as string) || "Walimatul Urus",
@@ -263,7 +261,7 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    if (!canManageInvitation(req, rows[0])) {
+    if (!(await canManageInvitation(req, rows[0]))) {
       res.status(403).json({ error: "You do not own this invitation" });
       return;
     }
@@ -330,7 +328,7 @@ router.post("/invitation/:token/lock", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    if (!canManageInvitation(req, row)) {
+    if (!(await canManageInvitation(req, row))) {
       res.status(403).json({ error: "You do not own this invitation" });
       return;
     }

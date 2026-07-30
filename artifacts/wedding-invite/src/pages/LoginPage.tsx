@@ -19,8 +19,8 @@ export default function LoginPage() {
       navigate(
         user.role === "admin"
           ? "/admin"
-          : user.role === "event_planner"
-            ? "/planner/dashboard"
+          : user.role === "business_account"
+            ? "/business/dashboard"
             : redirect || "/dashboard",
       );
     }

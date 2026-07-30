@@ -8,11 +8,12 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accountType, setAccountType] = useState<"buyer" | "business_account">("buyer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard");
+    if (!authLoading && user) navigate(user.role === "business_account" ? "/business/dashboard" : "/dashboard");
   }, [user, authLoading, navigate]);
 
   if (authLoading || user) return null;
@@ -22,8 +23,8 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      await register(email, password, name);
-      navigate("/dashboard");
+      await register(email, password, name, accountType);
+      navigate(accountType === "business_account" ? "/business/dashboard" : "/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
@@ -51,6 +52,18 @@ export default function RegisterPage() {
                 placeholder="Your full name"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-gray-50"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Account type</label>
+              <select
+                value={accountType}
+                onChange={(e) => setAccountType(e.target.value as "buyer" | "business_account")}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-gray-50"
+              >
+                <option value="buyer">Buyer</option>
+                <option value="business_account">Business Account</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-1">Business Accounts create invitations for their own clients.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
