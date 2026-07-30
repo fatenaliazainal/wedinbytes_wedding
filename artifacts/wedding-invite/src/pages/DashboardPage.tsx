@@ -850,10 +850,6 @@ export default function DashboardPage() {
         {activeSection === "profile" && (
           <div className="space-y-6" data-testid="profile-settings-page">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                <User size={13} className="text-slate-900" />
-                Account settings
-              </div>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900">Profile Settings</h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">Update your account details, password, and payment records.</p>
             </div>
