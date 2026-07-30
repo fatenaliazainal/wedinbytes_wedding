@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { Check, ImagePlus, Loader2, X } from "lucide-react";
 import { resolveImageUrl } from "@/lib/r2-url";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -299,6 +300,13 @@ export default function CustomerFormPage() {
                           + Add social link
                         </button>
                       </div>
+                    ) : field.key === "groomParents" || field.key === "brideParents" ? (
+                      <RichTextEditor
+                        value={String(values[field.key] ?? "")}
+                        onChange={(value) => updateValue(field.key, value)}
+                        placeholder="Use the toolbar to format the parents' names and details."
+                        inputStyle={{ minHeight: "7rem", padding: "0.75rem" }}
+                      />
                     ) : field.type === "textarea" ? (
                       <textarea
                         required={field.required}

@@ -5,16 +5,9 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "coverTitle", label: "Event title", type: "text", invitationField: "coverTitle" },
     { key: "groomName", label: "Groom name", type: "text", required: true, invitationField: "groomName" },
     { key: "brideName", label: "Bride name", type: "text", required: true, invitationField: "brideName" },
-    { key: "coverGroomName", label: "Cover groom name", type: "text", invitationField: "coverGroomName" },
-    { key: "coverBrideName", label: "Cover bride name", type: "text", invitationField: "coverBrideName" },
-    { key: "envelopeInitials", label: "Cover initials", type: "text", invitationField: "envelopeInitials" },
     { key: "hashtag", label: "Hashtag", type: "text", invitationField: "hashtag" },
-    { key: "showFrontText", label: "Show front page", type: "checkbox", defaultValue: true, invitationField: "showFrontText" },
-    { key: "greetingText", label: "Greeting", type: "textarea", invitationField: "greetingText" },
     { key: "groomParents", label: "Groom's parents", type: "textarea", invitationField: "groomParents" },
     { key: "brideParents", label: "Bride's parents", type: "textarea", invitationField: "brideParents" },
-    { key: "invitationText", label: "Invitation text", type: "textarea", invitationField: "invitationText" },
-    { key: "page2Initials", label: "Page 2 initials", type: "text", invitationField: "page2Initials" },
     { key: "eventDate", label: "Wedding date", type: "date", required: true, invitationField: "eventDate" },
     { key: "eventType", label: "Event type", type: "text", defaultValue: "Walimatul Urus", invitationField: "eventType" },
     { key: "eventStartTime", label: "Start time", type: "text", invitationField: "eventStartTime" },
@@ -26,20 +19,14 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
     { key: "doaText", label: "Doa", type: "textarea", invitationField: "doaText" },
-    { key: "message", label: "Short message", type: "textarea", invitationField: "message" },
     { key: "contactPhone", label: "Contact phone", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
     { key: "email", label: "Customer email", type: "email" },
     { key: "galleryImages", label: "Photo gallery", type: "textarea", invitationField: "galleryImages" },
     { key: "rsvpEnabled", label: "Enable RSVP", type: "checkbox", invitationField: "rsvpEnabled" },
-    { key: "rsvpIntroText", label: "RSVP message", type: "textarea", invitationField: "rsvpIntroText" },
     { key: "rsvpDeadline", label: "RSVP deadline", type: "text", invitationField: "rsvpDeadline" },
     { key: "rsvpMaxOverallGuests", label: "Overall guest limit", type: "text", defaultValue: "1000", invitationField: "rsvpMaxOverallGuests" },
     { key: "rsvpMaxGuestsPerInvitation", label: "Guest limit per invitation", type: "text", defaultValue: "10", invitationField: "rsvpMaxGuestsPerInvitation" },
-    { key: "showFooter", label: "Show footer branding", type: "checkbox", defaultValue: true, invitationField: "showFooter" },
-    { key: "footerText", label: "Footer text", type: "text", invitationField: "footerText" },
-    { key: "footerUrl", label: "Footer URL", type: "url", invitationField: "footerUrl" },
-    { key: "socialLinks", label: "Social links", type: "textarea", invitationField: "socialLinks" },
   ],
   hiddenFields: {
     eventDay: "",
@@ -48,6 +35,27 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     venueState: "",
   },
 };
+
+const REMOVED_BUSINESS_FORM_KEYS = new Set([
+  "message",
+  "coverGroomName",
+  "coverBrideName",
+  "envelopeInitials",
+  "showFrontText",
+  "greetingText",
+  "invitationText",
+  "page2Initials",
+  "rsvpIntroText",
+  "showFooter",
+  "footerText",
+  "footerUrl",
+  "socialLinks",
+  "nameFontFamily",
+  "nameFontSize",
+  "badgeFontSize",
+  "nameColor",
+  "bodyFontFamily",
+]);
 
 const INVITATION_FIELDS = new Set([
   "groomName", "brideName", "eventType", "eventDate", "eventDay", "eventTime",
@@ -104,12 +112,19 @@ export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
           }
           : undefined,
       }))
-      .filter((field) => field.key && field.label && ["text", "email", "date", "tel", "url", "textarea", "checkbox"].includes(field.type))
+      .filter((field) =>
+        field.key &&
+        !REMOVED_BUSINESS_FORM_KEYS.has(field.key) &&
+        field.label &&
+        ["text", "email", "date", "tel", "url", "textarea", "checkbox"].includes(field.type),
+      )
     : [];
   const configuredKeys = new Set(configuredFields.map((field) => field.key));
   const fields = [
     ...configuredFields,
-    ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) => !configuredKeys.has(field.key)),
+    ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) =>
+      !configuredKeys.has(field.key) && !REMOVED_BUSINESS_FORM_KEYS.has(field.key),
+    ),
   ];
   const hiddenFields = raw.hiddenFields && typeof raw.hiddenFields === "object" && !Array.isArray(raw.hiddenFields)
     ? Object.fromEntries(
@@ -183,6 +198,9 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
       }
     } else if (typeof value === "string") {
       const trimmed = value.trim();
+      const cleanedText = field.key === "groomParents" || field.key === "brideParents"
+        ? sanitizeRichText(trimmed)
+        : trimmed;
       if (field.validation?.minLength !== undefined && trimmed.length < field.validation.minLength) {
         errors.push(`${field.label} is too short.`);
       }
@@ -196,13 +214,22 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
           errors.push(`${field.label} has an invalid package validation rule.`);
         }
       }
-      cleaned[field.key] = trimmed;
+      cleaned[field.key] = cleanedText;
     } else {
       cleaned[field.key] = value as string | boolean | number | null;
     }
   }
   for (const [key, value] of Object.entries(config.hiddenFields ?? {})) cleaned[key] = value;
   return { errors, cleaned };
+}
+
+function sanitizeRichText(value: string) {
+  return value
+    .replace(/<(script|style|iframe|object|embed|form|meta|link)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s(href|src)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/<(?!\/?(?:b|strong|i|em|u|s|strike|br|p|div|span|font)\b)[^>]*>/gi, "")
+    .trim();
 }
 
 export function mapBusinessCustomerToInvitation(config: PricingFormConfig, customerData: Record<string, unknown>) {

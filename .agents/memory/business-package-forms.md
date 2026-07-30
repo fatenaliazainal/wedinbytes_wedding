@@ -16,3 +16,9 @@ Gallery images uploaded from a public customer form are temporary customer-owned
 **Why:** The invitation does not exist when the customer submits the form, so the existing owner-protected invitation upload endpoint cannot be used; token-scoped prefixes preserve the customer-first workflow without accepting arbitrary storage keys.
 
 **How to apply:** Upload through the public form-share gallery route, persist the returned keys in cleaned customer data, filter them again during submission, and attach them when the Business Account creates the invitation.
+
+Business Account profile UI should expose a friendly generated business link, not the internal slug field; keep the slug server-managed for public profile compatibility.
+
+**Why:** Slugs are implementation details and exposing them creates unnecessary user confusion while still requiring a stable public URL.
+
+**How to apply:** Allow edits only to the business name and type in the profile UI/API; derive and display the public link from the server-returned profile slug.

@@ -207,18 +207,11 @@ router.patch("/business/me", async (req, res) => {
     }
     const body = req.body as Record<string, unknown>;
     const update: Record<string, unknown> = {};
-    for (const field of PROFILE_FIELDS) {
+    const editableProfileFields = ["businessName", "businessType"] as const;
+    for (const field of editableProfileFields) {
       if (!(field in body)) continue;
       const value = body[field];
-      if (field === "slug") {
-        if (typeof value !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.trim())) {
-          res.status(400).json({ error: "Slug must contain lowercase letters, numbers and hyphens only" });
-          return;
-        }
-        update[field] = value.trim();
-      } else {
-        update[field] = value === null || typeof value === "string" ? value : String(value);
-      }
+      update[field] = value === null || typeof value === "string" ? value : String(value);
     }
     if (!Object.keys(update).length) {
       res.status(400).json({ error: "No valid profile fields to update" });

@@ -38,6 +38,12 @@ function getConfig() {
 }
 
 function publicBaseUrl() {
+  // Sandbox checkout from the development preview must return to the same
+  // public dev host. The shared production URL is intentionally ignored here;
+  // otherwise ToyyibPay sends a local test back to an older deployment.
+  if (process.env.NODE_ENV !== "production" && process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`.replace(/\/+$/, "");
+  }
   return (
     process.env.TOYYIBPAY_PUBLIC_BASE_URL?.replace(/\/+$/, "") ||
     "https://wedinstudio.replit.app"
