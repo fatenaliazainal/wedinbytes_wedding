@@ -204,6 +204,13 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         res.status(409).json({ error: "This order has already been paid for." });
         return;
       }
+      if (existingOrder.paymentStatus === "EXPIRED" || existingOrder.paymentStatus === "FAILED") {
+        res.status(409).json({
+          error: "This order has expired or failed. Please retry using your invitation instead.",
+          retryWithInvitationId: existingOrder.invitationId,
+        });
+        return;
+      }
     }
 
     const resolvedInvitationId = existingOrder?.invitationId ?? invitationId;
