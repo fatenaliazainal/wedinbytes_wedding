@@ -261,6 +261,12 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
     // The dashboard normally sends an invitationId, not an orderId. Reuse the
     // invitation's latest pending order as well, otherwise every Pay Now click
     // would create another order and another ToyyibPay bill.
+    //
+    // replacedExpired is set to true whenever this request retires an expired
+    // order and issues a fresh one. The frontend uses it to show a clear
+    // "your previous payment expired, starting a new one" message.
+    let replacedExpired = false;
+
     if (!existingOrder) {
       const [pendingOrder] = await db
         .select()
@@ -281,6 +287,22 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         .set({ paymentStatus: "EXPIRED", updatedAt: new Date() })
         .where(eq(orderTable.id, existingOrder.id));
       existingOrder = undefined;
+      replacedExpired = true;
+    }
+
+    // If there is no fresh PENDING order to reuse, check whether there are any
+    // EXPIRED orders for this invitation so we can tell the buyer their previous
+    // attempt had expired.
+    if (!existingOrder && !replacedExpired) {
+      const [expiredOrder] = await db
+        .select({ id: orderTable.id })
+        .from(orderTable)
+        .where(and(
+          eq(orderTable.invitationId, invitation.id),
+          eq(orderTable.paymentStatus, "EXPIRED"),
+        ))
+        .limit(1);
+      if (expiredOrder) replacedExpired = true;
     }
 
     const externalReference = existingOrder?.paymentReference ||
@@ -333,7 +355,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
           return { baseUrl: sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com" };
         })();
         const paymentUrl = `${baseUrl}/${encodeURIComponent(order.billCode)}`;
-        res.status(200).json({ orderId: order.id, paymentUrl, billCode: order.billCode, reused: true });
+        res.status(200).json({ orderId: order.id, paymentUrl, billCode: order.billCode, reused: true, replacedExpired });
         return;
       }
       // Bill is closed — fall through to issue a fresh bill below.
@@ -372,7 +394,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), updatedAt: new Date() })
         .where(eq(orderTable.id, order.id));
 
-      res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode });
+      res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode, replacedExpired });
     } catch (error) {
       await db.update(orderTable).set({ paymentStatus: "FAILED", updatedAt: new Date() }).where(eq(orderTable.id, order.id));
       throw error;

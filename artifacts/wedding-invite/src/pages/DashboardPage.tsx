@@ -490,7 +490,10 @@ export default function DashboardPage() {
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
     try {
-      await startToyyibPayCheckout(input);
+      const result = await startToyyibPayCheckout(input);
+      if (result.replacedExpired) {
+        toast.info("Your previous payment session had expired. Starting a new payment.");
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to start payment.");
     } finally {
