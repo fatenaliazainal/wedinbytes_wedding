@@ -8,3 +8,9 @@ For a multi-artifact SPA/API product, the published application must have one ex
 **Why:** ToyyPay return pages and callbacks were still 404 in production while the same routes existed in the workspace and local artifact builds, because the public domains were serving older artifact builds.
 
 **How to apply:** Keep the root deployment build/run authoritative, verify the live asset hash and callback route after every publish, and use relative frontend API URLs so return pages and callbacks share the published origin.
+
+**Verification note:** A successful local or preview callback route does not update the published service automatically. ToyyPay can still receive a 404 from the older published build until the latest deployment is published.
+
+**Why:** The Sandbox payment completed and returned successfully, but the live callback endpoint remained 404 while the preview endpoint was already correct.
+
+**How to apply:** After changing production serving or payment routes, publish before testing any external callback; check both the SPA return route and the unauthenticated callback route on the production URL.
