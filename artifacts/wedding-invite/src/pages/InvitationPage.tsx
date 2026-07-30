@@ -340,6 +340,7 @@ export default function InvitationPage() {
               isVisible={showBottomNav}
               cardMaxWidth="100%"
               showRsvp={inv?.rsvpEnabled === true}
+              showGift={inv?.giftDisplay === true}
             />
           </div>
         )}

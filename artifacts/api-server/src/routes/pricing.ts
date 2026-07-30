@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, asc } from "drizzle-orm";
+import { eq, sql, asc, or } from "drizzle-orm";
 import { db, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
 import { DEFAULT_BUSINESS_FORM_CONFIG, normalizeBusinessFormConfig } from "../lib/business-package";
 
@@ -16,10 +16,13 @@ function adminGuard(req: any, res: any) {
 // Public: list active packages with their features
 router.get("/pricing", async (req, res) => {
   try {
+    const includePackageId = Number(req.query.includePackageId);
     const packages = await db
       .select()
       .from(pricingPackageTable)
-      .where(eq(pricingPackageTable.isActive, true))
+      .where(Number.isInteger(includePackageId) && includePackageId > 0
+        ? or(eq(pricingPackageTable.isActive, true), eq(pricingPackageTable.id, includePackageId))
+        : eq(pricingPackageTable.isActive, true))
       .orderBy(asc(pricingPackageTable.sortOrder), asc(pricingPackageTable.id));
 
     const features = await db

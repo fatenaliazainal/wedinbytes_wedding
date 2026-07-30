@@ -8,6 +8,7 @@ import { businessProfileTable, db, invitationTable } from "@workspace/db";
 import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
+import { invitationHasFeature } from "../lib/pricing-features";
 
 const router: IRouter = Router();
 
@@ -44,6 +45,7 @@ const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
   "groomParents","brideParents","contactPhone","contacts","dresscode","message","galleryImages",
+  "giftDisplay","giftTitle","giftRecipient","giftBankName","giftAccountNumber","giftQrCodes",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","coverGroomName","coverBrideName","envelopeInitials","envelopeInitialsSize","page2Initials","logoInitialsUrl","initialsImageUrl","initialsImageScale",
   "eventStartDateTime","eventEndDateTime",
   "eventStartTime","eventEndTime",
@@ -265,14 +267,52 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(403).json({ error: "You do not own this invitation" });
       return;
     }
+    const giftFields = ["giftDisplay", "giftTitle", "giftRecipient", "giftBankName", "giftAccountNumber", "giftQrCodes"];
+    if (giftFields.some((field) => field in body)) {
+      if (!(await invitationHasFeature(rows[0], "Money Gift"))) {
+        res.status(403).json({ error: "Money Gift is available with the Premium package." });
+        return;
+      }
+      if ("giftQrCodes" in body) {
+        const qrCodes = body.giftQrCodes;
+        if (!Array.isArray(qrCodes) || qrCodes.length > 2 || qrCodes.some((key) =>
+          typeof key !== "string"
+          || !key.startsWith(`gift-qr/${token}/`)
+          || key.includes("..")
+        )) {
+          res.status(400).json({ error: "Gift QR codes must contain up to 2 uploaded invitation QR images." });
+          return;
+        }
+      }
+    }
+    // A paid invitation is tied to the package that was purchased. Customers
+    // may still edit the invitation content, but cannot change the package
+    // after payment (including by calling the API directly).
+    if (
+      rows[0].isPurchased
+      && req.session.role !== "admin"
+      && "packageId" in body
+    ) {
+      const requestedPackageId = body.packageId == null || body.packageId === ""
+        ? null
+        : Number(body.packageId);
+      const currentPackageId = rows[0].packageId ?? null;
+      if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
+        res.status(409).json({ error: "The pricing package cannot be changed after payment." });
+        return;
+      }
+    }
 
     // Build update object from allowed fields only
     const update: Record<string, unknown> = {};
     for (const field of ALLOWED_FIELDS) {
       if (field in body) {
         let value = body[field];
-        if (field === "galleryImages" && Array.isArray(value)) {
+      if (field === "galleryImages" && Array.isArray(value)) {
           value = value.slice(0, 4);
+        }
+        if (field === "giftQrCodes" && Array.isArray(value)) {
+          value = value.slice(0, 2);
         }
         // timestamp columns expect a Date instance, not a string.
         if (field === "rsvpDeadline" && typeof value === "string" && value.trim()) {
@@ -299,13 +339,22 @@ router.patch("/invitation/:token", async (req, res) => {
     const removedKeys = oldGallery.filter(
       (key): key is string => typeof key === "string" && !newGallery.includes(key),
     );
+    const oldGiftQrCodes = Array.isArray(rows[0].giftQrCodes) ? rows[0].giftQrCodes : [];
+    const newGiftQrCodes = Array.isArray(update.giftQrCodes) ? update.giftQrCodes : oldGiftQrCodes;
+    removedKeys.push(
+      ...oldGiftQrCodes.filter(
+        (key): key is string => typeof key === "string" && !newGiftQrCodes.includes(key),
+      ),
+    );
     if (typeof update.initialsImageUrl !== "undefined"
       && update.initialsImageUrl !== rows[0].initialsImageUrl
       && isOwnedStorageKey(rows[0].initialsImageUrl, "initials")) {
       removedKeys.push(rows[0].initialsImageUrl);
     }
     for (const key of removedKeys) {
-      const safeKey = key.startsWith("gallery/") || key.startsWith("initials/") ? key : "";
+      const safeKey = key.startsWith("gallery/") || key.startsWith("initials/") || key.startsWith("gift-qr/")
+        ? key
+        : "";
       if (!safeKey) continue;
       deleteImage(safeKey).catch((error) => {
         req.log.warn({ err: error, key: safeKey }, "Failed to remove replaced invitation image");

@@ -1,9 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX } from "lucide-react";
+import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Gift, Copy, Download } from "lucide-react";
+import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { type Invitation } from "@workspace/api-client-react";
 
-export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi";
+export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift";
 
 interface DetailPanelProps {
   activeTab: TabKey | null;
@@ -260,11 +261,61 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
   );
 }
 
+function GiftPanel({ invitation }: { invitation?: Invitation }) {
+  const data = (invitation ?? {}) as Invitation & Record<string, unknown>;
+  const qrCodes = Array.isArray(data.giftQrCodes)
+    ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
+    : [];
+  const accountNumber = typeof data.giftAccountNumber === "string" ? data.giftAccountNumber : "";
+  const title = typeof data.giftTitle === "string" && data.giftTitle.trim() ? data.giftTitle : "SALAM KASIH";
+  const recipient = typeof data.giftRecipient === "string" ? data.giftRecipient : "";
+  const bankName = typeof data.giftBankName === "string" ? data.giftBankName : "";
+  const copyAccount = async () => {
+    if (!accountNumber) return;
+    await navigator.clipboard?.writeText(accountNumber);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-5 py-4">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+        <Gift size={36} className="text-primary" />
+      </div>
+      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>{title}</p>
+      <div className="h-px w-16 bg-primary/30" />
+      {recipient && <p className="text-center text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: bodyFont }}>{recipient}</p>}
+      {bankName && <p className="text-center text-sm text-muted-foreground" style={{ fontFamily: bodyFont }}>{bankName}</p>}
+      {accountNumber && (
+        <div className="w-full rounded-2xl border border-primary/10 bg-background/80 p-4 text-center">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Account Number</p>
+          <p className="mt-2 text-lg font-semibold tracking-wide text-foreground" style={{ fontFamily: bodyFont }}>{accountNumber}</p>
+          <button type="button" onClick={() => void copyAccount()} className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
+            <Copy size={14} /> Copy account number
+          </button>
+        </div>
+      )}
+      {qrCodes.length > 0 && (
+        <div className="grid w-full gap-4 sm:grid-cols-2">
+          {qrCodes.map((url, index) => (
+            <div key={`${url}-${index}`} className="rounded-2xl border border-primary/10 bg-white p-3 text-center">
+              <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full max-w-[210px] object-contain" />
+              <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 px-4 py-2 text-xs font-semibold text-primary">
+                <Download size={14} /> Save QR
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+      {!accountNumber && qrCodes.length === 0 && <p className="text-sm text-muted-foreground">Gift details are not available yet.</p>}
+    </div>
+  );
+}
+
 const PANEL_TITLES: Record<TabKey, string> = {
   muzik: "Music",
   kalendar: "Calendar",
   lokasi: "Location",
   hubungi: "Contact",
+  gift: "Salam Kasih",
 };
 
 const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
@@ -310,6 +361,7 @@ export function DetailPanel({
       {activeTab === "hubungi" && (
         <HubungiPanel invitation={invitation} />
       )}
+      {activeTab === "gift" && <GiftPanel invitation={invitation} />}
     </div>
   );
 

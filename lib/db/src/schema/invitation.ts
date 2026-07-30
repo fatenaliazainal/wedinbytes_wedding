@@ -74,6 +74,13 @@ export const invitationTable = pgTable("invitation", {
   rsvpMaxGuests: integer("rsvp_max_guests").notNull().default(5),
   // Gallery images (array of R2 keys or full URLs)
   galleryImages: jsonb("gallery_images").$type<string[]>(),
+  // Premium money-gift section
+  giftDisplay: boolean("gift_display").notNull().default(false),
+  giftTitle: text("gift_title"),
+  giftRecipient: text("gift_recipient"),
+  giftBankName: text("gift_bank_name"),
+  giftAccountNumber: text("gift_account_number"),
+  giftQrCodes: jsonb("gift_qr_codes").$type<string[]>(),
   // RSVP settings (per-invitation, independent for each card)
   rsvpEnabled: boolean("rsvp_enabled").notNull().default(false),
   rsvpAdditionalInfo: text("rsvp_additional_info"),

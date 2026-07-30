@@ -778,6 +778,23 @@ components:
           items:
             type: string
           description: Array of gallery image URLs or R2 keys
+        giftDisplay:
+          type: boolean
+          description: Whether the premium money-gift section is visible
+        giftTitle:
+          type: string
+        giftRecipient:
+          type: string
+        giftBankName:
+          type: string
+        giftAccountNumber:
+          type: string
+        giftQrCodes:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+          description: Up to two money-gift QR image URLs or R2 keys
         language:
           type: string
           default: ms

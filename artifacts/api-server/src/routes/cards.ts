@@ -5,6 +5,7 @@ import multer from "multer";
 import { deleteImage, uploadImage, downloadImage, isR2Configured } from "../services/cloudflare/r2-storage-admin";
 import { auditEvent, canManageInvitation, requireAdmin } from "../lib/security";
 import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
+import { invitationHasFeature } from "../lib/pricing-features";
 
 const router: IRouter = Router();
 
@@ -31,12 +32,20 @@ const initialsUpload = multer({
   limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => cb(null, file.mimetype === "image/png"),
 });
+const giftQrUpload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = /^image\/(jpeg|png|webp)$/.test(file.mimetype);
+    cb(null, ok);
+  },
+});
 
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
 router.get("/r2", async (req, res) => {
   const key = typeof req.query.key === "string" ? req.query.key : "";
-  const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/", "business-logos/"];
+  const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/", "business-logos/", "gift-qr/"];
   if (!key || key.includes("..") || key.startsWith("/")
     || !allowedPrefixes.some((prefix) => key.startsWith(prefix))) {
     res.status(400).json({ error: "A valid R2 object key is required" });
@@ -221,6 +230,68 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to upload gallery image");
     res.status(500).json({ error: "Failed to upload gallery image" });
+  }
+});
+
+// ── Upload one premium money-gift QR image for an invitation ────────────────
+router.post("/gift-qr-upload", giftQrUpload.single("file"), async (req, res) => {
+  if (!isR2Configured()) {
+    res.status(503).json({ error: "Photo storage is not configured." });
+    return;
+  }
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "QR image is required (jpeg/png/webp, max 5 MB)." });
+      return;
+    }
+    const invitationToken = typeof (req.body.invitationToken || req.query.invitationToken) === "string"
+      ? String(req.body.invitationToken || req.query.invitationToken).trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required." });
+      return;
+    }
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found." });
+      return;
+    }
+    if (!(await canManageInvitation(req, invitation))) {
+      res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
+    if (!(await invitationHasFeature(invitation, "Money Gift"))) {
+      res.status(403).json({ error: "Money Gift is available with the Premium package." });
+      return;
+    }
+    const existing = Array.isArray(invitation.giftQrCodes) ? invitation.giftQrCodes : [];
+    if (existing.length >= 2) {
+      res.status(400).json({ error: "You can upload up to 2 gift QR images." });
+      return;
+    }
+    const mimeType = req.file.mimetype as SupportedImageMime;
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
+      return;
+    }
+    const imageKey = await uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: mimeType,
+      folder: `gift-qr/${invitationToken}`,
+      metadata: { uploadedAt: new Date().toISOString(), invitationToken },
+    });
+    auditEvent(req, "invitation.gift_qr_upload", { invitationToken });
+    res.json({ key: imageKey });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload gift QR image");
+    res.status(500).json({ error: "Failed to upload gift QR image." });
   }
 });
 

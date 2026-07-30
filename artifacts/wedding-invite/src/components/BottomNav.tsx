@@ -1,5 +1,5 @@
 import React from "react";
-import { Music, Calendar, MapPin, Phone, MessageSquare, VolumeX } from "lucide-react";
+import { Music, Calendar, MapPin, Phone, MessageSquare, VolumeX, Gift } from "lucide-react";
 import { type TabKey } from "@/components/DetailPanel";
 
 interface BottomNavProps {
@@ -38,10 +38,11 @@ const NAV_ITEMS: {
   { icon: Calendar,      label: "Calendar",   tab: "kalendar" },
   { icon: MapPin,        label: "Location",   tab: "lokasi" },
   { icon: Phone,         label: "Contact",    tab: "hubungi" },
+  { icon: Gift,          label: "Salam Kasih", tab: "gift" },
   { icon: MessageSquare, label: "RSVP",       isRsvp: true },
 ];
 
-export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "420px", showRsvp = true }: BottomNavProps & { showRsvp?: boolean }) {
+export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "420px", showRsvp = true, showGift = false }: BottomNavProps & { showRsvp?: boolean; showGift?: boolean }) {
   return (
     <>
       <style>{`
@@ -62,7 +63,7 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
           pointerEvents: isVisible ? undefined : "none",
         }}
       >
-          {NAV_ITEMS.filter((item) => !item.isRsvp || showRsvp).map((item) => {
+          {NAV_ITEMS.filter((item) => (!item.isRsvp || showRsvp) && (item.tab !== "gift" || showGift)).map((item) => {
             const isMuzik = item.tab === "muzik";
             const isActive = item.tab ? activeTab === item.tab : false;
             const playing = isMuzik && !isMuted;

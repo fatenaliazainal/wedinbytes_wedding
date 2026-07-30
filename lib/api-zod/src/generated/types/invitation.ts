@@ -33,6 +33,17 @@ export interface Invitation {
   doaText?: string;
   /** Array of gallery image URLs or R2 keys */
   galleryImages?: string[];
+  /** Whether the premium money-gift section is visible */
+  giftDisplay?: boolean;
+  giftTitle?: string;
+  giftRecipient?: string;
+  giftBankName?: string;
+  giftAccountNumber?: string;
+  /**
+     * Up to two money-gift QR image URLs or R2 keys
+     * @maxItems 2
+     */
+  giftQrCodes?: string[];
   language?: string;
   packageId?: number | null;
   business?: BusinessInvitationSummary | null;

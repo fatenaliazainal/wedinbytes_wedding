@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2 } from "lucide-react";
+import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2, Gift } from "lucide-react";
 import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
 import type { BusinessInvitationSummary, PricingPackage } from "@workspace/api-client-react";
 
@@ -27,6 +27,7 @@ const TABS = [
   { id: "aturcara", label: "PROGRAMME" },
   { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
+  { id: "gift", label: "GIFT" },
   { id: "kehadiran", label: "RSVP" },
   { id: "hubungi", label: "CONTACT" },
   { id: "footer", label: "FOOTER" },
@@ -39,6 +40,7 @@ const TAB_FEATURE_MAP: Record<string, string[]> = {
   kehadiran: ["RSVP / Wishes"],
   hubungi: ["Contact"],
   galeri: ["Photo Gallery", "Money Gift"],
+  gift: ["Money Gift"],
 };
 
 const OPENING_ANIMS = [
@@ -153,6 +155,12 @@ interface InvData {
   schedule: string;
   itinerary: { time: string; event: string }[];
   galleryImages: string[];
+  giftDisplay: boolean;
+  giftTitle: string;
+  giftRecipient: string;
+  giftBankName: string;
+  giftAccountNumber: string;
+  giftQrCodes: string[];
   designCode: string;
   // RSVP settings
   rsvpEnabled: boolean;
@@ -323,6 +331,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
     hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", itinerary: [], galleryImages: [],
+    giftDisplay: false, giftTitle: "SALAM KASIH", giftRecipient: "", giftBankName: "", giftAccountNumber: "", giftQrCodes: [],
     designCode: "FL001",
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
@@ -401,7 +410,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           (mode === "buyer" || mode === "business") ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
         mode === "buyer" ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("{}")),
       ]);
-      const loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
+      let loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
       setPackages(loadedPackages);
       const adminDefaults = adminFooterRes.ok
         ? await adminFooterRes.json() as Record<string, unknown>
@@ -451,6 +460,22 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           return;
         }
         const d = loadedInv;
+        // Keep a previously purchased package available even if an admin has
+        // since deactivated it from the public pricing list.
+        if (
+          (mode === "buyer" || mode === "business")
+          && d?.isPurchased === true
+          && Number.isInteger(d.packageId)
+          && !loadedPackages.some((pkg) => pkg.id === d.packageId)
+        ) {
+          const purchasedPackageRes = await fetch(
+            `${BASE}/api/pricing?includePackageId=${encodeURIComponent(String(d.packageId))}`,
+            { credentials: "include", cache: "no-store" },
+          );
+          if (purchasedPackageRes.ok) {
+            loadedPackages = await purchasedPackageRes.json() as PricingPackage[];
+          }
+        }
         setInv({
           id: d.id ?? 0,
           token: d.token ?? "",
@@ -493,6 +518,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
           itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
           galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages.slice(0, 4) : [],
+          giftDisplay: d.giftDisplay === true,
+          giftTitle: d.giftTitle ?? "SALAM KASIH",
+          giftRecipient: d.giftRecipient ?? "",
+          giftBankName: d.giftBankName ?? "",
+          giftAccountNumber: d.giftAccountNumber ?? "",
+          giftQrCodes: Array.isArray(d.giftQrCodes) ? d.giftQrCodes.slice(0, 2) : [],
           designCode: d.designCode ?? "FL001",
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
@@ -623,11 +654,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         }
       }
 
-      // Determine selected package: URL param ?package= wins, then invitation.packageId, then first active package.
+      // A paid invitation must always keep its purchased package. Before
+      // payment, the pricing page may pass a package through the URL.
       if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
         const urlPackage = new URLSearchParams(window.location.search).get("package");
-        const pkgId = urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null);
-        const resolvedPkg = loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
+        const pkgId = loadedInv?.isPurchased
+          ? (loadedInv.packageId ?? null)
+          : (urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null));
+        const resolvedPkg = loadedInv?.isPurchased
+          ? loadedPackages.find((p) => p.id === pkgId)
+          : loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
         setActivePackageId(resolvedPkg?.id ?? null);
       }
     } catch { /* ignore */ }
@@ -659,6 +695,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
+
+  const packageLocked = inv.isPurchased && mode !== "admin";
 
   async function handleSave() {
     setSaving(true);
@@ -755,6 +793,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         schedule: inv.schedule || null,
         itinerary: inv.itinerary,
         galleryImages: inv.galleryImages,
+        giftDisplay: inv.giftDisplay,
+        giftTitle: inv.giftTitle || null,
+        giftRecipient: inv.giftRecipient || null,
+        giftBankName: inv.giftBankName || null,
+        giftAccountNumber: inv.giftAccountNumber || null,
+        giftQrCodes: inv.giftQrCodes,
         rsvpEnabled: inv.rsvpEnabled,
         rsvpAdditionalInfo: inv.rsvpAdditionalInfo || null,
         rsvpDeadline: inv.rsvpDeadline || null,
@@ -894,6 +938,44 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       toast.error("Network error semasa upload artwork initials.");
     } finally {
       setUploadingInitials(false);
+    }
+  }
+
+  async function uploadGiftQrFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const remainingSlots = Math.max(0, 2 - inv.giftQrCodes.length);
+    if (remainingSlots === 0) {
+      toast.info("Gift hanya boleh 2 QR.");
+      return;
+    }
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+    setUploadingGallery(true);
+    try {
+      const uploadedKeys: string[] = [];
+      for (const file of filesToUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("invitationToken", inv.token);
+        const response = await fetch(`${BASE}/api/gift-qr-upload`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          toast.error(data.error || `Failed to upload ${file.name}`);
+          continue;
+        }
+        if (data.key) uploadedKeys.push(data.key);
+      }
+      if (uploadedKeys.length > 0) {
+        setInv((current) => ({ ...current, giftQrCodes: [...current.giftQrCodes, ...uploadedKeys].slice(0, 2) }));
+        toast.success(`${uploadedKeys.length} gift QR uploaded`);
+      }
+    } catch {
+      toast.error("Network error during QR upload.");
+    } finally {
+      setUploadingGallery(false);
     }
   }
 
@@ -1451,6 +1533,80 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               </div>
             )}
 
+            {/* ── GIFT ── */}
+            {activeTab === "gift" && (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                  Money Gift is available with the Premium package. Guests will only see this section when Display Gift is enabled.
+                </div>
+                <Field label="Display Gift">
+                  <select
+                    className={inputCls}
+                    value={inv.giftDisplay ? "yes" : "no"}
+                    onChange={(event) => setInv((current) => ({ ...current, giftDisplay: event.target.value === "yes" }))}
+                  >
+                    <option value="yes">Yes, show Gift tab</option>
+                    <option value="no">No, hide Gift tab</option>
+                  </select>
+                </Field>
+                <Field label="Gift Title">
+                  <input className={inputCls} value={inv.giftTitle} onChange={(event) => setInv((current) => ({ ...current, giftTitle: event.target.value }))} placeholder="SALAM KASIH" />
+                </Field>
+                <Field label="Recipient Name">
+                  <input className={inputCls} value={inv.giftRecipient} onChange={(event) => setInv((current) => ({ ...current, giftRecipient: event.target.value }))} placeholder="SH AHRUDIN BIN AHMAD" />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Bank">
+                    <input className={inputCls} value={inv.giftBankName} onChange={(event) => setInv((current) => ({ ...current, giftBankName: event.target.value }))} placeholder="Maybank" />
+                  </Field>
+                  <Field label="Account Number">
+                    <input className={inputCls} value={inv.giftAccountNumber} onChange={(event) => setInv((current) => ({ ...current, giftAccountNumber: event.target.value }))} placeholder="562375471612" />
+                  </Field>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">QR Code</p>
+                      <p className="text-xs text-gray-500">Upload up to 2 QR images, max 5 MB each.</p>
+                    </div>
+                    <label className={`inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-xs font-medium ${inv.giftQrCodes.length >= 2 || !inv.token ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-gray-50"}`}>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        className="hidden"
+                        disabled={inv.giftQrCodes.length >= 2 || !inv.token || uploadingGallery}
+                        onChange={(event) => uploadGiftQrFiles(event.target.files)}
+                      />
+                      {inv.giftQrCodes.length >= 2 ? "QR Full" : !inv.token ? "Save card first" : "Upload QR"}
+                    </label>
+                  </div>
+                  {inv.giftQrCodes.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {inv.giftQrCodes.map((url, index) => (
+                        <div key={`${url}-${index}`} className="relative group">
+                          <img
+                            src={resolveImageUrl(url)}
+                            alt={`Gift QR ${index + 1}`}
+                            onError={(event) => fallbackToR2Proxy(event, url)}
+                            className="h-32 w-full rounded border border-gray-200 bg-white object-contain p-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setInv((current) => ({ ...current, giftQrCodes: current.giftQrCodes.filter((_, itemIndex) => itemIndex !== index) }))}
+                            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ── KEHADIRAN ── */}
             {activeTab === "kehadiran" && (
               <div className="space-y-4">
@@ -1640,6 +1796,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     <select
                       className={selectCls}
                       value={activePackageId ?? ""}
+                      disabled={packageLocked}
+                      title={packageLocked ? "The package cannot be changed after payment." : undefined}
                       onChange={(e) => {
                         const id = e.target.value ? parseInt(e.target.value, 10) : null;
                         setActivePackageId(id);
@@ -1652,6 +1810,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         </option>
                       ))}
                     </select>
+                    {packageLocked && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Package cannot be changed after payment.
+                      </p>
+                    )}
                   </Field>
                 )}
                 <Field label="Card Language">
@@ -2041,6 +2204,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       onRsvpClick={() => toast.info("RSVP preview only")}
                       isVisible={true}
                       cardMaxWidth="100%"
+                       showGift={inv.giftDisplay}
                     />
                   </div>
                 </div>

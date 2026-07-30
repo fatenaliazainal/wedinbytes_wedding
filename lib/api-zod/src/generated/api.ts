@@ -25,6 +25,8 @@ export const GetInvitationParams = zod.object({
 
 export const getInvitationResponseContactsMax = 4;
 
+export const getInvitationResponseGiftQrCodesMax = 2;
+
 export const getInvitationResponseLanguageDefault = `ms`;
 
 export const GetInvitationResponse = zod.object({
@@ -53,6 +55,12 @@ export const GetInvitationResponse = zod.object({
   "hashtag": zod.string().optional(),
   "doaText": zod.string().optional(),
   "galleryImages": zod.array(zod.string()).optional().describe('Array of gallery image URLs or R2 keys'),
+  "giftDisplay": zod.boolean().optional().describe('Whether the premium money-gift section is visible'),
+  "giftTitle": zod.string().optional(),
+  "giftRecipient": zod.string().optional(),
+  "giftBankName": zod.string().optional(),
+  "giftAccountNumber": zod.string().optional(),
+  "giftQrCodes": zod.array(zod.string()).max(getInvitationResponseGiftQrCodesMax).optional().describe('Up to two money-gift QR image URLs or R2 keys'),
   "language": zod.string().default(getInvitationResponseLanguageDefault),
   "packageId": zod.number().nullish(),
   "business": zod.object({
@@ -328,6 +336,8 @@ export const CreateInvitationForBusinessClientResponse = zod.object({
  */
 export const listBusinessInvitationsResponseOneContactsMax = 4;
 
+export const listBusinessInvitationsResponseOneGiftQrCodesMax = 2;
+
 export const listBusinessInvitationsResponseOneLanguageDefault = `ms`;
 
 export const ListBusinessInvitationsResponseItem = zod.object({
@@ -356,6 +366,12 @@ export const ListBusinessInvitationsResponseItem = zod.object({
   "hashtag": zod.string().optional(),
   "doaText": zod.string().optional(),
   "galleryImages": zod.array(zod.string()).optional().describe('Array of gallery image URLs or R2 keys'),
+  "giftDisplay": zod.boolean().optional().describe('Whether the premium money-gift section is visible'),
+  "giftTitle": zod.string().optional(),
+  "giftRecipient": zod.string().optional(),
+  "giftBankName": zod.string().optional(),
+  "giftAccountNumber": zod.string().optional(),
+  "giftQrCodes": zod.array(zod.string()).max(listBusinessInvitationsResponseOneGiftQrCodesMax).optional().describe('Up to two money-gift QR image URLs or R2 keys'),
   "language": zod.string().default(listBusinessInvitationsResponseOneLanguageDefault),
   "packageId": zod.number().nullish(),
   "business": zod.object({
