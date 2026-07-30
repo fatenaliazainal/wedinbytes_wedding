@@ -106,10 +106,30 @@ export async function isDuitNowQrActivated() {
     return duitNowQrStatusCache.activated;
   }
 
+  // Allow operators to explicitly override the API check (e.g. for sandbox accounts where the
+  // checkDuitNowQRStatus endpoint is unavailable, or for known-activated production accounts).
+  const envOverride = process.env.TOYYIBPAY_DUITNOW_QR_ENABLED;
+  if (envOverride !== undefined) {
+    const activated = envOverride === "true";
+    duitNowQrStatusCache = { activated, checkedAt: now };
+    return activated;
+  }
+
   const { userSecretKey } = getConfig();
-  const data = await postForm("checkDuitNowQRStatus", { userSecretKey }) as DuitNowQrStatusResponse;
+  let data: DuitNowQrStatusResponse;
+  try {
+    data = await postForm("checkDuitNowQRStatus", { userSecretKey }) as DuitNowQrStatusResponse;
+  } catch {
+    // The checkDuitNowQRStatus endpoint is not available in all ToyyibPay environments (e.g.
+    // sandbox). Treat an unreachable endpoint as "not activated" rather than an error so that FPX
+    // checkout still works.
+    duitNowQrStatusCache = { activated: false, checkedAt: now };
+    return false;
+  }
   if (data.status !== "success") {
-    throw new Error(`Unable to check DuitNow QR status: ${data.message || "ToyyibPay returned an error."}`);
+    // Non-success responses also mean the feature is unavailable for this account.
+    duitNowQrStatusCache = { activated: false, checkedAt: now };
+    return false;
   }
 
   const activated = data.duitnowqr_activated === true;
