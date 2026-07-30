@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe, Instagram, MessageCircle } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 
 interface WeddingCardProps {
@@ -425,6 +425,29 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
     `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
   const groomParents = invitation.groomParents?.trim() || "";
   const brideParents = invitation.brideParents?.trim() || "";
+  const planner = inv.eventPlanner && typeof inv.eventPlanner === "object"
+    ? inv.eventPlanner as {
+        companyName?: string;
+        displayName?: string;
+        slug?: string;
+        logoUrl?: string | null;
+        whatsapp?: string | null;
+        instagram?: string | null;
+        website?: string | null;
+      }
+    : null;
+  const externalUrl = (value?: string | null) => {
+    if (!value) return "";
+    return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  };
+  const whatsappUrl = planner?.whatsapp
+    ? `https://wa.me/${planner.whatsapp.replace(/\D/g, "")}`
+    : "";
+  const instagramUrl = planner?.instagram
+    ? (/^https?:\/\//i.test(planner.instagram)
+      ? planner.instagram
+      : `https://instagram.com/${planner.instagram.replace(/^@/, "")}`)
+    : "";
 
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
@@ -650,6 +673,53 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               );
             })()}
           </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll>
+          {planner && (
+            <div className={detailBlock}>
+              <OrnamentDivider />
+              <div className="rounded-2xl border border-primary/15 bg-card/70 px-5 py-5 text-center shadow-sm">
+                <p className={detailLabel}>Wedding Planner</p>
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  {planner.logoUrl ? (
+                    <img src={resolveImageUrl(planner.logoUrl)} alt="" className="h-12 w-12 rounded-full object-cover border border-primary/15" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                      {(planner.companyName || "P").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="font-semibold text-foreground" style={{ fontFamily: bodyFontFamily }}>
+                      {planner.companyName || "Event Planner"}
+                    </p>
+                    {planner.displayName && (
+                      <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>
+                        {planner.displayName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-center gap-4">
+                  {whatsappUrl && (
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="text-foreground/70 hover:text-primary">
+                      <MessageCircle className="h-5 w-5" />
+                    </a>
+                  )}
+                  {instagramUrl && (
+                    <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-foreground/70 hover:text-primary">
+                      <Instagram className="h-5 w-5" />
+                    </a>
+                  )}
+                  {externalUrl(planner.website) && (
+                    <a href={externalUrl(planner.website)} target="_blank" rel="noopener noreferrer" aria-label="Website" className="text-foreground/70 hover:text-primary">
+                      <Globe className="h-5 w-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           </RevealOnScroll>
 
           <RevealOnScroll>

@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2 } from "lucide-react";
+import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2, Search, UserRoundCheck, UserRoundX } from "lucide-react";
 import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
 import type { PricingPackage } from "@workspace/api-client-react";
 
@@ -30,6 +30,7 @@ const TABS = [
   { id: "kehadiran", label: "RSVP" },
   { id: "hubungi", label: "CONTACT" },
   { id: "footer", label: "FOOTER" },
+  { id: "planner", label: "EVENT PLANNER" },
 ];
 
 // Tabs that need a specific pricing feature to be visible.
@@ -167,6 +168,18 @@ interface InvData {
   footerText: string;
   footerUrl: string;
   socialLinks: { platform: string; url: string }[];
+  eventPlanner: PlannerSummary | null;
+}
+
+interface PlannerSummary {
+  companyName: string;
+  displayName: string;
+  slug: string;
+  description?: string | null;
+  whatsapp?: string | null;
+  instagram?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
 }
 
 interface DesignData {
@@ -292,12 +305,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
   const { data: activeDesign } = useGetActiveDesign();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
+  const [plannerSearch, setPlannerSearch] = useState("");
+  const [plannerResults, setPlannerResults] = useState<PlannerSummary[]>([]);
+  const [plannerSearching, setPlannerSearching] = useState(false);
+  const [plannerSaving, setPlannerSaving] = useState(false);
 
   const activePackage = packages.find((p) => p.id === activePackageId);
   const activeFeatureNames = useMemo(() => new Set((activePackage?.features ?? []).map((f) => f.name)), [activePackage]);
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
       if (tab.id === "footer") return mode !== "buyer";
+      if (tab.id === "planner") return mode === "buyer";
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
@@ -332,6 +350,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
       { platform: "tiktok", url: "https://tiktok.com/@wedinbytesstudio" },
       { platform: "instagram", url: "https://instagram.com/wedinbytesstudio" },
     ],
+    eventPlanner: null,
   });
 
   const [design, setDesign] = useState<DesignData>({
@@ -496,6 +515,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
             { platform: "tiktok", url: "" },
             { platform: "instagram", url: "" },
           ]),
+          eventPlanner: d.eventPlanner && typeof d.eventPlanner === "object"
+            ? d.eventPlanner as PlannerSummary
+            : null,
         });
         // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
         const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
@@ -637,6 +659,78 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
 
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
+
+  useEffect(() => {
+    if (mode !== "buyer" || activeTab !== "planner") return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setPlannerSearching(true);
+      try {
+        const query = plannerSearch.trim();
+        const response = await fetch(
+          `${BASE}/api/planner/search${query ? `?q=${encodeURIComponent(query)}` : ""}`,
+          { credentials: "include", signal: controller.signal },
+        );
+        setPlannerResults(response.ok ? await response.json() as PlannerSummary[] : []);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setPlannerResults([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) setPlannerSearching(false);
+      }
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [activeTab, mode, plannerSearch]);
+
+  async function assignPlanner(planner: PlannerSummary) {
+    if (!inv.token) {
+      toast.info("Save the invitation before assigning an Event Planner.");
+      return;
+    }
+    setPlannerSaving(true);
+    try {
+      const response = await fetch(
+        `${BASE}/api/invitation/${encodeURIComponent(inv.token)}/assign-planner`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ slug: planner.slug }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to assign planner.");
+      setInv((previous) => ({ ...previous, eventPlanner: data.planner as PlannerSummary }));
+      toast.success("Event Planner assigned.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to assign planner.");
+    } finally {
+      setPlannerSaving(false);
+    }
+  }
+
+  async function removePlanner() {
+    if (!inv.token) return;
+    setPlannerSaving(true);
+    try {
+      const response = await fetch(
+        `${BASE}/api/invitation/${encodeURIComponent(inv.token)}/remove-planner`,
+        { method: "POST", credentials: "include" },
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to remove planner.");
+      setInv((previous) => ({ ...previous, eventPlanner: null }));
+      toast.success("Event Planner removed.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to remove planner.");
+    } finally {
+      setPlannerSaving(false);
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -1868,6 +1962,93 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "demo"
                   <p><strong>Tidak Supported:</strong> Facebook/Instagram/Telegram Browser & less popular browsers.</p>
                 </div>
               </>
+            )}
+
+            {activeTab === "planner" && (
+              <section className="space-y-5">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800">Event Planner</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Assign an active planner to coordinate this invitation. The Buyer remains the invitation owner.
+                  </p>
+                </div>
+
+                {inv.eventPlanner ? (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+                    <div className="flex items-start gap-3">
+                      {inv.eventPlanner.logoUrl ? (
+                        <img src={resolveImageUrl(inv.eventPlanner.logoUrl)} alt="" className="h-12 w-12 rounded-lg object-cover border border-white" />
+                      ) : (
+                        <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center text-sm font-semibold text-emerald-700">
+                          {inv.eventPlanner.companyName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900">{inv.eventPlanner.companyName}</p>
+                        <p className="text-xs text-gray-600">{inv.eventPlanner.displayName}</p>
+                        <a href={`/planner/${inv.eventPlanner.slug}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline">
+                          View public profile
+                        </a>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removePlanner}
+                        disabled={plannerSaving}
+                        className="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+                      >
+                        <UserRoundX size={14} />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">Search active planners</label>
+                    <div className="relative">
+                      <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        value={plannerSearch}
+                        onChange={(e) => setPlannerSearch(e.target.value)}
+                        placeholder="Company, name or profile slug"
+                        className={`${inputCls} pl-9`}
+                      />
+                    </div>
+                    {!inv.token && (
+                      <p className="text-xs text-amber-700 mt-2">Save this invitation first to assign a planner.</p>
+                    )}
+                    <div className="mt-3 space-y-2">
+                      {plannerSearching ? (
+                        <p className="text-xs text-gray-500">Searching...</p>
+                      ) : plannerResults.length === 0 ? (
+                        <p className="text-xs text-gray-500">No active planners found.</p>
+                      ) : plannerResults.map((planner) => (
+                        <div key={planner.slug} className="flex items-center gap-3 rounded-lg bg-white border border-gray-200 p-3">
+                          {planner.logoUrl ? (
+                            <img src={resolveImageUrl(planner.logoUrl)} alt="" className="h-9 w-9 rounded-md object-cover" />
+                          ) : (
+                            <div className="h-9 w-9 rounded-md bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500">
+                              {planner.companyName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-800 truncate">{planner.companyName}</p>
+                            <p className="text-xs text-gray-500 truncate">{planner.displayName} · /planner/{planner.slug}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => assignPlanner(planner)}
+                            disabled={plannerSaving || !inv.token}
+                            className="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-40"
+                          >
+                            <UserRoundCheck size={14} />
+                            Assign
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             )}
           </div>
 

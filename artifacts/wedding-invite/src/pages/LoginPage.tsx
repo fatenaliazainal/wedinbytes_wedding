@@ -16,7 +16,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate(user.role === "admin" ? "/admin" : "/dashboard");
+      navigate(
+        user.role === "admin"
+          ? "/admin"
+          : user.role === "event_planner"
+            ? "/planner/dashboard"
+            : "/dashboard",
+      );
     }
   }, [user, authLoading, navigate, redirect]);
 

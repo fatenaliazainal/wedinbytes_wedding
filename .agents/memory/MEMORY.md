@@ -9,3 +9,4 @@
 - [Admin-managed design persistence](admin-managed-design-persistence.md) — startup seed must create catalogue defaults only when empty and never overwrite saved Card Design edits.
 - [Buyer-owned initials artwork](order-owned-initials-artwork.md) — optional initials uploads belong to the buyer invitation in R2, never to shared card designs.
 - [Security hardening boundaries](security-hardening-boundaries.md) — public invitation responses must omit ownership/private RSVP fields; owner/admin checks belong on every invitation mutation.
+- [Planner response boundaries](planner-response-boundaries.md) — public planner profiles and invitation planner summaries are separate contracts; never include ownership or internal IDs in either.

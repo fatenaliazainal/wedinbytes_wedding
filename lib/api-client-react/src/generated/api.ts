@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AssignPlannerBody,
   CardDesign,
   CreatePricingFeatureBody,
   CreatePricingPackageBody,
@@ -28,13 +29,21 @@ import type {
   GetRsvpCountParams,
   HealthStatus,
   Invitation,
+  PlannerAssignmentResponse,
+  PlannerInvitation,
+  PlannerProfile,
   PricingFeature,
   PricingPackage,
+  PublicPlannerProfile,
   Rsvp,
   RsvpCount,
+  SearchPlannersParams,
   SuccessResponse,
+  UpdatePlannerProfileBody,
   UpdatePricingFeatureBody,
-  UpdatePricingPackageBody
+  UpdatePricingPackageBody,
+  UpdateUserRoleBody,
+  UserRoleResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -191,6 +200,603 @@ export function useGetInvitation<TData = Awaited<ReturnType<typeof getInvitation
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetInvitationQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAssignPlannerUrl = (token: string,) => {
+
+
+
+
+  return `/api/invitation/${token}/assign-planner`
+}
+
+/**
+ * @summary Assign an active Event Planner to an owned invitation
+ */
+export const assignPlanner = async (token: string,
+    assignPlannerBody: AssignPlannerBody, options?: RequestInit): Promise<PlannerAssignmentResponse> => {
+
+  return customFetch<PlannerAssignmentResponse>(getAssignPlannerUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(assignPlannerBody)
+  }
+);}
+
+
+
+
+export const getAssignPlannerMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignPlanner>>, TError,{token: string;data: BodyType<AssignPlannerBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignPlanner>>, TError,{token: string;data: BodyType<AssignPlannerBody>}, TContext> => {
+
+const mutationKey = ['assignPlanner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignPlanner>>, {token: string;data: BodyType<AssignPlannerBody>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  assignPlanner(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignPlannerMutationResult = NonNullable<Awaited<ReturnType<typeof assignPlanner>>>
+    export type AssignPlannerMutationBody = BodyType<AssignPlannerBody>
+    export type AssignPlannerMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Assign an active Event Planner to an owned invitation
+ */
+export const useAssignPlanner = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignPlanner>>, TError,{token: string;data: BodyType<AssignPlannerBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignPlanner>>,
+        TError,
+        {token: string;data: BodyType<AssignPlannerBody>},
+        TContext
+      > => {
+      return useMutation(getAssignPlannerMutationOptions(options));
+    }
+
+export const getRemovePlannerUrl = (token: string,) => {
+
+
+
+
+  return `/api/invitation/${token}/remove-planner`
+}
+
+/**
+ * @summary Remove the Event Planner from an owned invitation
+ */
+export const removePlanner = async (token: string, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getRemovePlannerUrl(token),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRemovePlannerMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePlanner>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removePlanner>>, TError,{token: string}, TContext> => {
+
+const mutationKey = ['removePlanner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removePlanner>>, {token: string}> = (props) => {
+          const {token} = props ?? {};
+
+          return  removePlanner(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemovePlannerMutationResult = NonNullable<Awaited<ReturnType<typeof removePlanner>>>
+
+    export type RemovePlannerMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Remove the Event Planner from an owned invitation
+ */
+export const useRemovePlanner = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePlanner>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removePlanner>>,
+        TError,
+        {token: string},
+        TContext
+      > => {
+      return useMutation(getRemovePlannerMutationOptions(options));
+    }
+
+export const getSearchPlannersUrl = (params?: SearchPlannersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/planner/search?${stringifiedParams}` : `/api/planner/search`
+}
+
+/**
+ * @summary Search active Event Planner profiles
+ */
+export const searchPlanners = async (params?: SearchPlannersParams, options?: RequestInit): Promise<PlannerProfile[]> => {
+
+  return customFetch<PlannerProfile[]>(getSearchPlannersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchPlannersQueryKey = (params?: SearchPlannersParams,) => {
+    return [
+    `/api/planner/search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchPlannersQueryOptions = <TData = Awaited<ReturnType<typeof searchPlanners>>, TError = ErrorType<unknown>>(params?: SearchPlannersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchPlanners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchPlannersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchPlanners>>> = ({ signal }) => searchPlanners(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchPlanners>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchPlannersQueryResult = NonNullable<Awaited<ReturnType<typeof searchPlanners>>>
+export type SearchPlannersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Search active Event Planner profiles
+ */
+
+export function useSearchPlanners<TData = Awaited<ReturnType<typeof searchPlanners>>, TError = ErrorType<unknown>>(
+ params?: SearchPlannersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchPlanners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchPlannersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateUserRoleUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/users/${id}/role`
+}
+
+/**
+ * @summary Promote a Buyer to Event Planner or return them to Buyer
+ */
+export const updateUserRole = async (id: number,
+    updateUserRoleBody: UpdateUserRoleBody, options?: RequestInit): Promise<UserRoleResponse> => {
+
+  return customFetch<UserRoleResponse>(getUpdateUserRoleUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateUserRoleBody)
+  }
+);}
+
+
+
+
+export const getUpdateUserRoleMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserRole>>, TError,{id: number;data: BodyType<UpdateUserRoleBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateUserRole>>, TError,{id: number;data: BodyType<UpdateUserRoleBody>}, TContext> => {
+
+const mutationKey = ['updateUserRole'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserRole>>, {id: number;data: BodyType<UpdateUserRoleBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateUserRole(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateUserRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserRole>>>
+    export type UpdateUserRoleMutationBody = BodyType<UpdateUserRoleBody>
+    export type UpdateUserRoleMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Promote a Buyer to Event Planner or return them to Buyer
+ */
+export const useUpdateUserRole = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserRole>>, TError,{id: number;data: BodyType<UpdateUserRoleBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateUserRole>>,
+        TError,
+        {id: number;data: BodyType<UpdateUserRoleBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateUserRoleMutationOptions(options));
+    }
+
+export const getGetMyPlannerProfileUrl = () => {
+
+
+
+
+  return `/api/planner/me`
+}
+
+/**
+ * @summary Get the logged-in planner profile
+ */
+export const getMyPlannerProfile = async ( options?: RequestInit): Promise<PlannerProfile> => {
+
+  return customFetch<PlannerProfile>(getGetMyPlannerProfileUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyPlannerProfileQueryKey = () => {
+    return [
+    `/api/planner/me`
+    ] as const;
+    }
+
+
+export const getGetMyPlannerProfileQueryOptions = <TData = Awaited<ReturnType<typeof getMyPlannerProfile>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPlannerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyPlannerProfileQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyPlannerProfile>>> = ({ signal }) => getMyPlannerProfile({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyPlannerProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyPlannerProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getMyPlannerProfile>>>
+export type GetMyPlannerProfileQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the logged-in planner profile
+ */
+
+export function useGetMyPlannerProfile<TData = Awaited<ReturnType<typeof getMyPlannerProfile>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPlannerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyPlannerProfileQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateMyPlannerProfileUrl = () => {
+
+
+
+
+  return `/api/planner/me`
+}
+
+/**
+ * @summary Update the logged-in planner profile
+ */
+export const updateMyPlannerProfile = async (updatePlannerProfileBody: UpdatePlannerProfileBody, options?: RequestInit): Promise<PlannerProfile> => {
+
+  return customFetch<PlannerProfile>(getUpdateMyPlannerProfileUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updatePlannerProfileBody)
+  }
+);}
+
+
+
+
+export const getUpdateMyPlannerProfileMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyPlannerProfile>>, TError,{data: BodyType<UpdatePlannerProfileBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMyPlannerProfile>>, TError,{data: BodyType<UpdatePlannerProfileBody>}, TContext> => {
+
+const mutationKey = ['updateMyPlannerProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMyPlannerProfile>>, {data: BodyType<UpdatePlannerProfileBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateMyPlannerProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMyPlannerProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateMyPlannerProfile>>>
+    export type UpdateMyPlannerProfileMutationBody = BodyType<UpdatePlannerProfileBody>
+    export type UpdateMyPlannerProfileMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update the logged-in planner profile
+ */
+export const useUpdateMyPlannerProfile = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyPlannerProfile>>, TError,{data: BodyType<UpdatePlannerProfileBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMyPlannerProfile>>,
+        TError,
+        {data: BodyType<UpdatePlannerProfileBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateMyPlannerProfileMutationOptions(options));
+    }
+
+export const getListPlannerInvitationsUrl = () => {
+
+
+
+
+  return `/api/planner/invitations`
+}
+
+/**
+ * @summary List invitations assigned to the logged-in planner
+ */
+export const listPlannerInvitations = async ( options?: RequestInit): Promise<PlannerInvitation[]> => {
+
+  return customFetch<PlannerInvitation[]>(getListPlannerInvitationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPlannerInvitationsQueryKey = () => {
+    return [
+    `/api/planner/invitations`
+    ] as const;
+    }
+
+
+export const getListPlannerInvitationsQueryOptions = <TData = Awaited<ReturnType<typeof listPlannerInvitations>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlannerInvitations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPlannerInvitationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlannerInvitations>>> = ({ signal }) => listPlannerInvitations({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPlannerInvitations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPlannerInvitationsQueryResult = NonNullable<Awaited<ReturnType<typeof listPlannerInvitations>>>
+export type ListPlannerInvitationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List invitations assigned to the logged-in planner
+ */
+
+export function useListPlannerInvitations<TData = Awaited<ReturnType<typeof listPlannerInvitations>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlannerInvitations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPlannerInvitationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetPlannerProfileUrl = (slug: string,) => {
+
+
+
+
+  return `/api/planner/${slug}`
+}
+
+/**
+ * @summary Get a public Event Planner profile by slug
+ */
+export const getPlannerProfile = async (slug: string, options?: RequestInit): Promise<PublicPlannerProfile> => {
+
+  return customFetch<PublicPlannerProfile>(getGetPlannerProfileUrl(slug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPlannerProfileQueryKey = (slug: string,) => {
+    return [
+    `/api/planner/${slug}`
+    ] as const;
+    }
+
+
+export const getGetPlannerProfileQueryOptions = <TData = Awaited<ReturnType<typeof getPlannerProfile>>, TError = ErrorType<ErrorResponse>>(slug: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPlannerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPlannerProfileQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlannerProfile>>> = ({ signal }) => getPlannerProfile(slug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPlannerProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPlannerProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getPlannerProfile>>>
+export type GetPlannerProfileQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a public Event Planner profile by slug
+ */
+
+export function useGetPlannerProfile<TData = Awaited<ReturnType<typeof getPlannerProfile>>, TError = ErrorType<ErrorResponse>>(
+ slug: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPlannerProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPlannerProfileQueryOptions(slug,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

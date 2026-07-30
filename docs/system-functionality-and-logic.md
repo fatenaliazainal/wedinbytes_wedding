@@ -136,6 +136,9 @@ The frontend uses Wouter routing.
 | `/dashboard` | Buyer's cards, links, RSVP and profile | Buyer |
 | `/editor` | Buyer invitation editor | Buyer |
 | `/rsvp` | Buyer's RSVP dashboard | Buyer |
+| `/planner/dashboard` | Assigned invitations, planner statistics and profile shortcut | Event Planner |
+| `/planner/profile` | Event Planner public profile editor | Event Planner |
+| `/planner/:slug` | Public Event Planner profile | Public |
 | `/admin/login` | Admin login | Public entry point |
 | `/admin` | Admin management dashboard | Admin |
 | `/admin/editor` | Admin editor | Admin |
@@ -184,6 +187,18 @@ The admin login page is separate from buyer login, but both use the same session
 - `POST /api/auth/logout` destroys the session.
 
 The session is backed by PostgreSQL using `express-session` and `connect-pg-simple`.
+
+### Event Planner role
+
+Public registration always creates a `buyer` account. An admin promotes an existing non-admin account from the Admin **Customers** section; the allowed account roles are `buyer` and `event_planner`. The admin-only endpoint is `PATCH /api/admin/users/:id/role`.
+
+Event Planner accounts can:
+
+- edit their own planner profile through `GET/PATCH /api/planner/me`;
+- view only invitations assigned to their planner profile through `GET /api/planner/invitations`;
+- appear in active planner search and on a public `/planner/:slug` page.
+
+They cannot become invitation owners, delete invitations, or assign/remove planners.
 
 ---
 
@@ -754,6 +769,7 @@ Stores account identity, password hash, name and role.
 Important roles:
 
 - `buyer`;
+- `event_planner`;
 - `admin`.
 
 ### `invitation`
@@ -771,7 +787,14 @@ Stores the complete buyer-owned card:
 - design overrides;
 - music;
 - footer/branding fields;
+- nullable `eventPlannerId` collaboration reference;
 - optional lock hash.
+
+### `event_planner_profile`
+
+Stores the public business profile for an Event Planner. The profile is linked one-to-one to a user account and contains company identity, slug, contact/social links, branding URLs, address, hours, verification and active flags.
+
+Buyer and Admin sessions may assign or remove an active planner from an invitation. The Buyer remains the invitation owner. Public invitation responses expose only safe planner profile fields and never expose planner user IDs.
 
 ### `card_design`
 

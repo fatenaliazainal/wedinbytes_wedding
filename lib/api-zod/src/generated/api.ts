@@ -52,8 +52,242 @@ export const GetInvitationResponse = zod.object({
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),
   "doaText": zod.string().optional(),
+  "galleryImages": zod.array(zod.string()).optional().describe('Array of gallery image URLs or R2 keys'),
   "language": zod.string().default(getInvitationResponseLanguageDefault),
-  "packageId": zod.number().nullish()
+  "packageId": zod.number().nullish(),
+  "eventPlanner": zod.object({
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "logoUrl": zod.string().nullish()
+}).nullish()
+})
+
+
+/**
+ * @summary Assign an active Event Planner to an owned invitation
+ */
+export const AssignPlannerParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const AssignPlannerBody = zod.object({
+  "plannerId": zod.number().optional(),
+  "slug": zod.string().optional()
+}).describe('Provide either plannerId or slug.')
+
+export const AssignPlannerResponse = zod.object({
+  "invitation": zod.object({
+
+}).passthrough(),
+  "planner": zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
+})
+})
+
+
+/**
+ * @summary Remove the Event Planner from an owned invitation
+ */
+export const RemovePlannerParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const RemovePlannerResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Search active Event Planner profiles
+ */
+export const SearchPlannersQueryParams = zod.object({
+  "q": zod.coerce.string().optional()
+})
+
+export const SearchPlannersResponseItem = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
+})
+export const SearchPlannersResponse = zod.array(SearchPlannersResponseItem)
+
+
+/**
+ * @summary Promote a Buyer to Event Planner or return them to Buyer
+ */
+export const UpdateUserRoleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateUserRoleBody = zod.object({
+  "role": zod.enum(['buyer', 'event_planner'])
+})
+
+export const UpdateUserRoleResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['buyer', 'event_planner'])
+})
+
+
+/**
+ * @summary Get the logged-in planner profile
+ */
+export const GetMyPlannerProfileResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
+})
+
+
+/**
+ * @summary Update the logged-in planner profile
+ */
+export const UpdateMyPlannerProfileBody = zod.object({
+  "companyName": zod.string().optional(),
+  "displayName": zod.string().optional(),
+  "slug": zod.string().optional(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish()
+})
+
+export const UpdateMyPlannerProfileResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
+})
+
+
+/**
+ * @summary List invitations assigned to the logged-in planner
+ */
+export const ListPlannerInvitationsResponseItem = zod.object({
+  "id": zod.number(),
+  "token": zod.string(),
+  "groomName": zod.string(),
+  "brideName": zod.string(),
+  "eventType": zod.string(),
+  "eventDate": zod.string(),
+  "eventDay": zod.string().optional(),
+  "eventTime": zod.string().optional(),
+  "venueName": zod.string().optional(),
+  "venueCity": zod.string().optional(),
+  "venueState": zod.string().optional(),
+  "websiteStatus": zod.string().optional(),
+  "createdAt": zod.string()
+})
+export const ListPlannerInvitationsResponse = zod.array(ListPlannerInvitationsResponseItem)
+
+
+/**
+ * @summary Get a public Event Planner profile by slug
+ */
+export const GetPlannerProfileParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const GetPlannerProfileResponse = zod.object({
+  "companyName": zod.string(),
+  "displayName": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "facebook": zod.string().nullish(),
+  "tiktok": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "coverImage": zod.string().nullish(),
+  "businessAddress": zod.string().nullish(),
+  "googleMapsUrl": zod.string().nullish(),
+  "businessHours": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "invitationCount": zod.number().optional()
 })
 
 

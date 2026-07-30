@@ -1,10 +1,10 @@
 import { Router, type IRouter, type Request } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { db, invitationTable } from "@workspace/db";
+import { db, eventPlannerProfileTable, invitationTable } from "@workspace/db";
 import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
 
@@ -68,7 +68,12 @@ const ALLOWED_FIELDS = [
 ];
 
 async function publicInvitation(row: typeof invitationTable.$inferSelect) {
-  const { lockPinHash: _lockPinHash, userId: _userId, ...safe } = row;
+  const {
+    lockPinHash: _lockPinHash,
+    userId: _userId,
+    eventPlannerId: _eventPlannerId,
+    ...safe
+  } = row;
   (safe as Record<string, unknown>).initialsImageUrl = row.initialsImageUrl ?? null;
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
@@ -91,7 +96,43 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
       safe.socialLinks = adminDefaults.socialLinks;
     }
   }
-  return { ...safe, isLocked: Boolean(row.lockPinHash) };
+  let planner: Record<string, unknown> | null = null;
+  if (row.eventPlannerId) {
+    const [profile] = await db
+      .select()
+      .from(eventPlannerProfileTable)
+      .where(and(
+        eq(eventPlannerProfileTable.id, row.eventPlannerId),
+        eq(eventPlannerProfileTable.isActive, true),
+      ))
+      .limit(1);
+    if (profile) {
+      const {
+        userId: _plannerUserId,
+        isActive: _plannerActive,
+        id: _plannerId,
+        description,
+        whatsapp,
+        instagram,
+        website,
+        logoUrl,
+        companyName,
+        displayName,
+        slug,
+      } = profile;
+      planner = {
+        companyName,
+        displayName,
+        slug,
+        description,
+        whatsapp,
+        instagram,
+        website,
+        logoUrl,
+      };
+    }
+  }
+  return { ...safe, isLocked: Boolean(row.lockPinHash), eventPlanner: planner };
 }
 
 // Create a new invitation for the logged-in buyer.

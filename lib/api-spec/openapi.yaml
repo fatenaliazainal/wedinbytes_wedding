@@ -16,6 +16,8 @@ tags:
     description: RSVP operations
   - name: design
     description: Card design operations
+  - name: planner
+    description: Event Planner profile and collaboration operations
 paths:
   /healthz:
     get:
@@ -50,6 +52,184 @@ paths:
                 $ref: "#/components/schemas/Invitation"
         "404":
           description: Invitation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invitation/{token}/assign-planner:
+    post:
+      operationId: assignPlanner
+      tags: [planner]
+      summary: Assign an active Event Planner to an owned invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignPlannerBody"
+      responses:
+        "200":
+          description: Planner assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerAssignmentResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invitation/{token}/remove-planner:
+    post:
+      operationId: removePlanner
+      tags: [planner]
+      summary: Remove the Event Planner from an owned invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Planner removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /planner/search:
+    get:
+      operationId: searchPlanners
+      tags: [planner]
+      summary: Search active Event Planner profiles
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active planner profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlannerProfile"
+
+  /admin/users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [planner]
+      summary: Promote a Buyer to Event Planner or return them to Buyer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRoleBody"
+      responses:
+        "200":
+          description: Updated account role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRoleResponse"
+        "403":
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /planner/me:
+    get:
+      operationId: getMyPlannerProfile
+      tags: [planner]
+      summary: Get the logged-in planner profile
+      responses:
+        "200":
+          description: Planner profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerProfile"
+    patch:
+      operationId: updateMyPlannerProfile
+      tags: [planner]
+      summary: Update the logged-in planner profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlannerProfileBody"
+      responses:
+        "200":
+          description: Updated planner profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerProfile"
+
+  /planner/invitations:
+    get:
+      operationId: listPlannerInvitations
+      tags: [planner]
+      summary: List invitations assigned to the logged-in planner
+      responses:
+        "200":
+          description: Assigned invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlannerInvitation"
+
+  /planner/{slug}:
+    get:
+      operationId: getPlannerProfile
+      tags: [planner]
+      summary: Get a public Event Planner profile by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public planner profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicPlannerProfile"
+        "404":
+          description: Planner profile not found
           content:
             application/json:
               schema:
@@ -456,6 +636,10 @@ components:
         packageId:
           type: integer
           nullable: true
+        eventPlanner:
+          allOf:
+            - $ref: "#/components/schemas/InvitationPlannerSummary"
+          nullable: true
       required:
         - id
         - groomName
@@ -469,6 +653,292 @@ components:
         - venueCity
         - venueState
         - contactPhone
+
+    PlannerProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        companyName:
+          type: string
+        displayName:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        instagram:
+          type: string
+          nullable: true
+        facebook:
+          type: string
+          nullable: true
+        tiktok:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        coverImage:
+          type: string
+          nullable: true
+        businessAddress:
+          type: string
+          nullable: true
+        googleMapsUrl:
+          type: string
+          nullable: true
+        businessHours:
+          type: string
+          nullable: true
+        isVerified:
+          type: boolean
+        invitationCount:
+          type: integer
+      required:
+        - id
+        - companyName
+        - displayName
+        - slug
+        - isVerified
+
+    PublicPlannerProfile:
+      type: object
+      properties:
+        companyName:
+          type: string
+        displayName:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        instagram:
+          type: string
+          nullable: true
+        facebook:
+          type: string
+          nullable: true
+        tiktok:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        coverImage:
+          type: string
+          nullable: true
+        businessAddress:
+          type: string
+          nullable: true
+        googleMapsUrl:
+          type: string
+          nullable: true
+        businessHours:
+          type: string
+          nullable: true
+        isVerified:
+          type: boolean
+        invitationCount:
+          type: integer
+      required:
+        - companyName
+        - displayName
+        - slug
+        - isVerified
+
+    InvitationPlannerSummary:
+      type: object
+      properties:
+        companyName:
+          type: string
+        displayName:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        instagram:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+      required:
+        - companyName
+        - displayName
+        - slug
+
+    UpdatePlannerProfileBody:
+      type: object
+      properties:
+        companyName:
+          type: string
+        displayName:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        instagram:
+          type: string
+          nullable: true
+        facebook:
+          type: string
+          nullable: true
+        tiktok:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        coverImage:
+          type: string
+          nullable: true
+        businessAddress:
+          type: string
+          nullable: true
+        googleMapsUrl:
+          type: string
+          nullable: true
+        businessHours:
+          type: string
+          nullable: true
+
+    AssignPlannerBody:
+      type: object
+      properties:
+        plannerId:
+          type: integer
+        slug:
+          type: string
+      description: Provide either plannerId or slug.
+
+    UpdateUserRoleBody:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - buyer
+            - event_planner
+      required:
+        - role
+
+    UserRoleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - buyer
+            - event_planner
+      required:
+        - id
+        - name
+        - email
+        - role
+
+    PlannerAssignmentResponse:
+      type: object
+      properties:
+        invitation:
+          type: object
+        planner:
+          $ref: "#/components/schemas/PlannerProfile"
+      required:
+        - invitation
+        - planner
+
+    PlannerInvitation:
+      type: object
+      properties:
+        id:
+          type: integer
+        token:
+          type: string
+        groomName:
+          type: string
+        brideName:
+          type: string
+        eventType:
+          type: string
+        eventDate:
+          type: string
+        eventDay:
+          type: string
+        eventTime:
+          type: string
+        venueName:
+          type: string
+        venueCity:
+          type: string
+        venueState:
+          type: string
+        websiteStatus:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - token
+        - groomName
+        - brideName
+        - eventType
+        - eventDate
+        - createdAt
 
     Rsvp:
       type: object

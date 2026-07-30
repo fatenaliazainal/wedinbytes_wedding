@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { InvitationContactsItem } from './invitationContactsItem';
+import type { InvitationPlannerSummary } from './invitationPlannerSummary';
 
 export interface Invitation {
   id: number;
@@ -30,6 +31,9 @@ export interface Invitation {
   coverTitle?: string;
   hashtag?: string;
   doaText?: string;
+  /** Array of gallery image URLs or R2 keys */
+  galleryImages?: string[];
   language?: string;
   packageId?: number | null;
+  eventPlanner?: InvitationPlannerSummary | null;
 }

@@ -1,0 +1,492 @@
+We are extending the existing WedInBytes system.
+
+IMPORTANT
+
+This is NOT a rewrite.
+
+Maintain the current architecture.
+
+Maintain current coding style.
+
+Maintain current routing style.
+
+Maintain current authentication.
+
+Maintain current UI layout.
+
+Do NOT redesign existing pages.
+
+Do NOT break Buyer or Admin functionality.
+
+Follow the existing frontend and backend patterns already used throughout the project.
+
+==================================================
+NEW USER ROLE
+==================================================
+
+Add a new user role:
+
+event_planner
+
+Current roles:
+
+Guest
+
+Buyer
+
+Admin
+
+New:
+
+Event Planner
+
+The authentication flow should support Event Planner exactly like Buyer.
+
+Do NOT duplicate authentication logic.
+
+Reuse existing authentication architecture.
+
+==================================================
+DATABASE
+==================================================
+
+Create a new table:
+
+event_planner_profile
+
+Suggested fields:
+
+id
+
+userId
+
+companyName
+
+displayName
+
+slug
+
+description
+
+phone
+
+whatsapp
+
+email
+
+website
+
+instagram
+
+facebook
+
+tiktok
+
+logoUrl
+
+coverImage
+
+businessAddress
+
+googleMapsUrl
+
+businessHours
+
+isVerified
+
+isActive
+
+createdAt
+
+updatedAt
+
+One planner profile belongs to one user.
+
+One planner can manage many invitations.
+
+==================================================
+INVITATION RELATIONSHIP
+==================================================
+
+Extend invitation table.
+
+Add
+
+eventPlannerId (nullable)
+
+When NULL
+
+No planner assigned.
+
+When assigned
+
+Invitation belongs to buyer
+
+AND
+
+has one Event Planner collaborator.
+
+Ownership NEVER changes.
+
+Buyer remains owner.
+
+==================================================
+PERMISSIONS
+==================================================
+
+Buyer
+
+Owns invitation
+
+Can assign planner
+
+Can remove planner
+
+Can edit everything
+
+Admin
+
+Everything
+
+Event Planner
+
+Can access invitations assigned to them
+
+Cannot delete invitation
+
+Cannot transfer ownership
+
+Cannot access invitations not assigned to them
+
+Never allow privilege escalation.
+
+==================================================
+BACKEND API
+==================================================
+
+Create planner APIs following existing REST style.
+
+Planner Profile
+
+GET /api/planner/me
+
+PATCH /api/planner/me
+
+GET /api/planner/:slug
+
+Invitation Assignment
+
+POST /api/invitation/:token/assign-planner
+
+POST /api/invitation/:token/remove-planner
+
+Invitation Access
+
+GET /api/planner/invitations
+
+Returns only invitations assigned to logged-in planner.
+
+All endpoints must verify ownership and permissions.
+
+==================================================
+AUTHORIZATION
+==================================================
+
+Reuse existing middleware.
+
+Create reusable helper if needed.
+
+Rules:
+
+Buyer can only assign planner to invitations they own.
+
+Planner can only view assigned invitations.
+
+Admin bypasses all checks.
+
+Never expose invitations across users.
+
+==================================================
+BUYER DASHBOARD
+==================================================
+
+Do NOT redesign dashboard.
+
+Simply add one new section inside invitation editor.
+
+Section title:
+
+Event Planner
+
+Layout:
+
+----------------------------------
+
+No planner assigned
+
+Assign Planner
+
+----------------------------------
+
+or
+
+Planner Assigned
+
+Company Name
+
+Planner Name
+
+WhatsApp
+
+Instagram
+
+Remove Planner
+
+----------------------------------
+
+Follow existing card/component styling.
+
+==================================================
+ASSIGN PLANNER
+==================================================
+
+Buyer should search planners.
+
+Search by:
+
+Company
+
+Planner name
+
+Slug
+
+Only active planners.
+
+Selecting planner immediately links planner to invitation.
+
+==================================================
+INVITATION DISPLAY
+==================================================
+
+At bottom of invitation
+
+Above footer
+
+Add
+
+Wedding Planner
+
+Planner Logo
+
+Planner Company
+
+Planner Name
+
+WhatsApp button
+
+Instagram button
+
+Website button
+
+Hide this section if no planner assigned.
+
+Reuse existing styling.
+
+Do not disturb invitation layout.
+
+==================================================
+PLANNER DASHBOARD
+==================================================
+
+Create planner dashboard.
+
+Follow Buyer dashboard styling.
+
+Sections
+
+My Invitations
+
+Upcoming Invitations
+
+Completed Invitations
+
+Profile
+
+Statistics
+
+Cards should reuse existing components.
+
+Do not introduce a different design language.
+
+==================================================
+PLANNER PROFILE
+==================================================
+
+Planner edits
+
+Company
+
+Display Name
+
+Description
+
+Logo
+
+Cover
+
+Phone
+
+WhatsApp
+
+Website
+
+Instagram
+
+Facebook
+
+TikTok
+
+Address
+
+Google Maps
+
+Business Hours
+
+Profile should have public page
+
+/planner/:slug
+
+==================================================
+PUBLIC PROFILE
+==================================================
+
+Public page displays
+
+Company
+
+Logo
+
+Description
+
+Contact
+
+Social Links
+
+Gallery placeholder
+
+Invitation count
+
+Verified badge if enabled
+
+Keep styling consistent with marketing pages.
+
+==================================================
+FUTURE READY
+==================================================
+
+Design architecture so future collaborator types can easily be added.
+
+For example
+
+Photographer
+
+Videographer
+
+Makeup Artist
+
+Emcee
+
+Decorator
+
+Florist
+
+The invitation should eventually support multiple collaborator types without changing architecture.
+
+Do NOT implement those now.
+
+Only Event Planner.
+
+==================================================
+SECURITY
+==================================================
+
+Verify every planner endpoint.
+
+Verify invitation ownership.
+
+Prevent planner accessing another planner's invitation.
+
+Prevent buyer assigning planners to invitations they do not own.
+
+Prevent unauthorized profile editing.
+
+==================================================
+UI
+==================================================
+
+Reuse existing
+
+Buttons
+
+Cards
+
+Inputs
+
+Dialogs
+
+Tables
+
+Forms
+
+Spacing
+
+Typography
+
+Colors
+
+Do not redesign anything.
+
+Everything should feel like it was always part of WedInBytes.
+
+==================================================
+DOCUMENTATION
+==================================================
+
+After implementation provide
+
+Files modified
+
+Database migrations
+
+New APIs
+
+Permission flow
+
+Frontend pages
+
+Backend routes
+
+Anything requiring manual configuration.
+
+==================================================
+IMPORTANT
+
+Before writing code
+
+Study the current project architecture first.
+
+Find existing authentication.
+
+Find dashboard architecture.
+
+Find invitation editor architecture.
+
+Find routing.
+
+Find API conventions.
+
+Find database conventions.
+
+Follow those conventions exactly.
+
+Never create duplicate implementations when reusable code already exists.

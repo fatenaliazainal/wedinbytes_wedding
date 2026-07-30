@@ -124,17 +124,20 @@ router.get("/admin/customers", async (req, res) => {
   if (!adminGuard(req, res)) return;
   try {
     const [users, orders, invitations] = await Promise.all([
-      db.select().from(userTable).where(eq(userTable.role, "buyer")).orderBy(desc(userTable.createdAt)),
+      db.select().from(userTable).orderBy(desc(userTable.createdAt)),
       db.select().from(orderTable),
       db.select().from(invitationTable),
     ]);
-    const result = users.map((user) => {
+    const result = users
+      .filter((user) => user.role !== "admin")
+      .map((user) => {
       const userOrders = orders.filter((order) => order.userId === user.id);
       const websites = invitations.filter((invitation) => invitation.userId === user.id);
       return {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
         createdAt: user.createdAt,
         totalOrders: userOrders.length,
         totalPaid: userOrders.filter((order) => order.paymentStatus === "PAID")
@@ -147,13 +150,46 @@ router.get("/admin/customers", async (req, res) => {
           groomName: invitation.groomName,
         })),
       };
-    });
+      });
     const search = String(req.query.search ?? "").trim().toLowerCase();
     res.json(search ? result.filter((row) => `${row.name} ${row.email}`.toLowerCase().includes(search)) : result);
   } catch (err) {
     req.log.error({ err }, "Failed to list admin customers");
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+router.patch("/admin/users/:id/role", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  const role = String(req.body?.role ?? "");
+  if (!Number.isInteger(id) || !["buyer", "event_planner"].includes(role)) {
+    res.status(400).json({ error: "Role must be buyer or event_planner" });
+    return;
+  }
+  const [target] = await db
+    .select({ id: userTable.id, role: userTable.role })
+    .from(userTable)
+    .where(eq(userTable.id, id))
+    .limit(1);
+  if (!target) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  if (target.role === "admin") {
+    res.status(403).json({ error: "Admin accounts cannot be changed here" });
+    return;
+  }
+  const [updated] = await db
+    .update(userTable)
+    .set({ role })
+    .where(eq(userTable.id, id))
+    .returning({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role });
+  if (!updated) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(updated);
 });
 
 router.patch("/admin/invitations/:id/status", async (req, res) => {

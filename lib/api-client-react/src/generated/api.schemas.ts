@@ -14,6 +14,17 @@ export type InvitationContactsItem = {
   phone: string;
 };
 
+export interface InvitationPlannerSummary {
+  companyName: string;
+  displayName: string;
+  slug: string;
+  description?: string | null;
+  whatsapp?: string | null;
+  instagram?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+}
+
 export interface Invitation {
   id: number;
   groomName: string;
@@ -37,8 +48,131 @@ export interface Invitation {
   coverTitle?: string;
   hashtag?: string;
   doaText?: string;
+  /** Array of gallery image URLs or R2 keys */
+  galleryImages?: string[];
   language?: string;
   packageId?: number | null;
+  eventPlanner?: InvitationPlannerSummary | null;
+}
+
+export interface PlannerProfile {
+  id: number;
+  companyName: string;
+  displayName: string;
+  slug: string;
+  description?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
+  logoUrl?: string | null;
+  coverImage?: string | null;
+  businessAddress?: string | null;
+  googleMapsUrl?: string | null;
+  businessHours?: string | null;
+  isVerified: boolean;
+  invitationCount?: number;
+}
+
+export interface PublicPlannerProfile {
+  companyName: string;
+  displayName: string;
+  slug: string;
+  description?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
+  logoUrl?: string | null;
+  coverImage?: string | null;
+  businessAddress?: string | null;
+  googleMapsUrl?: string | null;
+  businessHours?: string | null;
+  isVerified: boolean;
+  invitationCount?: number;
+}
+
+export interface UpdatePlannerProfileBody {
+  companyName?: string;
+  displayName?: string;
+  slug?: string;
+  description?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
+  logoUrl?: string | null;
+  coverImage?: string | null;
+  businessAddress?: string | null;
+  googleMapsUrl?: string | null;
+  businessHours?: string | null;
+}
+
+/**
+ * Provide either plannerId or slug.
+ */
+export interface AssignPlannerBody {
+  plannerId?: number;
+  slug?: string;
+}
+
+export type UpdateUserRoleBodyRole = typeof UpdateUserRoleBodyRole[keyof typeof UpdateUserRoleBodyRole];
+
+
+export const UpdateUserRoleBodyRole = {
+  buyer: 'buyer',
+  event_planner: 'event_planner',
+} as const;
+
+export interface UpdateUserRoleBody {
+  role: UpdateUserRoleBodyRole;
+}
+
+export type UserRoleResponseRole = typeof UserRoleResponseRole[keyof typeof UserRoleResponseRole];
+
+
+export const UserRoleResponseRole = {
+  buyer: 'buyer',
+  event_planner: 'event_planner',
+} as const;
+
+export interface UserRoleResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRoleResponseRole;
+}
+
+export type PlannerAssignmentResponseInvitation = { [key: string]: unknown };
+
+export interface PlannerAssignmentResponse {
+  invitation: PlannerAssignmentResponseInvitation;
+  planner: PlannerProfile;
+}
+
+export interface PlannerInvitation {
+  id: number;
+  token: string;
+  groomName: string;
+  brideName: string;
+  eventType: string;
+  eventDate: string;
+  eventDay?: string;
+  eventTime?: string;
+  venueName?: string;
+  venueCity?: string;
+  venueState?: string;
+  websiteStatus?: string;
+  createdAt: string;
 }
 
 export interface Rsvp {
@@ -157,6 +291,10 @@ export interface UpdatePricingFeatureBody {
 export interface SuccessResponse {
   success: boolean;
 }
+
+export type SearchPlannersParams = {
+q?: string;
+};
 
 export type GetRsvpCountParams = {
 invitationToken?: string;

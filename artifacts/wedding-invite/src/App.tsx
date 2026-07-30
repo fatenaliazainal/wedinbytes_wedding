@@ -20,6 +20,9 @@ import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 import Page2DesignGuidePage from "@/pages/Page2DesignGuidePage";
+import PlannerDashboardPage from "@/pages/PlannerDashboardPage";
+import PlannerProfilePage from "@/pages/PlannerProfilePage";
+import PublicPlannerProfilePage from "@/pages/PublicPlannerProfilePage";
 
 function PublicInvitationRoute() {
   return <InvitationPage />;
@@ -61,6 +64,9 @@ function Router() {
       <Route path="/register" component={RegisterPage} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/rsvp" component={RsvpDashboardPage} />
+      <Route path="/planner/dashboard" component={PlannerDashboardPage} />
+      <Route path="/planner/profile" component={PlannerProfilePage} />
+      <Route path="/planner/:slug" component={PublicPlannerProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

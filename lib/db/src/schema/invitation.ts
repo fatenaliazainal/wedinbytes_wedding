@@ -9,6 +9,7 @@ export const invitationTable = pgTable("invitation", {
   token: text("token").notNull().unique(),
   // Owner
   userId: integer("user_id"),
+  eventPlannerId: integer("event_planner_id"),
   packageId: integer("package_id"),
   isPurchased: boolean("is_purchased").notNull().default(false),
   websiteStatus: text("website_status").notNull().default("ACTIVE"),
