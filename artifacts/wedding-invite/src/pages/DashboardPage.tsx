@@ -50,7 +50,18 @@ interface Design {
   designCode?: string;
 }
 
-type Section = "orders" | "profile";
+type Section = "orders" | "paymentHistory" | "profile";
+type PaymentHistoryItem = {
+  id: number;
+  amount: string;
+  paymentStatus: string;
+  paymentReference?: string | null;
+  paymentGateway?: string | null;
+  paidAt?: string | null;
+  createdAt: string;
+  packageName?: string | null;
+  invitation?: { brideName: string; groomName: string } | null;
+};
 
 const isExpired = (createdAt?: string) => {
   if (!createdAt) return false;
@@ -109,6 +120,7 @@ export default function DashboardPage() {
   const [, navigate] = useLocation();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([]);
   const [design, setDesign] = useState<Design | null>(null);
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,15 +152,17 @@ export default function DashboardPage() {
     if (!user) return;
     const fetchData = async () => {
       try {
-        const [invRes, designRes, allDesRes] = await Promise.all([
+        const [invRes, designRes, allDesRes, paymentHistoryRes] = await Promise.all([
           fetch(`${BASE}/api/invitations-by-user/${user.id}`, { credentials: "include", cache: "no-store" }),
           fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
           fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
+          fetch(`${BASE}/api/buyer/payment-history`, { credentials: "include", cache: "no-store" }),
         ]);
         const invData = invRes.ok ? await invRes.json() as Invitation[] : [];
         const globalDesign = designRes.ok ? await designRes.json() : null;
         const allDesigns: Design[] = allDesRes.ok ? await allDesRes.json() : [];
         setInvitations(invData);
+        setPaymentHistory(paymentHistoryRes.ok ? await paymentHistoryRes.json() : []);
         setInvitation(invData[0] ?? null);
         setDesigns(allDesigns);
         const tpl = allDesigns.find((d) => d.designCode === invData[0]?.designCode);
@@ -428,6 +442,9 @@ export default function DashboardPage() {
           <button onClick={() => setActiveSection('orders')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'orders' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Dashboard
           </button>
+          <button onClick={() => setActiveSection('paymentHistory')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'paymentHistory' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
+            Payment History
+          </button>
           <button onClick={() => setActiveSection('profile')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'profile' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Profile Settings
           </button>
@@ -628,6 +645,52 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {activeSection === "paymentHistory" && (
+          <div className="space-y-6" data-testid="buyer-payment-history-page">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <FileText size={13} className="text-slate-900" />
+                Payment records
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="buyer-payment-history-title">Payment History</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                View your completed payments for wedding invitations.
+              </p>
+            </div>
+            <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm" data-testid="buyer-payment-history-card">
+              {paymentHistory.length ? (
+                <div className="divide-y divide-slate-100">
+                  {paymentHistory.map((payment) => (
+                    <div key={payment.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900">
+                          {payment.invitation ? `${payment.invitation.groomName} & ${payment.invitation.brideName}` : payment.packageName || "Wedding invitation"}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {payment.packageName || "Invitation package"} · {payment.paymentReference || "Payment completed"}
+                        </p>
+                        <p className="mt-2 text-xs text-slate-400">
+                          {new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 sm:justify-end">
+                        <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">Paid</span>
+                        <span className="text-lg font-semibold text-slate-900">RM {Number(payment.amount || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-6 py-16 text-center">
+                  <FileText size={30} className="mx-auto text-slate-300" />
+                  <h3 className="mt-4 text-lg font-bold text-slate-900">No payment history yet</h3>
+                  <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">Your completed payments will appear here once a payment has been made.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

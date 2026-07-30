@@ -13,4 +13,4 @@
 - [Managed artifact workflows](managed-artifact-workflows.md) — keep generated artifact ports and avoid duplicate frontend launchers.
 - [Business package forms](business-package-forms.md) — Business Account customer creation is driven by persisted package form configuration, with server-side validation and invitation mapping.
 - [Invitation visual parity](invitation-visual-parity.md) — public Buyer and Business Account invitations should share the same guest-facing presentation.
-- [Business payment history](business-payment-history.md) — Business Accounts only need a read-only history of completed payments, not subscription or billing management.
+- [Payment history](business-payment-history.md) — Buyer and Business Accounts need read-only histories of their completed invitation payments, not subscription or billing management.
