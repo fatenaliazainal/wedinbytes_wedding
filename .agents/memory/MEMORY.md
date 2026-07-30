@@ -10,3 +10,4 @@
 - [Buyer-owned initials artwork](order-owned-initials-artwork.md) — optional initials uploads belong to the buyer invitation in R2, never to shared card designs.
 - [Security hardening boundaries](security-hardening-boundaries.md) — public invitation responses must omit ownership/private RSVP fields; owner/admin checks belong on every invitation mutation.
 - [Business response boundaries](business-response-boundaries.md) — public business profiles and invitation business summaries are separate safe contracts; never include ownership or internal IDs.
+- [Managed artifact workflows](managed-artifact-workflows.md) — keep generated artifact ports and avoid duplicate frontend launchers.

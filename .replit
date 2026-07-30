@@ -76,25 +76,13 @@ router = "path"
 PORT = "8080"
 
 [[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/wedding-invite run dev"
-waitForPort = 5000
-
-[[workflows.workflow]]
 name = "Project"
 mode = "parallel"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start application"
+args = "artifacts/wedding-invite: web"
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
