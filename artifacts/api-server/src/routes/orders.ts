@@ -71,7 +71,7 @@ router.get("/buyer/payment-history", async (req, res) => {
           createdAt: order.createdAt,
           packageName: pkg?.name ?? null,
           invitation: invitation
-            ? { brideName: invitation.brideName, groomName: invitation.groomName }
+            ? { id: invitation.id, brideName: invitation.brideName, groomName: invitation.groomName }
             : null,
         };
       }));
@@ -138,7 +138,7 @@ router.get("/business/payment-history", async (req, res) => {
           createdAt: order.createdAt,
           packageName: pkg?.name ?? null,
           invitation: invitation
-            ? { brideName: invitation.brideName, groomName: invitation.groomName }
+            ? { id: invitation.id, brideName: invitation.brideName, groomName: invitation.groomName }
             : null,
         };
       }));

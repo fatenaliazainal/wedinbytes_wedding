@@ -25,6 +25,7 @@ import BusinessDashboardPage from "@/pages/BusinessDashboardPage";
 import BusinessProfilePage from "@/pages/BusinessProfilePage";
 import PublicBusinessProfilePage from "@/pages/PublicBusinessProfilePage";
 import CustomerFormPage from "@/pages/CustomerFormPage";
+import ToyyibPayReturnPage from "@/pages/ToyyibPayReturnPage";
 
 function PublicInvitationRoute() {
   return <InvitationPage />;
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/business/profile" component={BusinessProfilePage} />
       <Route path="/business/editor" component={BusinessEditorRoute} />
       <Route path="/customer-form/:token" component={CustomerFormPage} />
+      <Route path="/payment/toyyibpay/return" component={ToyyibPayReturnPage} />
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />
     </Switch>

@@ -15,6 +15,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
+import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -84,7 +85,7 @@ function PaymentHistoryTable({
 }: {
   payments: PaymentHistoryItem[];
   onDownloadReceipt: (payment: PaymentHistoryItem) => void;
-  onPayNow: () => void;
+  onPayNow: (payment: PaymentHistoryItem) => void;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -111,7 +112,7 @@ function PaymentHistoryTable({
                   {payment.paymentStatus.toUpperCase() === "PAID" ? (
                     <button onClick={() => onDownloadReceipt(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"><Download size={14} /> Download Receipt</button>
                   ) : payment.paymentStatus.toUpperCase() === "PENDING" ? (
-                    <button onClick={onPayNow} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"><CreditCard size={14} /> Pay Now</button>
+                     <button onClick={() => onPayNow(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"><CreditCard size={14} /> Pay Now</button>
                   ) : (
                     <span className="text-xs text-slate-400">Not available</span>
                   )}
@@ -219,6 +220,7 @@ export default function DashboardPage() {
     confirmPassword: false,
   });
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -467,6 +469,18 @@ export default function DashboardPage() {
     URL.revokeObjectURL(url);
   };
 
+  const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
+    const busyId = input.orderId ?? input.invitationId ?? null;
+    setPaymentStartingFor(busyId);
+    try {
+      await startToyyibPayCheckout(input);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to start payment.");
+    } finally {
+      setPaymentStartingFor(null);
+    }
+  };
+
   const NAV_ITEMS: SiteNavItem[] = [
     { label: "HOME",       href: "/" },
     { label: "CATALOG",    href: "/weddingcards/home" },
@@ -697,7 +711,7 @@ export default function DashboardPage() {
                                      ) : (
                                         <>
                                           <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
-                                          <button onClick={() => toast.info("Payment coming soon!")} className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1"><CreditCard size={10}/> Pay</button>
+                                           <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1 disabled:cursor-wait disabled:opacity-60"><CreditCard size={10}/> {paymentStartingFor === card.id ? "..." : "Pay"}</button>
                                         </>
                                      )}
                                   </div>
@@ -782,7 +796,7 @@ export default function DashboardPage() {
                                      ) : (
                                         <>
                                           <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
-                                          <button onClick={() => toast.info("Payment coming soon!")} className="p-1 rounded bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm" title="Pay Now"><CreditCard size={12}/></button>
+                                           <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="p-1 rounded bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm disabled:cursor-wait disabled:opacity-60" title="Pay Now"><CreditCard size={12}/></button>
                                         </>
                                      )}
                                   </div>
@@ -841,7 +855,7 @@ export default function DashboardPage() {
               <PaymentHistoryTable
                 payments={paymentHistory}
                 onDownloadReceipt={downloadReceipt}
-                onPayNow={() => toast.info("Payment coming soon!")}
+                onPayNow={(payment) => void startPayment({ orderId: payment.id })}
               />
             </div>
           </div>
@@ -932,7 +946,7 @@ export default function DashboardPage() {
               <PaymentHistoryTable
                 payments={paymentHistory}
                 onDownloadReceipt={downloadReceipt}
-                onPayNow={() => toast.info("Payment coming soon!")}
+                onPayNow={(payment) => void startPayment({ orderId: payment.id })}
               />
             </section>
           </div>

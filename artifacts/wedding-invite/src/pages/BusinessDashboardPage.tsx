@@ -4,8 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import SiteHeader, { type SiteNavItem } from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import SiteFooter from "@/components/SiteFooter";
-import { ArrowRight, BriefcaseBusiness, Calendar, CheckCircle2, Copy, Check, ExternalLink, Link2, LogOut, Plus, ReceiptText, Settings, Trash2, User, Users } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, Calendar, CheckCircle2, Copy, Check, CreditCard, ExternalLink, Link2, LogOut, Plus, ReceiptText, Settings, Trash2, User, Users } from "lucide-react";
 import { toast } from "sonner";
+import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
@@ -21,7 +22,7 @@ type BusinessProfile = {
   description?: string | null; logoUrl?: string | null; invitationCount?: number;
 };
 type Client = { id: number; brideName: string; groomName: string; phone?: string | null; email?: string | null; eventDate?: string | null; notes?: string | null; status: string; invitationId?: number | null; invitationToken?: string | null };
-type Invitation = { id: number; token: string; brideName: string; groomName: string; eventDate?: string | null; eventType: string; venueCity?: string | null };
+type Invitation = { id: number; token: string; brideName: string; groomName: string; eventDate?: string | null; eventType: string; venueCity?: string | null; isPurchased: boolean };
 type FormField = {
   key: string;
   label: string;
@@ -47,7 +48,7 @@ type PaymentHistoryItem = {
   paidAt?: string | null;
   createdAt: string;
   packageName?: string | null;
-  invitation?: { brideName: string; groomName: string } | null;
+  invitation?: { id: number; brideName: string; groomName: string } | null;
 };
 
 export default function BusinessDashboardPage() {
@@ -68,6 +69,7 @@ export default function BusinessDashboardPage() {
   const [busy, setBusy] = useState(true);
   const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
+  const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "business_account")) {
@@ -173,6 +175,17 @@ export default function BusinessDashboardPage() {
     }
   };
   const handleLogout = async () => { await logout(); navigate("/"); };
+  const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
+    const busyId = input.orderId ?? input.invitationId ?? null;
+    setPaymentStartingFor(busyId);
+    try {
+      await startToyyibPayCheckout(input);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to start payment.");
+    } finally {
+      setPaymentStartingFor(null);
+    }
+  };
 
   if (authLoading || busy || !user || user.role !== "business_account") {
     return <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]"><div className="h-8 w-8 rounded-full border-b-2 border-gray-900 animate-spin" /></div>;
@@ -206,7 +219,7 @@ export default function BusinessDashboardPage() {
                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"><div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center"><h3 className="font-semibold text-gray-900">Recent invitations</h3><button onClick={() => setSection("invitations")} className="text-xs text-gray-500 hover:text-gray-900">View all</button></div>{invitations.slice(0, 5).map((item) => <div key={item.id} className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4"><div><p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.eventType}</p></div><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-gray-700 inline-flex gap-1 items-center">View <ArrowRight size={13} /></a></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet. Create one for your first client.</p>}</div>
             </>}
              {section === "clients" && <><div className="mb-6"><h2 className="text-2xl font-serif text-gray-900">Customer form</h2><p className="text-sm text-gray-500 mt-1">Choose whether you want to share a customer link or fill in the invitation yourself.</p></div><div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 mb-8"><div className="flex flex-col gap-4 lg:flex-row lg:items-end"><label className="block flex-1 text-sm text-gray-700"><span className="mb-1 block font-medium">Package for customer form</span><select value={selectedPackageId} onChange={(event) => { setSelectedPackageId(event.target.value); setFormShareUrl(""); }} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"><option value="">Choose a package</option>{packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name} · RM{pkg.price}</option>)}</select></label><div className="flex flex-col gap-2 sm:flex-row"><button type="button" onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-900 hover:text-gray-900"><Plus size={16} /> Fill in yourself</button><button type="button" onClick={() => void createFormShare()} disabled={formShareLoading || !selectedPackageId} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"><Link2 size={16} />{formShareLoading ? "Creating link..." : "Create share link"}</button></div></div>{selectedPackage && <p className="mt-4 text-xs text-gray-500">{selectedPackage.description}</p>}{formShareUrl && <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-3"><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Copy this link for your customer</p><div className="flex items-center gap-2"><input readOnly value={formShareUrl} onClick={(event) => event.currentTarget.select()} className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none" aria-label="Customer form link" /><button type="button" onClick={() => void copyFormLink()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm border border-gray-200">{copyingFormLink ? <Check size={14} /> : <Copy size={14} />} {copyingFormLink ? "Copied" : "Copy"}</button><a href={formShareUrl} target="_blank" rel="noreferrer" className="rounded-md border border-gray-200 bg-white p-2 text-gray-500 hover:text-gray-900" aria-label="Open customer form"><ExternalLink size={14} /></a></div></div>}</div><div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-gray-900">Customer submissions</h3><span className="text-xs text-gray-500">{clients.length} customer{clients.length === 1 ? "" : "s"}</span></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{clients.map((client) => <div key={client.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><p className="font-medium">{client.groomName || "Customer submission"}{client.brideName ? ` & ${client.brideName}` : ""}</p><p className="text-xs text-gray-500">{client.email || "No email"} · {client.eventDate || "Date not set"}</p><span className="mt-2 inline-flex rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-600">{client.invitationId ? "Invitation created" : "Waiting for invitation"}</span></div><div className="flex items-center gap-3"><button onClick={() => client.invitationId && client.invitationToken ? navigate(`/business/editor?token=${encodeURIComponent(client.invitationToken)}`) : void createInvitation(client)} disabled={creatingInvitationFor === client.id} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{client.invitationId ? "Edit Invitation" : creatingInvitationFor === client.id ? "Creating..." : "Create Invitation"}</button><button onClick={() => void deleteClient(client.id)} className="text-gray-400 hover:text-red-600" aria-label="Delete client"><Trash2 size={16} /></button></div></div>)}{!clients.length && <p className="p-8 text-sm text-gray-500 text-center">No customer submissions yet.</p>}</div></>}
-              {section === "invitations" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Invitations</h2><p className="text-sm text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => setSection("clients")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> New customer</button></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{invitations.map((item) => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div><div className="flex gap-3 text-xs font-semibold"><button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a><button onClick={() => setDeleteInvitation(item)} className="inline-flex items-center gap-1 text-gray-500 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`}><Trash2 size={13} /> Delete</button></div></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}</div></>}
+              {section === "invitations" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Invitations</h2><p className="text-sm text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => setSection("clients")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> New customer</button></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{invitations.map((item) => <div key={item.id} className="p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div><div className="flex flex-wrap items-center gap-3 text-xs font-semibold"><span className={`rounded-full px-2 py-1 ${item.isPurchased ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{item.isPurchased ? "Active" : "Pending payment"}</span>{!item.isPurchased && <button onClick={() => void startPayment({ invitationId: item.id })} disabled={paymentStartingFor === item.id} className="inline-flex items-center gap-1 rounded-lg bg-gray-900 px-3 py-2 text-white disabled:opacity-60"><CreditCard size={13} /> {paymentStartingFor === item.id ? "Starting..." : "Pay Now"}</button>}<button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a><button onClick={() => setDeleteInvitation(item)} className="inline-flex items-center gap-1 text-gray-500 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`}><Trash2 size={13} /> Delete</button></div></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}</div></>}
               {section === "paymentHistory" && (
                 <div className="space-y-6" data-testid="payment-history-page">
                   <div>
@@ -236,7 +249,7 @@ export default function BusinessDashboardPage() {
                               </p>
                             </div>
                             <div className="flex items-center justify-between gap-4 sm:justify-end">
-                              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span>
+                               {payment.paymentStatus.toUpperCase() === "PAID" ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span> : payment.paymentStatus.toUpperCase() === "PENDING" ? <button onClick={() => void startPayment({ orderId: payment.id })} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-60"><CreditCard size={12} /> {paymentStartingFor === payment.id ? "Starting..." : "Pay Now"}</button> : <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">Failed</span>}
                               <span className="text-lg font-semibold text-gray-900">RM {Number(payment.amount || 0).toFixed(2)}</span>
                             </div>
                           </div>
