@@ -191,7 +191,7 @@ export default function MarketingHomePage() {
       </div>
 
       {/* ── All-in-One section ── */}
-      <section id="all-in-one" className="border-t border-rose-100 bg-[#fdf9f7] px-4 py-20 sm:px-6">
+      <section id="all-in-one" className="bg-gray-50 px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.35fr)] lg:gap-16">
             {/* Left: live invitation preview */}
