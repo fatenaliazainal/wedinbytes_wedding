@@ -1,22 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Edit2, Eye, Users, Share2, Lock, LogOut,
   User, Plus, Copy, Check, QrCode, X, Trash2,
-  Calendar, Clock, CreditCard, Link2
+  Calendar, Clock, CreditCard, Link2,
+  LayoutGrid, List as ListIcon, Activity, AlertCircle, FileText
 } from "lucide-react";
 import { toast } from "sonner";
-import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-// Todo: move this to a helper since it's also used in InvitationPage, and ensure it's consistent with the URL used in the email template
-import { resolveImageUrl } from "@/lib/r2-url";
 
 interface Invitation {
   id: number;
@@ -53,6 +52,58 @@ interface Design {
 
 type Section = "orders" | "profile";
 
+const isExpired = (createdAt?: string) => {
+  if (!createdAt) return false;
+  const expiry = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
+  return expiry < new Date();
+};
+
+function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 }: { card: Invitation, design: Design | null, width?: number, height?: number, scale?: number }) {
+  return (
+    <div
+      className="bg-slate-900 shadow-sm shrink-0 relative overflow-hidden"
+      style={{ width, height, borderRadius: 12, border: "4px solid #0f172a" }}
+    >
+      <div
+        style={{
+          width: 420,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          "--card-viewport-height": `${Math.round((height - 8) / scale)}px`,
+          "--primary": design?.colorPrimary || "221 83% 53%",
+          "--primary-foreground": "0 0% 100%",
+          "--secondary": design?.colorSecondary || "210 40% 96.1%",
+          "--background": design?.colorBackground || "0 0% 100%",
+          "--card": design?.colorCard || "0 0% 100%",
+          "--popover": design?.colorCard || "0 0% 100%",
+          "--border": "214.3 31.8% 91.4%",
+          "--muted": "210 40% 96.1%",
+          "--muted-foreground": "215.4 16.3% 46.9%",
+          "--name-font-family": `'${design?.nameFontFamily || "Dancing Script"}', cursive`,
+          "--name-font-size": `${Number(design?.nameFontSize) || 38}px`,
+          "--name-color": design?.nameColor ? `hsl(${design.nameColor})` : "hsl(221 83% 53%)",
+          "--body-font-family": `'${design?.bodyFontFamily || "Dancing Script"}', cursive`,
+        } as React.CSSProperties}
+      >
+        <WeddingCard
+          invitation={card as any}
+          cardImageUrl={resolveImageUrl(design?.cardImageUrl || "")}
+          envelopeImageUrl={resolveImageUrl(design?.envelopeImageUrl || design?.cardImageUrl || "")}
+          cardMaxWidth={design?.cardMaxWidth || "420px"}
+          rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
+        />
+      </div>
+      {!card.isPurchased && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-900/10 backdrop-blur-[1px]">
+          <div style={{ transform: "rotate(-45deg)" }} className="bg-white/95 px-4 py-1 shadow-lg border border-white/50 backdrop-blur-md">
+            <span className="text-slate-900 font-bold tracking-[0.2em] select-none uppercase text-[8px]">PREVIEW</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
@@ -62,7 +113,7 @@ export default function DashboardPage() {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("orders");
-  const [copied, setCopied] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [lockModalOpen, setLockModalOpen] = useState(false);
   const [protectCard, setProtectCard] = useState(false);
@@ -70,6 +121,16 @@ export default function DashboardPage() {
   const [lockSaving, setLockSaving] = useState(false);
   const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const effectiveViewMode = isMobile ? "grid" : viewMode;
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -89,8 +150,7 @@ export default function DashboardPage() {
         const allDesigns: Design[] = allDesRes.ok ? await allDesRes.json() : [];
         setInvitations(invData);
         setInvitation(invData[0] ?? null);
-         setDesigns(allDesigns);
-        // Resolve the design template matching the invitation's designCode
+        setDesigns(allDesigns);
         const tpl = allDesigns.find((d) => d.designCode === invData[0]?.designCode);
         setDesign(tpl ?? globalDesign ?? null);
       } catch (err) {
@@ -102,21 +162,28 @@ export default function DashboardPage() {
     fetchData();
   }, [user]);
 
+  const stats = useMemo(() => {
+    return {
+      total: invitations.length,
+      active: invitations.filter(i => i.isPurchased && !isExpired(i.createdAt)).length,
+      pending: invitations.filter(i => !i.isPurchased).length,
+      expired: invitations.filter(i => isExpired(i.createdAt)).length,
+      rsvp: 0
+    };
+  }, [invitations]);
+
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
-  // Use the invitation token for dashboard actions. The readable date/name
-  // route is intentionally public-facing, but it is ambiguous when a buyer
-  // has multiple cards with the same names or event date.
   const inviteLinkFor = (card: Invitation) =>
     `${window.location.origin}${BASE}/invite/${encodeURIComponent(card.token)}`;
 
   const copyLink = (card: Invitation) => {
     navigator.clipboard.writeText(inviteLinkFor(card));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedToken(card.token);
+    setTimeout(() => setCopiedToken(null), 2000);
     toast.success("Link copied!");
   };
 
@@ -174,6 +241,8 @@ export default function DashboardPage() {
       setLockModalOpen(false);
       setLockPin("");
       toast.success(protectCard ? "Card protected with PIN." : "Card lock removed.");
+      // Also update the card in the list
+      setInvitations((items) => items.map(item => item.token === invitation.token ? { ...item, isLocked: data.isLocked } : item));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to update card lock");
     } finally {
@@ -344,266 +413,262 @@ export default function DashboardPage() {
       )}
 
       {/* ── Body ── */}
-      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8 lg:gap-12 flex-1">
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-10 flex flex-col flex-1">
 
-        {/* ── Sidebar ── */}
-        <aside className="w-full md:w-56 shrink-0">
-          <div className="flex md:hidden gap-2 bg-slate-100 p-1 rounded-2xl mb-6">
-            {(["orders", "profile"] as Section[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setActiveSection(s)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all ${
-                  activeSection === s
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {s === "orders" ? "My Orders" : "Profile"}
-              </button>
-            ))}
-          </div>
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Welcome back, {(user.name || "User").split(' ')[0]}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Manage your premium digital invitations and track RSVPs.</p>
+        </div>
 
-          <nav className="hidden md:flex flex-col gap-1">
-            {(["orders", "profile"] as Section[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setActiveSection(s)}
-                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all ${
-                  activeSection === s
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                {s === "orders" ? "My Orders" : "My Profile"}
-              </button>
-            ))}
-          </nav>
-        </aside>
+        {/* Dashboard Tabs */}
+        <div className="flex items-center gap-6 mb-8 border-b border-slate-200 pb-px">
+          <button onClick={() => setActiveSection('orders')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'orders' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
+            Dashboard
+          </button>
+          <button onClick={() => setActiveSection('profile')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'profile' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
+            Profile Settings
+          </button>
+        </div>
 
         {/* ── Main panel ── */}
-        <main className="flex-1 min-w-0">
-          {/* MY ORDERS */}
-          {activeSection === "orders" && (
-            <div className="w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 px-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">My Invitations</h1>
-                {invitations.length > 0 && (
-                  <button
-                    onClick={() => navigate("/editor?new=1")}
-                    className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 shrink-0"
-                  >
-                    <Plus size={16} />
-                    <span>Create New</span>
-                  </button>
+        {activeSection === "orders" && (
+          <div className="space-y-8">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              {[
+                { label: "Total Invites", value: stats.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+                { label: "Active", value: stats.active, icon: Activity, color: "text-green-600", bg: "bg-green-50", border: "border-green-100" },
+                { label: "Pending Payment", value: stats.pending, icon: CreditCard, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
+                { label: "Expired", value: stats.expired, icon: AlertCircle, color: "text-red-600", bg: "bg-red-50", border: "border-red-100" },
+                { label: "Total RSVP", value: "-", icon: Users, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100" },
+              ].map((s, i) => (
+                <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col transition-shadow hover:shadow-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${s.bg} ${s.color} border ${s.border}`}>
+                      <s.icon size={14} strokeWidth={2.5} />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{s.label}</span>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{s.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900" />
+              </div>
+            ) : invitations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+                  <Plus size={24} className="text-slate-400" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">No invitations yet</h3>
+                <p className="text-slate-500 mb-6 max-w-sm">Create your first premium digital invitation card and start sharing it with your guests.</p>
+                <button
+                  onClick={() => navigate("/editor?new=1")}
+                  className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  <Plus size={16} />
+                  <span>Create New Card</span>
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <h2 className="text-xl font-bold text-slate-900">Your Invitations</h2>
+                  <div className="flex items-center gap-3">
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                      <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-all ${effectiveViewMode === 'grid' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`} title="Grid View"><LayoutGrid size={16}/></button>
+                      <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${effectiveViewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'} hidden sm:block`} title="List View"><ListIcon size={16}/></button>
+                    </div>
+                    <button onClick={() => navigate("/editor?new=1")} className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm">
+                      <Plus size={16} /> <span className="hidden sm:inline">Create New</span>
+                    </button>
+                  </div>
+                </div>
+
+                {effectiveViewMode === "grid" ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                    {invitations.map((card, index) => {
+                      const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
+                      const cardInviteLink = inviteLinkFor(card);
+                      const actions = actionButtonsFor(card);
+                      const expired = isExpired(card.createdAt);
+
+                      return (
+                        <motion.article
+                          key={card.token}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4 sm:gap-5 group"
+                        >
+                           <ThumbnailView card={card} design={cardDesign} width={100} height={180} scale={0.219} />
+
+                           <div className="flex-1 min-w-0 flex flex-col">
+                             <div className="flex justify-between items-start gap-2 mb-2">
+                               <div className="min-w-0">
+                                  <h3 className="text-lg font-bold text-slate-900 leading-tight truncate-2-lines" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    {card.groomName} & {card.brideName}
+                                  </h3>
+                                  <div className="flex flex-wrap gap-1.5 mt-2 items-center">
+                                     <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">{card.eventType}</span>
+                                     {expired ? (
+                                        <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200">Expired</span>
+                                     ) : card.isPurchased ? (
+                                        <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider border border-green-200">Active</span>
+                                     ) : (
+                                        <>
+                                          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
+                                          <button onClick={() => toast.info("Payment coming soon!")} className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1"><CreditCard size={10}/> Pay</button>
+                                        </>
+                                     )}
+                                  </div>
+                               </div>
+                             </div>
+
+                             <div className="mt-3 text-xs text-slate-500 space-y-1.5 mb-4">
+                                <div className="flex items-center gap-1.5"><Calendar size={12} className="text-slate-400" /> <span>Created {formatCreatedDate(card)}</span></div>
+                                <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400" /> <span>Expires {formatExpiryDate(card)}</span></div>
+                             </div>
+
+                             <div className="mt-auto">
+                               {/* Link Surface */}
+                               <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 mb-4 transition-colors group-hover:bg-slate-100/75">
+                                 <div className="w-6 h-6 bg-white rounded flex items-center justify-center border border-slate-100 shrink-0">
+                                    <Link2 size={12} className="text-slate-400" />
+                                 </div>
+                                 <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-xs text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
+                                 <button onClick={() => copyLink(card)} className="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center gap-1.5">
+                                   {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                   <span>Copy</span>
+                                 </button>
+                               </div>
+
+                               {/* Action Row */}
+                                <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 overflow-x-auto">
+                                 {actions.map(({ icon: Icon, label, onClick }: any) => (
+                                   <button
+                                     key={label}
+                                     onClick={onClick}
+                                     title={label}
+                                     className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                   >
+                                     <Icon size={16} />
+                                   </button>
+                                 ))}
+                               </div>
+                             </div>
+                           </div>
+                        </motion.article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden overflow-x-auto">
+                     <table className="w-full text-left border-collapse min-w-[800px]">
+                       <thead>
+                         <tr className="bg-slate-50 border-b border-slate-200">
+                           <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Invitation</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Dates</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Link</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-slate-100">
+                         {invitations.map(card => {
+                           const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
+                           const cardInviteLink = inviteLinkFor(card);
+                           const actions = actionButtonsFor(card);
+                           const expired = isExpired(card.createdAt);
+
+                           return (
+                             <tr key={card.token} className="hover:bg-slate-50/80 transition-colors group">
+                               <td className="px-4 py-4">
+                                  <div className="flex items-center gap-4">
+                                     <ThumbnailView card={card} design={cardDesign} width={48} height={85} scale={0.105} />
+                                     <div className="min-w-0 max-w-[250px]">
+                                        <h3 className="text-sm font-bold text-slate-900 truncate">{card.groomName} & {card.brideName}</h3>
+                                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider border border-slate-200">{card.eventType}</span>
+                                        </div>
+                                     </div>
+                                  </div>
+                               </td>
+                               <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                     {expired ? (
+                                        <span className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200">Expired</span>
+                                     ) : card.isPurchased ? (
+                                        <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider border border-green-200">Active</span>
+                                     ) : (
+                                        <>
+                                          <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
+                                          <button onClick={() => toast.info("Payment coming soon!")} className="p-1 rounded bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm" title="Pay Now"><CreditCard size={12}/></button>
+                                        </>
+                                     )}
+                                  </div>
+                               </td>
+                               <td className="px-4 py-4 whitespace-nowrap">
+                                  <div className="text-xs text-slate-900 font-medium">C: {formatCreatedDate(card)}</div>
+                                  <div className="text-[10px] text-slate-500 mt-0.5">E: {formatExpiryDate(card)}</div>
+                               </td>
+                               <td className="px-4 py-4 min-w-[200px]">
+                                  <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 shadow-sm transition-colors group-hover:border-slate-300">
+                                     <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-[11px] text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
+                                     <button onClick={() => copyLink(card)} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm" title="Copy Link">
+                                       {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                     </button>
+                                  </div>
+                               </td>
+                               <td className="px-4 py-4 whitespace-nowrap text-right">
+                                   <div className="flex items-center justify-end gap-1 w-max ml-auto">
+                                    {actions.map(({ icon: Icon, label, onClick }: any) => (
+                                      <button
+                                        key={label}
+                                        onClick={onClick}
+                                        title={label}
+                                        className={`p-1.5 rounded transition-colors ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                      >
+                                        <Icon size={14} />
+                                      </button>
+                                    ))}
+                                  </div>
+                               </td>
+                             </tr>
+                           );
+                         })}
+                       </tbody>
+                     </table>
+                  </div>
                 )}
               </div>
+            )}
+          </div>
+        )}
 
-              {loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-900" />
-                </div>
-              ) : !invitation ? (
-                <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
-                  <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
-                    <Plus size={24} className="text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">No invitations yet</h3>
-                  <p className="text-slate-500 mb-6 max-w-sm">Create your first premium digital invitation card and start sharing it with your guests.</p>
-                  <button
-                    onClick={() => navigate("/editor?new=1")}
-                    className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                  >
-                    <Plus size={16} />
-                    <span>Create New Card</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-8">
-                  {invitations.map((card) => {
-                    const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
-                    const cardInviteLink = inviteLinkFor(card);
-                    const cardDisplayName = `${card.groomName} & ${card.brideName}`;
-                    const cardActionButtons = actionButtonsFor(card);
-
-                    return (
-                      <article key={card.token} className="relative bg-white rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group">
-                        <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-
-                          {/* Phone Mockup Column */}
-                          <div className="flex-shrink-0 flex justify-center md:justify-start">
-                            <div
-                              className="relative bg-slate-900 shadow-xl mx-auto md:mx-0 group-hover:-translate-y-1 transition-transform duration-500"
-                              style={{ width: 140, height: 284, borderRadius: 24, border: "6px solid #0f172a", overflow: "hidden" }}
-                            >
-                              <div
-                                className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-slate-900"
-                                style={{ width: 40, height: 14, borderRadius: "0 0 12px 12px" }}
-                              />
-                              <div
-                                className="absolute left-0 top-0"
-                                style={{
-                                  width: 420,
-                                  transform: "scale(0.3047619)",
-                                  transformOrigin: "top left",
-                                  "--card-viewport-height": "892px",
-                                  "--primary": cardDesign?.colorPrimary || "221 83% 53%",
-                                  "--primary-foreground": "0 0% 100%",
-                                  "--secondary": cardDesign?.colorSecondary || "210 40% 96.1%",
-                                  "--background": cardDesign?.colorBackground || "0 0% 100%",
-                                  "--card": cardDesign?.colorCard || "0 0% 100%",
-                                  "--popover": cardDesign?.colorCard || "0 0% 100%",
-                                  "--border": "214.3 31.8% 91.4%",
-                                  "--muted": "210 40% 96.1%",
-                                  "--muted-foreground": "215.4 16.3% 46.9%",
-                                  "--name-font-family": `'${cardDesign?.nameFontFamily || "Dancing Script"}', cursive`,
-                                  "--name-font-size": `${Number(cardDesign?.nameFontSize) || 38}px`,
-                                  "--name-color": cardDesign?.nameColor ? `hsl(${cardDesign.nameColor})` : "hsl(221 83% 53%)",
-                                  "--body-font-family": `'${cardDesign?.bodyFontFamily || "Dancing Script"}', cursive`,
-                                } as React.CSSProperties}
-                              >
-                                <WeddingCard
-                                  invitation={card as any}
-                                  cardImageUrl={resolveImageUrl(cardDesign?.cardImageUrl || "")}
-                                  envelopeImageUrl={resolveImageUrl(cardDesign?.envelopeImageUrl || cardDesign?.cardImageUrl || "")}
-                                  cardMaxWidth={cardDesign?.cardMaxWidth || "420px"}
-                                  rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
-                                />
-                              </div>
-                              {!card.isPurchased && (
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-900/10 backdrop-blur-[1px]">
-                                  <div
-                                    style={{ transform: "rotate(-45deg)" }}
-                                    className="bg-white/95 px-6 py-2 shadow-lg border border-white/50 backdrop-blur-md"
-                                  >
-                                    <span
-                                      className="text-slate-900 font-bold tracking-[0.2em] select-none uppercase"
-                                      style={{ fontSize: 11 }}
-                                    >
-                                      PREVIEW
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/30 rounded-full" style={{ width: 36, height: 4 }} />
-                            </div>
-                          </div>
-
-                          {/* Details Column */}
-                          <div className="flex-1 min-w-0 flex flex-col">
-                            {/* Header Row */}
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
-                              <div>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-snug mb-1">
-                                  {cardDisplayName}
-                                </h2>
-                                <p className="text-sm font-semibold text-indigo-600 uppercase tracking-widest">
-                                  {card.eventType}
-                                </p>
-                              </div>
-                              <div className="shrink-0">
-                                {card.isPurchased ? (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full tracking-wide border border-green-200">
-                                    <Check size={12} strokeWidth={3} />
-                                    <span>PAID</span>
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => toast.info("Payment coming soon!")}
-                                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-full hover:bg-slate-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                                  >
-                                    <CreditCard size={14} />
-                                    <span>PAY NOW</span>
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Metadata */}
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-8">
-                              <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <Calendar size={16} className="text-slate-400" />
-                                <span>Created <strong className="font-medium text-slate-700">{formatCreatedDate(card)}</strong></span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <Clock size={16} className="text-slate-400" />
-                                <span>Expires <strong className="font-medium text-slate-700">{formatExpiryDate(card)}</strong></span>
-                              </div>
-                            </div>
-
-                            {/* Link Surface */}
-                            <div className="mb-8">
-                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Invitation Link</p>
-                              <div className="flex items-center gap-3 bg-slate-50 rounded-2xl p-2 pr-3 border border-slate-100 transition-colors hover:bg-slate-100/75">
-                                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-100">
-                                  <Link2 size={16} className="text-indigo-500" />
-                                </div>
-                                <input
-                                  type="text"
-                                  readOnly
-                                  value={cardInviteLink}
-                                  className="flex-1 text-sm text-slate-700 bg-transparent outline-none min-w-0 truncate select-all font-medium"
-                                />
-                                <button
-                                  onClick={() => copyLink(card)}
-                                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:shadow-sm transition-all shrink-0"
-                                >
-                                  {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
-                                  <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-100 mt-auto">
-                              {cardActionButtons.map(({ icon: Icon, label, onClick }) => (
-                                <button
-                                  key={label}
-                                  onClick={onClick}
-                                  title={label}
-                                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed group/btn"
-                                >
-                                  <Icon size={16} className="text-slate-400 group-hover/btn:text-indigo-500 transition-colors" />
-                                  <span>{label}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
+        {/* Profile Panel Placeholder */}
+        {activeSection === "profile" && (
+          <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+              <User size={24} className="text-slate-400" />
             </div>
-          )}
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Profile Settings</h3>
+            <p className="text-slate-500 max-w-sm">Manage your account details and preferences. Coming soon.</p>
+          </div>
+        )}
 
-          {/* MY PROFILE */}
-          {activeSection === "profile" && (
-            <div className="w-full">
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 max-w-2xl">
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-8">My Profile</h2>
-                <dl className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8 pb-6 border-b border-slate-100">
-                    <dt className="text-sm font-semibold text-slate-500 w-32 shrink-0">Full Name</dt>
-                    <dd className="text-base text-slate-900 font-medium">{user.name}</dd>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8 pb-6 border-b border-slate-100">
-                    <dt className="text-sm font-semibold text-slate-500 w-32 shrink-0">Email Address</dt>
-                    <dd className="text-base text-slate-900 break-all">{user.email}</dd>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8">
-                    <dt className="text-sm font-semibold text-slate-500 w-32 shrink-0">Account Role</dt>
-                    <dd className="text-base text-slate-900 capitalize inline-flex items-center px-3 py-1 bg-slate-100 rounded-full font-medium">{user.role}</dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-          )}
-        </main>
       </div>
 
-      <SiteFooter />
+      {/* ── Footer ── */}
+      <footer className="py-6 border-t border-slate-200 mt-auto text-center text-slate-400 text-[11px] tracking-wider uppercase font-semibold">
+        <p>&copy; {new Date().getFullYear()} WedInBytes. All rights reserved.</p>
+      </footer>
     </div>
   );
 }

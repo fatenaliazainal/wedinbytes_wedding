@@ -1,0 +1,56 @@
+The current dashboard UI has improved, but I want to take it one step further and give WedInBytes its own unique identity.
+
+Instead of looking like a traditional website or another invitation platform, redesign it to feel like a modern SaaS dashboard.
+
+Requirements:
+
+• Replace the current "My Orders" layout with a dashboard experience.
+• Add a welcome header with a short subtitle.
+• Add dashboard summary cards (Invitations, Active, Pending Payment, Expired, Total RSVP if available).
+• Replace the current invitation list with a modern responsive grid layout.
+• Display invitation cards in a 2-column grid on desktop.
+• Use a single-column layout on tablet and mobile.
+• Reduce the overall card height by around 35%.
+• Reduce excessive whitespace.
+• Make the invitation thumbnail smaller while keeping it clear.
+• Reduce title size slightly.
+• Limit titles to 2 lines with ellipsis.
+• Use modern rounded cards with subtle shadows.
+• Use better spacing hierarchy.
+• Use rounded badges for invitation type and status.
+• Replace the invitation URL textbox with a modern link container and compact Copy button.
+• Keep all action buttons on a single horizontal row.
+• Add subtle hover effects.
+• Add a Grid/List toggle above the invitation list.
+• In List View, display invitations in a compact table.
+• Automatically use Grid View on mobile.
+• Simplify the footer and improve spacing.
+• Use the existing WedInBytes branding and Poppins font.
+
+IMPORTANT:
+This is strictly a UI redesign.
+
+DO NOT modify:
+- Backend
+- Database
+- API
+- Authentication
+- Business logic
+- Payment flow
+- Routes
+- Existing functionality
+- Edit
+- Preview
+- RSVP
+- Share
+- QR
+- Lock
+- Delete
+- Copy Link
+- Invitation URL generation
+- Existing permissions
+- Existing responsive functionality
+
+Only redesign the user interface and improve the user experience.
+
+The final result should look like an original premium SaaS product and should not resemble KadKahwinMy or any other competitor.
