@@ -1,0 +1,94 @@
+Update the existing "Profile Settings" page of my Digital Wedding Invitation System.
+
+Keep the existing design language consistent with the Dashboard:
+- White cards
+- Rounded corners
+- Soft shadows
+- Clean typography
+- Responsive layout
+- Tailwind CSS
+- Lucide Icons
+
+The page should contain three sections.
+
+=========================================
+SECTION 1 - Personal Information
+=========================================
+
+Display a card titled "Personal Information".
+
+Include the following editable fields:
+
+- Full Name
+- Email Address
+
+Populate the fields with the currently logged-in user's data.
+
+Add:
+- Save Changes button
+
+Requirements:
+- Validate email format.
+- Show success toast/message after updating.
+- Disable the Save button while submitting.
+- Do not refresh the page after saving.
+
+=========================================
+SECTION 2 - Change Password
+=========================================
+
+Display another card titled "Change Password".
+
+Fields:
+- Current Password
+- New Password
+- Confirm New Password
+
+Requirements:
+- Validate password confirmation.
+- Show validation errors.
+- Show success message after password update.
+- Use password visibility toggle icons.
+
+Button:
+Update Password
+
+=========================================
+SECTION 3 - Payment History
+=========================================
+
+Display a card titled "Payment History".
+
+Show a responsive table with columns:
+
+- Invoice ID
+- Invitation
+- Payment Date
+- Amount
+- Status
+- Receipt
+
+Status should use badges:
+- Paid (green)
+- Pending (yellow)
+- Failed (red)
+
+For successful payments, display a "Download Receipt" button.
+
+If payment is pending, display a "Pay Now" button.
+
+If there are no payment records, show an empty state:
+
+Icon
+"No payment history yet."
+
+=========================================
+GENERAL REQUIREMENTS
+=========================================
+
+- Use reusable components.
+- Keep spacing and styling identical to the Dashboard.
+- Mobile responsive.
+- Do not change any existing Dashboard functionality.
+- Connect the Personal Information form to the existing user profile so changes update the user's account.
+- Keep the page clean, modern, and professional.

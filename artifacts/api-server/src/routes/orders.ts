@@ -58,9 +58,7 @@ router.get("/buyer/payment-history", async (req, res) => {
     const invitationById = new Map(invitations.map((invitation) => [invitation.id, invitation]));
     const packageById = new Map(packages.map((pkg) => [pkg.id, pkg]));
 
-    res.json(orders
-      .filter((order) => order.paymentStatus === "PAID")
-      .map((order) => {
+    res.json(orders.map((order) => {
         const invitation = order.invitationId ? invitationById.get(order.invitationId) : undefined;
         const pkg = order.packageId ? packageById.get(order.packageId) : undefined;
         return {
@@ -127,9 +125,7 @@ router.get("/business/payment-history", async (req, res) => {
     const invitationById = new Map(invitations.map((invitation) => [invitation.id, invitation]));
     const packageById = new Map(packages.map((pkg) => [pkg.id, pkg]));
 
-    res.json(orders
-      .filter((order) => order.paymentStatus === "PAID")
-      .map((order) => {
+    res.json(orders.map((order) => {
         const invitation = order.invitationId ? invitationById.get(order.invitationId) : undefined;
         const pkg = order.packageId ? packageById.get(order.packageId) : undefined;
         return {

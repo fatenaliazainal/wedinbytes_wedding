@@ -189,6 +189,107 @@ router.get("/auth/me", async (req, res) => {
   }
 });
 
+router.patch("/auth/profile", async (req, res) => {
+  if (!req.session.userId) {
+    res.status(401).json({ error: "Tidak log masuk." });
+    return;
+  }
+
+  try {
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+
+    if (!name || name.length > 120) {
+      res.status(400).json({ error: "Nama penuh diperlukan dan mestilah tidak melebihi 120 aksara." });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+      res.status(400).json({ error: "Sila masukkan alamat emel yang sah." });
+      return;
+    }
+
+    const [existing] = await db
+      .select({ id: userTable.id })
+      .from(userTable)
+      .where(eq(userTable.email, email))
+      .limit(1);
+    if (existing && existing.id !== req.session.userId) {
+      res.status(409).json({ error: "Emel ini sudah digunakan oleh akaun lain." });
+      return;
+    }
+
+    const [updated] = await db
+      .update(userTable)
+      .set({ name, email })
+      .where(eq(userTable.id, req.session.userId))
+      .returning({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role });
+
+    if (!updated) {
+      res.status(404).json({ error: "Pengguna tidak dijumpai." });
+      return;
+    }
+
+    auditEvent(req, "auth.profile_update", { userId: updated.id });
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Profile update failed");
+    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+  }
+});
+
+router.post("/auth/change-password", async (req, res) => {
+  if (!req.session.userId) {
+    res.status(401).json({ error: "Tidak log masuk." });
+    return;
+  }
+
+  try {
+    const currentPassword = typeof req.body?.currentPassword === "string" ? req.body.currentPassword : "";
+    const newPassword = typeof req.body?.newPassword === "string" ? req.body.newPassword : "";
+    const confirmPassword = typeof req.body?.confirmPassword === "string" ? req.body.confirmPassword : "";
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      res.status(400).json({ error: "Semua medan kata laluan diperlukan." });
+      return;
+    }
+    if (newPassword.length < 6) {
+      res.status(400).json({ error: "Kata laluan baharu mesti sekurang-kurangnya 6 aksara." });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ error: "Pengesahan kata laluan tidak sepadan." });
+      return;
+    }
+    if (newPassword === currentPassword) {
+      res.status(400).json({ error: "Kata laluan baharu mesti berbeza daripada kata laluan semasa." });
+      return;
+    }
+
+    const [user] = await db
+      .select({ id: userTable.id, passwordHash: userTable.passwordHash })
+      .from(userTable)
+      .where(eq(userTable.id, req.session.userId))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "Pengguna tidak dijumpai." });
+      return;
+    }
+
+    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      res.status(400).json({ error: "Kata laluan semasa tidak betul." });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await db.update(userTable).set({ passwordHash }).where(eq(userTable.id, user.id));
+    auditEvent(req, "auth.password_change", { userId: user.id });
+    res.json({ message: "Kata laluan berjaya dikemaskini." });
+  } catch (err) {
+    req.log.error({ err }, "Password change failed");
+    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+  }
+});
+
 router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
   try {
     const { password } = req.body;

@@ -6,7 +6,8 @@ import {
   Edit2, Eye, Users, Share2, Lock, LogOut,
   User, Plus, Copy, Check, QrCode, X, Trash2,
   Calendar, Clock, CreditCard, Link2,
-  LayoutGrid, List as ListIcon, Activity, AlertCircle, FileText
+  LayoutGrid, List as ListIcon, Activity, AlertCircle, FileText,
+  EyeOff, Save, KeyRound, Download, ReceiptText
 } from "lucide-react";
 import { toast } from "sonner";
 import SiteHeader from "@/components/SiteHeader";
@@ -63,6 +64,75 @@ type PaymentHistoryItem = {
   invitation?: { brideName: string; groomName: string } | null;
 };
 
+type PasswordField = "currentPassword" | "newPassword" | "confirmPassword";
+
+function paymentStatusMeta(status: string) {
+  const normalized = status.toUpperCase();
+  if (normalized === "PAID") {
+    return { label: "Paid", className: "border-green-200 bg-green-50 text-green-700" };
+  }
+  if (normalized === "PENDING") {
+    return { label: "Pending", className: "border-amber-200 bg-amber-50 text-amber-700" };
+  }
+  return { label: "Failed", className: "border-red-200 bg-red-50 text-red-700" };
+}
+
+function PaymentHistoryTable({
+  payments,
+  onDownloadReceipt,
+  onPayNow,
+}: {
+  payments: PaymentHistoryItem[];
+  onDownloadReceipt: (payment: PaymentHistoryItem) => void;
+  onPayNow: () => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[760px] text-left">
+        <thead className="bg-slate-50">
+          <tr className="border-b border-slate-100">
+            {["Invoice ID", "Invitation", "Payment Date", "Amount", "Status", "Receipt"].map((heading) => (
+              <th key={heading} className="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">{heading}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {payments.length ? payments.map((payment) => {
+            const status = paymentStatusMeta(payment.paymentStatus);
+            const invoiceId = payment.paymentReference || `INV-${payment.id}`;
+            return (
+              <tr key={payment.id} className="transition hover:bg-slate-50/70">
+                <td className="px-5 py-4 text-sm font-semibold text-slate-900">{invoiceId}</td>
+                <td className="px-5 py-4 text-sm text-slate-700">{payment.invitation ? `${payment.invitation.groomName} & ${payment.invitation.brideName}` : payment.packageName || "Wedding invitation"}</td>
+                <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-500">{new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
+                <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-900">RM {Number(payment.amount || 0).toFixed(2)}</td>
+                <td className="px-5 py-4"><span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${status.className}`}>{status.label}</span></td>
+                <td className="px-5 py-4">
+                  {payment.paymentStatus.toUpperCase() === "PAID" ? (
+                    <button onClick={() => onDownloadReceipt(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"><Download size={14} /> Download Receipt</button>
+                  ) : payment.paymentStatus.toUpperCase() === "PENDING" ? (
+                    <button onClick={onPayNow} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"><CreditCard size={14} /> Pay Now</button>
+                  ) : (
+                    <span className="text-xs text-slate-400">Not available</span>
+                  )}
+                </td>
+              </tr>
+            );
+          }) : (
+            <tr>
+              <td colSpan={6} className="px-6 py-16 text-center">
+                <ReceiptText size={30} className="mx-auto text-slate-300" />
+                <h4 className="mt-4 text-lg font-bold text-slate-900">No payment history yet.</h4>
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">Your invoice and payment records will appear here once an order is created.</p>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 const isExpired = (createdAt?: string) => {
   if (!createdAt) return false;
   const expiry = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -116,7 +186,7 @@ function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 
 }
 
 export default function DashboardPage() {
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading, updateUser, logout } = useAuth();
   const [, navigate] = useLocation();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -135,6 +205,20 @@ export default function DashboardPage() {
   const [deleteSaving, setDeleteSaving] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordValues, setPasswordValues] = useState<Record<PasswordField, string>>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordVisibility, setPasswordVisibility] = useState<Record<PasswordField, boolean>>({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -150,6 +234,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
+    setProfileName(user.name);
+    setProfileEmail(user.email);
     const fetchData = async () => {
       try {
         const [invRes, designRes, allDesRes, paymentHistoryRes] = await Promise.all([
@@ -285,6 +371,100 @@ export default function DashboardPage() {
     } finally {
       setDeleteSaving(false);
     }
+  };
+
+  const saveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const name = profileName.trim();
+    const email = profileEmail.trim().toLowerCase();
+    if (!name) {
+      toast.error("Please enter your full name.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const response = await fetch(`${BASE}/api/auth/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name, email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to save profile changes.");
+      updateUser(data);
+      toast.success("Profile changes saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save profile changes.");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const updatePassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const { currentPassword, newPassword, confirmPassword } = passwordValues;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please complete all password fields.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirmation do not match.");
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      const response = await fetch(`${BASE}/api/auth/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(passwordValues),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to update password.");
+      setPasswordValues({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      toast.success(data.message || "Password updated successfully.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update password.");
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const downloadReceipt = (payment: PaymentHistoryItem) => {
+    const invoiceId = payment.paymentReference || `INV-${payment.id}`;
+    const invitationName = payment.invitation
+      ? `${payment.invitation.groomName} & ${payment.invitation.brideName}`
+      : payment.packageName || "Wedding invitation";
+    const date = new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit", month: "long", year: "numeric",
+    });
+    const receipt = [
+      "WedInBytes Payment Receipt",
+      "==========================",
+      `Invoice ID: ${invoiceId}`,
+      `Invitation: ${invitationName}`,
+      `Package: ${payment.packageName || "Wedding invitation"}`,
+      `Amount: RM ${Number(payment.amount || 0).toFixed(2)}`,
+      `Payment date: ${date}`,
+      "Status: Paid",
+      payment.paymentGateway ? `Gateway: ${payment.paymentGateway}` : "",
+    ].filter(Boolean).join("\n");
+    const url = URL.createObjectURL(new Blob([receipt], { type: "text/plain;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${invoiceId}-receipt.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const NAV_ITEMS: SiteNavItem[] = [
@@ -661,47 +841,105 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm" data-testid="buyer-payment-history-card">
-              {paymentHistory.length ? (
-                <div className="divide-y divide-slate-100">
-                  {paymentHistory.map((payment) => (
-                    <div key={payment.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900">
-                          {payment.invitation ? `${payment.invitation.groomName} & ${payment.invitation.brideName}` : payment.packageName || "Wedding invitation"}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {payment.packageName || "Invitation package"} · {payment.paymentReference || "Payment completed"}
-                        </p>
-                        <p className="mt-2 text-xs text-slate-400">
-                          {new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between gap-4 sm:justify-end">
-                        <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">Paid</span>
-                        <span className="text-lg font-semibold text-slate-900">RM {Number(payment.amount || 0).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-6 py-16 text-center">
-                  <FileText size={30} className="mx-auto text-slate-300" />
-                  <h3 className="mt-4 text-lg font-bold text-slate-900">No payment history yet</h3>
-                  <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">Your completed payments will appear here once a payment has been made.</p>
-                </div>
-              )}
+              <PaymentHistoryTable
+                payments={paymentHistory}
+                onDownloadReceipt={downloadReceipt}
+                onPayNow={() => toast.info("Payment coming soon!")}
+              />
             </div>
           </div>
         )}
 
-        {/* Profile Panel Placeholder */}
         {activeSection === "profile" && (
-          <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
-              <User size={24} className="text-slate-400" />
+          <div className="space-y-6" data-testid="profile-settings-page">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <User size={13} className="text-slate-900" />
+                Account settings
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900">Profile Settings</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">Update your account details, password, and payment records.</p>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Profile Settings</h3>
-            <p className="text-slate-500 max-w-sm">Manage your account details and preferences. Coming soon.</p>
+
+            <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7" data-testid="personal-information-card">
+              <div className="mb-6 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600"><User size={19} /></div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Personal Information</h3>
+                  <p className="mt-1 text-sm text-slate-500">Keep your account details up to date.</p>
+                </div>
+              </div>
+              <form onSubmit={saveProfile} className="grid gap-5 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Full Name</span>
+                  <input value={profileName} onChange={(event) => setProfileName(event.target.value)} required maxLength={120} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Email Address</span>
+                  <input type="email" value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} required maxLength={254} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
+                </label>
+                <div className="md:col-span-2">
+                  <button type="submit" disabled={profileSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
+                    <Save size={16} /> {profileSaving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7" data-testid="change-password-card">
+              <div className="mb-6 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><KeyRound size={19} /></div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Change Password</h3>
+                  <p className="mt-1 text-sm text-slate-500">Use a strong password to protect your account.</p>
+                </div>
+              </div>
+              <form onSubmit={updatePassword} className="grid gap-5 md:grid-cols-3">
+                {([
+                  ["currentPassword", "Current Password"],
+                  ["newPassword", "New Password"],
+                  ["confirmPassword", "Confirm New Password"],
+                ] as [PasswordField, string][]).map(([field, label]) => (
+                  <label key={field} className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">{label}</span>
+                    <span className="relative block">
+                      <input
+                        type={passwordVisibility[field] ? "text" : "password"}
+                        value={passwordValues[field]}
+                        onChange={(event) => setPasswordValues((current) => ({ ...current, [field]: event.target.value }))}
+                        minLength={6}
+                        required
+                        autoComplete={field === "currentPassword" ? "current-password" : "new-password"}
+                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      />
+                      <button type="button" onClick={() => setPasswordVisibility((current) => ({ ...current, [field]: !current[field] }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700" aria-label={passwordVisibility[field] ? `Hide ${label}` : `Show ${label}`}>
+                        {passwordVisibility[field] ? <EyeOff size={17} /> : <Eye size={17} />}
+                      </button>
+                    </span>
+                  </label>
+                ))}
+                <div className="md:col-span-3">
+                  <button type="submit" disabled={passwordSaving} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
+                    <KeyRound size={16} /> {passwordSaving ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm" data-testid="profile-payment-history-card">
+              <div className="flex items-start gap-3 border-b border-slate-100 p-5 sm:p-7">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"><ReceiptText size={19} /></div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Payment History</h3>
+                  <p className="mt-1 text-sm text-slate-500">View invoices and payment status for your invitations.</p>
+                </div>
+              </div>
+              <PaymentHistoryTable
+                payments={paymentHistory}
+                onDownloadReceipt={downloadReceipt}
+                onPayNow={() => toast.info("Payment coming soon!")}
+              />
+            </section>
           </div>
         )}
 

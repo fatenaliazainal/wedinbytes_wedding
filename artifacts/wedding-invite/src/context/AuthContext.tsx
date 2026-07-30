@@ -12,6 +12,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
+  updateUser: (user: AuthUser) => void;
   login: (email: string, password: string) => Promise<void>;
   adminLogin: (password: string) => Promise<void>;
   register: (email: string, password: string, name: string, accountType?: "buyer" | "business_account") => Promise<void>;
@@ -82,8 +83,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (nextUser: AuthUser) => setUser(nextUser);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, adminLogin, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, updateUser, login, adminLogin, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
