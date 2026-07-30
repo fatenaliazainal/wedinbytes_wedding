@@ -27,7 +27,7 @@ function fontFamilyStack(fontName?: string | null): string {
   if (normalized.includes(",")) return normalized;
   return `'${normalized}', 'Dancing Script', cursive`;
 }
-import { RotateCcw, Volume2, VolumeX, LockKeyhole } from "lucide-react";
+import { Volume2, VolumeX, LockKeyhole } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
 import { extractYouTubeId } from "@/lib/youtube";
@@ -115,7 +115,6 @@ export default function InvitationPage() {
   const resolvedEnvelopeImageUrl = resolveImageUrl(templateDesign?.envelopeImageUrl ?? design?.envelopeImageUrl);
 
   const [isOpened, setIsOpened] = useState(false);
-  const [replayKey, setReplayKey] = useState(0);
   const [isRsvpModalOpen, setIsRsvpModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -127,18 +126,6 @@ export default function InvitationPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
-
-  const handleReplay = () => {
-    setActiveTab(null);
-    setIsOpened(false);
-    setIsMuted(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
-    setReplayKey((k) => k + 1);
-  };
 
   const musicUrl = (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
@@ -287,7 +274,6 @@ export default function InvitationPage() {
     >
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
-          key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
@@ -298,7 +284,6 @@ export default function InvitationPage() {
         />
       ) : (
         <EnvelopeDoors
-          key={replayKey}
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
            initialsImageUrl={initialsImageUrl || undefined}
@@ -375,7 +360,7 @@ export default function InvitationPage() {
         </div>
       )}
 
-      {/* Replay + Mute buttons — fixed top-left, only visible when card is open */}
+      {/* Mute button — fixed top-left, only visible when card is open */}
       <AnimatePresence>
         {isOpened && (
           <motion.div
@@ -385,14 +370,6 @@ export default function InvitationPage() {
             transition={{ delay: 1.2, duration: 0.3 }}
             className="fixed top-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto"
           >
-            <button
-              onClick={handleReplay}
-              type="button"
-              title="Replay"
-              className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
-            >
-              <RotateCcw size={15} strokeWidth={2} />
-            </button>
             <button
               onClick={() => setIsMuted((prev) => !prev)}
               type="button"

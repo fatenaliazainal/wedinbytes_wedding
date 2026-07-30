@@ -18,3 +18,4 @@
 - [ToyyPay payment integration](toyyibpay-integration.md) — gateway bills use persisted package prices, verified callbacks/status, and activate invitations only after payment verification.
 - [Business collaboration logos](business-collaboration-logos.md) — business logo object keys must remain allowed by the same-origin R2 proxy used by public homepage cards.
 - [Catalog preview style](catalog-preview-style.md) — public card catalog uses direct portrait invitation previews with soft shadows instead of phone frames.
+- [Invitation audio controls](invitation-audio-controls.md) — public invitations show only a mute/unmute toggle after opening, not replay/restart.
