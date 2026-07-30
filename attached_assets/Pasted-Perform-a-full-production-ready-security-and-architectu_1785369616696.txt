@@ -1,0 +1,320 @@
+Perform a full production-ready security and architecture audit of the entire WedInBytes codebase.
+
+IMPORTANT:
+- Do NOT rewrite the application.
+- Do NOT change UI or business logic unless required.
+- Preserve all existing functionality.
+- Only make safe production improvements.
+- Before changing any file, understand how it is connected to the rest of the system.
+- Never introduce breaking changes.
+
+==================================================
+1. INVITATION OWNERSHIP (CRITICAL)
+==================================================
+
+Audit every API endpoint that modifies an invitation.
+
+Ensure every write operation verifies:
+
+- session exists
+- invitation exists
+- invitation.userId === session.userId
+
+Admin users may bypass this check.
+
+Never allow buyers to modify another buyer's invitation even if they know the token.
+
+Check ALL routes including but not limited to:
+
+PATCH invitation
+DELETE invitation
+gallery upload
+logo upload
+music update
+language update
+design override
+RSVP settings
+cover settings
+all future write endpoints
+
+Create reusable middleware/helper if appropriate.
+
+==================================================
+2. ADMIN AUTHORIZATION
+==================================================
+
+Audit every admin endpoint.
+
+Ensure POST/PATCH/DELETE routes require server-side admin authentication.
+
+Do NOT rely on frontend authentication.
+
+Check:
+
+Design CRUD
+Pricing CRUD
+Review moderation
+Orders
+Customers
+Uploads
+Demo editor
+Raw cards
+Any admin utilities
+
+Create reusable requireAdmin middleware if needed.
+
+==================================================
+3. PUBLIC RSVP SECURITY
+==================================================
+
+Review:
+
+GET /api/rsvp
+GET /api/rsvp/count
+
+Determine whether guest names are publicly exposed.
+
+If full RSVP lists are public:
+
+Restrict them to invitation owners only.
+
+If public pages only need totals:
+
+Expose totals only.
+
+Do not expose guest personal information publicly.
+
+==================================================
+4. RATE LIMITING
+==================================================
+
+Implement production-safe rate limiting for:
+
+Login
+Register
+PIN unlock
+RSVP submit
+Review submit
+Password endpoints
+Admin login
+
+Use reasonable limits.
+
+Prevent brute force attacks.
+
+==================================================
+5. PIN SECURITY
+==================================================
+
+Improve invitation PIN protection.
+
+Add:
+
+retry limits
+temporary lockout
+cooldown
+IP throttling
+
+Prevent brute forcing of 4-digit PINs.
+
+==================================================
+6. TOKEN SECURITY
+==================================================
+
+Audit invitation token generation.
+
+Ensure:
+
+cryptographically secure randomness
+
+collision detection
+
+automatic regeneration on collision
+
+URL-safe characters
+
+Document token generation if missing.
+
+==================================================
+7. HUMAN READABLE URL COLLISION
+==================================================
+
+Review:
+
+/invite/:dateCode/:slug
+
+Ensure duplicate couple names on the same date cannot create identical URLs.
+
+Implement automatic slug collision handling if necessary.
+
+Examples:
+
+Ali-Siti
+Ali-Siti-2
+Ali-Siti-ab12
+
+Do not break existing links.
+
+==================================================
+8. IMAGE UPLOAD HARDENING
+==================================================
+
+Audit every upload endpoint.
+
+Besides MIME validation, also verify:
+
+image dimensions
+
+pixel count
+
+maximum resolution
+
+decompression bomb protection
+
+Continue validating PNG transparency where applicable.
+
+==================================================
+9. R2 STORAGE CLEANUP
+==================================================
+
+Audit logo replacement.
+
+Determine whether uploads overwrite existing files or create orphaned objects.
+
+If orphaned files are created:
+
+Implement safe cleanup after successful replacement.
+
+Never delete active files.
+
+==================================================
+10. SESSION SECURITY
+==================================================
+
+Audit session configuration.
+
+Verify:
+
+httpOnly
+
+secure cookies (production)
+
+sameSite
+
+expiration
+
+rolling sessions
+
+proper logout
+
+session regeneration after login
+
+==================================================
+11. INPUT VALIDATION
+==================================================
+
+Audit every API input.
+
+Ensure all text fields have reasonable limits.
+
+Validate:
+
+names
+
+descriptions
+
+messages
+
+URLs
+
+phone numbers
+
+dates
+
+email
+
+numbers
+
+Reject malformed input.
+
+==================================================
+12. AUDIT LOGGING
+==================================================
+
+Add optional audit logging for:
+
+admin edits
+
+design activation
+
+payment updates
+
+invitation edits
+
+status changes
+
+uploads
+
+deletions
+
+Log useful information without exposing secrets.
+
+==================================================
+13. CONCURRENT EDIT PROTECTION
+==================================================
+
+Review invitation editing.
+
+Determine whether multiple browser tabs can overwrite each other's changes.
+
+If necessary:
+
+implement optimistic locking
+
+updatedAt validation
+
+version checking
+
+Prevent accidental data loss.
+
+==================================================
+14. REMOVE DEAD CODE
+==================================================
+
+Find:
+
+unused endpoints
+
+legacy fields
+
+unused database columns
+
+obsolete utilities
+
+duplicate code
+
+Do NOT remove anything still referenced.
+
+List anything that can safely be removed.
+
+==================================================
+15. FINAL REPORT
+==================================================
+
+After completing the audit:
+
+Produce a report containing:
+
+✅ Issues found
+
+✅ Files modified
+
+✅ Why each modification was necessary
+
+✅ Any remaining risks
+
+✅ Suggested future improvements
+
+If an issue cannot be safely fixed automatically, explain why instead of making unsafe assumptions.
+
+Maintain backward compatibility throughout the project.

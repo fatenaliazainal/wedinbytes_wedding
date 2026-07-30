@@ -1,8 +1,10 @@
 import { Router, type IRouter } from "express";
-import { db, cardTable, invitationTable, orderTable } from "@workspace/db";
+import { db, cardTable, invitationTable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import multer from "multer";
-import { deleteImage, uploadImage, downloadImage, getImagePublicUrl, isR2Configured } from "../services/cloudflare/r2-storage-admin";
+import { deleteImage, uploadImage, downloadImage, isR2Configured } from "../services/cloudflare/r2-storage-admin";
+import { auditEvent, canManageInvitation, requireAdmin } from "../lib/security";
+import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
 
 const router: IRouter = Router();
 
@@ -30,24 +32,13 @@ const initialsUpload = multer({
   fileFilter: (_req, file, cb) => cb(null, file.mimetype === "image/png"),
 });
 
-function canManageInvitation(req: any, invitation: typeof invitationTable.$inferSelect) {
-  return req.session?.role === "admin" || Boolean(req.session?.userId && invitation.userId === req.session.userId);
-}
-
-// PNG color types 4 and 6 contain an alpha channel. This deliberately rejects
-// opaque PNGs so initials artwork cannot appear with an unwanted background.
-function hasPngAlphaChannel(buffer: Buffer) {
-  return buffer.length >= 26
-    && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-    && buffer.toString("ascii", 12, 16) === "IHDR"
-    && (buffer[25] === 4 || buffer[25] === 6);
-}
-
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
 router.get("/r2", async (req, res) => {
   const key = typeof req.query.key === "string" ? req.query.key : "";
-  if (!key || key.includes("..") || key.startsWith("/")) {
+  const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/"];
+  if (!key || key.includes("..") || key.startsWith("/")
+    || !allowedPrefixes.some((prefix) => key.startsWith(prefix))) {
     res.status(400).json({ error: "A valid R2 object key is required" });
     return;
   }
@@ -73,7 +64,8 @@ function stripNulls<T extends Record<string, unknown>>(obj: T): T {
 }
 
 // ── List all cards (for Raw Card tab in admin) ────────────────────────────────
-// Returns card rows mapped to { id, name, path, category, publicUrl }
+// Returns card rows mapped to { id, name, path, category }.
+// The frontend resolves the stored key through the same-origin R2 proxy.
 router.get("/cards", async (req, res) => {
   try {
     const rows = await db
@@ -93,7 +85,6 @@ router.get("/cards", async (req, res) => {
       name: row.name,
       path: row.path ?? "",
       category: row.category ?? "design",
-      publicUrl: row.path ? getImagePublicUrl(row.path) : undefined,
       updatedAt: row.updatedAt,
       createdAt: row.createdAt,
     }));
@@ -106,7 +97,7 @@ router.get("/cards", async (req, res) => {
 });
 
 // ── Create raw card with image upload ────────────────────────────────────────
-router.post("/raw-card", upload.single("file"), async (req, res) => {
+router.post("/raw-card", requireAdmin, upload.single("file"), async (req, res) => {
   if (!isR2Configured()) {
     res.status(503).json({
       error:
@@ -129,9 +120,15 @@ router.post("/raw-card", upload.single("file"), async (req, res) => {
     }
 
     // Determine MIME type for R2 upload
-    const mimeType = req.file.mimetype as "image/png" | "image/jpeg";
+    const mimeType = req.file.mimetype as SupportedImageMime;
     if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mimeType)) {
       res.status(400).json({ error: "Invalid image type" });
+      return;
+    }
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
       return;
     }
 
@@ -154,6 +151,7 @@ router.post("/raw-card", upload.single("file"), async (req, res) => {
       })
       .returning();
 
+    auditEvent(req, "raw_card.create", { cardId: created.id });
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create raw card");
@@ -177,21 +175,48 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       return;
     }
 
-    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+    const mimeType = req.file.mimetype as SupportedImageMime;
     if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mimeType)) {
       res.status(400).json({ error: "Invalid image type" });
       return;
     }
 
-    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
+      return;
+    }
+
+    const invitationToken = typeof (req.body.invitationToken || req.query.invitationToken) === "string"
+      ? String(req.body.invitationToken || req.query.invitationToken).trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required." });
+      return;
+    }
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found." });
+      return;
+    }
+    if (!canManageInvitation(req, invitation)) {
+      res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
-      folder: invitationToken && typeof invitationToken === "string" ? `gallery/${invitationToken}` : "gallery",
-      metadata: { uploadedAt: new Date().toISOString(), invitationToken: typeof invitationToken === "string" ? invitationToken : "" },
+      folder: `gallery/${invitationToken}`,
+      metadata: { uploadedAt: new Date().toISOString(), invitationToken },
     });
 
+    auditEvent(req, "invitation.gallery_upload", { invitationToken });
     res.json({ key: imageKey });
   } catch (err) {
     req.log.error({ err }, "Failed to upload gallery image");
@@ -210,15 +235,41 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
       res.status(400).json({ error: "Logo image is required (jpeg/png/webp, max 2 MB)" });
       return;
     }
-    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp";
-    const invitationToken = req.body.invitationToken || req.query.invitationToken || "unknown";
+    const mimeType = req.file.mimetype as SupportedImageMime;
+    const invitationToken = typeof (req.body.invitationToken || req.query.invitationToken) === "string"
+      ? String(req.body.invitationToken || req.query.invitationToken).trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required." });
+      return;
+    }
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found." });
+      return;
+    }
+    if (!canManageInvitation(req, invitation)) {
+      res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
-      folder: invitationToken && typeof invitationToken === "string" ? `logos/${invitationToken}` : "logos",
-      metadata: { uploadedAt: new Date().toISOString(), invitationToken: typeof invitationToken === "string" ? invitationToken : "" },
+      folder: `logos/${invitationToken}`,
+      metadata: { uploadedAt: new Date().toISOString(), invitationToken },
     });
+    auditEvent(req, "invitation.logo_upload", { invitationToken });
     res.json({ key: imageKey });
   } catch (err) {
     req.log.error({ err }, "Failed to upload initials logo");
@@ -265,6 +316,12 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
       res.status(400).json({ error: "Initials artwork mesti PNG dengan transparent background." });
       return;
     }
+    try {
+      inspectImage(req.file.buffer, "image/png");
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
+      return;
+    }
 
     const mimeType = "image/png" as const;
     const imageKey = await uploadImage({
@@ -286,6 +343,7 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
       .where(eq(invitationTable.id, invitation.id))
       .returning({ id: invitationTable.id, initialsImageUrl: invitationTable.initialsImageUrl });
 
+    auditEvent(req, "invitation.initials_upload", { invitationToken });
     res.json({ invitationId: updatedInvitation.id, key: updatedInvitation.initialsImageUrl });
   } catch (err) {
     req.log.error({ err }, "Failed to upload order initials");
@@ -294,9 +352,9 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
 });
 
 // ── Delete raw card ──────────────────────────────────────────────────────────
-router.delete("/raw-card/:id", async (req, res) => {
+router.delete("/raw-card/:id", requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid card id" });
       return;
@@ -353,6 +411,7 @@ router.delete("/raw-card/:id", async (req, res) => {
       return;
     }
 
+    auditEvent(req, "raw_card.delete", { cardId: id, imageKey });
     res.json({ message: "Card deleted successfully" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete raw card");

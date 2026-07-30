@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearch } from "wouter";
-import { useGetInvitation, useListDesigns, useListRsvps, useGetRsvpCount } from "@workspace/api-client-react";
+import { useGetInvitation, useListDesigns, useGetRsvpCount } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
@@ -65,21 +65,28 @@ export default function InvitationPage() {
     },
   });
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
-  const { data: rsvps = [] } = useListRsvps({
-    query: {
-      queryKey: ["rsvps", resolvedToken],
-      queryFn: async () => {
-        const res = await fetch(`/api/rsvp?invitationToken=${resolvedToken}`, { credentials: "include" });
-        if (!res.ok) throw new Error("Failed to fetch RSVPs");
-        return res.json();
-      },
-      enabled: tokenReady,
-    },
-  });
-
   const { data: rsvpCount } = useGetRsvpCount(
     tokenReady ? { invitationToken: resolvedToken } : undefined,
   );
+  const [guestWishes, setGuestWishes] = useState<Array<{ name: string; message: string; createdAt: string }>>([]);
+
+  useEffect(() => {
+    if (!tokenReady) {
+      setGuestWishes([]);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/rsvp/wishes?invitationToken=${encodeURIComponent(resolvedToken)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => response.ok ? response.json() : [])
+      .then((wishes: Array<{ name: string; message: string; createdAt: string }>) => setGuestWishes(wishes))
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setGuestWishes([]);
+      });
+    return () => controller.abort();
+  }, [resolvedToken, tokenReady]);
 
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
@@ -242,11 +249,6 @@ export default function InvitationPage() {
     "--name-color":       (inv?.nameColor       as string | undefined) ? `hsl(${inv?.nameColor})` : undefined,
     "--body-font-family": fontFamilyStack(inv?.bodyFontFamily as string | undefined),
   } as React.CSSProperties;
-
-  const guestWishes = (rsvps ?? [])
-    .filter((r) => r.message && r.message.trim())
-    .map((r) => ({ name: r.name, message: r.message, createdAt: r.createdAt }))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (isLocked && !isUnlocked) {
     return (

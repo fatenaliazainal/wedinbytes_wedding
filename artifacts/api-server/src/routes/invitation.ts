@@ -2,8 +2,11 @@ import { Router, type IRouter, type Request } from "express";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
+import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
 import { db, invitationTable } from "@workspace/db";
+import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
+import { isOwnedStorageKey } from "../lib/image-validation";
 
 const router: IRouter = Router();
 
@@ -65,7 +68,7 @@ const ALLOWED_FIELDS = [
 ];
 
 async function publicInvitation(row: typeof invitationTable.$inferSelect) {
-  const { lockPinHash: _lockPinHash, ...safe } = row;
+  const { lockPinHash: _lockPinHash, userId: _userId, ...safe } = row;
   (safe as Record<string, unknown>).initialsImageUrl = row.initialsImageUrl ?? null;
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
@@ -91,10 +94,6 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   return { ...safe, isLocked: Boolean(row.lockPinHash) };
 }
 
-function canManageInvitation(req: Request, row: typeof invitationTable.$inferSelect) {
-  return Boolean(req.session.userId && row.userId === req.session.userId);
-}
-
 // Create a new invitation for the logged-in buyer.
 // Each request intentionally creates a separate card; buyers can own multiple invitations.
 router.post("/invitation", async (req, res) => {
@@ -103,31 +102,39 @@ router.post("/invitation", async (req, res) => {
       res.status(401).json({ error: "Tidak log masuk." });
       return;
     }
-    const token = randomUUID().replace(/-/g, "").slice(0, 16);
     const body = req.body as Record<string, unknown>;
-    const [created] = await db.insert(invitationTable).values({
-      token,
-      userId: req.session.userId,
-      groomName:    (body.groomName    as string) || "Pengantin Lelaki",
-      brideName:    (body.brideName    as string) || "Pengantin Perempuan",
-      eventType:    (body.eventType    as string) || "Walimatul Urus",
-      eventDate:    (body.eventDate    as string) || "",
-      eventDay:     (body.eventDay     as string) || "",
-      eventTime:    (body.eventTime    as string) || "11:00 pagi – 4:00 petang",
-      eventStartTime: (body.eventStartTime as string) || "",
-      eventEndTime: (body.eventEndTime as string) || "",
-      itinerary: Array.isArray(body.itinerary) ? body.itinerary : undefined,
-      venueName:    (body.venueName    as string) || "",
-      venueAddress: (body.venueAddress as string) || "",
-      venueCity:    (body.venueCity    as string) || "",
-      venueState:   (body.venueState   as string) || "",
-      contactPhone: (body.contactPhone as string) || "",
-      contacts: Array.isArray(body.contacts) ? body.contacts : undefined,
-      rsvpEnabled: (body.rsvpEnabled as boolean) ?? false,
-      rsvpMaxOverallGuests: (body.rsvpMaxOverallGuests as number) ?? 1000,
-      rsvpMaxGuestsPerInvitation: (body.rsvpMaxGuestsPerInvitation as number) ?? 10,
-      packageId: (body.packageId as number) ?? null,
-    }).returning();
+    let created: typeof invitationTable.$inferSelect | undefined;
+    for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
+      const token = randomUUID().replace(/-/g, "").slice(0, 16);
+      try {
+        [created] = await db.insert(invitationTable).values({
+          token,
+          userId: req.session.userId,
+          groomName:    (body.groomName    as string) || "Pengantin Lelaki",
+          brideName:    (body.brideName    as string) || "Pengantin Perempuan",
+          eventType:    (body.eventType    as string) || "Walimatul Urus",
+          eventDate:    (body.eventDate    as string) || "",
+          eventDay:     (body.eventDay     as string) || "",
+          eventTime:    (body.eventTime    as string) || "11:00 pagi – 4:00 petang",
+          eventStartTime: (body.eventStartTime as string) || "",
+          eventEndTime: (body.eventEndTime as string) || "",
+          itinerary: Array.isArray(body.itinerary) ? body.itinerary : undefined,
+          venueName:    (body.venueName    as string) || "",
+          venueAddress: (body.venueAddress as string) || "",
+          venueCity:    (body.venueCity    as string) || "",
+          venueState:   (body.venueState   as string) || "",
+          contactPhone: (body.contactPhone as string) || "",
+          contacts: Array.isArray(body.contacts) ? body.contacts : undefined,
+          rsvpEnabled: (body.rsvpEnabled as boolean) ?? false,
+          rsvpMaxOverallGuests: (body.rsvpMaxOverallGuests as number) ?? 1000,
+          rsvpMaxGuestsPerInvitation: (body.rsvpMaxGuestsPerInvitation as number) ?? 10,
+          packageId: (body.packageId as number) ?? null,
+        }).returning();
+      } catch (error) {
+        if ((error as { code?: string })?.code !== "23505" || attempt === 4) throw error;
+      }
+    }
+    if (!created) throw new Error("Unable to allocate a unique invitation token.");
     res.status(201).json(created);
   } catch (err) {
     req.log.error({ err }, "Failed to create invitation");
@@ -161,7 +168,7 @@ router.get("/invitations-by-user/:userId", async (req, res) => {
 
 router.get("/invitation/:token", async (req, res) => {
   try {
-    const { token } = req.params;
+    const token = String(req.params.token);
     const rows = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!rows.length) {
       res.status(404).json({ error: "Invitation not found" });
@@ -197,9 +204,13 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
 
 router.patch("/invitation/:token", async (req, res) => {
   try {
-    const { token } = req.params;
+    const token = String(req.params.token);
     const body = req.body as Record<string, unknown>;
     const brandingFields = ["showFooter", "footerText", "footerUrl", "socialLinks"];
+    if (!req.session.userId) {
+      res.status(401).json({ error: "Tidak log masuk." });
+      return;
+    }
     if (req.session.role !== "admin" && brandingFields.some((field) => field in body)) {
       res.status(403).json({ error: "Only admin can update footer branding" });
       return;
@@ -209,6 +220,10 @@ router.patch("/invitation/:token", async (req, res) => {
     const rows = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!rows.length) {
       res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (!canManageInvitation(req, rows[0])) {
+      res.status(403).json({ error: "You do not own this invitation" });
       return;
     }
 
@@ -240,6 +255,25 @@ router.patch("/invitation/:token", async (req, res) => {
       .where(eq(invitationTable.token, token))
       .returning();
 
+    const oldGallery = Array.isArray(rows[0].galleryImages) ? rows[0].galleryImages : [];
+    const newGallery = Array.isArray(update.galleryImages) ? update.galleryImages : oldGallery;
+    const removedKeys = oldGallery.filter(
+      (key): key is string => typeof key === "string" && !newGallery.includes(key),
+    );
+    if (typeof update.initialsImageUrl !== "undefined"
+      && update.initialsImageUrl !== rows[0].initialsImageUrl
+      && isOwnedStorageKey(rows[0].initialsImageUrl, "initials")) {
+      removedKeys.push(rows[0].initialsImageUrl);
+    }
+    for (const key of removedKeys) {
+      const safeKey = key.startsWith("gallery/") || key.startsWith("initials/") ? key : "";
+      if (!safeKey) continue;
+      deleteImage(safeKey).catch((error) => {
+        req.log.warn({ err: error, key: safeKey }, "Failed to remove replaced invitation image");
+      });
+    }
+
+    auditEvent(req, "invitation.update", { invitationToken: token, fields: Object.keys(update) });
     res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation");
@@ -271,6 +305,7 @@ router.post("/invitation/:token/lock", async (req, res) => {
       .set({ lockPinHash: protect ? await bcrypt.hash(pin, 12) : null })
       .where(eq(invitationTable.id, row.id))
       .returning();
+    auditEvent(req, "invitation.lock_update", { invitationToken: token, protected: protect });
     res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation lock");
@@ -278,9 +313,9 @@ router.post("/invitation/:token/lock", async (req, res) => {
   }
 });
 
-router.post("/invitation/:token/unlock", async (req, res) => {
+router.post("/invitation/:token/unlock", pinUnlockRateLimit, async (req, res) => {
   try {
-    const { token } = req.params;
+    const token = String(req.params.token);
     const pin = typeof req.body?.pin === "string" ? req.body.pin.trim() : "";
     if (!/^\d{4}$/.test(pin)) {
       res.status(400).json({ error: "PIN must be exactly 4 digits" });
@@ -308,6 +343,10 @@ router.get("/invitation-by-user/:userId", async (req, res) => {
     const userId = parseInt(req.params.userId, 10);
     if (isNaN(userId)) {
       res.status(400).json({ error: "Invalid user id" });
+      return;
+    }
+    if (!req.session.userId || (req.session.userId !== userId && req.session.role !== "admin")) {
+      res.status(403).json({ error: "You do not own these invitations" });
       return;
     }
     const rows = await db.select().from(invitationTable).where(eq(invitationTable.userId, userId)).limit(1);

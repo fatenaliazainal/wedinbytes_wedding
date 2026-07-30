@@ -111,7 +111,7 @@ An admin can:
 - delete reviews;
 - manage central footer branding through the admin/demo invitation.
 
-Admin-only server checks are used by pricing, order and review administration routes. Design routes currently expose design CRUD routes without a route-level admin guard; the intended operating model is that only the admin UI/session uses these routes. This is an important security hardening point for future work.
+Admin-only server checks are enforced on pricing, order, review, catalogue design and raw-card administration routes. Buyer invitation mutations are checked against the owning session user, while admin sessions can manage catalogue and invitation administration.
 
 ---
 
@@ -458,7 +458,7 @@ This prevents a buyer from attaching artwork to another buyer's invitation and p
 
 The **Remove logo** button only clears the invitation field in the editor until Save is pressed. On Save, the editor sends a null logo URL and the public invitation no longer renders that uploaded logo.
 
-The current remove action clears the database reference. It does not currently delete the old object from R2, so replacing/removing many times can leave unused storage objects. A future cleanup job or delete-object endpoint can address that.
+Invitation Save removes replaced gallery and initials objects from R2 after the database update, using only invitation-owned storage prefixes. Deterministic replacement uploads reuse the active object key.
 
 ---
 
@@ -471,7 +471,7 @@ The public invitation page:
 3. loads catalogue designs;
 4. applies invitation color overrides over the matched template;
 5. resolves envelope/card image keys through the R2 URL helper;
-6. loads RSVP rows and counts;
+6. loads public RSVP counts and the limited public wishes feed; full RSVP rows remain owner/admin-only;
 7. checks invitation lock status;
 8. renders the envelope;
 9. after opening, renders the long invitation details page.
@@ -557,11 +557,12 @@ This avoids rejecting a guest who is editing their own response without increasi
 
 ### RSVP reads
 
-- `GET /api/rsvp?invitationToken=...` lists responses for a card.
+- `GET /api/rsvp?invitationToken=...` lists responses for a card and is restricted to its owner/admin.
 - `GET /api/rsvp/count?invitationToken=...` returns attending count, not-attending count and total guests.
+- `GET /api/rsvp/wishes?invitationToken=...` returns only non-empty guest names, messages and timestamps for the public guestbook.
 - `GET /api/rsvp/buyer` returns all cards owned by the logged-in buyer with each card's responses.
 
-The invitation page uses RSVP rows with messages as wishes/guestbook entries.
+The invitation page uses the dedicated public wishes feed. Attendance, guest counts and time slots are not exposed through that feed.
 
 ---
 
@@ -805,20 +806,22 @@ Implemented:
 - passwords are bcrypt hashed;
 - session identity is stored server-side;
 - buyer invitation listing checks session ownership;
-- logo upload checks invitation ownership;
+- logo and gallery uploads check invitation ownership;
 - invitation lock PINs are bcrypt hashed;
 - lock PIN hash is omitted from invitation responses;
 - RSVP submissions validate invitation and configured limits;
-- admin order/pricing/review routes have admin guards;
-- R2 proxy rejects path traversal-style keys.
+- admin order/pricing/review/design/raw-card routes have admin guards;
+- R2 proxy rejects path traversal-style keys and only serves application-owned prefixes;
+- login, registration, admin login, PIN unlock, RSVP and review submissions are rate limited;
+- successful authentication regenerates the session ID;
+- uploaded image signatures and dimensions are validated server-side;
+- public invitations omit ownership and lock-hash fields; full RSVP rows are owner/admin-only.
 
 Important hardening items:
 
-1. The general invitation PATCH route currently checks that a token exists but does not independently enforce buyer ownership.
-2. Some design CRUD routes do not have a server-side admin guard even though they are intended for admin use.
-3. Public `GET /api/rsvp` and `GET /api/rsvp/count` can read by invitation token; product policy should confirm whether this is intentional.
-4. The old `/api/order-initials-upload` route name and legacy order artwork column should eventually be renamed/migrated to invitation terminology.
-5. Removing/replacing a logo clears the invitation pointer but does not delete the previous R2 object.
+1. The old `/api/order-initials-upload` route name and legacy order artwork column remain for backward compatibility.
+2. Readable public URLs still select the first matching invitation when duplicate names and dates collide.
+3. R2 cleanup is asynchronous after Save; a failed object deletion is logged and can require operational retry.
 
 ---
 
@@ -829,8 +832,7 @@ The following are visible or represented in the current product but are not full
 - payment checkout (`PAY NOW`);
 - QR generation (`QR`);
 - some catalogue/navigation items marked “Coming soon”;
-- public/admin design route authorization hardening;
-- R2 cleanup after logo replacement/removal;
+- legacy public slug collisions remain possible for duplicate names and dates;
 - legacy open button text fields remain in database/API but are no longer shown or rendered;
 - old order initials field remains for compatibility but is not the active logo storage location.
 

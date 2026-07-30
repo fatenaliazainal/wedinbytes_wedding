@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountResponse } from "@workspace/api-zod";
 import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
+import { auditEvent, rsvpSubmitRateLimit } from "../lib/security";
 
 const router: IRouter = Router();
 
@@ -26,6 +27,23 @@ function normalizeRsvpForApi(r: typeof rsvpTable.$inferSelect) {
 router.get("/rsvp", async (req, res) => {
   try {
     const invitationToken = req.query.invitationToken as string | undefined;
+    if (invitationToken) {
+      const [invitation] = await db.select({ userId: invitationTable.userId })
+        .from(invitationTable)
+        .where(eq(invitationTable.token, invitationToken))
+        .limit(1);
+      if (!invitation) {
+        res.status(404).json({ error: "Invitation not found" });
+        return;
+      }
+      if (!req.session.userId || (req.session.role !== "admin" && invitation.userId !== req.session.userId)) {
+        res.status(403).json({ error: "RSVP responses are private to the invitation owner." });
+        return;
+      }
+    } else if (req.session.role !== "admin") {
+      res.status(403).json({ error: "An invitation token is required." });
+      return;
+    }
     let query = db.select().from(rsvpTable).orderBy(rsvpTable.createdAt);
     if (invitationToken) {
       query = query.where(eq(rsvpTable.invitationToken, invitationToken)) as typeof query;
@@ -35,6 +53,50 @@ router.get("/rsvp", async (req, res) => {
     res.json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to list RSVPs");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Public wishes feed. Keep guest messages available on invitations without
+// exposing RSVP status, guest counts, time slots, or invitation ownership data.
+router.get("/rsvp/wishes", async (req, res) => {
+  try {
+    const invitationToken = typeof req.query.invitationToken === "string"
+      ? req.query.invitationToken.trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required" });
+      return;
+    }
+    const [invitation] = await db
+      .select({ id: invitationTable.id })
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    const rows = await db
+      .select({
+        name: rsvpTable.name,
+        message: rsvpTable.message,
+        createdAt: rsvpTable.createdAt,
+      })
+      .from(rsvpTable)
+      .where(and(
+        eq(rsvpTable.invitationToken, invitationToken),
+        sql`length(trim(coalesce(${rsvpTable.message}, ''))) > 0`,
+      ))
+      .orderBy(sql`${rsvpTable.createdAt} desc`)
+      .limit(50);
+    res.json(rows.map((row) => ({
+      name: row.name,
+      message: row.message,
+      createdAt: row.createdAt.toISOString(),
+    })));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list public RSVP wishes");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -78,7 +140,7 @@ router.get("/rsvp/buyer", async (req, res) => {
   }
 });
 
-router.post("/rsvp", async (req, res) => {
+router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
   try {
     const body = CreateRsvpBody.safeParse(req.body);
     if (!body.success) {
@@ -90,6 +152,18 @@ router.post("/rsvp", async (req, res) => {
 
     if (!invitationToken) {
       res.status(400).json({ error: "Invitation token is required" });
+      return;
+    }
+    if (name.trim().length < 1 || name.trim().length > 120) {
+      res.status(400).json({ error: "Name must be between 1 and 120 characters." });
+      return;
+    }
+    if (message && message.length > 1000) {
+      res.status(400).json({ error: "Message cannot exceed 1000 characters." });
+      return;
+    }
+    if (!Number.isInteger(numberOfGuests) || numberOfGuests < 0 || numberOfGuests > 100) {
+      res.status(400).json({ error: "Number of guests must be between 0 and 100." });
       return;
     }
 
@@ -168,6 +242,7 @@ router.post("/rsvp", async (req, res) => {
       })
       .returning();
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
+    auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
     res.status(201).json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to create RSVP");
@@ -177,7 +252,21 @@ router.post("/rsvp", async (req, res) => {
 
 router.get("/rsvp/count", async (req, res) => {
   try {
-    const invitationToken = req.query.invitationToken as string | undefined;
+    const invitationToken = typeof req.query.invitationToken === "string"
+      ? req.query.invitationToken.trim()
+      : "";
+    if (!invitationToken) {
+      res.status(400).json({ error: "Invitation token is required" });
+      return;
+    }
+    const [invitation] = await db.select({ exists: invitationTable.id })
+      .from(invitationTable)
+      .where(eq(invitationTable.token, invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
     let query = db
       .select({
         attending: rsvpTable.attending,

@@ -8,3 +8,4 @@
 - [R2 image viewing](r2-image-viewing.md) — browser-facing R2 object keys use the same-origin API proxy so public-domain and CORS configuration cannot hide uploaded designs.
 - [Admin-managed design persistence](admin-managed-design-persistence.md) — startup seed must create catalogue defaults only when empty and never overwrite saved Card Design edits.
 - [Buyer-owned initials artwork](order-owned-initials-artwork.md) — optional initials uploads belong to the buyer invitation in R2, never to shared card designs.
+- [Security hardening boundaries](security-hardening-boundaries.md) — public invitation responses must omit ownership/private RSVP fields; owner/admin checks belong on every invitation mutation.

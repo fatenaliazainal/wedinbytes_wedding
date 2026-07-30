@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, reviewTable } from "@workspace/db";
+import { auditEvent, reviewSubmitRateLimit } from "../lib/security";
 
 const router: IRouter = Router();
 
@@ -36,7 +37,7 @@ router.get("/reviews", async (req, res) => {
 });
 
 // Public: submit a review (pending by default)
-router.post("/reviews", async (req, res) => {
+router.post("/reviews", reviewSubmitRateLimit, async (req, res) => {
   try {
     const body = req.body as Record<string, unknown>;
     const customerName = (body.customerName as string)?.trim();
@@ -61,6 +62,7 @@ router.post("/reviews", async (req, res) => {
       .returning();
 
     res.status(201).json({ success: true, review: created });
+    auditEvent(req, "review.submit", { reviewId: created.id });
   } catch (err) {
     req.log.error({ err }, "Failed to submit review");
     res.status(500).json({ error: "Internal server error" });

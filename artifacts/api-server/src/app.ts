@@ -11,6 +11,14 @@ const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.set("trust proxy", 1);
+const configuredCorsOrigins = (process.env.CORS_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const sessionSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === "production" && !sessionSecret) {
+  throw new Error("SESSION_SECRET is required in production.");
+}
 
 app.use(
   pinoHttp({
@@ -28,13 +36,21 @@ app.use(
 
 app.use(
   cors({
-    origin: true,
+    origin: configuredCorsOrigins.length
+      ? (origin, callback) => {
+          if (!origin || configuredCorsOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error("Origin is not allowed by CORS."));
+          }
+        }
+      : process.env.NODE_ENV === "production" ? false : true,
     credentials: true,
   }),
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 app.use(
   session({
@@ -42,14 +58,14 @@ app.use(
       pool,
       createTableIfMissing: false,
     }),
-    secret: process.env.SESSION_SECRET || "wedding-invite-dev-secret-2025",
+    secret: sessionSecret || "wedding-invite-dev-secret-2025",
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,
       sameSite: process.env.REPLIT_DEV_DOMAIN ? "none" : "lax",
-      secure: process.env.REPLIT_DEV_DOMAIN ? "auto" : false,
+      secure: process.env.NODE_ENV === "production" || Boolean(process.env.REPLIT_DEV_DOMAIN),
     },
   }),
 );

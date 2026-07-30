@@ -4,6 +4,8 @@ import { db, cardDesignTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import multer from "multer";
 import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
+import { auditEvent, requireAdmin } from "../lib/security";
+import { inspectImage, type SupportedImageMime } from "../lib/image-validation";
 
 const router: IRouter = Router();
 
@@ -32,7 +34,7 @@ function stripNulls<T extends Record<string, unknown>>(obj: T): T {
 }
 
 // ── Upload image ─────────────────────────────────────────────────────────────
-router.post("/upload", (req, res, next) => {
+router.post("/upload", requireAdmin, (req, res, next) => {
   upload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -60,7 +62,13 @@ router.post("/upload", (req, res, next) => {
       res.status(400).json({ error: "Design code is required for image upload." });
       return;
     }
-    const mimeType = req.file.mimetype as "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+    const mimeType = req.file.mimetype as SupportedImageMime;
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions" });
+      return;
+    }
     const extension = mimeType === "image/jpeg"
       ? "jpg"
       : mimeType.replace("image/", "");
@@ -72,7 +80,10 @@ router.post("/upload", (req, res, next) => {
       objectKey: `${designCode}-${assetType}.${extension}`,
       metadata: { uploadedAt: new Date().toISOString(), type: "card-design", designCode, assetType },
     })
-      .then((key) => res.json({ key, url: key }))
+      .then((key) => {
+        auditEvent(req, "design.asset_upload", { designCode, assetType });
+        res.json({ key, url: key });
+      })
       .catch((uploadError) => {
         req.log.error({ err: uploadError }, "Failed to upload card design image to R2");
         res.status(500).json({ error: "Failed to upload card design image." });
@@ -107,7 +118,7 @@ router.get("/design", async (req, res) => {
 });
 
 // ── Create design ────────────────────────────────────────────────────────────
-router.post("/design", async (req, res) => {
+router.post("/design", requireAdmin, async (req, res) => {
   try {
     const body = req.body as Record<string, unknown>;
     if (!body.name || typeof body.name !== "string" || !body.name.trim()) {
@@ -132,6 +143,7 @@ router.post("/design", async (req, res) => {
       if (field in body && body[field] !== "") insert[field] = body[field];
     }
     const [created] = await db.insert(cardDesignTable).values(insert as never).returning();
+    auditEvent(req, "design.create", { designId: created.id, designCode });
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create design");
@@ -140,9 +152,9 @@ router.post("/design", async (req, res) => {
 });
 
 // ── Update design ────────────────────────────────────────────────────────────
-router.patch("/design/:id", async (req, res) => {
+router.patch("/design/:id", requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid design id" });
       return;
@@ -166,6 +178,7 @@ router.patch("/design/:id", async (req, res) => {
       return;
     }
     res.json(stripNulls(updated));
+    auditEvent(req, "design.update", { designId: id, fields: Object.keys(update) });
   } catch (err) {
     req.log.error({ err }, "Failed to update design");
     res.status(500).json({ error: "Internal server error" });
@@ -173,9 +186,9 @@ router.patch("/design/:id", async (req, res) => {
 });
 
 // ── Activate design ──────────────────────────────────────────────────────────
-router.post("/design/:id/activate", async (req, res) => {
+router.post("/design/:id/activate", requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid design id" });
       return;
@@ -191,6 +204,7 @@ router.post("/design/:id/activate", async (req, res) => {
       return;
     }
     const data = ActivateDesignResponse.parse(stripNulls(updated));
+    auditEvent(req, "design.activate", { designId: id });
     res.json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to activate design");
@@ -199,9 +213,9 @@ router.post("/design/:id/activate", async (req, res) => {
 });
 
 // ── Delete design ────────────────────────────────────────────────────────────
-router.delete("/design/:id", async (req, res) => {
+router.delete("/design/:id", requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid design id" });
       return;
@@ -215,6 +229,7 @@ router.delete("/design/:id", async (req, res) => {
       return;
     }
     res.json({ ok: true });
+    auditEvent(req, "design.delete", { designId: id });
   } catch (err) {
     req.log.error({ err }, "Failed to delete design");
     res.status(500).json({ error: "Internal server error" });

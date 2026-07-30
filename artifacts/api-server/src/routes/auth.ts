@@ -2,6 +2,13 @@ import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
 import { db, userTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import {
+  adminLoginRateLimit,
+  auditEvent,
+  loginRateLimit,
+  regenerateSession,
+  registerRateLimit,
+} from "../lib/security";
 
 const router: IRouter = Router();
 
@@ -12,7 +19,7 @@ declare module "express-session" {
   }
 }
 
-router.post("/auth/register", async (req, res) => {
+router.post("/auth/register", registerRateLimit, async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
@@ -38,8 +45,8 @@ router.post("/auth/register", async (req, res) => {
       role: "buyer",
     }).returning();
 
-    req.session.userId = user.id;
-    req.session.role = user.role;
+    await regenerateSession(req, user.id, user.role);
+    auditEvent(req, "auth.register", { userId: user.id });
 
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
@@ -48,7 +55,7 @@ router.post("/auth/register", async (req, res) => {
   }
 });
 
-router.post("/auth/login", async (req, res) => {
+router.post("/auth/login", loginRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -68,8 +75,8 @@ router.post("/auth/login", async (req, res) => {
       return;
     }
 
-    req.session.userId = user.id;
-    req.session.role = user.role;
+    await regenerateSession(req, user.id, user.role);
+    auditEvent(req, "auth.login", { userId: user.id });
 
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
@@ -96,7 +103,7 @@ router.get("/auth/me", async (req, res) => {
   }
 });
 
-router.post("/auth/admin-login", async (req, res) => {
+router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
   try {
     const { password } = req.body;
     if (!password) {
@@ -116,8 +123,8 @@ router.post("/auth/admin-login", async (req, res) => {
       return;
     }
 
-    req.session.userId = user.id;
-    req.session.role = user.role;
+    await regenerateSession(req, user.id, user.role);
+    auditEvent(req, "auth.admin_login", { userId: user.id });
 
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
@@ -127,7 +134,13 @@ router.post("/auth/admin-login", async (req, res) => {
 });
 
 router.post("/auth/logout", (req, res) => {
-  req.session.destroy(() => {
+  req.session.destroy((error) => {
+    if (error) {
+      req.log.error({ err: error }, "Logout failed");
+      res.status(500).json({ error: "Unable to log out." });
+      return;
+    }
+    res.clearCookie("connect.sid");
     res.json({ ok: true });
   });
 });
