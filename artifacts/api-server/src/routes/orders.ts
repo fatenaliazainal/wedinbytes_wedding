@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
-import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import {
+  businessProfileTable,
   db,
   invitationTable,
   orderTable,
@@ -23,6 +24,75 @@ function invitationStatus(invitation: typeof invitationTable.$inferSelect | unde
   if (invitation.websiteStatus !== "ACTIVE") return invitation.websiteStatus;
   return invitation.isPurchased ? "ACTIVE" : "PREVIEW";
 }
+
+router.get("/business/payment-history", async (req, res) => {
+  if (req.session?.role !== "business_account" || !req.session.userId) {
+    res.status(401).json({ error: "Business Account authentication required" });
+    return;
+  }
+
+  try {
+    const [profile] = await db
+      .select({ id: businessProfileTable.id })
+      .from(businessProfileTable)
+      .where(eq(businessProfileTable.userId, req.session.userId))
+      .limit(1);
+
+    if (!profile) {
+      res.json([]);
+      return;
+    }
+
+    const invitations = await db
+      .select({
+        id: invitationTable.id,
+        brideName: invitationTable.brideName,
+        groomName: invitationTable.groomName,
+      })
+      .from(invitationTable)
+      .where(eq(invitationTable.businessId, profile.id));
+
+    if (!invitations.length) {
+      res.json([]);
+      return;
+    }
+
+    const invitationIds = invitations.map((invitation) => invitation.id);
+    const [orders, packages] = await Promise.all([
+      db
+        .select()
+        .from(orderTable)
+        .where(inArray(orderTable.invitationId, invitationIds))
+        .orderBy(desc(orderTable.paidAt), desc(orderTable.createdAt)),
+      db.select({ id: pricingPackageTable.id, name: pricingPackageTable.name }).from(pricingPackageTable),
+    ]);
+    const invitationById = new Map(invitations.map((invitation) => [invitation.id, invitation]));
+    const packageById = new Map(packages.map((pkg) => [pkg.id, pkg]));
+
+    res.json(orders
+      .filter((order) => order.paymentStatus === "PAID")
+      .map((order) => {
+        const invitation = order.invitationId ? invitationById.get(order.invitationId) : undefined;
+        const pkg = order.packageId ? packageById.get(order.packageId) : undefined;
+        return {
+          id: order.id,
+          amount: order.amount,
+          paymentStatus: order.paymentStatus,
+          paymentReference: order.paymentReference,
+          paymentGateway: order.paymentGateway,
+          paidAt: order.paidAt,
+          createdAt: order.createdAt,
+          packageName: pkg?.name ?? null,
+          invitation: invitation
+            ? { brideName: invitation.brideName, groomName: invitation.groomName }
+            : null,
+        };
+      }));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list business payment history");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 async function readOrderRows() {
   const [orders, users, invitations, packages] = await Promise.all([
