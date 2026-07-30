@@ -45,6 +45,7 @@ type PaymentHistoryItem = {
   paymentStatus: string;
   paymentReference?: string | null;
   paymentGateway?: string | null;
+  gatewayRefNo?: string | null;
   paidAt?: string | null;
   createdAt: string;
   packageName?: string | null;
@@ -58,7 +59,12 @@ export default function BusinessDashboardPage() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [section, setSection] = useState<"dashboard" | "clients" | "invitations" | "analytics" | "paymentHistory" | "settings">("dashboard");
+  const [section, setSection] = useState<"dashboard" | "clients" | "invitations" | "analytics" | "paymentHistory" | "settings">(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const s = sp.get("section");
+    if (s === "clients" || s === "invitations" || s === "analytics" || s === "paymentHistory" || s === "settings") return s;
+    return "dashboard";
+  });
   const [packages, setPackages] = useState<BusinessPackage[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState("");
@@ -243,6 +249,9 @@ export default function BusinessDashboardPage() {
                               </p>
                               <p className="mt-1 text-xs text-gray-500">
                                 {payment.packageName || "Invitation package"} · {payment.paymentReference || "Payment completed"}
+                                {payment.gatewayRefNo && (
+                                  <span className="ml-1 text-gray-400" title="ToyyibPay reference">({payment.gatewayRefNo})</span>
+                                )}
                               </p>
                               <p className="mt-2 text-xs text-gray-400">
                                 {new Date(payment.paidAt || payment.createdAt).toLocaleDateString("ms-MY", { day: "2-digit", month: "short", year: "numeric" })}

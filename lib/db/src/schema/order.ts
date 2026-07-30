@@ -14,6 +14,8 @@ export const orderTable = pgTable("order", {
   // Optional buyer-supplied initials artwork. Stored on the order so each
   // purchase keeps its own upload and never changes a shared design template.
   initialsImageUrl: text("initials_image_url"),
+  // ToyyibPay (or other gateway) transaction reference returned by the gateway
+  gatewayRefNo: text("gateway_ref_no"),
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

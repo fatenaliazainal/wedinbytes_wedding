@@ -59,6 +59,7 @@ type PaymentHistoryItem = {
   paymentStatus: string;
   paymentReference?: string | null;
   paymentGateway?: string | null;
+  gatewayRefNo?: string | null;
   paidAt?: string | null;
   createdAt: string;
   packageName?: string | null;
@@ -103,7 +104,12 @@ function PaymentHistoryTable({
             const invoiceId = payment.paymentReference || `INV-${payment.id}`;
             return (
               <tr key={payment.id} className="transition hover:bg-slate-50/70">
-                <td className="px-5 py-4 text-sm font-semibold text-slate-900">{invoiceId}</td>
+                <td className="px-5 py-4 text-sm font-semibold text-slate-900">
+                  <span className="block">{invoiceId}</span>
+                  {payment.gatewayRefNo && (
+                    <span className="block text-[11px] font-normal text-slate-400" title="ToyyibPay reference">{payment.gatewayRefNo}</span>
+                  )}
+                </td>
                 <td className="px-5 py-4 text-sm text-slate-700">{payment.invitation ? `${payment.invitation.groomName} & ${payment.invitation.brideName}` : payment.packageName || "Wedding invitation"}</td>
                 <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-500">{new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                 <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-900">RM {Number(payment.amount || 0).toFixed(2)}</td>
@@ -195,7 +201,12 @@ export default function DashboardPage() {
   const [design, setDesign] = useState<Design | null>(null);
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<Section>("orders");
+  const [activeSection, setActiveSection] = useState<Section>(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const s = sp.get("section");
+    if (s === "paymentHistory" || s === "profile") return s;
+    return "orders";
+  });
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [lockModalOpen, setLockModalOpen] = useState(false);

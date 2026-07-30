@@ -78,11 +78,14 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
       ? "FAILED"
       : "PENDING";
 
+  const gatewayRefNo = String(transaction.billpaymentInvoiceNo ?? "").trim() || null;
+
   const [updated] = await db
     .update(orderTable)
     .set({
       paymentStatus,
       paymentGateway: "toyyibpay",
+      gatewayRefNo: gatewayRefNo ?? order.gatewayRefNo,
       paidAt: paymentStatus === "PAID" ? (order.paidAt ?? new Date()) : order.paidAt,
       updatedAt: new Date(),
     })
@@ -177,6 +180,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         amount: pkg.price,
       })
       .returning())[0];
+    if (!order) throw new Error("Failed to create order.");
 
     try {
       const [payer] = await db
@@ -251,7 +255,7 @@ router.get("/payment/toyyibpay/status", async (req, res) => {
     return;
   }
   const orderId = Number(req.query.orderId);
-  const billCode = String(req.query.billCode ?? "");
+  const billCode = String(req.query.billCode ?? "").trim();
   if (!Number.isInteger(orderId) || !billCode) {
     res.status(400).json({ error: "orderId and billCode are required." });
     return;

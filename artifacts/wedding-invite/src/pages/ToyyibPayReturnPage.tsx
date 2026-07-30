@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { CheckCircle2, Clock3, Loader2, XCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function ToyyibPayReturnPage() {
   const [, navigate] = useLocation();
+  const { user } = useAuth();
   const [status, setStatus] = useState<"loading" | "PAID" | "PENDING" | "FAILED">("loading");
   const [message, setMessage] = useState("Checking your payment status…");
 
@@ -57,10 +59,16 @@ export default function ToyyibPayReturnPage() {
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{message}</p>
         {status !== "loading" && (
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/dashboard" className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+            <Link
+              href={user?.role === "business_account" ? "/business/dashboard" : "/dashboard"}
+              className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
               Go to Dashboard
             </Link>
-            <button onClick={() => navigate("/dashboard")} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            <button
+              onClick={() => navigate(user?.role === "business_account" ? "/business/dashboard?section=paymentHistory" : "/dashboard?section=paymentHistory")}
+              className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
               View Payment History
             </button>
           </div>
