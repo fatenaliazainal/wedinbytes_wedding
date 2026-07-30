@@ -8,10 +8,20 @@ export type ToyyibPayTransaction = {
   billpaymentStatus?: string;
   billpaymentAmount?: string;
   billpaymentInvoiceNo?: string;
+  billpaymentChannel?: string;
   billPaymentDate?: string;
   billStatus?: string;
   [key: string]: unknown;
 };
+
+type DuitNowQrStatusResponse = {
+  status?: string;
+  duitnowqr_activated?: boolean;
+  message?: string;
+};
+
+let duitNowQrStatusCache: { activated: boolean; checkedAt: number } | undefined;
+const DUITNOW_QR_STATUS_CACHE_MS = 5 * 60 * 1000;
 
 function getConfig() {
   const userSecretKey = process.env.TOYYIBPAY_USER_SECRET_KEY?.trim();
@@ -84,6 +94,23 @@ export function isToyyibPayConfigured() {
   return Boolean(process.env.TOYYIBPAY_USER_SECRET_KEY?.trim() && process.env.TOYYIBPAY_CATEGORY_CODE?.trim());
 }
 
+export async function isDuitNowQrActivated() {
+  const now = Date.now();
+  if (duitNowQrStatusCache && now - duitNowQrStatusCache.checkedAt < DUITNOW_QR_STATUS_CACHE_MS) {
+    return duitNowQrStatusCache.activated;
+  }
+
+  const { userSecretKey } = getConfig();
+  const data = await postForm("checkDuitNowQRStatus", { userSecretKey }) as DuitNowQrStatusResponse;
+  if (data.status !== "success") {
+    throw new Error(`Unable to check DuitNow QR status: ${data.message || "ToyyibPay returned an error."}`);
+  }
+
+  const activated = data.duitnowqr_activated === true;
+  duitNowQrStatusCache = { activated, checkedAt: now };
+  return activated;
+}
+
 export function getToyyibPayCallbackUrl() {
   return `${publicBaseUrl()}/api/payment/toyyibpay/callback`;
 }
@@ -102,6 +129,13 @@ export async function createToyyibPayBill(input: {
   payerPhone?: string;
 }) {
   const { userSecretKey, categoryCode, baseUrl } = getConfig();
+  let duitNowQrActivated = false;
+  try {
+    duitNowQrActivated = await isDuitNowQrActivated();
+  } catch {
+    // DuitNow QR is an optional channel; keep the established FPX checkout available
+    // if ToyyibPay's capability check is temporarily unavailable.
+  }
   const response = await postForm("createBill", {
     userSecretKey,
     categoryCode,
@@ -118,6 +152,9 @@ export async function createToyyibPayBill(input: {
     billPhone: input.payerPhone?.trim() || "",
     billPaymentChannel: "0",
     billExpiryDays: "3",
+    ...(duitNowQrActivated
+      ? { enableDuitNowQR: "1", chargeDuitNowQR: "0" }
+      : {}),
   });
 
   const bill = Array.isArray(response) ? response[0] as Record<string, unknown> | undefined : undefined;

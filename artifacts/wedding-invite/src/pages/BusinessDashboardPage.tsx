@@ -7,6 +7,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { ArrowRight, BriefcaseBusiness, Calendar, CheckCircle2, Copy, Check, CreditCard, ExternalLink, Link2, LogOut, Plus, ReceiptText, Settings, Trash2, User, Users } from "lucide-react";
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
+import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
@@ -238,6 +239,7 @@ export default function BusinessDashboardPage() {
                       View your completed payments for business invitations.
                     </p>
                   </div>
+                  <PaymentMethodsNotice />
                   <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm" data-testid="card-payment-history">
                     {paymentHistory.length ? (
                       <div className="divide-y divide-gray-100">

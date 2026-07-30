@@ -16,6 +16,7 @@ import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
+import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -867,6 +868,7 @@ export default function DashboardPage() {
                 View your completed payments for wedding invitations.
               </p>
             </div>
+            <PaymentMethodsNotice />
             <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm" data-testid="buyer-payment-history-card">
               <PaymentHistoryTable
                 payments={paymentHistory}

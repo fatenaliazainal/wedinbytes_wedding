@@ -12,6 +12,7 @@ import {
   amountsMatch,
   createToyyibPayBill,
   getToyyibPayTransactions,
+  isDuitNowQrActivated,
   isValidToyyibPayCallbackHash,
   isToyyibPayConfigured,
 } from "../services/toyyibpay";
@@ -216,6 +217,24 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to create ToyyPay bill");
     res.status(502).json({ error: err instanceof Error ? err.message : "Unable to create ToyyPay bill." });
+  }
+});
+
+router.get("/payment/toyyibpay/availability", async (req, res) => {
+  if (!["buyer", "business_account"].includes(String(req.session?.role ?? "")) || !req.session.userId) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  if (!isToyyibPayConfigured()) {
+    res.status(503).json({ error: "ToyyibPay is not configured." });
+    return;
+  }
+
+  try {
+    res.json({ fpx: true, duitNowQr: await isDuitNowQrActivated() });
+  } catch (err) {
+    req.log.error({ err }, "Failed to check ToyyibPay payment availability");
+    res.status(502).json({ error: "Unable to check ToyyibPay payment availability." });
   }
 });
 

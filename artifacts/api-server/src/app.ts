@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import path from "node:path";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -70,6 +71,21 @@ app.use(
   }),
 );
 
+if (process.env.NODE_ENV === "production") {
+  const frontendDist = path.resolve(__dirname, "../../wedding-invite/dist/public");
+  app.use(express.static(frontendDist));
+}
+
 app.use("/api", router);
+
+if (process.env.NODE_ENV === "production") {
+  const frontendIndex = path.resolve(
+    __dirname,
+    "../../wedding-invite/dist/public/index.html",
+  );
+  app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
+    res.sendFile(frontendIndex);
+  });
+}
 
 export default app;

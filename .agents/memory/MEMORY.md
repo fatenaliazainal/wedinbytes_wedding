@@ -11,6 +11,7 @@
 - [Security hardening boundaries](security-hardening-boundaries.md) — public invitation responses must omit ownership/private RSVP fields; owner/admin checks belong on every invitation mutation.
 - [Business response boundaries](business-response-boundaries.md) — public business profiles and invitation business summaries are separate safe contracts; never include ownership or internal IDs.
 - [Managed artifact workflows](managed-artifact-workflows.md) — keep generated artifact ports and avoid duplicate frontend launchers.
+- [Unified production serving](unified-production-serving.md) — multi-artifact SPA/API deployments need one explicit production build and server to keep routes and callbacks in sync.
 - [Business package forms](business-package-forms.md) — Business Account customer creation is driven by persisted package form configuration, with server-side validation and invitation mapping.
 - [Invitation visual parity](invitation-visual-parity.md) — public Buyer and Business Account invitations should share the same guest-facing presentation.
 - [Payment history](business-payment-history.md) — Buyer and Business Accounts need read-only histories of their completed invitation payments, not subscription or billing management.
