@@ -418,9 +418,9 @@ export default function DashboardPage() {
         {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Welcome back, {(user.name || "User").split(' ')[0]}
+            Welcome back, {user.name || "User"}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your premium digital invitations and track RSVPs.</p>
+          <p className="text-sm text-slate-500 mt-1">Create, manage, and share your beautiful digital wedding invitations effortlessly.</p>
         </div>
 
         {/* Dashboard Tabs */}
