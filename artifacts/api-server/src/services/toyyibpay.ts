@@ -59,9 +59,25 @@ async function postForm(path: string, values: Record<string, string>) {
     throw new Error(`ToyyibPay returned an invalid response for ${path}.`);
   }
   if (!response.ok) {
-    throw new Error(`ToyyibPay request failed with status ${response.status}.`);
+    throw new Error(`ToyyibPay request failed with status ${response.status}: ${getToyyibPayResponseMessage(data)}`);
   }
   return data;
+}
+
+function getToyyibPayResponseMessage(data: unknown): string {
+  if (typeof data === "string") return data.slice(0, 240);
+  if (Array.isArray(data)) return data.length ? getToyyibPayResponseMessage(data[0]) : "empty response";
+  if (data && typeof data === "object") {
+    const record = data as Record<string, unknown>;
+    for (const key of ["message", "error", "errorMessage", "reason", "status"]) {
+      const value = record[key];
+      if (typeof value === "string" && value.trim()) return value.trim().slice(0, 240);
+      if (typeof value === "number") return String(value);
+    }
+    const visibleKeys = Object.keys(record).slice(0, 8);
+    return visibleKeys.length ? `response fields: ${visibleKeys.join(", ")}` : "empty response";
+  }
+  return "empty response";
 }
 
 export function isToyyibPayConfigured() {
@@ -83,6 +99,7 @@ export async function createToyyibPayBill(input: {
   amount: string;
   payerName: string;
   payerEmail: string;
+  payerPhone?: string;
 }) {
   const { userSecretKey, categoryCode, baseUrl } = getConfig();
   const response = await postForm("createBill", {
@@ -91,21 +108,22 @@ export async function createToyyibPayBill(input: {
     billName: cleanBillText(input.billName, 30),
     billDescription: cleanBillText(input.billDescription, 100),
     billPriceSetting: "1",
-    billPayorInfo: "1",
+    billPayorInfo: input.payerPhone?.trim() ? "1" : "0",
     billAmount: String(toCents(input.amount)),
     billReturnUrl: getToyyibPayReturnUrl(),
     billCallbackUrl: getToyyibPayCallbackUrl(),
     billExternalReferenceNo: input.externalReference,
     billTo: cleanBillText(input.payerName, 100),
     billEmail: input.payerEmail,
-    billPaymentChannel: "2",
+    billPhone: input.payerPhone?.trim() || "",
+    billPaymentChannel: "0",
     billExpiryDays: "3",
   });
 
   const bill = Array.isArray(response) ? response[0] as Record<string, unknown> | undefined : undefined;
   const billCode = String(bill?.BillCode ?? bill?.billCode ?? "");
   if (!billCode) {
-    throw new Error("ToyyibPay did not return a bill code.");
+    throw new Error(`ToyyibPay createBill failed: ${getToyyibPayResponseMessage(response)}`);
   }
 
   return {

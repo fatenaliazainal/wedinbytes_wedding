@@ -179,13 +179,30 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       .returning())[0];
 
     try {
+      const [payer] = await db
+        .select({
+          name: userTable.name,
+          email: userTable.email,
+        })
+        .from(userTable)
+        .where(eq(userTable.id, req.session.userId))
+        .limit(1);
+      const [businessProfile] = req.session.role === "business_account"
+        ? await db
+          .select({ phone: businessProfileTable.phone })
+          .from(businessProfileTable)
+          .where(eq(businessProfileTable.userId, req.session.userId))
+          .limit(1)
+        : [];
+
       const bill = await createToyyibPayBill({
         externalReference,
         billName: `WedInBytes ${pkg.name}`,
         billDescription: `${pkg.name} wedding invitation`,
         amount: pkg.price,
-        payerName: (await db.select({ name: userTable.name }).from(userTable).where(eq(userTable.id, req.session.userId)).limit(1))[0]?.name ?? "WedInBytes customer",
-        payerEmail: (await db.select({ email: userTable.email }).from(userTable).where(eq(userTable.id, req.session.userId)).limit(1))[0]?.email ?? "",
+        payerName: payer?.name ?? "WedInBytes customer",
+        payerEmail: payer?.email ?? "",
+        payerPhone: invitation.contactPhone?.trim() || businessProfile?.phone?.trim() || undefined,
       });
       res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode });
     } catch (error) {
