@@ -16,3 +16,4 @@
 - [Invitation visual parity](invitation-visual-parity.md) — public Buyer and Business Account invitations should share the same guest-facing presentation.
 - [Payment history](business-payment-history.md) — Buyer and Business Accounts need read-only histories of their completed invitation payments, not subscription or billing management.
 - [ToyyPay payment integration](toyyibpay-integration.md) — gateway bills use persisted package prices, verified callbacks/status, and activate invitations only after payment verification.
+- [Business collaboration logos](business-collaboration-logos.md) — business logo object keys must remain allowed by the same-origin R2 proxy used by public homepage cards.

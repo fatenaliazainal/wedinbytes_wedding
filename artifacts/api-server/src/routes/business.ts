@@ -14,13 +14,18 @@ import {
 import { auditEvent, customerFormSubmitRateLimit } from "../lib/security";
 import { normalizeBusinessFormConfig, mapBusinessCustomerToInvitation, validateBusinessCustomerData } from "../lib/business-package";
 import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
-import { inspectImage, type SupportedImageMime } from "../lib/image-validation";
+import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
 
 const router: IRouter = Router();
 const customerGalleryUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => cb(null, /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)),
+});
+const businessLogoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, file.mimetype === "image/png"),
 });
 
 const PROFILE_FIELDS = [
@@ -231,6 +236,69 @@ router.patch("/business/me", async (req, res) => {
     }
     req.log.error({ err }, "Failed to update business profile");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/business/me/logo", (req, res, next) => {
+  businessLogoUpload.single("file")(req, res, (error) => {
+    if (error) {
+      res.status(400).json({ error: "Logo must be a PNG file no larger than 2 MB." });
+      return;
+    }
+    next();
+  });
+}, async (req, res) => {
+  if (!requireBusiness(req, res)) return;
+  try {
+    const profile = await getOrCreateBusinessProfile(req.session.userId);
+    if (!profile) {
+      res.status(404).json({ error: "Business profile not found" });
+      return;
+    }
+    if (!isR2Configured()) {
+      res.status(503).json({ error: "Logo storage is not configured." });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: "Please choose a PNG logo file." });
+      return;
+    }
+    if (!hasPngAlphaChannel(req.file.buffer)) {
+      res.status(400).json({ error: "Please upload a PNG logo with a transparent background." });
+      return;
+    }
+    try {
+      const dimensions = inspectImage(req.file.buffer, "image/png");
+      if (dimensions.width > 1600 || dimensions.height > 1600) {
+        res.status(400).json({ error: "Logo dimensions must not exceed 1600 × 1600 pixels." });
+        return;
+      }
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid logo image." });
+      return;
+    }
+
+    const key = await uploadImage({
+      fileName: "business-logo.png",
+      fileBuffer: req.file.buffer,
+      contentType: "image/png",
+      objectKey: `business-${profile.id}.png`,
+      folder: "business-logos",
+      metadata: {
+        uploadedAt: new Date().toISOString(),
+        businessId: String(profile.id),
+        transparent: "true",
+      },
+    });
+    const [updated] = await db.update(businessProfileTable)
+      .set({ logoUrl: key, updatedAt: new Date() })
+      .where(eq(businessProfileTable.id, profile.id))
+      .returning();
+    auditEvent(req, "business.logo_upload", { businessId: profile.id });
+    res.status(201).json({ logoUrl: updated.logoUrl });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload business logo");
+    res.status(500).json({ error: "Failed to upload business logo." });
   }
 });
 
@@ -656,6 +724,21 @@ router.get("/business/invitations", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to list business invitations");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/business/collaborations", async (req, res) => {
+  try {
+    const rows = await db.select().from(businessProfileTable)
+      .where(eq(businessProfileTable.isActive, true))
+      .orderBy(businessProfileTable.businessName)
+      .limit(12);
+    res.json(rows
+      .filter((profile) => profile.businessName.trim())
+      .map((profile) => publicBusiness(profile)));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list business collaborations");
+    res.status(500).json({ error: "Unable to load collaborations." });
   }
 });
 

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import {
   businessProfileTable,
   db,
@@ -20,6 +20,7 @@ import { sendPaymentConfirmationEmail, isEmailConfigured } from "../services/ema
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
+const BILL_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
 
 function roleOwnsInvitation(
   req: any,
@@ -238,6 +239,31 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       return;
     }
 
+    // The dashboard normally sends an invitationId, not an orderId. Reuse the
+    // invitation's latest pending order as well, otherwise every Pay Now click
+    // would create another order and another ToyyibPay bill.
+    if (!existingOrder) {
+      const [pendingOrder] = await db
+        .select()
+        .from(orderTable)
+        .where(and(
+          eq(orderTable.invitationId, invitation.id),
+          eq(orderTable.paymentStatus, "PENDING"),
+        ))
+        .orderBy(desc(orderTable.createdAt))
+        .limit(1);
+      existingOrder = pendingOrder;
+    }
+
+    const orderAge = existingOrder?.billCodeCreatedAt?.getTime() ?? existingOrder?.createdAt?.getTime() ?? 0;
+    if (existingOrder && orderAge > 0 && Date.now() - orderAge >= BILL_EXPIRY_MS) {
+      await db
+        .update(orderTable)
+        .set({ paymentStatus: "EXPIRED", updatedAt: new Date() })
+        .where(eq(orderTable.id, existingOrder.id));
+      existingOrder = undefined;
+    }
+
     const externalReference = existingOrder?.paymentReference ||
       `WIB-${invitation.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     const order = existingOrder ?? (await db
@@ -257,7 +283,6 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
     // Reuse an existing open bill if one was issued within the last 3 days
     // (billExpiryDays = 3 in createBill calls). This prevents duplicate bills
     // from piling up when a buyer clicks "Pay Now" multiple times.
-    const BILL_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
     if (
       order.billCode &&
       order.billCodeCreatedAt &&

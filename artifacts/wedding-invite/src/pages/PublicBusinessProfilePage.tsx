@@ -13,6 +13,7 @@ import {
   Phone,
   Share2,
 } from "lucide-react";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -95,7 +96,7 @@ export default function PublicBusinessProfilePage() {
                 <div className="h-28 w-28 rounded-2xl overflow-hidden bg-gray-100 border-4 border-white shadow-lg shrink-0">
                   {profile.logoUrl ? (
                     <img
-                      src={profile.logoUrl}
+                      src={resolveImageUrl(profile.logoUrl)}
                       alt={profile.businessName}
                       className="h-full w-full object-cover"
                     />

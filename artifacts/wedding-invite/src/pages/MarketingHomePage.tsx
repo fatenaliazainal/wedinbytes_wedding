@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { ChevronRight, ShoppingBag, Heart, User, PenLine, Mail, Smartphone, Users } from "lucide-react";
+import { ChevronRight, ShoppingBag, Heart, User, PenLine, Mail, Smartphone, Users, ExternalLink, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,7 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -68,10 +69,27 @@ function FeatureCard({
   );
 }
 
+type Collaboration = {
+  businessName: string;
+  businessType: string;
+  displayName: string;
+  slug: string;
+  description?: string | null;
+  logoUrl?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+};
+
+function linkUrl(value?: string | null) {
+  if (!value) return "";
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
 export default function MarketingHomePage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
+  const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
 
   const goToEditor = useCallback((code?: string) => {
     if (code) navigate(`/editor?new=1&designCode=${encodeURIComponent(code)}`);
@@ -80,6 +98,13 @@ export default function MarketingHomePage() {
 
   const { data: designs = [], isLoading } = useListDesigns();
   const { data: demoInvitation } = useGetInvitation("demo");
+
+  React.useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/business/collaborations`)
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => setCollaborations(Array.isArray(data) ? data : []))
+      .catch(() => setCollaborations([]));
+  }, []);
 
   const previewCards = designs.slice(0, 8);
 
@@ -285,6 +310,38 @@ export default function MarketingHomePage() {
               </button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 px-4 sm:px-6 border-t border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-9">
+            <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Our Network</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Collaborations & Businesses</h2>
+            <p className="mt-2 text-sm text-gray-500 max-w-lg mx-auto">Meet the talented businesses creating beautiful celebrations with WedInBytes.</p>
+          </div>
+          {collaborations.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center text-sm text-gray-400">Our collaboration partners will appear here soon.</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {collaborations.map((business) => (
+                <div key={business.slug} className="rounded-2xl border border-gray-100 bg-gray-50 p-4 hover:bg-white hover:shadow-md transition-all">
+                  <a href={`/business/${encodeURIComponent(business.slug)}`} className="block">
+                    <div className="h-28 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
+                      {business.logoUrl ? <img src={resolveImageUrl(business.logoUrl)} alt={business.businessName} className="h-full w-full object-contain p-4" /> : <span className="text-3xl font-serif text-gray-300">{business.businessName.charAt(0)}</span>}
+                    </div>
+                    <h3 className="mt-4 text-sm font-semibold text-gray-900 truncate">{business.businessName}</h3>
+                    <p className="mt-1 text-xs text-gray-500 truncate">{business.businessType || business.displayName}</p>
+                  </a>
+                  <div className="mt-3 flex items-center gap-3 text-xs">
+                    <a href={`/business/${encodeURIComponent(business.slug)}`} className="text-rose-700 font-semibold">View profile</a>
+                    {business.website && <a href={linkUrl(business.website)} target="_blank" rel="noreferrer" aria-label={`Visit ${business.businessName} website`} className="text-gray-400 hover:text-gray-800"><ExternalLink size={13} /></a>}
+                    {business.instagram && <a href={linkUrl(business.instagram)} target="_blank" rel="noreferrer" aria-label={`Visit ${business.businessName} Instagram`} className="text-gray-400 hover:text-gray-800"><Instagram size={13} /></a>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
