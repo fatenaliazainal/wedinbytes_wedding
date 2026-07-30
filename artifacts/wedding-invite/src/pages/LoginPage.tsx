@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const params = new URLSearchParams(search);
-  const redirect = params.get("redirect") || "/dashboard";
+  const redirect = params.get("redirect") || "";
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -21,7 +21,7 @@ export default function LoginPage() {
           ? "/admin"
           : user.role === "event_planner"
             ? "/planner/dashboard"
-            : "/dashboard",
+            : redirect || "/dashboard",
       );
     }
   }, [user, authLoading, navigate, redirect]);
@@ -34,7 +34,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate(redirect);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed.");
     } finally {
