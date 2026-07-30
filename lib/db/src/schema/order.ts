@@ -16,6 +16,13 @@ export const orderTable = pgTable("order", {
   initialsImageUrl: text("initials_image_url"),
   // ToyyibPay (or other gateway) transaction reference returned by the gateway
   gatewayRefNo: text("gateway_ref_no"),
+  // Most-recently issued ToyyibPay bill code for this order.
+  // Stored so retried payments reuse an existing open bill rather than
+  // creating a new one each time.
+  billCode: text("bill_code"),
+  // When the current billCode was issued. Used to determine whether the bill
+  // has expired (billExpiryDays = 3 in createBill calls).
+  billCodeCreatedAt: timestamp("bill_code_created_at"),
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

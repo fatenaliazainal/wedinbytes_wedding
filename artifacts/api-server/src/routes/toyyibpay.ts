@@ -254,6 +254,24 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       .returning())[0];
     if (!order) throw new Error("Failed to create order.");
 
+    // Reuse an existing open bill if one was issued within the last 3 days
+    // (billExpiryDays = 3 in createBill calls). This prevents duplicate bills
+    // from piling up when a buyer clicks "Pay Now" multiple times.
+    const BILL_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
+    if (
+      order.billCode &&
+      order.billCodeCreatedAt &&
+      Date.now() - order.billCodeCreatedAt.getTime() < BILL_EXPIRY_MS
+    ) {
+      const { baseUrl } = (function () {
+        const sandbox = process.env.TOYYIBPAY_SANDBOX === "true";
+        return { baseUrl: sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com" };
+      })();
+      const paymentUrl = `${baseUrl}/${encodeURIComponent(order.billCode)}`;
+      res.status(200).json({ orderId: order.id, paymentUrl, billCode: order.billCode, reused: true });
+      return;
+    }
+
     try {
       const [payer] = await db
         .select({
@@ -280,6 +298,13 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         payerEmail: payer?.email ?? "",
         payerPhone: invitation.contactPhone?.trim() || businessProfile?.phone?.trim() || undefined,
       });
+
+      // Persist the new billCode so future retries can reuse it.
+      await db
+        .update(orderTable)
+        .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), updatedAt: new Date() })
+        .where(eq(orderTable.id, order.id));
+
       res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode });
     } catch (error) {
       await db.update(orderTable).set({ paymentStatus: "FAILED", updatedAt: new Date() }).where(eq(orderTable.id, order.id));
