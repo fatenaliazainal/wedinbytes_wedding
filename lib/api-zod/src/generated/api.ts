@@ -70,6 +70,18 @@ export const GetInvitationResponse = zod.object({
 
 
 /**
+ * @summary Permanently delete an invitation owned by the logged-in customer
+ */
+export const DeleteInvitationParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const DeleteInvitationResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Promote a Buyer to Business Account or return them to Buyer
  */
 export const UpdateUserRoleParams = zod.object({

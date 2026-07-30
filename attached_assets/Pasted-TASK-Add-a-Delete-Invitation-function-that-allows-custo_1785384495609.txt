@@ -1,0 +1,64 @@
+TASK:
+Add a "Delete Invitation" function that allows customers to permanently delete their own invitation.
+
+IMPORTANT:
+DO NOT modify, refactor, optimize, rename, or reformat ANY existing code that is unrelated to this task.
+DO NOT change any existing UI, styling, routes, database structure, APIs, business logic, or functionality except what is explicitly requested below.
+If an existing function already works, leave it exactly as it is.
+
+Requirements:
+
+1. Add a new Delete button.
+- Place it beside the existing actions (Edit, View, RSVP, Share, QR, Lock).
+- Use a trash icon.
+- Keep the same design language as the other action buttons.
+
+2. Confirmation Dialog
+When the customer clicks Delete:
+- Show a confirmation modal.
+
+Title:
+Delete Invitation?
+
+Message:
+This action cannot be undone.
+Your invitation and all related data will be permanently deleted.
+
+Buttons:
+- Cancel
+- Delete (red button)
+
+3. Delete Logic
+If the customer confirms:
+- Delete ONLY the selected invitation.
+- Remove all related records associated with that invitation (only if they already have foreign-key relationships).
+- Do NOT affect any other invitations or users.
+
+4. After Delete
+- Show a success toast:
+"Invitation deleted successfully."
+
+- Automatically refresh the invitation list.
+
+5. Empty State
+If the customer has no invitations left after deleting:
+Display the existing empty state.
+Do not redesign the page.
+
+6. Permissions
+Customers can only delete invitations that belong to their own account.
+Never allow deleting another user's invitation.
+
+7. Error Handling
+If delete fails:
+Show:
+"Failed to delete invitation. Please try again."
+
+8. Database
+Only create the minimum backend endpoint/service required for deleting.
+Do not modify unrelated tables or migrations.
+
+FINAL RULE:
+Only implement the Delete Invitation feature.
+Do NOT modify any other feature, code, styling, layout, animation, editor, preview, pricing, RSVP, sharing, QR, lock, authentication, or unrelated files.
+Keep all existing functionality exactly as it is.

@@ -320,6 +320,37 @@ router.patch("/invitation/:token", async (req, res) => {
   }
 });
 
+router.delete("/invitation/:token", async (req, res) => {
+  try {
+    const token = String(req.params.token);
+    if (!req.session.userId) {
+      res.status(401).json({ error: "Tidak log masuk." });
+      return;
+    }
+
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, token))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (req.session.role === "admin" || !(await canManageInvitation(req, invitation))) {
+      res.status(403).json({ error: "You do not own this invitation" });
+      return;
+    }
+
+    await db.delete(invitationTable).where(eq(invitationTable.id, invitation.id));
+    auditEvent(req, "invitation.delete", { invitationToken: token });
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete invitation");
+    res.status(500).json({ error: "Failed to delete invitation" });
+  }
+});
+
 router.post("/invitation/:token/lock", async (req, res) => {
   try {
     const { token } = req.params;

@@ -213,6 +213,76 @@ export function useGetInvitation<TData = Awaited<ReturnType<typeof getInvitation
 
 
 
+export const getDeleteInvitationUrl = (token: string,) => {
+
+
+
+
+  return `/api/invitation/${token}`
+}
+
+/**
+ * @summary Permanently delete an invitation owned by the logged-in customer
+ */
+export const deleteInvitation = async (token: string, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteInvitationUrl(token),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteInvitationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteInvitation>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteInvitation>>, TError,{token: string}, TContext> => {
+
+const mutationKey = ['deleteInvitation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteInvitation>>, {token: string}> = (props) => {
+          const {token} = props ?? {};
+
+          return  deleteInvitation(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteInvitationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteInvitation>>>
+
+    export type DeleteInvitationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Permanently delete an invitation owned by the logged-in customer
+ */
+export const useDeleteInvitation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteInvitation>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteInvitation>>,
+        TError,
+        {token: string},
+        TContext
+      > => {
+      return useMutation(getDeleteInvitationMutationOptions(options));
+    }
+
 export const getUpdateUserRoleUrl = (id: number,) => {
 
 

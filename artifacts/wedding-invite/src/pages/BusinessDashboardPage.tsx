@@ -35,6 +35,8 @@ export default function BusinessDashboardPage() {
   const [clientEmail, setClientEmail] = useState("");
   const [clientDate, setClientDate] = useState("");
   const [busy, setBusy] = useState(true);
+  const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
+  const [deleteSaving, setDeleteSaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "business_account")) {
@@ -83,6 +85,23 @@ export default function BusinessDashboardPage() {
     if (!response.ok) { toast.error("Unable to remove client."); return; }
     setClients((items) => items.filter((item) => item.id !== id));
   };
+  const confirmDeleteInvitation = async () => {
+    if (!deleteInvitation) return;
+    setDeleteSaving(true);
+    try {
+      const response = await fetch(`${BASE}/api/invitation/${encodeURIComponent(deleteInvitation.token)}`, {
+        method: "DELETE", credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete invitation.");
+      setInvitations((items) => items.filter((item) => item.token !== deleteInvitation.token));
+      setDeleteInvitation(null);
+      toast.success("Invitation deleted successfully.");
+    } catch {
+      toast.error("Failed to delete invitation. Please try again.");
+    } finally {
+      setDeleteSaving(false);
+    }
+  };
   const handleLogout = async () => { await logout(); navigate("/"); };
 
   if (authLoading || busy || !user || user.role !== "business_account") {
@@ -98,6 +117,7 @@ export default function BusinessDashboardPage() {
     <div className="min-h-screen bg-[#fdfdfc] flex flex-col font-sans">
       <SiteHeader navItems={NAV_ITEMS} navOpen={navOpen} setNavOpen={setNavOpen} rightSlot={<><button onClick={() => navigate("/business/profile")} className="text-gray-500 hover:text-gray-900"><User size={18} /></button><button onClick={handleLogout} className="text-gray-500 hover:text-gray-900"><LogOut size={18} /></button></>} />
       <SharedNavDrawer navItems={NAV_ITEMS} navOpen={navOpen} setNavOpen={setNavOpen} />
+      {deleteInvitation && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="delete-business-invitation-title"><div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl"><div className="px-6 py-7"><h2 id="delete-business-invitation-title" className="text-lg font-semibold text-gray-900">Delete Invitation?</h2><p className="mt-3 text-sm leading-6 text-gray-600">This action cannot be undone.<br />Your invitation and all related data will be permanently deleted.</p></div><div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4"><button onClick={() => setDeleteInvitation(null)} disabled={deleteSaving} className="rounded px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50">Cancel</button><button onClick={() => void confirmDeleteInvitation()} disabled={deleteSaving} className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">{deleteSaving ? "Deleting..." : "Delete"}</button></div></div></div>}
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="lg:w-56 shrink-0">
@@ -116,7 +136,7 @@ export default function BusinessDashboardPage() {
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"><div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center"><h3 className="font-semibold text-gray-900">Recent invitations</h3><button onClick={() => setSection("invitations")} className="text-xs text-gray-500 hover:text-gray-900">View all</button></div>{invitations.slice(0, 5).map((item) => <div key={item.id} className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4"><div><p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.eventType}</p></div><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-gray-700 inline-flex gap-1 items-center">View <ArrowRight size={13} /></a></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet. Create one for your first client.</p>}</div>
             </>}
             {section === "clients" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Clients</h2><p className="text-sm text-gray-500 mt-1">Keep client details separate from invitation ownership.</p></div></div><form onSubmit={addClient} className="bg-white border border-gray-200 rounded-xl p-5 grid sm:grid-cols-4 gap-3 mb-5"><input value={clientName} onChange={(e) => setClientName(e.target.value)} required placeholder="Couple names (Groom & Bride)" className="border rounded-lg px-3 py-2 text-sm sm:col-span-2" /><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} type="email" placeholder="Email" className="border rounded-lg px-3 py-2 text-sm" /><input value={clientDate} onChange={(e) => setClientDate(e.target.value)} type="date" className="border rounded-lg px-3 py-2 text-sm" /><button className="sm:col-span-4 justify-self-start bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold">Add client</button></form><div className="bg-white border border-gray-200 rounded-xl divide-y">{clients.map((client) => <div key={client.id} className="p-4 flex items-center justify-between gap-4"><div><p className="font-medium">{client.groomName} & {client.brideName}</p><p className="text-xs text-gray-500">{client.email || "No email"} · {client.eventDate || "Date not set"}</p></div><button onClick={() => void deleteClient(client.id)} className="text-gray-400 hover:text-red-600" aria-label="Delete client"><Trash2 size={16} /></button></div>)}{!clients.length && <p className="p-8 text-sm text-gray-500 text-center">No clients added yet.</p>}</div></>}
-            {section === "invitations" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Invitations</h2><p className="text-sm text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> Create</button></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{invitations.map((item) => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div><div className="flex gap-3 text-xs font-semibold"><button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a></div></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}</div></>}
+             {section === "invitations" && <><div className="flex justify-between items-end mb-6"><div><h2 className="text-2xl font-serif text-gray-900">Invitations</h2><p className="text-sm text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> Create</button></div><div className="bg-white border border-gray-200 rounded-xl divide-y">{invitations.map((item) => <div key={item.id} className="p-5 flex items-center justify-between gap-4"><div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div><div className="flex gap-3 text-xs font-semibold"><button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button><a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a><button onClick={() => setDeleteInvitation(item)} className="inline-flex items-center gap-1 text-gray-500 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`}><Trash2 size={13} /> Delete</button></div></div>)}{!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}</div></>}
             {(section === "analytics" || section === "subscription" || section === "settings") && <div className="bg-white rounded-xl border border-gray-200 p-8"><BriefcaseBusiness size={24} className="text-gray-400" /><h2 className="mt-4 text-2xl font-serif text-gray-900">{sections.find(([id]) => id === section)?.[1]}</h2><p className="mt-2 text-sm text-gray-500">This Business Account area is ready for the next product phase. Payment and analytics logic remain intentionally deferred.</p>{section === "settings" && <button onClick={() => navigate("/business/profile")} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white"><Settings size={15} /> Edit business profile</button>}</div>}
           </section>
         </div>

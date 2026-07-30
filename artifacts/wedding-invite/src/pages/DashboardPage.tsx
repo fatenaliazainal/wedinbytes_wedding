@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Edit2, Eye, Users, Share2, Lock, LogOut,
-  User, Plus, Copy, Check, QrCode, X,
+  User, Plus, Copy, Check, QrCode, X, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import SiteFooter from "@/components/SiteFooter";
@@ -67,6 +67,8 @@ export default function DashboardPage() {
   const [protectCard, setProtectCard] = useState(false);
   const [lockPin, setLockPin] = useState("");
   const [lockSaving, setLockSaving] = useState(false);
+  const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
+  const [deleteSaving, setDeleteSaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -148,6 +150,7 @@ export default function DashboardPage() {
       setLockPin("");
       setLockModalOpen(true);
     } },
+    { icon: Trash2, label: "Delete", onClick: () => setDeleteInvitation(card) },
   ];
 
   const saveCardLock = async () => {
@@ -174,6 +177,29 @@ export default function DashboardPage() {
       toast.error(error instanceof Error ? error.message : "Unable to update card lock");
     } finally {
       setLockSaving(false);
+    }
+  };
+
+  const confirmDeleteInvitation = async () => {
+    if (!deleteInvitation) return;
+    setDeleteSaving(true);
+    try {
+      const response = await fetch(`${BASE}/api/invitation/${encodeURIComponent(deleteInvitation.token)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete invitation.");
+      setInvitations((items) => {
+        const remaining = items.filter((item) => item.token !== deleteInvitation.token);
+        setInvitation((current) => current?.token === deleteInvitation.token ? (remaining[0] ?? null) : current);
+        return remaining;
+      });
+      setDeleteInvitation(null);
+      toast.success("Invitation deleted successfully.");
+    } catch {
+      toast.error("Failed to delete invitation. Please try again.");
+    } finally {
+      setDeleteSaving(false);
     }
   };
 
@@ -285,6 +311,28 @@ export default function DashboardPage() {
                   {lockSaving ? "Saving..." : "REMOVE LOCK"}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteInvitation && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="delete-invitation-title">
+          <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl">
+            <div className="px-6 py-7">
+              <h2 id="delete-invitation-title" className="text-lg font-semibold text-gray-900">Delete Invitation?</h2>
+              <p className="mt-3 text-sm leading-6 text-gray-600">
+                This action cannot be undone.<br />
+                Your invitation and all related data will be permanently deleted.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+              <button onClick={() => setDeleteInvitation(null)} disabled={deleteSaving} className="rounded px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+                Cancel
+              </button>
+              <button onClick={() => void confirmDeleteInvitation()} disabled={deleteSaving} className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                {deleteSaving ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
         </div>
