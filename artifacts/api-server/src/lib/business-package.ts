@@ -27,12 +27,30 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
 const INVITATION_FIELDS = new Set([
   "groomName", "brideName", "eventType", "eventDate", "eventDay", "eventTime",
   "venueName", "venueAddress", "venueCity", "venueState", "venueMapUrl",
-  "groomParents", "brideParents", "contactPhone", "dresscode", "message",
+  "groomParents", "brideParents", "contactPhone", "contacts", "dresscode", "message",
+  "eventStartDateTime", "eventEndDateTime", "eventStartTime", "eventEndTime",
   "shortCoupleName", "groomShortName", "brideShortName", "coverGroomName",
-  "coverBrideName", "coverDateText", "additionalInfo", "coverTitle", "hashtag",
+  "coverBrideName", "coupleCount", "groomInitial", "brideInitial", "envelopeInitials",
+  "envelopeInitialsSize", "page2Initials", "logoInitialsUrl", "initialsImageUrl",
+  "initialsImageScale", "coverDateText", "additionalInfo", "coverTitle", "hashtag",
+  "showFrontText",
   "greetingText", "doaText", "invitationText", "hostName", "venueHijriDate",
-  "schedule", "designCode", "musicUrl", "musicTitle", "musicArtist", "galleryImages",
+  "hostCount", "schedule", "itinerary", "galleryImages",
+  "rsvpEnabled", "rsvpAdditionalInfo", "rsvpDeadline", "rsvpIntroText", "rsvpFormNote",
+  "rsvpMaxOverallGuests", "rsvpMaxGuestsPerInvitation", "rsvpTimeSlots",
+  "designCode", "openingAnimation", "openButtonText", "colorPrimary", "colorSecondary",
+  "colorBackground", "colorCard", "nameFontFamily", "nameFontSize", "badgeFontSize",
+  "nameColor", "bodyFontFamily", "musicUrl", "musicTitle", "musicArtist",
+  "showFooter", "footerText", "footerUrl", "socialLinks",
 ]);
+
+function invitationFieldName(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const raw = value.trim();
+  if (INVITATION_FIELDS.has(raw)) return raw;
+  const camelCase = raw.replace(/[-_\s]+([a-z])/gi, (_match, letter: string) => letter.toUpperCase());
+  return INVITATION_FIELDS.has(camelCase) ? camelCase : undefined;
+}
 
 export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
   if (!value || typeof value !== "object") return DEFAULT_BUSINESS_FORM_CONFIG;
@@ -79,7 +97,7 @@ function valueIsBlank(value: unknown) {
 export function validateBusinessCustomerData(config: PricingFormConfig, input: unknown) {
   const values = input && typeof input === "object" ? input as Record<string, unknown> : {};
   const errors: string[] = [];
-  const cleaned: Record<string, string | boolean | number | null> = {};
+  const cleaned: Record<string, string | boolean | number | null | string[]> = {};
 
   for (const field of config.fields) {
     const value = values[field.key] ?? field.defaultValue ?? null;
@@ -87,7 +105,17 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
       errors.push(`${field.label} is required.`);
       continue;
     }
-    if (typeof value === "string") {
+    if (Array.isArray(value)) {
+      const images = value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+      if (field.required && images.length === 0) {
+        errors.push(`${field.label} is required.`);
+      }
+      cleaned[field.key] = images;
+    } else if (typeof value === "string") {
       const trimmed = value.trim();
       if (field.validation?.minLength !== undefined && trimmed.length < field.validation.minLength) {
         errors.push(`${field.label} is too short.`);
@@ -114,12 +142,16 @@ export function validateBusinessCustomerData(config: PricingFormConfig, input: u
 export function mapBusinessCustomerToInvitation(config: PricingFormConfig, customerData: Record<string, unknown>) {
   const invitation: Record<string, unknown> = {};
   for (const field of config.fields) {
-    const invitationField = field.invitationField;
+    const invitationField = invitationFieldName(field.invitationField) || invitationFieldName(field.key);
     if (!invitationField || !INVITATION_FIELDS.has(invitationField)) continue;
     if (field.key in customerData) {
       const value = customerData[field.key];
-      invitation[invitationField] = invitationField === "galleryImages" && typeof value === "string"
-        ? value.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean).slice(0, 4)
+      invitation[invitationField] = invitationField === "galleryImages"
+        ? (Array.isArray(value)
+          ? value.filter((item): item is string => typeof item === "string").slice(0, 4)
+          : typeof value === "string"
+            ? value.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean).slice(0, 4)
+            : [])
         : value;
     }
   }

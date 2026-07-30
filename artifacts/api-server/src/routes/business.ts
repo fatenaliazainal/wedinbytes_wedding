@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { and, count, eq, ilike, or } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import multer from "multer";
 import {
   businessClientTable,
   businessFormShareTable,
@@ -12,8 +13,15 @@ import {
 } from "@workspace/db";
 import { auditEvent, customerFormSubmitRateLimit } from "../lib/security";
 import { normalizeBusinessFormConfig, mapBusinessCustomerToInvitation, validateBusinessCustomerData } from "../lib/business-package";
+import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
+import { inspectImage, type SupportedImageMime } from "../lib/image-validation";
 
 const router: IRouter = Router();
+const customerGalleryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)),
+});
 
 const PROFILE_FIELDS = [
   "businessName", "businessType", "displayName", "description", "phone",
@@ -38,14 +46,83 @@ function invitationValuesFromCustomer(formConfig: ReturnType<typeof normalizeBus
     groomParents: mappedInvitation.groomParents ? String(mappedInvitation.groomParents).trim() : null,
     brideParents: mappedInvitation.brideParents ? String(mappedInvitation.brideParents).trim() : null,
     contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),
+    contacts: Array.isArray(mappedInvitation.contacts) ? mappedInvitation.contacts : null,
     dresscode: mappedInvitation.dresscode ? String(mappedInvitation.dresscode).trim() : null,
     message: mappedInvitation.message ? String(mappedInvitation.message).trim() : null,
+    eventStartTime: mappedInvitation.eventStartTime ? String(mappedInvitation.eventStartTime).trim() : null,
+    eventEndTime: mappedInvitation.eventEndTime ? String(mappedInvitation.eventEndTime).trim() : null,
+    eventStartDateTime: mappedInvitation.eventStartDateTime ? String(mappedInvitation.eventStartDateTime).trim() : null,
+    eventEndDateTime: mappedInvitation.eventEndDateTime ? String(mappedInvitation.eventEndDateTime).trim() : null,
+    itinerary: Array.isArray(mappedInvitation.itinerary) ? mappedInvitation.itinerary : null,
+    schedule: mappedInvitation.schedule ? String(mappedInvitation.schedule).trim() : null,
+    shortCoupleName: mappedInvitation.shortCoupleName ? String(mappedInvitation.shortCoupleName).trim() : null,
+    groomShortName: mappedInvitation.groomShortName ? String(mappedInvitation.groomShortName).trim() : null,
+    brideShortName: mappedInvitation.brideShortName ? String(mappedInvitation.brideShortName).trim() : null,
+    coverGroomName: mappedInvitation.coverGroomName ? String(mappedInvitation.coverGroomName).trim() : null,
+    coverBrideName: mappedInvitation.coverBrideName ? String(mappedInvitation.coverBrideName).trim() : null,
+    coverDateText: mappedInvitation.coverDateText ? String(mappedInvitation.coverDateText).trim() : null,
+    coverTitle: mappedInvitation.coverTitle ? String(mappedInvitation.coverTitle).trim() : null,
+    additionalInfo: mappedInvitation.additionalInfo ? String(mappedInvitation.additionalInfo).trim() : null,
+    hashtag: mappedInvitation.hashtag ? String(mappedInvitation.hashtag).trim() : null,
+    greetingText: mappedInvitation.greetingText ? String(mappedInvitation.greetingText).trim() : null,
+    doaText: mappedInvitation.doaText ? String(mappedInvitation.doaText).trim() : null,
+    invitationText: mappedInvitation.invitationText ? String(mappedInvitation.invitationText).trim() : null,
+    hostName: mappedInvitation.hostName ? String(mappedInvitation.hostName).trim() : null,
+    hostCount: typeof mappedInvitation.hostCount === "number" ? mappedInvitation.hostCount : null,
+    venueHijriDate: mappedInvitation.venueHijriDate ? String(mappedInvitation.venueHijriDate).trim() : null,
+    language: mappedInvitation.language ? String(mappedInvitation.language).trim() : "ms",
+    showFrontText: typeof mappedInvitation.showFrontText === "boolean" ? mappedInvitation.showFrontText : true,
+    coupleCount: typeof mappedInvitation.coupleCount === "number" ? mappedInvitation.coupleCount : 1,
+    groomInitial: mappedInvitation.groomInitial ? String(mappedInvitation.groomInitial).trim() : null,
+    brideInitial: mappedInvitation.brideInitial ? String(mappedInvitation.brideInitial).trim() : null,
+    envelopeInitials: mappedInvitation.envelopeInitials ? String(mappedInvitation.envelopeInitials).trim() : null,
+    envelopeInitialsSize: mappedInvitation.envelopeInitialsSize ? String(mappedInvitation.envelopeInitialsSize).trim() : null,
+    page2Initials: mappedInvitation.page2Initials ? String(mappedInvitation.page2Initials).trim() : null,
+    logoInitialsUrl: mappedInvitation.logoInitialsUrl ? String(mappedInvitation.logoInitialsUrl).trim() : null,
+    initialsImageUrl: mappedInvitation.initialsImageUrl ? String(mappedInvitation.initialsImageUrl).trim() : null,
+    initialsImageScale: typeof mappedInvitation.initialsImageScale === "number" ? mappedInvitation.initialsImageScale : 100,
+    rsvpEnabled: typeof mappedInvitation.rsvpEnabled === "boolean" ? mappedInvitation.rsvpEnabled : false,
+    rsvpAdditionalInfo: mappedInvitation.rsvpAdditionalInfo ? String(mappedInvitation.rsvpAdditionalInfo).trim() : null,
+    rsvpIntroText: mappedInvitation.rsvpIntroText ? String(mappedInvitation.rsvpIntroText).trim() : null,
+    rsvpFormNote: mappedInvitation.rsvpFormNote ? String(mappedInvitation.rsvpFormNote).trim() : null,
+    rsvpMaxOverallGuests: typeof mappedInvitation.rsvpMaxOverallGuests === "number" ? mappedInvitation.rsvpMaxOverallGuests : 1000,
+    rsvpMaxGuestsPerInvitation: typeof mappedInvitation.rsvpMaxGuestsPerInvitation === "number" ? mappedInvitation.rsvpMaxGuestsPerInvitation : 10,
+    rsvpTimeSlots: mappedInvitation.rsvpTimeSlots ? String(mappedInvitation.rsvpTimeSlots).trim() : null,
+    openingAnimation: mappedInvitation.openingAnimation ? String(mappedInvitation.openingAnimation).trim() : null,
+    openButtonText: mappedInvitation.openButtonText ? String(mappedInvitation.openButtonText).trim() : null,
+    colorPrimary: mappedInvitation.colorPrimary ? String(mappedInvitation.colorPrimary).trim() : null,
+    colorSecondary: mappedInvitation.colorSecondary ? String(mappedInvitation.colorSecondary).trim() : null,
+    colorBackground: mappedInvitation.colorBackground ? String(mappedInvitation.colorBackground).trim() : null,
+    colorCard: mappedInvitation.colorCard ? String(mappedInvitation.colorCard).trim() : null,
+    nameFontFamily: mappedInvitation.nameFontFamily ? String(mappedInvitation.nameFontFamily).trim() : null,
+    nameFontSize: mappedInvitation.nameFontSize ? String(mappedInvitation.nameFontSize).trim() : null,
+    badgeFontSize: mappedInvitation.badgeFontSize ? String(mappedInvitation.badgeFontSize).trim() : null,
+    nameColor: mappedInvitation.nameColor ? String(mappedInvitation.nameColor).trim() : null,
+    bodyFontFamily: mappedInvitation.bodyFontFamily ? String(mappedInvitation.bodyFontFamily).trim() : null,
+    musicUrl: mappedInvitation.musicUrl ? String(mappedInvitation.musicUrl).trim() : null,
+    musicTitle: mappedInvitation.musicTitle ? String(mappedInvitation.musicTitle).trim() : null,
+    musicArtist: mappedInvitation.musicArtist ? String(mappedInvitation.musicArtist).trim() : null,
     designCode: mappedInvitation.designCode ? String(mappedInvitation.designCode).trim() : null,
     galleryImages: Array.isArray(mappedInvitation.galleryImages) ? mappedInvitation.galleryImages : null,
+    showFooter: typeof mappedInvitation.showFooter === "boolean" ? mappedInvitation.showFooter : true,
+    footerText: mappedInvitation.footerText ? String(mappedInvitation.footerText).trim() : null,
+    footerUrl: mappedInvitation.footerUrl ? String(mappedInvitation.footerUrl).trim() : null,
+    socialLinks: Array.isArray(mappedInvitation.socialLinks) ? mappedInvitation.socialLinks : null,
     businessId: profileId,
     packageId,
     websiteStatus: "ACTIVE",
   };
+}
+
+function keepCustomerFormGalleryKeys(value: unknown, token: string): string[] {
+  const prefix = `gallery/customer-form-${token}/`;
+  return Array.isArray(value)
+    ? value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter((item) => item.startsWith(prefix) && !item.includes(".."))
+      .slice(0, 4)
+    : [];
 }
 
 function slugPart(value: string) {
@@ -251,6 +328,55 @@ router.get("/business/form-shares/:token", async (req, res) => {
   }
 });
 
+router.post("/business/form-shares/:token/gallery-upload", customerFormSubmitRateLimit, customerGalleryUpload.single("file"), async (req, res) => {
+  try {
+    const token = typeof req.params.token === "string" ? req.params.token : "";
+    if (!token) {
+      res.status(400).json({ error: "Invalid customer form token." });
+      return;
+    }
+    if (!isR2Configured()) {
+      res.status(503).json({ error: "Photo storage is not configured." });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: "Image file is required (jpeg/png/webp/gif, max 10 MB)." });
+      return;
+    }
+    const mimeType = req.file.mimetype as SupportedImageMime;
+    try {
+      inspectImage(req.file.buffer, mimeType);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions." });
+      return;
+    }
+    const [share] = await db.select({ token: businessFormShareTable.token })
+      .from(businessFormShareTable)
+      .innerJoin(pricingPackageTable, eq(pricingPackageTable.id, businessFormShareTable.packageId))
+      .where(and(
+        eq(businessFormShareTable.token, token),
+        eq(businessFormShareTable.isActive, true),
+        eq(pricingPackageTable.isActive, true),
+      ))
+      .limit(1);
+    if (!share) {
+      res.status(404).json({ error: "Customer form link not found." });
+      return;
+    }
+    const key = await uploadImage({
+      fileName: req.file.originalname,
+      fileBuffer: req.file.buffer,
+      contentType: mimeType,
+      folder: `gallery/customer-form-${token}`,
+      metadata: { uploadedAt: new Date().toISOString(), formShareToken: token },
+    });
+    res.status(201).json({ key });
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload customer gallery image");
+    res.status(500).json({ error: "Failed to upload customer gallery image." });
+  }
+});
+
 router.post("/business/form-shares/:token/submit", customerFormSubmitRateLimit, async (req, res) => {
   try {
     const token = typeof req.params.token === "string" ? req.params.token : "";
@@ -285,6 +411,9 @@ router.post("/business/form-shares/:token/submit", customerFormSubmitRateLimit, 
       res.status(400).json({ error: errors.join(" ") });
       return;
     }
+    if ("galleryImages" in cleaned) {
+      cleaned.galleryImages = keepCustomerFormGalleryKeys(cleaned.galleryImages, token);
+    }
     const mapped = invitationValuesFromCustomer(formConfig, cleaned, share.businessId, share.packageId);
     const [client] = await db.insert(businessClientTable).values({
       businessId: share.businessId,
@@ -294,7 +423,7 @@ router.post("/business/form-shares/:token/submit", customerFormSubmitRateLimit, 
       phone: typeof cleaned.contactPhone === "string" ? cleaned.contactPhone.trim() : null,
       email: typeof cleaned.email === "string" ? cleaned.email.trim() : null,
       eventDate: mapped.eventDate || null,
-      customerData: cleaned,
+      customerData: cleaned as Record<string, string | boolean | number | null>,
       status: "PENDING_INVITATION",
     }).returning();
     res.status(201).json({ id: client.id, message: "Your details have been submitted successfully." });
@@ -433,7 +562,7 @@ router.post("/business/clients", async (req, res) => {
         email: typeof cleaned.email === "string" ? cleaned.email.trim() : null,
         eventDate: invitationValues.eventDate || null,
         notes: typeof body.notes === "string" ? body.notes.trim() : null,
-        customerData: cleaned,
+        customerData: cleaned as Record<string, string | boolean | number | null>,
         status: typeof body.status === "string" && body.status.trim() ? body.status.trim() : "ACTIVE",
       }).returning();
       let invitation: typeof invitationTable.$inferSelect | undefined;

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "wouter";
+import { Check, ImagePlus, Loader2, X } from "lucide-react";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -23,11 +25,13 @@ type FormDetails = {
 export default function CustomerFormPage() {
   const { token } = useParams<{ token: string }>();
   const [details, setDetails] = useState<FormDetails | null>(null);
-  const [values, setValues] = useState<Record<string, string | boolean>>({});
+  const [values, setValues] = useState<Record<string, string | boolean | string[]>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryError, setGalleryError] = useState("");
 
   useEffect(() => {
     if (!token) return;
@@ -45,9 +49,40 @@ export default function CustomerFormPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const updateValue = (key: string, value: string | boolean) => {
+  const updateValue = (key: string, value: string | boolean | string[]) => {
     setValues((current) => ({ ...current, [key]: value }));
   };
+
+  async function uploadGalleryFiles(files: FileList | null, fieldKey: string) {
+    if (!files || !token) return;
+    const current = Array.isArray(values[fieldKey]) ? values[fieldKey] as string[] : [];
+    const remaining = Math.max(0, 4 - current.length);
+    if (!remaining) {
+      setGalleryError("Gallery is limited to 4 images.");
+      return;
+    }
+    setGalleryUploading(true);
+    setGalleryError("");
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files).slice(0, remaining)) {
+        const body = new FormData();
+        body.append("file", file);
+        const response = await fetch(`${BASE}/api/business/form-shares/${encodeURIComponent(token)}/gallery-upload`, {
+          method: "POST",
+          body,
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `Unable to upload ${file.name}.`);
+        if (typeof data.key === "string") uploaded.push(data.key);
+      }
+      if (uploaded.length) updateValue(fieldKey, [...current, ...uploaded].slice(0, 4));
+    } catch (err: unknown) {
+      setGalleryError(err instanceof Error ? err.message : "Unable to upload gallery images.");
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -110,7 +145,45 @@ export default function CustomerFormPage() {
                     <span className="mb-1.5 block font-medium">
                       {field.label}{field.required && <span className="ml-1 text-red-500">*</span>}
                     </span>
-                    {field.type === "textarea" ? (
+                    {field.key === "galleryImages" ? (
+                      <div className="space-y-3">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          multiple
+                          disabled={galleryUploading}
+                          onChange={(event) => {
+                            void uploadGalleryFiles(event.target.files, field.key);
+                            event.currentTarget.value = "";
+                          }}
+                          className="sr-only"
+                          id={`customer-gallery-${field.key}`}
+                        />
+                        <label htmlFor={`customer-gallery-${field.key}`} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-500">
+                          {galleryUploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                          {galleryUploading ? "Uploading..." : "Upload gallery images"}
+                        </label>
+                        <p className="text-xs text-gray-400">{Array.isArray(values[field.key]) ? (values[field.key] as string[]).length : 0}/4 images · Max 10 MB each</p>
+                        {Array.isArray(values[field.key]) && (values[field.key] as string[]).length > 0 && (
+                          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            {(values[field.key] as string[]).map((image, index) => (
+                              <div key={image} className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                                <img src={resolveImageUrl(image)} alt={`Gallery ${index + 1}`} className="h-full w-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => updateValue(field.key, (values[field.key] as string[]).filter((_, itemIndex) => itemIndex !== index))}
+                                  className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                                  aria-label={`Remove gallery image ${index + 1}`}
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {galleryError && <p className="text-sm text-red-600">{galleryError}</p>}
+                      </div>
+                    ) : field.type === "textarea" ? (
                       <textarea
                         required={field.required}
                         value={String(values[field.key] ?? "")}
