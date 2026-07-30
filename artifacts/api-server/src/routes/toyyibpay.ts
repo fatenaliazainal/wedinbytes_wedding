@@ -126,11 +126,23 @@ async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$in
 }
 
 async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCode: string) {
-  const transactions = await getToyyibPayTransactions(billCode);
-  const transaction = transactions.find((item) =>
+  // Try the passed billCode first.
+  let transactions = await getToyyibPayTransactions(billCode);
+  let transaction = transactions.find((item) =>
     item.billExternalReferenceNo === order.paymentReference &&
     amountsMatch(item.billpaymentAmount, order.amount),
   );
+
+  // If no matching transaction and the order has a different canonical billCode stored
+  // (e.g. the buyer paid via an older bill that was later superseded), fall back to it.
+  if (!transaction && order.billCode && order.billCode !== billCode) {
+    transactions = await getToyyibPayTransactions(order.billCode);
+    transaction = transactions.find((item) =>
+      item.billExternalReferenceNo === order.paymentReference &&
+      amountsMatch(item.billpaymentAmount, order.amount),
+    );
+  }
+
   if (!transaction) {
     return { status: "PENDING", updated: false };
   }
