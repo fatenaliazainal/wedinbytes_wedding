@@ -295,13 +295,36 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       order.billCodeCreatedAt &&
       Date.now() - order.billCodeCreatedAt.getTime() < BILL_EXPIRY_MS
     ) {
-      const { baseUrl } = (function () {
-        const sandbox = process.env.TOYYIBPAY_SANDBOX === "true";
-        return { baseUrl: sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com" };
-      })();
-      const paymentUrl = `${baseUrl}/${encodeURIComponent(order.billCode)}`;
-      res.status(200).json({ orderId: order.id, paymentUrl, billCode: order.billCode, reused: true });
-      return;
+      // Verify the stored bill is still accepting payments on ToyyibPay's side.
+      // A bill can be settled (paid/failed) or voided even within the 3-day window,
+      // for example due to category suspension or account issues. If the bill is no
+      // longer open, fall through and create a fresh one so the buyer is never sent
+      // to a dead payment URL.
+      let billIsOpen = true;
+      try {
+        const transactions = await getToyyibPayTransactions(order.billCode);
+        const isClosed = transactions.some((t) => {
+          const s = String(t.billpaymentStatus ?? t.billStatus ?? "");
+          return s === "1" || s === "3";
+        });
+        if (isClosed) billIsOpen = false;
+      } catch {
+        // If the bill status cannot be verified (network error, invalid bill code,
+        // etc.), treat it as closed and issue a fresh bill to avoid sending the
+        // buyer to an unreachable payment page.
+        billIsOpen = false;
+      }
+
+      if (billIsOpen) {
+        const { baseUrl } = (function () {
+          const sandbox = process.env.TOYYIBPAY_SANDBOX === "true";
+          return { baseUrl: sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com" };
+        })();
+        const paymentUrl = `${baseUrl}/${encodeURIComponent(order.billCode)}`;
+        res.status(200).json({ orderId: order.id, paymentUrl, billCode: order.billCode, reused: true });
+        return;
+      }
+      // Bill is closed — fall through to issue a fresh bill below.
     }
 
     try {
