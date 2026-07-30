@@ -12,6 +12,7 @@ import AdminPage from "@/pages/AdminPage";
 import AdminLoginPage from "@/pages/AdminLoginPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import EditorPage from "@/pages/EditorPage";
 import DashboardPage from "@/pages/DashboardPage";
 import RsvpDashboardPage from "@/pages/RsvpDashboardPage";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/rsvp" component={RsvpDashboardPage} />
       <Route path="/business/dashboard" component={BusinessDashboardPage} />

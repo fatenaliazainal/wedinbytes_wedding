@@ -90,6 +90,16 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); navigate("/forgot-password"); }}
+              className="text-gray-800 font-medium hover:underline"
+            >
+              Forgot password?
+            </a>
+          </p>
+
+          <p className="text-center text-sm text-gray-500 mt-3">
             Don't have an account?{" "}
             <a
               href="#"

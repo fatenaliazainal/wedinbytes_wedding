@@ -1,11 +1,14 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { db, userTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import {
   adminLoginRateLimit,
   auditEvent,
   loginRateLimit,
+  passwordResetRateLimit,
+  passwordResetRequestRateLimit,
   regenerateSession,
   registerRateLimit,
 } from "../lib/security";
@@ -82,6 +85,88 @@ router.post("/auth/login", loginRateLimit, async (req, res) => {
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     req.log.error({ err }, "Login failed");
+    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+  }
+});
+
+router.post("/auth/forgot-password", passwordResetRequestRateLimit, async (req, res) => {
+  try {
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    const genericResponse = {
+      message: "Jika emel ini wujud, pautan reset kata laluan telah dijana.",
+    };
+
+    if (!email) {
+      res.status(400).json({ error: "Emel diperlukan." });
+      return;
+    }
+
+    const [user] = await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, email)).limit(1);
+    if (!user) {
+      res.json(genericResponse);
+      return;
+    }
+
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await db.update(userTable)
+      .set({
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: expiresAt,
+      })
+      .where(eq(userTable.id, user.id));
+
+    const resetUrl = `/forgot-password?token=${encodeURIComponent(token)}`;
+    res.json({
+      ...genericResponse,
+      ...(process.env.NODE_ENV !== "production" ? { resetUrl } : {}),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Forgot password request failed");
+    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+  }
+});
+
+router.post("/auth/reset-password", passwordResetRateLimit, async (req, res) => {
+  try {
+    const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+
+    if (!token || !password) {
+      res.status(400).json({ error: "Token dan kata laluan diperlukan." });
+      return;
+    }
+    if (password.length < 6) {
+      res.status(400).json({ error: "Kata laluan mesti sekurang-kurangnya 6 aksara." });
+      return;
+    }
+
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const [user] = await db.select({
+      id: userTable.id,
+      passwordResetExpiresAt: userTable.passwordResetExpiresAt,
+    }).from(userTable).where(eq(userTable.passwordResetTokenHash, tokenHash)).limit(1);
+
+    if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt.getTime() < Date.now()) {
+      res.status(400).json({ error: "Pautan reset tidak sah atau telah tamat tempoh." });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    await db.update(userTable)
+      .set({
+        passwordHash,
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+      })
+      .where(eq(userTable.id, user.id));
+
+    auditEvent(req, "auth.password_reset", { userId: user.id });
+    res.json({ message: "Kata laluan berjaya dikemaskini." });
+  } catch (err) {
+    req.log.error({ err }, "Password reset failed");
     res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
   }
 });

@@ -50,6 +50,22 @@ export const registerRateLimit = rateLimit({
   message: { error: "Too many registration attempts. Please try again later." },
 });
 
+export const passwordResetRequestRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Terlalu banyak permintaan reset kata laluan. Sila cuba lagi kemudian." },
+});
+
+export const passwordResetRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Terlalu banyak cubaan reset kata laluan. Sila cuba lagi kemudian." },
+});
+
 export const pinUnlockRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
