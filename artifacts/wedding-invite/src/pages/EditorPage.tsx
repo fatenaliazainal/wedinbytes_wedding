@@ -286,7 +286,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedTab = params.get("tab") || "reka-bentuk";
-    return mode === "buyer" && requestedTab === "footer" ? "reka-bentuk" : requestedTab;
+    // Footer branding is admin-controlled, so customer editors (Buyer and
+    // Business Account) should open the same tab set and landing tab.
+    return (mode === "buyer" || mode === "business") && requestedTab === "footer"
+      ? "reka-bentuk"
+      : requestedTab;
   });
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -306,7 +310,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const activeFeatureNames = useMemo(() => new Set((activePackage?.features ?? []).map((f) => f.name)), [activePackage]);
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
-      if (tab.id === "footer") return mode !== "buyer";
+      if (tab.id === "footer") return mode === "admin" || mode === "demo";
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
@@ -408,7 +412,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
         fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
           (mode === "buyer" || mode === "business") ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
-        mode === "buyer" ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("{}")),
+        (mode === "buyer" || mode === "business")
+          ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
+          : Promise.resolve(new Response("{}")),
       ]);
       let loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
       setPackages(loadedPackages);
@@ -534,10 +540,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
           // Buyer editors always inherit the current Admin footer defaults.
-          showFooter: mode === "buyer" ? (adminDefaults?.showFooter as boolean ?? true) : (d.showFooter ?? false),
-          footerText: mode === "buyer" ? (adminDefaults?.footerText as string ?? "Dapatkan kad digital anda di:") : (d.footerText ?? ""),
-          footerUrl: mode === "buyer" ? (adminDefaults?.footerUrl as string ?? "wedinbytes.com") : (d.footerUrl ?? ""),
-          socialLinks: mode === "buyer"
+          showFooter: (mode === "buyer" || mode === "business")
+            ? (adminDefaults?.showFooter as boolean ?? true)
+            : (d.showFooter ?? false),
+          footerText: (mode === "buyer" || mode === "business")
+            ? (adminDefaults?.footerText as string ?? "Dapatkan kad digital anda di:")
+            : (d.footerText ?? ""),
+          footerUrl: (mode === "buyer" || mode === "business")
+            ? (adminDefaults?.footerUrl as string ?? "wedinbytes.com")
+            : (d.footerUrl ?? ""),
+          socialLinks: (mode === "buyer" || mode === "business")
             ? (Array.isArray(adminDefaults?.socialLinks)
               ? adminDefaults.socialLinks as { platform: string; url: string }[]
               : [])
@@ -611,9 +623,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           musicArtist:      tplFallback.musicArtist,
         }));
 
-        // New buyer cards use the admin demo invitation as their editable
-        // content template. Customer-specific details remain blank.
-        if (mode === "buyer" && isNewCard && adminDefaults) {
+        // New customer cards use the admin demo invitation as their editable
+        // content template. Customer-specific details remain blank. Buyer and
+        // Business Account must start from the same editor defaults.
+        if ((mode === "buyer" || mode === "business") && isNewCard && adminDefaults) {
           setInv((prev) => ({
             ...prev,
             eventType: typeof adminDefaults.eventType === "string" ? adminDefaults.eventType : prev.eventType,
