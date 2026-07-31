@@ -661,6 +661,9 @@ export default function DashboardPage() {
           <button onClick={() => setActiveSection('orders')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'orders' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Dashboard
           </button>
+          <button onClick={() => setActiveSection('paymentHistory')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'paymentHistory' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
+            Payment History
+          </button>
           <button onClick={() => setActiveSection('profile')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'profile' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Profile Settings
           </button>
