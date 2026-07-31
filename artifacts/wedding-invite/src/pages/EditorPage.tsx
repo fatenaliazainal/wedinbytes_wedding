@@ -1724,21 +1724,23 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {/* ── GIFT ── */}
             {activeTab === "gift" && (
               <div className="space-y-4">
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-                  Money Gift is available with the Premium package. Guests will only see this section when Display Gift is enabled.
-                </div>
                 <Field label="Display Gift">
-                  <select
-                    className={inputCls}
-                    value={inv.giftDisplay ? "yes" : "no"}
-                    onChange={(event) => setInv((current) => ({ ...current, giftDisplay: event.target.value === "yes" }))}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={inv.giftDisplay}
+                    aria-label="Display Gift"
+                    onClick={() => setInv((current) => ({ ...current, giftDisplay: !current.giftDisplay }))}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 ${
+                      inv.giftDisplay ? "bg-[#2f8f5b]" : "bg-gray-300"
+                    }`}
                   >
-                    <option value="yes">Yes, show Gift tab</option>
-                    <option value="no">No, hide Gift tab</option>
-                  </select>
-                </Field>
-                <Field label="Gift Title">
-                  <input className={inputCls} value={inv.giftTitle} onChange={(event) => setInv((current) => ({ ...current, giftTitle: event.target.value }))} placeholder="SALAM KASIH" />
+                    <span
+                      className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                        inv.giftDisplay ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
                 </Field>
                 <Field label="Recipient Name">
                   <input className={inputCls} value={inv.giftRecipient} onChange={(event) => setInv((current) => ({ ...current, giftRecipient: event.target.value }))} placeholder="SH AHRUDIN BIN AHMAD" />
@@ -1982,7 +1984,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 {packages.length > 0 && (
                   <Field label="Package">
                     <select
-                      className={selectCls}
+                      className={`${selectCls} ${
+                        packageLocked
+                          ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-500 opacity-75"
+                          : ""
+                      }`}
                       value={activePackageId ?? ""}
                       disabled={packageLocked}
                       title={packageLocked
