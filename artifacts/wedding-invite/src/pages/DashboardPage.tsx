@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Edit2, Eye, Users, Share2, Lock, LogOut,
@@ -249,6 +250,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
+    if (!authLoading && user && user.role !== "buyer") navigate(dashboardPathForUser(user));
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
@@ -518,7 +520,7 @@ export default function DashboardPage() {
         rightSlot={
           <>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(dashboardPathForUser(user))}
               title={user.name}
               className="text-slate-500 hover:text-slate-800 transition-colors"
             >

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 import SiteHeader, { type SiteNavItem } from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import SiteFooter from "@/components/SiteFooter";
@@ -109,7 +110,7 @@ export default function BusinessDashboardPage() {
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "business_account")) {
-      navigate(user ? "/dashboard" : "/login");
+      navigate(user ? dashboardPathForUser(user) : "/login");
     }
   }, [authLoading, user, navigate]);
 

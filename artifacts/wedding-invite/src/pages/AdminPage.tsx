@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getListDesignsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 import PricingTab from "@/components/PricingTab";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -1703,7 +1704,7 @@ export default function AdminPage() {
       if (!user) {
         navigate(`/admin/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       } else if (user.role !== "admin") {
-        navigate("/dashboard");
+        navigate(dashboardPathForUser(user));
         toast.error("Admin access only.");
       }
     }

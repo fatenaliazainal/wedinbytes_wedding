@@ -6,6 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -150,7 +151,7 @@ export default function ReviewsPage() {
         rightSlot={
           user ? (
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(dashboardPathForUser(user))}
               className="inline-flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
               aria-label="Dashboard"
               title="Dashboard"
@@ -185,7 +186,7 @@ export default function ReviewsPage() {
           user ? (
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
-                onClick={() => { navigate("/dashboard"); setNavOpen(false); }}
+                onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
                 className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD

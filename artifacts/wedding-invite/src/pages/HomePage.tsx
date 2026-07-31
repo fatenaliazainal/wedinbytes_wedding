@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Heart, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { getInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 
 type Status = "idle" | "loading" | "not-found" | "error";
 
@@ -108,7 +109,7 @@ export default function HomePage() {
             or{" "}
             {user ? (
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate(dashboardPathForUser(user))}
                 className="font-semibold text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
               >
                 go to Dashboard?

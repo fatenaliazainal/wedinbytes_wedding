@@ -4,11 +4,12 @@ import { toast } from "sonner";
 import { Search, Heart, ShoppingBag, User, X, Menu } from "lucide-react";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
-import { CardThumbnail } from "@/components/CardThumbnail";
+import { CatalogDesignCard } from "@/components/CatalogDesignCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 
 const PAGE_SIZE = 10;
 
@@ -19,19 +20,6 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
 ];
-
-function CardPreviewFrame({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-t-xl bg-transparent"
-      style={{
-        flexShrink: 0,
-      }}
-    >
-      <div className="absolute inset-0">{children}</div>
-    </div>
-  );
-}
 
 export default function WeddingCardsHomePage() {
   const [, navigate] = useLocation();
@@ -73,7 +61,7 @@ export default function WeddingCardsHomePage() {
         rightSlot={
           user ? (
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(dashboardPathForUser(user))}
               className="inline-flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
               aria-label="Dashboard"
               title="Dashboard"
@@ -108,7 +96,7 @@ export default function WeddingCardsHomePage() {
           user ? (
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
-                onClick={() => { navigate("/dashboard"); setNavOpen(false); }}
+                onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
                 className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
@@ -188,40 +176,13 @@ export default function WeddingCardsHomePage() {
           {!isLoading && !isError && visibleCards.length > 0 && (
             <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
               {visibleCards.map((design) => (
-                <article
+                <CatalogDesignCard
                   key={design.id}
-                  className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-[0_5px_16px_rgba(31,41,55,0.10)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(31,41,55,0.16)]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
-                    className="block w-full"
-                    aria-label={`Open live demo for ${design.name}`}
-                  >
-                    <CardPreviewFrame>
-                      {demoInvitation ? (
-                        <CardThumbnail invitation={demoInvitation} design={design} containerWidth={220} />
-                      ) : (
-                        <div className="w-full h-full" style={{ background: design.colorBackground ? `hsl(${design.colorBackground})` : "#f6f1e7" }} />
-                      )}
-                    </CardPreviewFrame>
-                  </button>
-
-                  <div className="flex flex-col items-center px-2.5 pb-3 pt-2.5 text-center sm:px-3 sm:pb-4">
-                    <p className="mt-1 text-xs font-bold leading-tight text-gray-900 sm:text-sm">{design.name}</p>
-                    <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-rose-700">
-                      WED{String(design.id).padStart(2, "0")}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => goToEditor(design.designCode ?? undefined)}
-                      className="mt-3 w-full rounded-full bg-gray-900 px-2 py-2 text-[10px] font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
-                    >
-                      <ShoppingBag size={11} className="mr-1 inline-block align-[-2px]" />
-                      ORDER NOW
-                    </button>
-                  </div>
-                </article>
+                  design={design}
+                  invitation={demoInvitation}
+                  onPreview={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
+                  onOrder={() => goToEditor(design.designCode ?? undefined)}
+                />
               ))}
             </div>
           )}

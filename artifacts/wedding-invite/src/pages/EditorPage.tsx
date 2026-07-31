@@ -18,6 +18,7 @@ import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 import logo from "@assets/LOGO WEDINBYTES (1).png";
 
 const TABS = [
@@ -327,7 +328,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin" && mode === "demo") {
-      navigate("/dashboard");
+      navigate(dashboardPathForUser(user));
     }
   }, [user, authLoading, navigate, mode]);
   const [navOpen, setNavOpen] = useState(false);
@@ -424,12 +425,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       return;
     }
     if (mode === "demo" && user.role !== "admin") {
-      navigate("/dashboard");
+      navigate(dashboardPathForUser(user));
       toast.error("Admin access only.");
     }
     if ((mode === "buyer" || mode === "business") && user.role !== "admin") {
       if (mode === "business" && user.role !== "business_account") {
-        navigate("/dashboard");
+        navigate(dashboardPathForUser(user));
         toast.error("Business Account access only.");
         return;
       }
@@ -1050,7 +1051,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   }
 
   const navItems = [
-    { label: "HOME",       onClick: () => { navigate("/dashboard"); setNavOpen(false); } },
+    { label: "HOME",       onClick: () => { navigate(dashboardPathForUser(user)); setNavOpen(false); } },
     { label: "CATALOG",    onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
     { label: "PRICE LIST", onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
     { label: "FAQs",       onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
@@ -1135,7 +1136,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           {/* Right icons */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(dashboardPathForUser(user))}
               title={user?.name}
               className="text-gray-500 hover:text-gray-800 transition-colors"
             >

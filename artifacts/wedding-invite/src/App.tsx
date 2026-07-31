@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
 import InvitationPage from "@/pages/InvitationPage";
 import HomePage from "@/pages/HomePage";
@@ -34,7 +35,9 @@ function PublicInvitationRoute() {
 const queryClient = new QueryClient();
 
 function EditorRoute() {
-  return <EditorPage mode="buyer" />;
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return <EditorPage mode={user?.role === "business_account" ? "business" : "buyer"} />;
 }
 
 function BusinessEditorRoute() {

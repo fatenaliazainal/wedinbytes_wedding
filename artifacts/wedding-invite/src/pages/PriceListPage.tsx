@@ -27,6 +27,7 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import { dashboardPathForUser } from "@/lib/dashboard-path";
 import type { PricingPackage } from "@workspace/api-client-react";
 
 const NAV_ITEMS: SiteNavItem[] = [
@@ -75,7 +76,7 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative flex flex-col h-full rounded-2xl p-6 transition-all duration-300 ${
+      className={`relative flex flex-col h-full rounded-2xl p-5 transition-all duration-300 ${
         highlighted
           ? "bg-white border-2 border-rose-200 shadow-xl shadow-rose-100/60"
           : "bg-white border border-gray-100 shadow-lg hover:shadow-xl"
@@ -83,30 +84,30 @@ function PricingCard({
     >
       {badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-700 px-4 py-1 text-[10px] font-bold tracking-widest text-white uppercase shadow-sm">
+           <span className="inline-flex items-center gap-1 rounded-full bg-rose-700 px-3 py-0.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-sm">
             <Sparkles size={10} />
             {badge}
           </span>
         </div>
       )}
 
-      <div className="mb-4">
+       <div className="mb-3">
         <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase">{name}</h3>
-        <div className="mt-2 flex items-baseline gap-1">
-          <span className="text-base font-semibold text-gray-900">RM</span>
-          <span className="text-4xl font-bold text-gray-900 tracking-tight">{price}</span>
+         <div className="mt-1.5 flex items-baseline gap-1">
+           <span className="text-sm font-semibold text-gray-900">RM</span>
+           <span className="text-3xl font-bold text-gray-900 tracking-tight">{price}</span>
         </div>
-        <p className="mt-2 text-xs text-gray-500 leading-relaxed">{description}</p>
+         <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">{description}</p>
       </div>
 
-      <ul className="mb-6 flex-1 space-y-2">
+       <ul className="mb-4 flex-1 space-y-1.5">
         {features.map((item) => (
-          <li key={item.label} className="flex items-start gap-3 text-xs text-gray-700">
+           <li key={item.label} className="flex items-start gap-2 text-[11px] text-gray-700">
             <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-700">
               <Check size={10} strokeWidth={3} />
             </span>
             <span className="flex items-center gap-2">
-              <item.icon size={12} className="text-gray-400" />
+               <item.icon size={11} className="text-gray-400" />
               {item.label}
             </span>
           </li>
@@ -115,7 +116,7 @@ function PricingCard({
 
       <button
         onClick={onChoose}
-        className={`w-full rounded-xl py-3 text-xs font-bold tracking-widest transition-colors ${
+         className={`w-full rounded-lg py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
           highlighted
             ? "bg-rose-700 text-white hover:bg-rose-800 shadow-md shadow-rose-200"
             : "bg-gray-900 text-white hover:bg-gray-800"
@@ -161,7 +162,7 @@ export default function PriceListPage() {
         rightSlot={
           user ? (
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(dashboardPathForUser(user))}
               className="inline-flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
               aria-label="Dashboard"
               title="Dashboard"
@@ -196,7 +197,7 @@ export default function PriceListPage() {
           user ? (
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
-                onClick={() => { navigate("/dashboard"); setNavOpen(false); }}
+                onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
                 className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
@@ -223,20 +224,20 @@ export default function PriceListPage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-white py-10 px-4 sm:px-6 text-center">
+        <section className="bg-white py-5 px-4 sm:px-6 text-center sm:py-6">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
               Choose the perfect invitation for your special day.
             </h1>
-            <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-2 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
               Beautiful digital wedding invitations designed to make your special day even more memorable.
             </p>
           </div>
         </section>
 
         {/* Pricing Cards */}
-        <section className="py-10 px-4 sm:px-6 bg-gray-50">
-          <div className="max-w-4xl mx-auto">
+        <section className="py-4 px-4 sm:px-6 bg-gray-50 sm:py-5">
+          <div className="max-w-3xl mx-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-16 text-gray-400 gap-2">
                 <Loader2 size={18} className="animate-spin" /> <span className="text-sm">Loading packages…</span>
@@ -246,7 +247,7 @@ export default function PriceListPage() {
             ) : sortedPackages.length === 0 ? (
               <div className="py-16 text-center text-sm text-gray-400">No pricing packages available.</div>
             ) : (
-              <div className={`grid gap-6 lg:gap-8 items-stretch ${sortedPackages.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-2"}`}>
+              <div className={`grid gap-4 lg:gap-5 items-stretch ${sortedPackages.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-2"}`}>
                 {sortedPackages.map((pkg) => (
                   <PricingCard
                     key={pkg.id}

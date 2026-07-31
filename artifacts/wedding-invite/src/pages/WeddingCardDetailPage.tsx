@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Mail, MessageSquareQuote, ClipboardList, Wand2, Loader2, type LucideIcon } from "lucide-react";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { CardThumbnail } from "@/components/CardThumbnail";
+import { CatalogDesignCard } from "@/components/CatalogDesignCard";
 import { CARD_FEATURES } from "../data/weddingCards";
 import { useAuth } from "@/context/AuthContext";
 
@@ -160,27 +161,16 @@ export default function WeddingCardDetailPage() {
                 <h2 className="text-center text-2xl font-semibold sm:text-3xl">You May Also Like</h2>
                 <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
                   {similarCards.map((d) => (
-                    <button
+                    <CatalogDesignCard
                       key={d.id}
-                      type="button"
-                      onClick={() => navigate(`/weddingcards/home/${d.id}`)}
-                      className="text-left"
-                    >
-                      <div className="relative mx-auto w-full max-w-[220px]">
-                        <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-sm bg-[#d8d0be]" />
-                        <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-sm bg-[#ede7d8]" />
-                        <div className="relative overflow-hidden rounded-sm border border-black/8 bg-white shadow-sm">
-                          <div className="aspect-[3/4] bg-[#f6f1e7] relative">
-                            {demoInvitation ? (
-                              <CardThumbnail invitation={demoInvitation} design={d} />
-                            ) : (
-                              <div className="absolute inset-0 bg-[#f6f1e7]" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3 text-center text-sm text-black/85">{d.name}</div>
-                    </button>
+                      design={d}
+                      invitation={demoInvitation}
+                      onPreview={() => navigate(`/weddingcards/home/${d.id}`)}
+                      onOrder={() => {
+                        if (d.designCode) navigate(`/editor?new=1&designCode=${encodeURIComponent(d.designCode)}`);
+                        else navigate("/editor?new=1");
+                      }}
+                    />
                   ))}
                 </div>
               </div>

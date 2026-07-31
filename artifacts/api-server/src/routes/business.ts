@@ -195,8 +195,14 @@ export async function getOrCreateBusinessProfile(userId: number) {
     displayName: user.name,
     email: user.email,
     slug: `${base}-${user.id}`,
-  }).returning();
-  return created;
+  }).onConflictDoNothing({ target: businessProfileTable.userId }).returning();
+  if (created) return created;
+
+  // Another request may have created the profile between the initial read
+  // and insert (the dashboard loads multiple business endpoints in parallel).
+  const [concurrentProfile] = await db.select().from(businessProfileTable)
+    .where(eq(businessProfileTable.userId, userId)).limit(1);
+  return concurrentProfile ?? null;
 }
 
 async function profileWithInvitationCount(profile: typeof businessProfileTable.$inferSelect) {

@@ -23,3 +23,4 @@
 - [Premium money gift assets](premium-money-gift-assets.md) — Gift is a Premium-only invitation feature; QR artwork is invitation-owned, limited to two, and served through the R2 proxy.
 - [Invitation expiration](invitation-expiration.md) — public invitations expire after three calendar months and redirect guests home without exposing expired data.
 - [Paid invitation edit lock](paid-invitation-edit-lock.md) — paid invitations become customer read-only after the event date; server and upload routes enforce the rule.
+- [Role-aware dashboard routing](role-aware-dashboard-routing.md) — shared navigation and the generic editor must preserve Buyer, Business Account, and Admin destinations.
