@@ -1,4 +1,12 @@
-import { db, invitationTable, cardDesignTable, userTable, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
+import {
+  db,
+  invitationTable,
+  cardDesignTable,
+  userTable,
+  pricingPackageTable,
+  pricingFeatureTable,
+  rsvpTable,
+} from "@workspace/db";
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { logger } from "./logger";
@@ -42,6 +50,69 @@ const invitationBase = {
   showFrontText: true,
   coupleCount: 1,
 };
+
+// The public Live Demo is intentionally a complete Premium showcase. These
+// are local, non-customer assets so every feature remains visible without
+// exposing anyone's private gallery or payment QR code.
+const demoShowcaseValues = {
+  eventDate: "2026-11-15",
+  eventDay: "Ahad",
+  eventTime: "11:00 pagi – 4:00 petang",
+  eventStartTime: "11:00",
+  eventEndTime: "16:00",
+  eventStartDateTime: "2026-11-15T11:00",
+  eventEndDateTime: "2026-11-15T16:00",
+  itinerary: [
+    { time: "11:00", event: "Ketibaan tetamu" },
+    { time: "12:00", event: "Majlis akad nikah" },
+    { time: "13:00", event: "Makan beradab" },
+    { time: "15:00", event: "Sesi bergambar" },
+  ],
+  dresscodeTheme: "Sage Green & Blush",
+  dresscodeColors: ["#A8B5A2", "#E8C6C7", "#F5EBDD", "#6B705C"],
+  galleryImages: [
+    "/demo-gallery-1.svg",
+    "/demo-gallery-2.svg",
+    "/demo-gallery-3.svg",
+    "/demo-gallery-4.svg",
+  ],
+  giftDisplay: true,
+  giftTitle: "SALAM KASIH · DEMO",
+  giftRecipient: "Alia & Nasser",
+  giftBankName: "Maybank · Demo Showcase",
+  giftAccountNumber: "1234 5678 9012",
+  giftQrCodes: ["/demo-money-gift-qr.svg"],
+  rsvpEnabled: true,
+  rsvpIntroText: "Sila sahkan kehadiran anda dan tinggalkan ucapan untuk Alia & Nasser.",
+  rsvpFormNote: "Contoh RSVP Premium — cuba hantar ucapan anda.",
+  rsvpMaxOverallGuests: 500,
+  rsvpMaxGuestsPerInvitation: 10,
+  rsvpTimeSlots: JSON.stringify(["11:00 pagi", "12:00 tengahari", "1:00 petang"]),
+  musicUrl: "/music/selamat-pengantin-baru.mp3",
+  musicTitle: "Selamat Pengantin Baru",
+  musicArtist: "Instrumental",
+};
+
+const demoShowcaseWishes = [
+  {
+    name: "Keluarga Razali",
+    attending: true,
+    numberOfGuests: 4,
+    message: "Tahniah buat Alia & Nasser. Semoga kekal bahagia hingga ke syurga.",
+  },
+  {
+    name: "Aina & Hakim",
+    attending: true,
+    numberOfGuests: 2,
+    message: "Terima kasih menjemput kami. Tak sabar meraikan hari istimewa ini!",
+  },
+  {
+    name: "Kak Farah",
+    attending: true,
+    numberOfGuests: 1,
+    message: "Semoga majlis berjalan lancar dan dipenuhi keberkatan.",
+  },
+];
 
 const cardDesignValues = {
   name: "Garden Floral (Default)",
@@ -175,6 +246,9 @@ export async function autoSeedIfEmpty() {
             contact?.name === "Ain" ? { ...contact, name: "Alia" } : contact,
           );
         }
+        if (row.token === "demo") {
+          Object.assign(patch, demoShowcaseValues);
+        }
         if (Object.keys(patch).length > 0) {
           logger.info(
             { token: row.token, fields: Object.keys(patch) },
@@ -282,6 +356,39 @@ export async function autoSeedIfEmpty() {
         await db.update(pricingPackageTable).set({ formConfig, updatedAt: new Date() })
           .where(eq(pricingPackageTable.id, pkg.id));
       }
+    }
+
+    // The demo must carry the real Premium entitlement so public feature
+    // checks and the admin editor reflect the package being showcased.
+    const packageRows = await db.select().from(pricingPackageTable);
+    const premiumPackage = packageRows.find(
+      (pkg) => pkg.name.trim().toLowerCase() === "premium",
+    );
+    if (premiumPackage) {
+      await db
+        .update(invitationTable)
+        .set({ ...demoShowcaseValues, packageId: premiumPackage.id })
+        .where(eq(invitationTable.token, "demo"));
+
+      const existingWishes = await db
+        .select({ name: rsvpTable.name })
+        .from(rsvpTable)
+        .where(eq(rsvpTable.invitationToken, "demo"));
+      const existingWishNames = new Set(existingWishes.map((wish) => wish.name));
+      for (const wish of demoShowcaseWishes) {
+        if (existingWishNames.has(wish.name)) continue;
+        await db.insert(rsvpTable).values({
+          invitationToken: "demo",
+          ...wish,
+        });
+      }
+      logger.info(
+        {
+          packageId: premiumPackage.id,
+          wishesAdded: demoShowcaseWishes.filter((wish) => !existingWishNames.has(wish.name)).length,
+        },
+        "Auto-seed: Live Demo configured as a complete Premium showcase.",
+      );
     }
 
   } catch (err) {

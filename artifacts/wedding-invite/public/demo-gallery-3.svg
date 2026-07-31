@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title">
+  <title id="title">Alia and Nasser demo gallery venue</title>
+  <rect width="1200" height="900" fill="#d9e4d3"/>
+  <rect y="580" width="1200" height="320" fill="#b7c8ad"/>
+  <path d="M175 650V330h850v320" fill="#f8f1e7" stroke="#8c9f84" stroke-width="18"/>
+  <path d="M255 650V410h690v240" fill="#ead7cb"/>
+  <path d="M390 650V470c0-145 420-145 420 0v180" fill="#fffaf2" stroke="#c79b7e" stroke-width="16"/>
+  <path d="M280 410c85-125 170-125 255 0M665 410c85-125 170-125 255 0" fill="none" stroke="#d8919c" stroke-width="18"/>
+  <g fill="#f0b6bd"><circle cx="300" cy="330" r="34"/><circle cx="900" cy="330" r="34"/><circle cx="600" cy="255" r="40"/></g>
+  <text x="600" y="790" text-anchor="middle" fill="#51634e" font-family="Georgia,serif" font-size="46">Dewan Seri Cahaya</text>
+</svg>

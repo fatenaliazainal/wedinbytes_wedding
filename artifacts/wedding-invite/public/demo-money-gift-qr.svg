@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">Demo Money Gift QR</title>
+  <desc id="desc">A decorative demo QR code that is not valid for payment.</desc>
+  <rect width="600" height="600" rx="36" fill="#ffffff"/>
+  <rect x="24" y="24" width="552" height="552" rx="24" fill="none" stroke="#a8b5a2" stroke-width="12"/>
+  <g fill="#27352d">
+    <rect x="72" y="72" width="144" height="144" rx="8"/>
+    <rect x="96" y="96" width="96" height="96" rx="4" fill="#fff"/>
+    <rect x="120" y="120" width="48" height="48" rx="2"/>
+    <rect x="384" y="72" width="144" height="144" rx="8"/>
+    <rect x="408" y="96" width="96" height="96" rx="4" fill="#fff"/>
+    <rect x="432" y="120" width="48" height="48" rx="2"/>
+    <rect x="72" y="384" width="144" height="144" rx="8"/>
+    <rect x="96" y="408" width="96" height="96" rx="4" fill="#fff"/>
+    <rect x="120" y="432" width="48" height="48" rx="2"/>
+    <path d="M264 72h48v48h-48zm72 0h24v72h-24zm-72 72h72v24h-72zm0 72h24v48h-24zm48 0h48v24h-48zm72-72h24v72h-24zm-72 120h72v24h-72zm96 0h48v48h-48zm-144 72h48v24h-48zm72 0h24v72h-24zm48 48h48v24h-48zm72-96h24v72h-24zm48 0h48v24h-48zm-48 96h24v48h-24zm72-48h24v96h-24z"/>
+  </g>
+  <rect x="112" y="252" width="376" height="80" rx="40" fill="#f4e4d5" stroke="#a8b5a2" stroke-width="4"/>
+  <text x="300" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#27352d">DEMO SHOWCASE</text>
+  <text x="300" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#27352d">NOT FOR PAYMENT</text>
+</svg>

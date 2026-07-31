@@ -769,12 +769,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
       // Business order-form invitations and paid invitations keep their
       // assigned package.
-      if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
+      if ((mode === "buyer" || mode === "business" || mode === "demo") && loadedPackages.length > 0) {
         const urlPackage = new URLSearchParams(window.location.search).get("package");
-        const pkgId = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
+        const pkgId = mode === "demo"
+          ? (loadedInv?.packageId ?? null)
+          : loadedInv?.isCustomerOrder || loadedInv?.isPurchased
           ? (loadedInv.packageId ?? null)
           : (urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null));
-        const resolvedPkg = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
+        const resolvedPkg = mode === "demo"
+          ? loadedPackages.find((p) => p.id === pkgId)
+          : loadedInv?.isCustomerOrder || loadedInv?.isPurchased
           ? loadedPackages.find((p) => p.id === pkgId)
           : loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
         setActivePackageId(resolvedPkg?.id ?? null);

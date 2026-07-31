@@ -38,3 +38,4 @@
 - [Admin revenue reporting](admin-revenue-reporting.md) — revenue is based on PAID orders and grouped by Malaysia payment month; order volume uses order creation month.
 - [Admin UI density](admin-ui-density.md) — preserve the existing Admin font, colors, and flows while making the layout compact and reference-like.
 - [Bottom panel sizing](bottom-panel-sizing.md) — invitation detail panels should fit their content without reserving oversized space for the bottom navigation.
+- [Live Demo Premium showcase](live-demo-premium-showcase.md) — the public demo uses real Premium entitlement plus safe showcase content for every Premium feature.

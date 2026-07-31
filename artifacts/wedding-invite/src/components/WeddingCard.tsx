@@ -682,27 +682,17 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  // Keep the two background groups explicit: the cover is group 1 and the
-  // scrollable invitation details are group 2. Older templates may only have
-  // one image, so each group falls back to the other image for compatibility.
+  // The template artwork is a portrait page asset. It belongs on the cover
+  // (and the opening envelope), not as a second full-height image behind the
+  // entire long invitation. Reusing the envelope artwork for the content
+  // section made the design look duplicated and cropped on mobile.
   const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
-  const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
 
-  function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
+  function PageBackground() {
     return (
       <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            aria-hidden
-            alt=""
-            draggable={false}
-            className="absolute inset-0 w-full h-full object-cover select-none"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-secondary" />
-        )}
-        {overlay && <div className="absolute inset-0 bg-white/70" />}
+        <div className="absolute inset-0 bg-secondary" />
+        <div className="absolute inset-0 bg-white/55" />
       </div>
     );
   }
@@ -747,7 +737,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
       {/* ── BACKGROUND GROUP 2 / ALL REMAINING INVITATION SECTIONS ── */}
       <section className="relative">
-        <PageBackground imageUrl={groupTwoBackgroundUrl} overlay />
+        <PageBackground />
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
