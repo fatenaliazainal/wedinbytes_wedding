@@ -148,6 +148,18 @@ router.post("/invitation", async (req, res) => {
       return;
     }
     const body = req.body as Record<string, unknown>;
+    const [demoDefaults] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, "demo"))
+      .limit(1);
+    const contentValue = (field: string, fallback: unknown = undefined) => {
+      const requestValue = body[field];
+      if (requestValue !== undefined && requestValue !== null && requestValue !== "") {
+        return requestValue;
+      }
+      return demoDefaults?.[field as keyof typeof demoDefaults] ?? fallback;
+    };
     let created: typeof invitationTable.$inferSelect | undefined;
     let businessId: number | null = null;
     if (req.session.role === "business_account") {
@@ -161,30 +173,35 @@ router.post("/invitation", async (req, res) => {
     for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
       const token = randomUUID().replace(/-/g, "").slice(0, 16);
       try {
-        [created] = await db.insert(invitationTable).values({
+        const invitationValues: typeof invitationTable.$inferInsert = {
           token,
            userId: req.session.role === "business_account" ? null : req.session.userId,
            businessId,
-          groomName:    (body.groomName    as string) || "Pengantin Lelaki",
-          brideName:    (body.brideName    as string) || "Pengantin Perempuan",
-          eventType:    (body.eventType    as string) || "Walimatul Urus",
-          eventDate:    (body.eventDate    as string) || "",
-          eventDay:     (body.eventDay     as string) || "",
-          eventTime:    (body.eventTime    as string) || "11:00 pagi – 4:00 petang",
-          eventStartTime: (body.eventStartTime as string) || "",
-          eventEndTime: (body.eventEndTime as string) || "",
-          itinerary: Array.isArray(body.itinerary) ? body.itinerary : undefined,
-          venueName:    (body.venueName    as string) || "",
-          venueAddress: (body.venueAddress as string) || "",
-          venueCity:    (body.venueCity    as string) || "",
-          venueState:   (body.venueState   as string) || "",
-          contactPhone: (body.contactPhone as string) || "",
-          contacts: Array.isArray(body.contacts) ? body.contacts : undefined,
-          rsvpEnabled: (body.rsvpEnabled as boolean) ?? false,
-          rsvpMaxOverallGuests: (body.rsvpMaxOverallGuests as number) ?? 1000,
-          rsvpMaxGuestsPerInvitation: (body.rsvpMaxGuestsPerInvitation as number) ?? 10,
-          packageId: (body.packageId as number) ?? null,
-        }).returning();
+           groomName:    contentValue("groomName", "Pengantin Lelaki") as string,
+           brideName:    contentValue("brideName", "Pengantin Perempuan") as string,
+           eventType:    contentValue("eventType", "Walimatul Urus") as string,
+           eventDate:    contentValue("eventDate", "") as string,
+           eventDay:     contentValue("eventDay", "") as string,
+           eventTime:    contentValue("eventTime", "11:00 pagi – 4:00 petang") as string,
+           eventStartTime: contentValue("eventStartTime", "") as string,
+           eventEndTime: contentValue("eventEndTime", "") as string,
+           itinerary: Array.isArray(contentValue("itinerary"))
+             ? contentValue("itinerary") as { time: string; event: string }[]
+             : undefined,
+           venueName:    contentValue("venueName", "") as string,
+           venueAddress: contentValue("venueAddress", "") as string,
+           venueCity:    contentValue("venueCity", "") as string,
+           venueState:   contentValue("venueState", "") as string,
+           contactPhone: contentValue("contactPhone", "") as string,
+           contacts: Array.isArray(contentValue("contacts"))
+             ? contentValue("contacts") as { name: string; phone: string }[]
+             : undefined,
+           rsvpEnabled: contentValue("rsvpEnabled", false) as boolean,
+           rsvpMaxOverallGuests: contentValue("rsvpMaxOverallGuests", 1000) as number,
+           rsvpMaxGuestsPerInvitation: contentValue("rsvpMaxGuestsPerInvitation", 10) as number,
+           packageId: (body.packageId as number) ?? null,
+        };
+        [created] = await db.insert(invitationTable).values(invitationValues).returning();
       } catch (error) {
         if ((error as { code?: string })?.code !== "23505" || attempt === 4) throw error;
       }

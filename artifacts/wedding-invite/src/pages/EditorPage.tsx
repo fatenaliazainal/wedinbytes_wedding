@@ -682,16 +682,47 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           musicArtist:      tplFallback.musicArtist,
         }));
 
-        // New customer cards use the admin demo invitation as their editable
-        // content template. Customer-specific details remain blank. Buyer and
-        // Business Account must start from the same editor defaults.
+        // New customer cards use the admin Live Demo as their content template.
+        // Styling is resolved separately from the selected Card Design above;
+        // uploaded per-invitation assets remain owned by their original card.
         if ((mode === "buyer" || mode === "business") && isNewCard && adminDefaults) {
           setInv((prev) => ({
             ...prev,
+            groomName: typeof adminDefaults.groomName === "string" ? adminDefaults.groomName : prev.groomName,
+            brideName: typeof adminDefaults.brideName === "string" ? adminDefaults.brideName : prev.brideName,
             eventType: typeof adminDefaults.eventType === "string" ? adminDefaults.eventType : prev.eventType,
+            eventDate: typeof adminDefaults.eventDate === "string" ? adminDefaults.eventDate : prev.eventDate,
+            eventDay: typeof adminDefaults.eventDay === "string" ? adminDefaults.eventDay : prev.eventDay,
             eventTime: typeof adminDefaults.eventTime === "string" ? adminDefaults.eventTime : prev.eventTime,
             eventStartTime: typeof adminDefaults.eventStartTime === "string" ? adminDefaults.eventStartTime : prev.eventStartTime,
             eventEndTime: typeof adminDefaults.eventEndTime === "string" ? adminDefaults.eventEndTime : prev.eventEndTime,
+            venueName: typeof adminDefaults.venueName === "string" ? adminDefaults.venueName : prev.venueName,
+            venueAddress: typeof adminDefaults.venueAddress === "string" ? adminDefaults.venueAddress : prev.venueAddress,
+            venueCity: typeof adminDefaults.venueCity === "string" ? adminDefaults.venueCity : prev.venueCity,
+            venueState: typeof adminDefaults.venueState === "string" ? adminDefaults.venueState : prev.venueState,
+            venueMapUrl: typeof adminDefaults.venueMapUrl === "string" ? adminDefaults.venueMapUrl : prev.venueMapUrl,
+            groomParents: typeof adminDefaults.groomParents === "string" ? adminDefaults.groomParents : prev.groomParents,
+            brideParents: typeof adminDefaults.brideParents === "string" ? adminDefaults.brideParents : prev.brideParents,
+            contactPhone: typeof adminDefaults.contactPhone === "string" ? adminDefaults.contactPhone : prev.contactPhone,
+            contacts: Array.isArray(adminDefaults.contacts)
+              ? adminDefaults.contacts as Contact[]
+              : prev.contacts,
+            shortCoupleName: typeof adminDefaults.shortCoupleName === "string" ? adminDefaults.shortCoupleName : prev.shortCoupleName,
+            groomShortName: typeof adminDefaults.groomShortName === "string" ? adminDefaults.groomShortName : prev.groomShortName,
+            brideShortName: typeof adminDefaults.brideShortName === "string" ? adminDefaults.brideShortName : prev.brideShortName,
+            coupleCount: typeof adminDefaults.coupleCount === "number" ? adminDefaults.coupleCount : prev.coupleCount,
+            groomInitial: typeof adminDefaults.groomInitial === "string" ? adminDefaults.groomInitial : prev.groomInitial,
+            brideInitial: typeof adminDefaults.brideInitial === "string" ? adminDefaults.brideInitial : prev.brideInitial,
+            coverGroomName: typeof adminDefaults.coverGroomName === "string" ? adminDefaults.coverGroomName : prev.coverGroomName,
+            coverBrideName: typeof adminDefaults.coverBrideName === "string" ? adminDefaults.coverBrideName : prev.coverBrideName,
+            envelopeInitials: typeof adminDefaults.envelopeInitials === "string" ? adminDefaults.envelopeInitials : prev.envelopeInitials,
+            envelopeInitialsSize: adminDefaults.envelopeInitialsSize != null
+              ? String(adminDefaults.envelopeInitialsSize)
+              : prev.envelopeInitialsSize,
+            page2Initials: typeof adminDefaults.page2Initials === "string" ? adminDefaults.page2Initials : prev.page2Initials,
+            eventStartDateTime: typeof adminDefaults.eventStartDateTime === "string" ? adminDefaults.eventStartDateTime : prev.eventStartDateTime,
+            eventEndDateTime: typeof adminDefaults.eventEndDateTime === "string" ? adminDefaults.eventEndDateTime : prev.eventEndDateTime,
+            coverDateText: typeof adminDefaults.coverDateText === "string" ? adminDefaults.coverDateText : prev.coverDateText,
             coverTitle: typeof adminDefaults.coverTitle === "string" ? adminDefaults.coverTitle : prev.coverTitle,
             additionalInfo: typeof adminDefaults.additionalInfo === "string" ? adminDefaults.additionalInfo : prev.additionalInfo,
             hashtag: typeof adminDefaults.hashtag === "string" ? adminDefaults.hashtag : prev.hashtag,
@@ -714,12 +745,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               : prev.dresscodeColors,
             message: typeof adminDefaults.message === "string" ? adminDefaults.message : prev.message,
             rsvpEnabled: typeof adminDefaults.rsvpEnabled === "boolean" ? adminDefaults.rsvpEnabled : prev.rsvpEnabled,
+            rsvpDeadline: typeof adminDefaults.rsvpDeadline === "string" ? adminDefaults.rsvpDeadline.slice(0, 16) : prev.rsvpDeadline,
             rsvpAdditionalInfo: typeof adminDefaults.rsvpAdditionalInfo === "string" ? adminDefaults.rsvpAdditionalInfo : prev.rsvpAdditionalInfo,
             rsvpIntroText: typeof adminDefaults.rsvpIntroText === "string" ? adminDefaults.rsvpIntroText : prev.rsvpIntroText,
             rsvpFormNote: typeof adminDefaults.rsvpFormNote === "string" ? adminDefaults.rsvpFormNote : prev.rsvpFormNote,
             rsvpMaxOverallGuests: typeof adminDefaults.rsvpMaxOverallGuests === "number" ? adminDefaults.rsvpMaxOverallGuests : prev.rsvpMaxOverallGuests,
             rsvpMaxGuestsPerInvitation: typeof adminDefaults.rsvpMaxGuestsPerInvitation === "number" ? adminDefaults.rsvpMaxGuestsPerInvitation : prev.rsvpMaxGuestsPerInvitation,
             rsvpTimeSlots: typeof adminDefaults.rsvpTimeSlots === "string" ? adminDefaults.rsvpTimeSlots : prev.rsvpTimeSlots,
+            giftDisplay: typeof adminDefaults.giftDisplay === "boolean" ? adminDefaults.giftDisplay : prev.giftDisplay,
+            giftTitle: typeof adminDefaults.giftTitle === "string" ? adminDefaults.giftTitle : prev.giftTitle,
+            giftRecipient: typeof adminDefaults.giftRecipient === "string" ? adminDefaults.giftRecipient : prev.giftRecipient,
+            giftBankName: typeof adminDefaults.giftBankName === "string" ? adminDefaults.giftBankName : prev.giftBankName,
+            giftAccountNumber: typeof adminDefaults.giftAccountNumber === "string" ? adminDefaults.giftAccountNumber : prev.giftAccountNumber,
             showFooter: typeof adminDefaults.showFooter === "boolean" ? adminDefaults.showFooter : prev.showFooter,
             footerText: typeof adminDefaults.footerText === "string" ? adminDefaults.footerText : prev.footerText,
             footerUrl: typeof adminDefaults.footerUrl === "string" ? adminDefaults.footerUrl : prev.footerUrl,
