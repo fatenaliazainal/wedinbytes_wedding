@@ -45,6 +45,9 @@ export type DesignOverrides = {
   colorCard?: string | null;
   nameColor?: string | null;
   nameFontFamily?: string | null;
+  bodyFontFamily?: string | null;
+  nameFontSize?: string | null;
+  badgeFontSize?: string | null;
 };
 
 function applyOverrides(overrides: DesignOverrides) {
@@ -58,6 +61,17 @@ function applyOverrides(overrides: DesignOverrides) {
     root.style.setProperty("--popover", overrides.colorCard);
   }
   if (overrides.nameColor) root.style.setProperty("--name-color", overrides.nameColor);
+  if (overrides.nameFontFamily) {
+    root.style.setProperty("--name-font-family", `"${overrides.nameFontFamily}", cursive`);
+  }
+  if (overrides.bodyFontFamily) {
+    root.style.setProperty("--body-font-family", `"${overrides.bodyFontFamily}", sans-serif`);
+  }
+  if (overrides.nameFontSize) root.style.setProperty("--name-font-size", `${overrides.nameFontSize}px`);
+  if (overrides.badgeFontSize) {
+    root.style.setProperty("--badge-font-size", `${overrides.badgeFontSize}px`);
+    root.style.setProperty("--section-title-font-size", `${overrides.badgeFontSize}px`);
+  }
 }
 
 export function useDesign(overrides?: DesignOverrides) {
@@ -66,6 +80,11 @@ export function useDesign(overrides?: DesignOverrides) {
   useEffect(() => {
     if (design) {
       applyDesignTokens(design);
+      const overrideFonts = [
+        overrides?.nameFontFamily,
+        overrides?.bodyFontFamily,
+      ].filter((font): font is string => Boolean(font));
+      if (overrideFonts.length) injectGoogleFont(overrideFonts);
       // Apply per-invitation overrides on top of global design
       if (overrides) applyOverrides(overrides);
     }

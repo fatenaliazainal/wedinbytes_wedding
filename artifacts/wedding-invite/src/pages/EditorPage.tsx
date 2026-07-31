@@ -192,6 +192,7 @@ interface DesignData {
   bodyFontFamily: string;
   colorPrimary: string;
   colorSecondary: string;
+  colorAccent: string;
   colorBackground: string;
   colorCard: string;
   musicUrl: string;
@@ -405,6 +406,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     nameFontFamily: "Dancing Script", nameFontSize: "38", badgeFontSize: "24",
     nameColor: "0 0% 20%", bodyFontFamily: "Poppins",
     colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
+    colorAccent: "142 30% 92%",
     colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
     musicUrl: "", musicTitle: "", musicArtist: "",
     cardImageUrl: "wed_card_design/20260531-041903-27796.jpg", envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
@@ -414,8 +416,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
-  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorPrimary" | "colorSecondary" | "colorBackground" | "colorCard">>({
-    nameColor: "0 0% 20%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
+  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
+    nameColor: "0 0% 20%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
   });
 
   // Redirect if not logged in (buyer mode → /login; demo mode → /admin/login)
@@ -490,11 +492,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         return {
           colorPrimary:     primary,
           colorSecondary:   tpl.colorSecondary   ?? primary,
+          colorAccent:      tpl.colorAccent      ?? tpl.colorSecondary ?? primary,
           colorBackground:  tpl.colorBackground  ?? primary,
           colorCard:        tpl.colorCard        ?? "0 0% 100%",
           openingAnimation: tpl.openingAnimation ?? "doors",
-          nameFontFamily:   tpl.nameFontFamily   ?? "Dancing Script",
+          nameFontFamily:   tpl.nameFontFamily   ?? tpl.fontHeading ?? "Dancing Script",
+          nameFontSize:     tpl.nameFontSize     ?? "38",
+          badgeFontSize:    tpl.badgeFontSize    ?? "24",
           nameColor:        tpl.nameColor        ?? "0 0% 20%",
+          bodyFontFamily:   tpl.fontBody         ?? "Poppins",
           cardMaxWidth:     tpl.cardMaxWidth     ?? gd.cardMaxWidth    ?? "420px",
           cardImageUrl:     tpl.cardImageUrl     ?? gd.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
           envelopeImageUrl: tpl.envelopeImageUrl ?? gd.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
@@ -640,6 +646,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           nameColor:        tpl.nameColor,
           colorPrimary:     tpl.colorPrimary,
           colorSecondary:   tpl.colorSecondary,
+          colorAccent:      tpl.colorAccent,
           colorBackground:  tpl.colorBackground,
           colorCard:        tpl.colorCard,
         });
@@ -649,13 +656,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           openingAnimation: d.openingAnimation ?? tpl.openingAnimation,
           openButtonText:   d.openButtonText   ?? "BUKA",
           nameFontFamily:   normalizeFont(d.nameFontFamily   ?? tpl.nameFontFamily),
-          nameFontSize:     d.nameFontSize      ?? "38",
-          badgeFontSize:    d.badgeFontSize     ?? "24",
+          nameFontSize:     d.nameFontSize      ?? tpl.nameFontSize ?? "38",
+          badgeFontSize:    d.badgeFontSize     ?? tpl.badgeFontSize ?? "24",
           nameColor:        d.nameColor         ?? tpl.nameColor,
           cardMaxWidth:     d.cardMaxWidth      ?? tpl.cardMaxWidth,
-          bodyFontFamily:   normalizeFont(d.bodyFontFamily    ?? "Poppins"),
+          bodyFontFamily:   normalizeFont(d.bodyFontFamily    ?? tpl.bodyFontFamily),
           colorPrimary:     d.colorPrimary      ?? tpl.colorPrimary,
           colorSecondary:   d.colorSecondary    ?? tpl.colorSecondary,
+          colorAccent:      d.colorAccent       ?? tpl.colorAccent,
           colorBackground:  d.colorBackground   ?? tpl.colorBackground,
           colorCard:        d.colorCard         ?? tpl.colorCard,
           cardImageUrl:     tpl.cardImageUrl,
@@ -672,6 +680,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           nameColor:        tplFallback.nameColor,
           colorPrimary:     tplFallback.colorPrimary,
           colorSecondary:   tplFallback.colorSecondary,
+          colorAccent:      tplFallback.colorAccent,
           colorBackground:  tplFallback.colorBackground,
           colorCard:        tplFallback.colorCard,
         });
@@ -680,13 +689,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           designCode:       resolvedCode,
           colorPrimary:     tplFallback.colorPrimary,
           colorSecondary:   tplFallback.colorSecondary,
+           colorAccent:      tplFallback.colorAccent,
           colorBackground:  tplFallback.colorBackground,
           colorCard:        tplFallback.colorCard,
           openingAnimation: tplFallback.openingAnimation,
           nameFontFamily:   normalizeFont(tplFallback.nameFontFamily),
+           nameFontSize:     tplFallback.nameFontSize,
+           badgeFontSize:    tplFallback.badgeFontSize,
           nameColor:        tplFallback.nameColor,
           cardMaxWidth:     tplFallback.cardMaxWidth,
-          bodyFontFamily:   "Poppins",
+           bodyFontFamily:   normalizeFont(tplFallback.bodyFontFamily),
           cardImageUrl:     tplFallback.cardImageUrl,
           envelopeImageUrl: tplFallback.envelopeImageUrl,
           musicUrl:         tplFallback.musicUrl,
@@ -906,6 +918,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         nameColor: designCodeChanged || design.nameColor !== inheritedColors.nameColor ? (design.nameColor || null) : null,
         colorPrimary: designCodeChanged || design.colorPrimary !== inheritedColors.colorPrimary ? (design.colorPrimary || null) : null,
         colorSecondary: designCodeChanged || design.colorSecondary !== inheritedColors.colorSecondary ? (design.colorSecondary || null) : null,
+        colorAccent: designCodeChanged || design.colorAccent !== inheritedColors.colorAccent ? (design.colorAccent || null) : null,
         colorBackground: designCodeChanged || design.colorBackground !== inheritedColors.colorBackground ? (design.colorBackground || null) : null,
         colorCard: designCodeChanged || design.colorCard !== inheritedColors.colorCard ? (design.colorCard || null) : null,
         musicUrl: design.musicUrl || null,
@@ -1998,6 +2011,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                             nameColor:        picked.nameColor       ?? gd?.nameColor       ?? "0 0% 20%",
                             colorPrimary:     primary,
                             colorSecondary:   picked.colorSecondary  ?? gd?.colorSecondary  ?? primary,
+                            colorAccent:      picked.colorAccent     ?? gd?.colorAccent     ?? picked.colorSecondary ?? gd?.colorSecondary ?? primary,
                             colorBackground:  picked.colorBackground ?? gd?.colorBackground ?? primary,
                             colorCard:        picked.colorCard       ?? gd?.colorCard       ?? "0 0% 100%",
                           };
@@ -2008,7 +2022,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                             designCode:       picked.designCode       ?? p.designCode,
                             openingAnimation: picked.openingAnimation ?? "doors",
                             openButtonText:   picked.openButtonText   ?? "BUKA",
-                            nameFontFamily:   normalizeFont(picked.nameFontFamily ?? p.nameFontFamily),
+                            nameFontFamily:   normalizeFont(picked.nameFontFamily ?? picked.fontHeading ?? p.nameFontFamily),
+                            nameFontSize:     picked.nameFontSize ?? p.nameFontSize,
+                            badgeFontSize:    picked.badgeFontSize ?? p.badgeFontSize,
+                            bodyFontFamily:   normalizeFont(picked.fontBody ?? p.bodyFontFamily),
                             cardImageUrl:     picked.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
                             envelopeImageUrl: picked.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
                             musicUrl:         picked.musicUrl         ?? "",
@@ -2233,6 +2250,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 "--primary":            design.colorPrimary     || "142 45% 35%",
                 "--primary-foreground": "0 0% 100%",
                 "--secondary":          design.colorSecondary   || "142 30% 92%",
+                "--accent":             design.colorAccent      || "142 30% 92%",
                 "--background":         design.colorBackground  || "142 20% 96%",
                 "--card":               design.colorCard        || "0 0% 100%",
                 "--popover":            design.colorCard        || "0 0% 100%",

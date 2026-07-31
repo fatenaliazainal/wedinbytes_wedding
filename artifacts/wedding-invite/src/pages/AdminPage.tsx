@@ -395,6 +395,27 @@ function CodeBadge({ code }: { code: string }) {
 
 const ANIMATION_OPTIONS = ["doors", "envelope", "fade", "none"];
 
+const SCRIPT_FONT_OPTIONS = [
+  { value: "Dancing Script", label: "Dancing Script" },
+  { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
+  { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
+  { value: "Allura", label: "Allura" },
+  { value: "Pinyon Script", label: "Pinyon Script" },
+  { value: "Style Script", label: "Style Script" },
+  { value: "Petit Formal Script", label: "Petit Formal Script" },
+  { value: "Meow Script", label: "Meow Script" },
+  { value: "Rouge Script", label: "Rouge Script" },
+  { value: "Lily Script One", label: "Lily Script One" },
+];
+
+const BODY_FONT_OPTIONS = [
+  { value: "Playfair Display", label: "Playfair Display" },
+  { value: "Poppins", label: "Poppins" },
+  { value: "Lato", label: "Lato" },
+  { value: "Georgia, serif", label: "Georgia" },
+  { value: "Arial, sans-serif", label: "Arial" },
+];
+
 interface DesignFormData {
   name: string;
   designCode: string;
@@ -405,6 +426,10 @@ interface DesignFormData {
   envelopeImageFile?: File | null;
   envelopeImagePreviewUrl?: string;
   openingAnimation: string;
+  nameFontFamily: string;
+  bodyFontFamily: string;
+  nameFontSize: string;
+  badgeFontSize: string;
   colorPrimary: string;
   colorSecondary: string;
   colorAccent: string;
@@ -421,6 +446,8 @@ const EMPTY_FORM: DesignFormData = {
   name: "", designCode: "", cardImageUrl: "", envelopeImageUrl: "",
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
   colorAccent: "", colorBackground: "", colorCard: "", nameColor: "",
+  nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
+  nameFontSize: "38", badgeFontSize: "24",
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
 };
@@ -527,6 +554,13 @@ function DesignForm({
         cardImageUrl,
         envelopeImageUrl,
         openingAnimation: form.openingAnimation,
+        nameFontFamily: form.nameFontFamily,
+        // Card catalogue thumbnails use fontHeading, while the live editor
+        // uses nameFontFamily for the couple names. Keep both in sync.
+        fontHeading: form.nameFontFamily,
+        fontBody: form.bodyFontFamily,
+        nameFontSize: form.nameFontSize,
+        badgeFontSize: form.badgeFontSize,
         colorPrimary: form.colorPrimary,
         colorSecondary: form.colorSecondary,
         colorAccent: form.colorAccent,
@@ -718,11 +752,78 @@ function DesignForm({
             />
           </div>
 
+          {/* Typography */}
+          <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Typography</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                These values control the couple names and invitation body text in the editor and live invitation.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Name Font</label>
+                <select
+                  className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                  value={form.nameFontFamily}
+                  style={{ fontFamily: form.nameFontFamily }}
+                  onChange={(e) => set("nameFontFamily")(e.target.value)}
+                >
+                  {SCRIPT_FONT_OPTIONS.map((font) => (
+                    <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Body Font</label>
+                <select
+                  className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                  value={form.bodyFontFamily}
+                  style={{ fontFamily: form.bodyFontFamily }}
+                  onChange={(e) => set("bodyFontFamily")(e.target.value)}
+                >
+                  {BODY_FONT_OPTIONS.map((font) => (
+                    <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block text-xs font-medium text-muted-foreground">
+                Name Font Size — {form.nameFontSize || 38}px
+                <input
+                  type="range"
+                  min="20"
+                  max="70"
+                  value={Number(form.nameFontSize) || 38}
+                  onChange={(e) => set("nameFontSize")(e.target.value)}
+                  className="mt-2 w-full accent-primary"
+                />
+              </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Section Title Size — {form.badgeFontSize || 24}px
+                <input
+                  type="range"
+                  min="12"
+                  max="60"
+                  value={Number(form.badgeFontSize) || 24}
+                  onChange={(e) => set("badgeFontSize")(e.target.value)}
+                  className="mt-2 w-full accent-primary"
+                />
+              </label>
+            </div>
+          </div>
+
           {/* Colours */}
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
             <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} placeholder="0 0% 13%" />
             <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} placeholder="142 45% 35%" />
+            <ColorRow label="Secondary — Supporting controls and highlights" value={form.colorSecondary} onChange={set("colorSecondary")} placeholder="142 30% 92%" />
             <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} placeholder="0 0% 100%" />
             <ColorRow label="Background — Page background" value={form.colorBackground} onChange={set("colorBackground")} placeholder="142 20% 96%" />
             <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} placeholder="142 30% 92%" />
@@ -915,6 +1016,10 @@ function DesignsTab() {
                     cardImageUrl: d.cardImageUrl ?? "",
                     envelopeImageUrl: d.envelopeImageUrl ?? "",
                     openingAnimation: d.openingAnimation ?? "doors",
+                    nameFontFamily: d.nameFontFamily ?? d.fontHeading ?? "Dancing Script",
+                    bodyFontFamily: d.fontBody ?? "Poppins",
+                    nameFontSize: d.nameFontSize ?? "38",
+                    badgeFontSize: d.badgeFontSize ?? "24",
                     colorPrimary: d.colorPrimary ?? "",
                     colorSecondary: d.colorSecondary ?? "",
                     colorAccent: d.colorAccent ?? "",

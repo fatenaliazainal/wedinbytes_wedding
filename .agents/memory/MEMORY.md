@@ -28,3 +28,4 @@
 - [Order form submission flow](order-form-submission-flow.md) — present submitted forms as a direct order-form-to-invitation flow, not a separate customer entity.
 - [Business list density](business-list-density.md) — use compact table-like rows so larger invitation lists remain scannable.
 - [Editor package feature save](editor-package-feature-save.md) — omit gated feature fields from saves when the active package does not support them.
+- [Card design template styling](design-template-styling.md) — admin styling flows into editor and public invitations; customer content remains separate.

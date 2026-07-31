@@ -103,23 +103,31 @@ export default function InvitationPage() {
   const inv = invitation as Record<string, unknown> | undefined;
   const designCode = overrideDesignCode ?? (inv?.designCode as string | undefined) ?? "FL001";
   const templateDesign = allDesigns.find((d) => d.designCode === designCode);
+  const isDemoInvitation = resolvedToken === "demo";
+  // The demo invitation supplies sample content only. Its saved design values
+  // must not override the catalogue template selected by ?designCode=.
+  const invitationStyle = isDemoInvitation ? undefined : inv;
 
   // CSS token overrides: template's colours as base, per-invitation overrides on top
   const { design, isLoading: designLoading } = useDesign(
     invitation
       ? {
-          colorPrimary:    (inv?.colorPrimary    as string | undefined) ?? templateDesign?.colorPrimary    ?? undefined,
-          colorSecondary:  (inv?.colorSecondary  as string | undefined) ?? templateDesign?.colorSecondary  ?? undefined,
-          colorAccent:     (inv?.colorAccent     as string | undefined) ?? templateDesign?.colorAccent     ?? undefined,
-          colorBackground: (inv?.colorBackground as string | undefined) ?? templateDesign?.colorBackground ?? undefined,
-          colorCard:       (inv?.colorCard       as string | undefined) ?? templateDesign?.colorCard       ?? undefined,
-          nameColor:       (inv?.nameColor       as string | undefined) ?? templateDesign?.nameColor       ?? undefined,
+          colorPrimary:    (invitationStyle?.colorPrimary    as string | undefined) ?? templateDesign?.colorPrimary    ?? undefined,
+          colorSecondary:  (invitationStyle?.colorSecondary  as string | undefined) ?? templateDesign?.colorSecondary  ?? undefined,
+          colorAccent:     (invitationStyle?.colorAccent     as string | undefined) ?? templateDesign?.colorAccent     ?? undefined,
+          colorBackground: (invitationStyle?.colorBackground as string | undefined) ?? templateDesign?.colorBackground ?? undefined,
+          colorCard:       (invitationStyle?.colorCard       as string | undefined) ?? templateDesign?.colorCard       ?? undefined,
+          nameColor:       (invitationStyle?.nameColor       as string | undefined) ?? templateDesign?.nameColor       ?? undefined,
+          nameFontFamily:  (invitationStyle?.nameFontFamily  as string | undefined) ?? templateDesign?.nameFontFamily ?? templateDesign?.fontHeading ?? undefined,
+          bodyFontFamily:  (invitationStyle?.bodyFontFamily  as string | undefined) ?? templateDesign?.fontBody ?? undefined,
+          nameFontSize:    (invitationStyle?.nameFontSize    as string | undefined) ?? templateDesign?.nameFontSize ?? undefined,
+          badgeFontSize:   (invitationStyle?.badgeFontSize   as string | undefined) ?? templateDesign?.badgeFontSize ?? undefined,
         }
       : undefined
   );
 
   // Opening animation and button text — invitation override → template → global design
-  const openingAnimation = (inv?.openingAnimation as string | undefined) ?? templateDesign?.openingAnimation ?? design?.openingAnimation ?? "doors";
+  const openingAnimation = (invitationStyle?.openingAnimation as string | undefined) ?? templateDesign?.openingAnimation ?? design?.openingAnimation ?? "doors";
 
   // Card/envelope images always come from the matched template
   const resolvedCardImageUrl = resolveImageUrl(templateDesign?.cardImageUrl ?? design?.cardImageUrl);
@@ -138,7 +146,7 @@ export default function InvitationPage() {
   const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
-  const musicUrl = (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
+  const musicUrl = (invitationStyle?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
@@ -241,11 +249,11 @@ export default function InvitationPage() {
   const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
   const cardFontVars = {
-    "--name-font-family": fontFamilyStack(inv?.nameFontFamily as string | undefined),
-    "--name-font-size":   (inv?.nameFontSize   as string | undefined) ? `${inv?.nameFontSize}px` : undefined,
-    "--badge-font-size":  (inv?.badgeFontSize  as string | undefined) ? `${inv?.badgeFontSize}px` : undefined,
-    "--name-color":       (inv?.nameColor       as string | undefined) ? `hsl(${inv?.nameColor})` : undefined,
-    "--body-font-family": fontFamilyStack(inv?.bodyFontFamily as string | undefined),
+    "--name-font-family": fontFamilyStack((invitationStyle?.nameFontFamily as string | undefined) ?? templateDesign?.nameFontFamily ?? templateDesign?.fontHeading),
+    "--name-font-size":   ((invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize) ? `${(invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize}px` : undefined,
+    "--badge-font-size":  ((invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize) ? `${(invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize}px` : undefined,
+    "--name-color":       ((invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor) ? `hsl(${(invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor})` : undefined,
+    "--body-font-family": fontFamilyStack((invitationStyle?.bodyFontFamily as string | undefined) ?? templateDesign?.fontBody),
   } as React.CSSProperties;
 
   if (isLocked && !isUnlocked) {
@@ -401,8 +409,8 @@ export default function InvitationPage() {
           invitation={invitation}
           isMuted={isMuted}
           onToggleMute={() => setIsMuted((prev) => !prev)}
-          musicTitle={(inv?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
-          musicArtist={(inv?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+          musicTitle={(invitationStyle?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
+          musicArtist={(invitationStyle?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
         />
       )}
 

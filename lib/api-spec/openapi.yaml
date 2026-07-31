@@ -1277,6 +1277,10 @@ components:
           type: string
         nameFontFamily:
           type: string
+        nameFontSize:
+          type: string
+        badgeFontSize:
+          type: string
         nameColor:
           type: string
         fontHeading:

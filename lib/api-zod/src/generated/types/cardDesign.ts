@@ -22,6 +22,8 @@ export interface CardDesign {
   colorBackground?: string;
   colorCard?: string;
   nameFontFamily?: string;
+  nameFontSize?: string;
+  badgeFontSize?: string;
   nameColor?: string;
   fontHeading?: string;
   fontBody?: string;
