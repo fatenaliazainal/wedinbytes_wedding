@@ -376,11 +376,18 @@ export default function DashboardPage() {
     navigate("/");
   };
 
-  const inviteLinkFor = (card: Invitation) =>
-    `${window.location.origin}${BASE}${publicInvitePath(card)}`;
+  const inviteLinkFor = (card: Invitation) => {
+    const path = publicInvitePath(card);
+    return path ? `${window.location.origin}${BASE}${path}` : "";
+  };
 
   const copyLink = (card: Invitation) => {
-    navigator.clipboard.writeText(inviteLinkFor(card));
+    const link = inviteLinkFor(card);
+    if (!link) {
+      toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
+      return;
+    }
+    navigator.clipboard.writeText(link);
     setCopiedToken(card.token);
     setTimeout(() => setCopiedToken(null), 2000);
     toast.success("Link copied!");
@@ -405,11 +412,14 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const actionButtonsFor = (card: Invitation) => [
+  const actionButtonsFor = (card: Invitation) => {
+    const path = publicInvitePath(card);
+    const linkReady = Boolean(path);
+    return [
     { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
-    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}${publicInvitePath(card)}`, "_blank") },
+    { icon: Eye,    label: "View",  disabled: !linkReady, onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : toast.info("Enter both Cover names and the event date first.") },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
-    { icon: Share2, label: "Share", onClick: () => copyLink(card) },
+    { icon: Share2, label: "Share", disabled: !linkReady, onClick: () => copyLink(card) },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },
     { icon: Lock,   label: "Lock",  onClick: () => {
       setInvitation(card);
@@ -418,7 +428,8 @@ export default function DashboardPage() {
       setLockModalOpen(true);
     } },
     { icon: Trash2, label: "Delete", onClick: () => setDeleteInvitation(card) },
-  ];
+    ];
+  };
 
   const saveCardLock = async () => {
     if (!invitation) return;
@@ -831,7 +842,7 @@ export default function DashboardPage() {
                                     <Link2 size={12} className="text-slate-400" />
                                  </div>
                                  <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-xs text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
-                                 <button onClick={() => copyLink(card)} className="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center gap-1.5">
+                                  <button onClick={() => copyLink(card)} disabled={!cardInviteLink} title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy link"} className="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-40">
                                    {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                                    <span>Copy</span>
                                  </button>
@@ -839,12 +850,13 @@ export default function DashboardPage() {
 
                                {/* Action Row */}
                                 <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 overflow-x-auto">
-                                 {actions.map(({ icon: Icon, label, onClick }: any) => (
+                                  {actions.map(({ icon: Icon, label, onClick, disabled }: any) => (
                                    <button
                                      key={label}
-                                     onClick={onClick}
+                                      onClick={onClick}
+                                      disabled={disabled}
                                      title={label}
-                                     className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                    >
                                      <Icon size={16} />
                                    </button>
@@ -909,19 +921,20 @@ export default function DashboardPage() {
                                <td className="px-4 py-4 min-w-[200px]">
                                   <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 shadow-sm transition-colors group-hover:border-slate-300">
                                      <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-[11px] text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
-                                     <button onClick={() => copyLink(card)} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm" title="Copy Link">
+                                      <button onClick={() => copyLink(card)} disabled={!cardInviteLink} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-40" title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy Link"}>
                                        {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                                      </button>
                                   </div>
                                </td>
                                <td className="px-4 py-4 whitespace-nowrap text-right">
                                    <div className="flex items-center justify-end gap-1 w-max ml-auto">
-                                    {actions.map(({ icon: Icon, label, onClick }: any) => (
+                                     {actions.map(({ icon: Icon, label, onClick, disabled }: any) => (
                                       <button
                                         key={label}
-                                        onClick={onClick}
+                                         onClick={onClick}
+                                         disabled={disabled}
                                         title={label}
-                                        className={`p-1.5 rounded transition-colors ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                         className={`p-1.5 rounded transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${label === 'Delete' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                       >
                                         <Icon size={14} />
                                       </button>

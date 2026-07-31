@@ -1769,8 +1769,21 @@ function OrdersTab() {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                   <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={publicInvitePath(selected.invitation)} target="_blank" rel="noreferrer">View Website</a>
-                   <button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}${publicInvitePath(selected.invitation!)}`)}>Copy Link</button>
+                   {publicInvitePath(selected.invitation) ? (
+                     <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={publicInvitePath(selected.invitation) ?? undefined} target="_blank" rel="noreferrer">View Website</a>
+                   ) : (
+                     <button disabled title="Enter both Cover names and the event date first" className="flex-1 cursor-not-allowed rounded-xl bg-muted px-3 py-2 text-center text-sm text-muted-foreground">View Website</button>
+                   )}
+                   <button
+                     className="rounded-xl border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                     disabled={!publicInvitePath(selected.invitation)}
+                     onClick={() => {
+                       const path = publicInvitePath(selected.invitation!);
+                       if (path) void navigator.clipboard.writeText(`${window.location.origin}${path}`);
+                     }}
+                   >
+                     Copy Link
+                   </button>
                 </div>
               </div>
             )}

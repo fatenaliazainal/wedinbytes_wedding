@@ -523,9 +523,13 @@ export default function BusinessDashboardPage() {
                               <span className={`text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-50 text-gray-500" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
                               </span>
-                              <a href={publicInvitePath(item)} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
-                                View <ArrowRight size={14} />
-                              </a>
+                              {publicInvitePath(item) ? (
+                                <a href={publicInvitePath(item) ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
+                                  View <ArrowRight size={14} />
+                                </a>
+                              ) : (
+                                <span className="text-xs text-gray-400" title="Enter both Cover names and the event date first">Cover names required</span>
+                              )}
                             </div>
                           </div>
                         );
@@ -742,13 +746,24 @@ export default function BusinessDashboardPage() {
                               <div className="absolute right-4 top-12 z-10 w-48 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
                                 {client.invitationToken && invitations.some((item) => item.token === client.invitationToken) && (
                                   <>
-                                    <a href={publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!)} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
-                                      Preview invitation
-                                    </a>
+                                    {publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!) ? (
+                                      <a href={publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!) ?? undefined} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                        Preview invitation
+                                      </a>
+                                    ) : (
+                                      <span className="block rounded-md px-3 py-2 text-xs text-gray-400" title="Enter both Cover names and the event date first">
+                                        Cover names required
+                                      </span>
+                                    )}
                                     <button onClick={async () => {
                                       const invitation = invitations.find((item) => item.token === client.invitationToken);
                                       if (!invitation) return;
-                                      await navigator.clipboard.writeText(`${window.location.origin}${BASE}${publicInvitePath(invitation)}`);
+                                      const path = publicInvitePath(invitation);
+                                      if (!path) {
+                                        toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
+                                        return;
+                                      }
+                                      await navigator.clipboard.writeText(`${window.location.origin}${BASE}${path}`);
                                       toast.success("Invitation link copied");
                                       setOpenClientMenuId(null);
                                     }} className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
@@ -810,7 +825,8 @@ export default function BusinessDashboardPage() {
                       {invitations.map((item) => {
                         const days = getDaysUntilEvent(item.eventDate);
                         const countdown = formatCountdown(days);
-                        const inviteUrl = `${window.location.origin}${BASE}${publicInvitePath(item)}`;
+                         const publicPath = publicInvitePath(item);
+                         const inviteUrl = publicPath ? `${window.location.origin}${BASE}${publicPath}` : "";
                         const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
 
                         return (
@@ -842,15 +858,26 @@ export default function BusinessDashboardPage() {
                               <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors" data-testid={`button-edit-invitation-${item.id}`}>
                                 Edit
                               </button>
-                              <a href={publicInvitePath(item)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
-                                Preview
-                              </a>
+                              {publicPath ? (
+                                <a href={publicPath} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
+                                  Preview
+                                </a>
+                              ) : (
+                                <button disabled title="Enter both Cover names and the event date first" className="inline-flex cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400">
+                                  Preview
+                                </button>
+                              )}
                               <button
                                 onClick={async () => {
+                                  if (!inviteUrl) {
+                                    toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
+                                    return;
+                                  }
                                   await navigator.clipboard.writeText(inviteUrl);
                                   toast.success("Link copied");
                                 }}
-                                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                                 disabled={!inviteUrl}
+                                 className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Copy invitation link"
                                 data-testid={`button-copy-link-${item.id}`}
                               >

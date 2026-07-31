@@ -23,29 +23,25 @@ function slugPart(value: string | null | undefined) {
     .replace(/^-+|-+$/g, "");
 }
 
-function publicDateCode(eventDate: string | null | undefined) {
+function publicDateCode(eventDate: string | null | undefined): string | null {
   const match = eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (match) return `${match[1].slice(2)}${match[2]}${match[3]}`;
   const digits = (eventDate ?? "").replace(/\D/g, "");
-  return digits.length >= 6 ? digits.slice(-6) : "000000";
+  return digits.length >= 6 ? digits.slice(-6) : null;
 }
 
-function publicSlug(row: typeof invitationTable.$inferSelect) {
-  const groomSlug = slugPart(row.coverGroomName) || slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
-  const brideSlug = slugPart(row.coverBrideName) || slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
-  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
+function publicSlug(row: typeof invitationTable.$inferSelect): string | null {
+  const groomSlug = slugPart(row.coverGroomName);
+  const brideSlug = slugPart(row.coverBrideName);
+  return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
-function legacyPublicSlug(row: typeof invitationTable.$inferSelect) {
-  const brideInitial = slugPart(row.brideName || row.brideShortName || row.brideInitial).charAt(0);
-  const groomInitial = slugPart(row.groomName || row.groomShortName || row.groomInitial).charAt(0);
-  return `${brideInitial}${groomInitial}` || "wi";
-}
-
-function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect) {
+// Existing links generated before Cover names became mandatory remain readable.
+// This alias is lookup-only; every new link is generated from publicSlug().
+function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect): string | null {
   const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
   const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
-  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
+  return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
 const ALLOWED_FIELDS = [
@@ -251,11 +247,10 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
   try {
     const rows = await db.select().from(invitationTable);
     const row = rows.find((candidate) =>
-      publicDateCode(candidate.eventDate) === req.params.dateCode &&
-      (
+      publicDateCode(candidate.eventDate) === req.params.dateCode
+      && (
         publicSlug(candidate) === req.params.slug
         || legacyNamedPublicSlug(candidate) === req.params.slug
-        || legacyPublicSlug(candidate) === req.params.slug
       ),
     );
     if (!row) {

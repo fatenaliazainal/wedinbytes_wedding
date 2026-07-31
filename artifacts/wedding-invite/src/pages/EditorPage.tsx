@@ -778,6 +778,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     && mode !== "demo"
     && inv.isPurchased
     && isEventDatePassed(inv.eventDate);
+  const publicPath = publicInvitePath(inv);
+  const previewReady = Boolean(inv.token && publicPath);
 
   async function handleSave() {
     if (customerEditLocked) {
@@ -2273,10 +2275,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 onClick={async () => {
                   if (!customerEditLocked) await handleSave();
                   const token = inv.token;
-                  if (token) window.open(`${BASE}${publicInvitePath(inv)}`, "_blank");
+                  const path = publicInvitePath(inv);
+                  if (!token || !path) {
+                    toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
+                    return;
+                  }
+                  window.open(`${BASE}${path}`, "_blank");
                 }}
                 className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
-                disabled={saving}
+                disabled={saving || !previewReady}
+                title={!previewReady ? "Enter both Cover names and the event date first" : undefined}
               >
                 {saving ? "Saving…" : customerEditLocked ? "↗ View Preview" : "↗ Full Preview"}
               </button>

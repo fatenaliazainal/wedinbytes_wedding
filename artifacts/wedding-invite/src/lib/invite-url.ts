@@ -1,9 +1,9 @@
-export function inviteDateCode(eventDate: string | null | undefined): string {
+export function inviteDateCode(eventDate: string | null | undefined): string | null {
   const match = eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (match) return `${match[1].slice(2)}${match[2]}${match[3]}`;
 
   const digits = (eventDate ?? "").replace(/\D/g, "");
-  return digits.length >= 6 ? digits.slice(-6) : "000000";
+  return digits.length >= 6 ? digits.slice(-6) : null;
 }
 
 function slugPart(value: string | null | undefined): string {
@@ -19,27 +19,18 @@ function slugPart(value: string | null | undefined): string {
 export function inviteNameSlug(
   groomName: string | null | undefined,
   brideName: string | null | undefined,
-  groomFallback?: string | null,
-  brideFallback?: string | null,
-): string {
-  const groomSlug = slugPart(groomName) || slugPart(groomFallback);
-  const brideSlug = slugPart(brideName) || slugPart(brideFallback);
-  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
+): string | null {
+  const groomSlug = slugPart(groomName);
+  const brideSlug = slugPart(brideName);
+  return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
 export function publicInvitePath(invitation: {
   eventDate?: string | null;
-  brideName?: string | null;
-  groomName?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
-  brideShortName?: string | null;
-  groomShortName?: string | null;
-  brideInitial?: string | null;
-  groomInitial?: string | null;
-}): string {
-  return `/invite/${inviteDateCode(invitation.eventDate)}/${inviteNameSlug(
-    invitation.coverGroomName || invitation.groomShortName || invitation.groomName || invitation.groomInitial,
-    invitation.coverBrideName || invitation.brideShortName || invitation.brideName || invitation.brideInitial,
-  )}`;
+}): string | null {
+  const dateCode = inviteDateCode(invitation.eventDate);
+  const nameSlug = inviteNameSlug(invitation.coverGroomName, invitation.coverBrideName);
+  return dateCode && nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
 }

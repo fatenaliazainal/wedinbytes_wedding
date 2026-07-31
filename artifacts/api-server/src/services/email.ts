@@ -30,7 +30,7 @@ export interface PaymentConfirmationData {
   paymentReference: string;
   amount: string;
   packageName: string;
-  invitationPath: string;
+  invitationPath: string | null;
   /** Base URL for the invitation link, e.g. https://wedinstudio.replit.app */
   siteBaseUrl: string;
 }
@@ -42,8 +42,32 @@ function formatAmount(amount: string) {
 }
 
 function buildHtml(data: PaymentConfirmationData) {
-  const inviteUrl = `${data.siteBaseUrl}${data.invitationPath}`;
+  const inviteUrl = data.invitationPath ? `${data.siteBaseUrl}${data.invitationPath}` : null;
   const formattedAmount = formatAmount(data.amount);
+  const invitationCta = inviteUrl
+    ? `
+               <p style="margin:0 0 24px;color:#555;font-size:16px;line-height:1.6;">
+                 Your invitation is ready to be shared with your guests:
+               </p>
+               <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+                 <tr>
+                   <td style="background:#c9a96e;border-radius:4px;">
+                     <a href="${inviteUrl}" style="display:inline-block;padding:14px 32px;color:#fff;font-size:15px;text-decoration:none;letter-spacing:0.5px;">
+                       View My Invitation →
+                     </a>
+                   </td>
+                 </tr>
+               </table>
+               <p style="margin:0 0 8px;color:#aaa;font-size:13px;text-align:center;">Or copy this link:</p>
+               <p style="margin:0 0 32px;font-size:12px;text-align:center;font-family:monospace;color:#777;word-break:break-all;">
+                 <a href="${inviteUrl}" style="color:#c9a96e;">${inviteUrl}</a>
+               </p>
+    `
+    : `
+               <p style="margin:0 0 24px;color:#555;font-size:16px;line-height:1.6;">
+                 Your payment is confirmed. Please complete your Cover Groom Name, Cover Bride Name and event date in the editor before opening or sharing your invitation link.
+               </p>
+    `;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -98,23 +122,8 @@ function buildHtml(data: PaymentConfirmationData) {
                 </tr>
               </table>
 
-              <!-- CTA -->
-              <p style="margin:0 0 24px;color:#555;font-size:16px;line-height:1.6;">
-                Your invitation is ready to be shared with your guests:
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
-                <tr>
-                  <td style="background:#c9a96e;border-radius:4px;">
-                    <a href="${inviteUrl}" style="display:inline-block;padding:14px 32px;color:#fff;font-size:15px;text-decoration:none;letter-spacing:0.5px;">
-                      View My Invitation →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0 0 8px;color:#aaa;font-size:13px;text-align:center;">Or copy this link:</p>
-              <p style="margin:0 0 32px;font-size:12px;text-align:center;font-family:monospace;color:#777;word-break:break-all;">
-                <a href="${inviteUrl}" style="color:#c9a96e;">${inviteUrl}</a>
-              </p>
+               <!-- CTA -->
+               ${invitationCta}
 
               <p style="margin:0;color:#aaa;font-size:13px;line-height:1.6;">
                 If you have any questions, please reply to this email or contact our support team.
@@ -136,7 +145,7 @@ function buildHtml(data: PaymentConfirmationData) {
 }
 
 function buildText(data: PaymentConfirmationData) {
-  const inviteUrl = `${data.siteBaseUrl}${data.invitationPath}`;
+  const inviteUrl = data.invitationPath ? `${data.siteBaseUrl}${data.invitationPath}` : null;
   const formattedAmount = formatAmount(data.amount);
   return [
     `Dear ${data.recipientName},`,
@@ -149,8 +158,9 @@ function buildText(data: PaymentConfirmationData) {
     `Package           : ${data.packageName}`,
     `Amount Paid       : ${formattedAmount}`,
     "",
-    "View your invitation:",
-    inviteUrl,
+    ...(inviteUrl
+      ? ["View your invitation:", inviteUrl]
+      : ["Please complete your Cover Groom Name, Cover Bride Name and event date in the editor before opening or sharing your invitation link."]),
     "",
     "Wedinstudio · Your digital wedding invitation platform",
   ].join("\n");

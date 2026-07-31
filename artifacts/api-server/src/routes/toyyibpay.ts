@@ -128,13 +128,14 @@ async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$in
     .limit(1);
   if (!user?.email) return;
 
+  const invitationPath = publicInvitePath(invitationRow);
   await sendPaymentConfirmationEmail({
     recipientEmail: user.email,
     recipientName: user.name,
     paymentReference: order.paymentReference ?? "",
     amount: order.amount,
     packageName: packageRow?.name ?? "Wedding Invitation",
-    invitationPath: publicInvitePath(invitationRow),
+    invitationPath,
     siteBaseUrl,
   });
 }
