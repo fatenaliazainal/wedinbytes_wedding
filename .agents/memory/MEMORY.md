@@ -37,3 +37,4 @@
 - [Wishes carousel](wishes-carousel.md) — public wishes use a responsive single-card swipe carousel with arrows, dots, and six-second auto-advance.
 - [Admin revenue reporting](admin-revenue-reporting.md) — revenue is based on PAID orders and grouped by Malaysia payment month; order volume uses order creation month.
 - [Admin UI density](admin-ui-density.md) — preserve the existing Admin font, colors, and flows while making the layout compact and reference-like.
+- [Bottom panel sizing](bottom-panel-sizing.md) — invitation detail panels should fit their content without reserving oversized space for the bottom navigation.

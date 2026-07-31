@@ -333,7 +333,7 @@ export function DetailPanel({
   previewMode,
 }: DetailPanelProps) {
   const panelContent = (
-    <div className="w-full max-w-[420px] bg-card rounded-t-3xl shadow-2xl border border-primary/10 border-b-0 p-6 pb-28">
+    <div className="w-full max-w-[420px] bg-card rounded-t-3xl shadow-2xl border border-primary/10 border-b-0 p-6 pb-6">
       <div className="flex items-center justify-between mb-6">
         <p className="text-lg text-primary" style={{ fontFamily: nameFont }}>
           {activeTab ? PANEL_TITLES[activeTab] : ""}
