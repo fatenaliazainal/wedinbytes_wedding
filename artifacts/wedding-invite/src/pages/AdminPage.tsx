@@ -18,6 +18,8 @@ import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import PricingTab from "@/components/PricingTab";
 import { publicInvitePath } from "@/lib/invite-url";
+import { hexToHsl } from "@/lib/color-format";
+import { HexColorInput } from "@/components/HexColorInput";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
@@ -72,44 +74,6 @@ type AdminCustomer = {
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function hslToHex(hslStr: string): string {
-  const parts = (hslStr || "0 0% 0%").trim().split(/\s+/);
-  const h = parseFloat(parts[0]) / 360;
-  const s = parseFloat((parts[1] || "0").replace("%", "")) / 100;
-  const l = parseFloat((parts[2] || "0").replace("%", "")) / 100;
-  let r, g, b;
-  if (s === 0) { r = g = b = l; } else {
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1; if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-    };
-    r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
-  }
-  return `#${[r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, "0")).join("")}`;
-}
-
-function hexToHsl(hex: string): string {
-  const r = parseInt(hex.slice(1,3),16)/255;
-  const g = parseInt(hex.slice(3,5),16)/255;
-  const b = parseInt(hex.slice(5,7),16)/255;
-  const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  const l = (max+min)/2;
-  const s = max===min ? 0 : l>0.5 ? (max-min)/(2-max-min) : (max-min)/(max+min);
-  let h = 0;
-  if (max!==min) {
-    if (max===r) h=((g-b)/(max-min)+6)%6;
-    else if (max===g) h=(b-r)/(max-min)+2;
-    else h=(r-g)/(max-min)+4;
-    h*=60;
-  }
-  return `${Math.round(h)} ${Math.round(s*100)}% ${Math.round(l*100)}%`;
-}
 
 // ── Image Upload Field ────────────────────────────────────────────────────────
 
@@ -344,28 +308,16 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
 // ── Colour Picker Row ─────────────────────────────────────────────────────────
 
 function ColorRow({
-  label, value, onChange, placeholder,
-}: { label: string; value: string; onChange: (v: string) => void; placeholder: string }) {
+  label, value, onChange,
+}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className="flex items-center gap-3">
-      <label className="relative w-7 h-7 rounded-full border border-border overflow-hidden shadow-sm cursor-pointer shrink-0 hover:scale-110 transition-transform">
-        <div className="absolute inset-0" style={{ background: value ? `hsl(${value})` : "#e5e7eb" }} />
-        <input
-          type="color"
-          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-          value={value ? hslToHex(value) : "#aaaaaa"}
-          onChange={(e) => onChange(hexToHsl(e.target.value))}
-        />
-      </label>
-      <div className="flex-1">
-        <p className="text-[10px] text-muted-foreground font-medium mb-0.5">{label}</p>
-        <input
-          className="w-full rounded-lg border border-border px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary/30 bg-background font-mono"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      </div>
+      <HexColorInput
+        value={value}
+        label={label}
+        testId={`admin-color-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+        onChange={(hex) => onChange(hexToHsl(hex))}
+      />
     </div>
   );
 }
@@ -857,12 +809,12 @@ function DesignForm({
           {/* Colours */}
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
-            <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} placeholder="0 0% 13%" />
-            <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} placeholder="142 45% 35%" />
-            <ColorRow label="Secondary — Supporting controls and highlights" value={form.colorSecondary} onChange={set("colorSecondary")} placeholder="142 30% 92%" />
-            <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} placeholder="0 0% 100%" />
-            <ColorRow label="Background — Page background" value={form.colorBackground} onChange={set("colorBackground")} placeholder="142 20% 96%" />
-            <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} placeholder="142 30% 92%" />
+            <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} />
+            <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} />
+            <ColorRow label="Secondary — Supporting controls and highlights" value={form.colorSecondary} onChange={set("colorSecondary")} />
+            <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} />
+            <ColorRow label="Background — Page background" value={form.colorBackground} onChange={set("colorBackground")} />
+            <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} />
           </div>
 
           {/* Music */}

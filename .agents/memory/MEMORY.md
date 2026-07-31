@@ -32,3 +32,4 @@
 - [Card design template styling](design-template-styling.md) — admin styling flows into editor and public invitations; customer content remains separate.
 - [Cover-name invitation links](cover-name-invitation-links.md) — public URLs use Cover Groom Name and Cover Bride Name across Buyer, Business Account, Admin, and email.
 - [Dress code palette](dress-code-palette.md) — preserve legacy dresscode while optional themes use up to four validated hex swatches.
+- [HEX color picker convention](hex-color-picker-convention.md) — user-facing pickers use #RRGGBB; convert only at the legacy theme boundary.

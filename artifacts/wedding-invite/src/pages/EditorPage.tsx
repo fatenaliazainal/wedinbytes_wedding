@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
+import { HexColorInput } from "@/components/HexColorInput";
 import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -19,6 +20,7 @@ import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+import { hexToHsl as hexToHslColor } from "@/lib/color-format";
 import logo from "@assets/LOGO WEDINSTUDIO.svg";
 
 const TABS = [
@@ -269,46 +271,6 @@ function isEventDatePassed(eventDate: string | null | undefined): boolean {
   event.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
   return today.getTime() > event.getTime();
-}
-
-function hslToHex(hslStr: string): string {
-  const parts = (hslStr || "0 0% 0%").trim().split(/\s+/);
-  const h = parseFloat(parts[0]) / 360;
-  const s = parseFloat((parts[1] || "0").replace("%", "")) / 100;
-  const l = parseFloat((parts[2] || "0").replace("%", "")) / 100;
-  let r, g, b;
-  if (s === 0) {
-    r = g = b = l;
-  } else {
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1; if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-    };
-    r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
-  }
-  return `#${[r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, "0")).join("")}`;
-}
-
-function hexToHsl(hex: string): string {
-  const r = parseInt(hex.slice(1,3),16)/255;
-  const g = parseInt(hex.slice(3,5),16)/255;
-  const b = parseInt(hex.slice(5,7),16)/255;
-  const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  const l = (max+min)/2;
-  const s = max===min ? 0 : l>0.5 ? (max-min)/(2-max-min) : (max-min)/(max+min);
-  let h = 0;
-  if (max!==min) {
-    if (max===r) h=((g-b)/(max-min)+6)%6;
-    else if (max===g) h=(b-r)/(max-min)+2;
-    else h=(r-g)/(max-min)+4;
-    h*=60;
-  }
-  return `${Math.round(h)} ${Math.round(s*100)}% ${Math.round(l*100)}%`;
 }
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
@@ -1564,18 +1526,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       <div className="mt-3 flex flex-wrap items-center gap-3">
                         {inv.dresscodeColors.map((color, index) => (
                           <div key={`${color}-${index}`} className="relative">
-                            <input
-                              type="color"
+                            <HexColorInput
                               value={color}
-                              onChange={(e) => setInv((current) => ({
+                              compact
+                              label={`Colour ${index + 1}`}
+                              testId={`input-dresscode-color-${index}`}
+                              onChange={(hex) => setInv((current) => ({
                                 ...current,
                                 dresscodeColors: current.dresscodeColors.map((item, itemIndex) =>
-                                  itemIndex === index ? e.target.value.toLowerCase() : item,
+                                  itemIndex === index ? hex : item,
                                 ),
                               }))}
-                              className="h-12 w-12 cursor-pointer appearance-none rounded-full border-2 border-white p-0 shadow-md"
-                              aria-label={`Dress code colour ${index + 1}`}
-                              data-testid={`input-dresscode-color-${index}`}
                             />
                             <button
                               type="button"
@@ -2195,60 +2156,36 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   />
                 </Field>
                 <Field label="Name Font Color">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-                      <div className="absolute inset-0" style={{ background: design.nameColor ? `hsl(${design.nameColor})` : "#4a3520" }} />
-                      <input
-                        type="color"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        value={hslToHex(design.nameColor || "20 50% 20%")}
-                        onChange={(e) => setDesign(p => ({ ...p, nameColor: hexToHsl(e.target.value) }))}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-600">Couple names</span>
-                  </div>
+                  <HexColorInput
+                    value={design.nameColor || "20 50% 20%"}
+                    label="Couple names"
+                    testId="editor-name-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                  />
                 </Field>
                 <Field label="Button / Primary Accent">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorPrimary || "142 45% 35%"})` }} />
-                      <input
-                        type="color"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        value={hslToHex(design.colorPrimary || "142 45% 35%")}
-                        onChange={(e) => setDesign(p => ({ ...p, colorPrimary: hexToHsl(e.target.value) }))}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-600">Button & accents</span>
-                  </div>
+                  <HexColorInput
+                    value={design.colorPrimary || "142 45% 35%"}
+                    label="Button & accents"
+                    testId="editor-primary-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
+                  />
                 </Field>
                 <Field label="Card Color">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorCard || "0 0% 100%"})` }} />
-                      <input
-                        type="color"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        value={hslToHex(design.colorCard || "0 0% 100%")}
-                        onChange={(e) => setDesign(p => ({ ...p, colorCard: hexToHsl(e.target.value) }))}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-600">Inner panels</span>
-                  </div>
+                  <HexColorInput
+                    value={design.colorCard || "0 0% 100%"}
+                    label="Inner panels"
+                    testId="editor-card-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
+                  />
                 </Field>
                 <Field label="Background Color">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8 rounded-full border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="absolute inset-0" style={{ background: `hsl(${design.colorBackground || "142 20% 96%"})` }} />
-                      <input
-                        type="color"
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        value={hslToHex(design.colorBackground || "142 20% 96%")}
-                        onChange={(e) => setDesign(p => ({ ...p, colorBackground: hexToHsl(e.target.value) }))}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-600">Page background</span>
-                  </div>
+                  <HexColorInput
+                    value={design.colorBackground || "142 20% 96%"}
+                    label="Page background"
+                    testId="editor-background-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
+                  />
                 </Field>
                 <Field label="Song Link (YouTube)">
                   <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
