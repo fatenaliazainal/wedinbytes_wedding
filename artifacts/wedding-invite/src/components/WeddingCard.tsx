@@ -341,14 +341,17 @@ function WishCard({
       whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card mx-auto my-7 min-h-[220px] w-[calc(100%-72px)] max-w-[320px] rounded-[22px] border border-white/[0.35] p-[18px_16px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:my-8 sm:w-full sm:max-w-[340px] sm:p-[22px_20px] lg:max-w-[360px]"
+      className="wishes-card mx-auto my-7 w-[260px] max-w-[260px] rounded-[20px] border border-white/[0.35] p-[18px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:my-8 sm:w-[280px] sm:max-w-[280px] lg:w-[300px] lg:max-w-[300px]"
       style={{
-        background: "rgba(255,255,255,0.22)",
+        height: "auto",
+        minHeight: "140px",
+        maxHeight: "fit-content",
+        background: "rgba(255,255,255,0.30)",
         backdropFilter: "blur(18px)",
         WebkitBackdropFilter: "blur(18px)",
       }}
     >
-      <div className="flex min-h-[180px] flex-col items-center justify-center">
+      <div className="flex flex-col items-center">
         <p
           ref={messageRef}
           className={`max-w-[290px] break-words whitespace-pre-wrap text-[15px] leading-[1.8] text-foreground/85 ${expanded ? "" : "line-clamp-3"}`}
@@ -356,11 +359,11 @@ function WishCard({
         >
           {message}
         </p>
-        <p className="mt-4 break-words text-[18px] font-semibold text-foreground/85" style={{ fontFamily: bodyFontFamily }}>
+        <p className="mt-3 break-words text-[18px] font-semibold text-foreground/85" style={{ fontFamily: bodyFontFamily }}>
           — {wish.name}
         </p>
         {timestamp && (
-          <time className="mt-1 text-[12px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
+          <time className="mt-1.5 text-[12px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
             {timestamp}
           </time>
         )}
@@ -928,9 +931,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
               <OrnamentDivider />
               <div className="flex w-full flex-col items-center">
-                <p className="mb-4 text-left text-sm font-semibold tracking-wide text-foreground/80" style={{ fontFamily: bodyFontFamily }}>
-                  💌 {guestWishes.length} Wishes
-                </p>
                 <WishesCarousel
                   wishes={guestWishes}
                   lang={lang}
