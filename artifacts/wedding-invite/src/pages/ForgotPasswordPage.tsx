@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation, useSearch } from "wouter";
+import logo from "@assets/LOGO WEDINBYTES (1).png";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -76,7 +77,11 @@ export default function ForgotPasswordPage() {
     <div className="min-h-[100dvh] bg-[#faf9f7] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-serif text-gray-800 tracking-wide">WedInBytes</h1>
+          <img
+            src={logo}
+            alt="WedInBytes"
+            className="mx-auto h-20 w-auto object-contain"
+          />
           <p className="text-sm text-gray-500 mt-1">
             {token ? "Set a new password" : "Reset your password"}
           </p>
