@@ -5,8 +5,8 @@ import { logger } from "./logger";
 import { DEFAULT_BUSINESS_FORM_CONFIG } from "./business-package";
 
 const invitationBase = {
-  groomName: "Nasser",
-  brideName: "Alia",
+  groomName: "Hidayat",
+  brideName: "Ain",
   eventType: "Walimatul Urus",
   eventDate: "15 November 2025",
   eventDay: "Sabtu",
@@ -19,7 +19,7 @@ const invitationBase = {
   groomParents: "Encik Razali bin Hamid & Puan Rohani binti Yusof",
   brideParents: "Encik Sulaiman bin Othman & Puan Norzahra binti Abdul Rahman",
   contactPhone: "0123456789",
-  contacts: [{ name: "Alia", phone: "0123456789" }],
+  contacts: [{ name: "Ain", phone: "0123456789" }],
   dresscode: "Hijau Sage & Pink",
   message:
     "Dengan penuh kesyukuran ke hadrat Ilahi, kami menjemput Tuan/Puan hadir ke majlis perkahwinan kami.",
@@ -35,8 +35,8 @@ const invitationBase = {
   schedule:
     "11:00 pagi – Ketibaan tetamu\n12:00 tengahari – Majlis makan\n1:00 petang – Bersanding\n3:00 petang – Tamat majlis",
   // Cover
-  shortCoupleName: "Alia & Nasser",
-  groomInitial: "N",
+  shortCoupleName: "Ain & Hidayat",
+  groomInitial: "H",
   brideInitial: "A",
   coverDateText: "15 . 11 . 2025",
   showFrontText: true,
@@ -62,14 +62,6 @@ const cardDesignValues = {
 };
 
 const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
-const DEMO_PLACEHOLDER_VALUES = new Set([
-  "Nama Pengantin Lelaki",
-  "Nama Pengantin Perempuan",
-  "Nama Bapa Pengantin",
-  "Nama Ibu Pengantin",
-  "Pengantin Lelaki",
-  "Pengantin Perempuan",
-]);
 
 export async function autoSeedIfEmpty() {
   try {
@@ -133,8 +125,6 @@ export async function autoSeedIfEmpty() {
 
     // --- Patch existing demo rows that are missing any invitationBase fields (idempotent) ---
     // Automatically picks up new fields added to invitationBase — no manual enumeration needed.
-    // Demo content is sample copy, so blank legacy values should receive the
-    // same sample defaults as newly seeded demo rows.
     if (existingTokenSet.size > 0) {
       const existingRows = await db
         .select()
@@ -149,31 +139,9 @@ export async function autoSeedIfEmpty() {
         const patch: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(invitationBase)) {
           const rowValue = (row as Record<string, unknown>)[key];
-          const normalizedRowValue = typeof rowValue === "string"
-            ? rowValue.replace(/<[^>]*>/g, "").trim()
-            : "";
-          if (
-            rowValue === null
-            || rowValue === undefined
-            || (typeof rowValue === "string" && rowValue.trim() === "")
-            || DEMO_PLACEHOLDER_VALUES.has(normalizedRowValue)
-          ) {
+          if (rowValue === null || rowValue === undefined) {
             patch[key] = value;
           }
-        }
-        // Migrate the original demo couple without overwriting any other
-        // content that an admin may have intentionally customised.
-        if (row.groomName.trim() === "Hidayat") patch.groomName = invitationBase.groomName;
-        if (row.brideName.trim() === "Ain") patch.brideName = invitationBase.brideName;
-        if (row.shortCoupleName?.trim() === "Ain & Hidayat") {
-          patch.shortCoupleName = invitationBase.shortCoupleName;
-        }
-        if (row.groomInitial?.trim() === "H") patch.groomInitial = invitationBase.groomInitial;
-        if (row.brideInitial?.trim() === "A") patch.brideInitial = invitationBase.brideInitial;
-        if (Array.isArray(row.contacts) && row.contacts.some((contact) => contact?.name === "Ain")) {
-          patch.contacts = row.contacts.map((contact) =>
-            contact?.name === "Ain" ? { ...contact, name: "Alia" } : contact,
-          );
         }
         if (Object.keys(patch).length > 0) {
           logger.info(

@@ -67,8 +67,8 @@ async function seed() {
   console.log("Seeding invitation...");
 
   const invitationBase = {
-    groomName: "Nasser",
-    brideName: "Alia",
+    groomName: "Hidayat",
+    brideName: "Ain",
     eventType: "Walimatul Urus",
     eventDate: "15 November 2025",
     eventDay: "Sabtu",

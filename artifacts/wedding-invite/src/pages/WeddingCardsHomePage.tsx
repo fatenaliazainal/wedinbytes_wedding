@@ -11,6 +11,8 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 
+const PAGE_SIZE = 10;
+
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
@@ -24,6 +26,7 @@ export default function WeddingCardsHomePage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE + 2);
 
   const { data: designs = [], isLoading, isError } = useListDesigns();
   const { data: demoInvitation } = useGetInvitation("demo");
@@ -35,10 +38,12 @@ export default function WeddingCardsHomePage() {
   }, [query, designs]);
 
   const isSearching = query.trim().length > 0;
-  const visibleCards = filtered;
+  const visibleCards = isSearching ? filtered : filtered.slice(0, visibleCount);
+  const hasMore = !isSearching && visibleCount < designs.length;
 
   function handleQueryChange(value: string) {
     setQuery(value);
+    setVisibleCount(PAGE_SIZE + 2);
   }
 
   function goToEditor(designCode?: string) {
@@ -169,7 +174,7 @@ export default function WeddingCardsHomePage() {
           )}
 
           {!isLoading && !isError && visibleCards.length > 0 && (
-            <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
               {visibleCards.map((design) => (
                 <CatalogDesignCard
                   key={design.id}
@@ -197,6 +202,17 @@ export default function WeddingCardsHomePage() {
             </div>
           )}
 
+          {hasMore && (
+            <div className="mt-10 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((count) => Math.min(count + PAGE_SIZE, designs.length))}
+                className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold tracking-widest px-6 py-3 rounded hover:bg-gray-700 transition-colors"
+              >
+                LOAD MORE
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
