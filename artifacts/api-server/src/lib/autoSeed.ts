@@ -43,6 +43,30 @@ const invitationBase = {
   coupleCount: 1,
 };
 
+// Premium showcase fields — always force-applied to demo invitations so the
+// public demo page displays every Premium feature to attract customers.
+const DEMO_PREMIUM_SHOWCASE = {
+  // RSVP
+  rsvpEnabled: true,
+  rsvpIntroText: "Sila sahkan kehadiran anda sebelum majlis bermula.",
+  rsvpFormNote: "Maksimum 4 orang setiap jemputan.",
+  rsvpMaxOverallGuests: 500,
+  rsvpMaxGuestsPerInvitation: 4,
+  // Photo Gallery — placeholder images served from local public folder
+  galleryImages: [
+    "/card-floral.png",
+    "/card-floral.png",
+    "/card-floral.png",
+    "/card-floral.png",
+  ],
+  // Money Gift
+  giftDisplay: true,
+  giftTitle: "SALAM KASIH",
+  giftRecipient: "Ain & Hidayat",
+  giftBankName: "Maybank",
+  giftAccountNumber: "1621234567890",
+};
+
 const cardDesignValues = {
   name: "Garden Floral (Default)",
   isActive: true,
@@ -137,12 +161,29 @@ export async function autoSeedIfEmpty() {
         );
       for (const row of existingRows) {
         const patch: Record<string, unknown> = {};
+        // 1. Patch null/undefined base fields
         for (const [key, value] of Object.entries(invitationBase)) {
           const rowValue = (row as Record<string, unknown>)[key];
           if (rowValue === null || rowValue === undefined) {
             patch[key] = value;
           }
         }
+        // 2. Always force-apply Premium showcase fields so the demo page
+        //    displays every Premium feature regardless of previous saves.
+        const rowRecord = row as Record<string, unknown>;
+        if (!rowRecord.rsvpEnabled) patch.rsvpEnabled = DEMO_PREMIUM_SHOWCASE.rsvpEnabled;
+        if (!rowRecord.rsvpIntroText) patch.rsvpIntroText = DEMO_PREMIUM_SHOWCASE.rsvpIntroText;
+        if (!rowRecord.rsvpFormNote) patch.rsvpFormNote = DEMO_PREMIUM_SHOWCASE.rsvpFormNote;
+        if (!rowRecord.rsvpMaxOverallGuests) patch.rsvpMaxOverallGuests = DEMO_PREMIUM_SHOWCASE.rsvpMaxOverallGuests;
+        if (!rowRecord.rsvpMaxGuestsPerInvitation) patch.rsvpMaxGuestsPerInvitation = DEMO_PREMIUM_SHOWCASE.rsvpMaxGuestsPerInvitation;
+        if (!rowRecord.giftDisplay) patch.giftDisplay = DEMO_PREMIUM_SHOWCASE.giftDisplay;
+        if (!rowRecord.giftTitle) patch.giftTitle = DEMO_PREMIUM_SHOWCASE.giftTitle;
+        if (!rowRecord.giftRecipient) patch.giftRecipient = DEMO_PREMIUM_SHOWCASE.giftRecipient;
+        if (!rowRecord.giftBankName) patch.giftBankName = DEMO_PREMIUM_SHOWCASE.giftBankName;
+        if (!rowRecord.giftAccountNumber) patch.giftAccountNumber = DEMO_PREMIUM_SHOWCASE.giftAccountNumber;
+        const gallery = Array.isArray(rowRecord.galleryImages) ? rowRecord.galleryImages : [];
+        if (gallery.length === 0) patch.galleryImages = DEMO_PREMIUM_SHOWCASE.galleryImages;
+
         if (Object.keys(patch).length > 0) {
           logger.info(
             { token: row.token, fields: Object.keys(patch) },

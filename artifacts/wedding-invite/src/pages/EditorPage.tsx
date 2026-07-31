@@ -330,6 +330,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
       if (tab.id === "footer") return mode === "admin" || mode === "demo";
+      // Demo shows every tab so all Premium features are visible to attract customers.
+      if (mode === "demo" || mode === "admin") return true;
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
