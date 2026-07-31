@@ -314,25 +314,50 @@ router.get("/admin/orders/stats", async (req, res) => {
     const monthKey = (date: Date) => monthFormatter.format(date);
     const monthLabel = (date: Date) => monthLabelFormatter.format(date);
     const now = new Date();
-    const monthlyRevenue = Array.from({ length: 12 }, (_, index) => {
-      // Use noon UTC so formatting in Asia/Kuala_Lumpur cannot shift the
-      // first day into the previous calendar month.
-      const monthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - index), 15, 12));
-      return {
-        month: monthKey(monthDate),
-        label: monthLabel(monthDate),
-        totalOrders: 0,
-        successfulOrders: 0,
-        revenue: 0,
-        dailyRevenue: [] as Array<{
-          date: string;
-          label: string;
-          totalOrders: number;
-          successfulOrders: number;
-          revenue: number;
-        }>,
-      };
-    });
+    const orderDates = rows
+      .map((row) => new Date(row.createdAt))
+      .filter((date) => !Number.isNaN(date.getTime()));
+    const currentMonthKey = monthKey(now);
+    const firstOrderMonthKey = orderDates
+      .map((date) => monthKey(date))
+      .sort()[0];
+    const monthlyRevenue: Array<{
+      month: string;
+      label: string;
+      totalOrders: number;
+      successfulOrders: number;
+      revenue: number;
+      dailyRevenue: Array<{
+        date: string;
+        label: string;
+        totalOrders: number;
+        successfulOrders: number;
+        revenue: number;
+      }>;
+    }> = [];
+
+    if (firstOrderMonthKey) {
+      const [firstYear, firstMonth] = firstOrderMonthKey.split("-").map(Number);
+      const [currentYear, currentMonth] = currentMonthKey.split("-").map(Number);
+      const monthCount = Math.max(
+        1,
+        (currentYear - firstYear) * 12 + (currentMonth - firstMonth) + 1,
+      );
+
+      for (let index = 0; index < monthCount; index += 1) {
+        // Use noon UTC so formatting in Asia/Kuala_Lumpur cannot shift the
+        // first day into the previous calendar month.
+        const monthDate = new Date(Date.UTC(firstYear, firstMonth - 1 + index, 15, 12));
+        monthlyRevenue.push({
+          month: monthKey(monthDate),
+          label: monthLabel(monthDate),
+          totalOrders: 0,
+          successfulOrders: 0,
+          revenue: 0,
+          dailyRevenue: [],
+        });
+      }
+    }
     const monthlyByKey = new Map(monthlyRevenue.map((month) => [month.month, month]));
     const dailyByMonth = new Map<string, Map<string, {
       date: string;

@@ -1871,7 +1871,7 @@ function RevenueTab() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold">Revenue Report</h2>
-          <p className="text-xs text-muted-foreground">Payment performance for the last 12 months</p>
+          <p className="text-xs text-muted-foreground">Payment performance from the first order to this month</p>
         </div>
         <button onClick={() => void load()} className="rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted" aria-label="Refresh revenue report">
           <RefreshCw size={13} />
