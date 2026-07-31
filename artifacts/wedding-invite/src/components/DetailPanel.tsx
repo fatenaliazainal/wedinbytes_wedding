@@ -119,12 +119,12 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
     : "#";
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-        <Calendar size={36} className="text-primary" />
+    <div className="flex flex-col items-center gap-3 py-2">
+      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+        <Calendar size={32} className="text-primary" />
       </div>
       <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Event Date</p>
-      <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-3">
+      <div className="w-full bg-background/80 rounded-2xl p-4 border border-primary/10 text-center space-y-2">
         <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
         <p className="font-bold text-xl text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
@@ -138,7 +138,7 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
         href={mapsCalUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold text-center tracking-wide shadow"
+        className="w-full py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold text-center tracking-wide shadow"
       >
         Save to Calendar
       </a>
