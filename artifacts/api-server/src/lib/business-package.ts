@@ -9,15 +9,13 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "groomParents", label: "Groom's parents", type: "textarea", invitationField: "groomParents" },
     { key: "brideParents", label: "Bride's parents", type: "textarea", invitationField: "brideParents" },
     { key: "eventDate", label: "Wedding date", type: "date", required: true, invitationField: "eventDate" },
-    { key: "eventType", label: "Event type", type: "text", defaultValue: "Walimatul Urus", invitationField: "eventType" },
     { key: "eventStartTime", label: "Start time", type: "text", invitationField: "eventStartTime" },
     { key: "eventEndTime", label: "End time", type: "text", invitationField: "eventEndTime" },
     { key: "venueName", label: "Venue", type: "text", required: true, invitationField: "venueName" },
     { key: "venueAddress", label: "Venue address", type: "textarea", invitationField: "venueAddress" },
     { key: "venueHijriDate", label: "Islamic date", type: "text", invitationField: "venueHijriDate" },
     { key: "venueMapUrl", label: "Google Maps link", type: "url", invitationField: "venueMapUrl" },
-    { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
-    { key: "dresscodeTheme", label: "Dress code theme", type: "text", invitationField: "dresscodeTheme", placeholder: "Melayu Klasik, Corporate" },
+    { key: "musicUrl", label: "Song / music link", type: "url", invitationField: "musicUrl", placeholder: "https://www.youtube.com/watch?v=..." },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
     { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
@@ -43,6 +41,10 @@ const PHOTO_GALLERY_FIELD: PricingFormField = {
 };
 
 const REMOVED_BUSINESS_FORM_KEYS = new Set([
+  "eventType",
+  "dresscode",
+  "dresscodeTheme",
+  "dresscodeColors",
   "doaText",
   "message",
   "coverGroomName",
@@ -109,7 +111,7 @@ export function normalizeBusinessFormConfig(value: unknown, options: { allowGall
       .map((field) => ({
         key: typeof field.key === "string" ? field.key.trim() : "",
         label: typeof field.label === "string" ? field.label.trim() : "",
-        type: field.type,
+        type: field.key === "groomParents" || field.key === "brideParents" ? "textarea" : field.type,
         required: field.required === true,
         placeholder: typeof field.placeholder === "string" ? field.placeholder : undefined,
         defaultValue: typeof field.defaultValue === "string" || typeof field.defaultValue === "boolean"
@@ -127,6 +129,7 @@ export function normalizeBusinessFormConfig(value: unknown, options: { allowGall
       .filter((field) =>
         field.key &&
         !REMOVED_BUSINESS_FORM_KEYS.has(field.key) &&
+        !REMOVED_BUSINESS_FORM_KEYS.has(field.invitationField ?? "") &&
         (allowGallery || field.key !== "galleryImages") &&
         field.label &&
         ["text", "email", "date", "tel", "url", "textarea", "checkbox"].includes(field.type),
@@ -138,6 +141,7 @@ export function normalizeBusinessFormConfig(value: unknown, options: { allowGall
     ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) =>
       !configuredKeys.has(field.key) &&
       !REMOVED_BUSINESS_FORM_KEYS.has(field.key) &&
+      !REMOVED_BUSINESS_FORM_KEYS.has(field.invitationField ?? "") &&
       (allowGallery || field.key !== "galleryImages"),
     ),
     ...(allowGallery && !configuredKeys.has("galleryImages") ? [PHOTO_GALLERY_FIELD] : []),

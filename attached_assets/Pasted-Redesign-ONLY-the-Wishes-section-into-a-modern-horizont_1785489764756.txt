@@ -1,0 +1,75 @@
+Redesign ONLY the "Wishes" section into a modern horizontal swipe carousel.
+
+IMPORTANT:
+- Do NOT modify any backend logic.
+- Do NOT change APIs.
+- Do NOT change database schema.
+- Do NOT modify RSVP, Gallery, Music, Countdown, Navigation, or any other section.
+- Preserve all existing functionality and data.
+
+Requirements:
+
+1. Replace the current vertical list with a horizontal carousel.
+   - Display ONE wish card at a time.
+   - Swipe left/right on mobile.
+   - Drag with mouse on desktop.
+   - Previous/Next arrow buttons on desktop.
+   - Support touch gestures.
+
+2. Add pagination dots below the card.
+   - Active dot should be highlighted.
+   - Clicking a dot navigates directly to that wish.
+
+3. Enable auto-slide every 6 seconds.
+   - Pause auto-slide while the user is dragging, hovering, or touching the carousel.
+   - Resume after interaction ends.
+
+4. Each card should have:
+   - Large rounded corners (20–24px)
+   - Soft shadow
+   - Elegant spacing
+   - White or subtle gradient background
+   - Thin border with low opacity
+   - Maximum width around 500–600px
+   - Center aligned within the section
+
+5. Card content:
+   - Circular avatar generated from the sender's initials.
+   - Bold sender name.
+   - Small timestamp if available.
+   - Wish message with improved typography.
+   - Preserve line breaks.
+   - Word wrapping.
+   - Clamp long messages with "Read More / Show Less".
+
+6. Add smooth animations:
+   - Slide transition
+   - Fade transition
+   - Hardware-accelerated transforms
+   - No layout shift
+
+7. Above the carousel display:
+   "💌 XX Wishes"
+   where XX is the real number of wishes.
+
+8. The carousel must be fully responsive:
+   - Mobile
+   - Tablet
+   - Desktop
+
+9. Match the existing WedInBytes design language:
+   - Same fonts
+   - Same colors
+   - Elegant wedding aesthetic
+   - Minimal and premium appearance
+
+10. Performance:
+   - Do not re-render all cards unnecessarily.
+   - Keep animations smooth at 60fps.
+   - Avoid memory leaks.
+
+Preferred implementation:
+- Embla Carousel OR Swiper.js if already available in the project.
+- If neither exists, use a lightweight custom implementation without introducing unnecessary dependencies.
+
+The redesign should feel modern, premium, and interactive while preserving every existing feature and business logic.

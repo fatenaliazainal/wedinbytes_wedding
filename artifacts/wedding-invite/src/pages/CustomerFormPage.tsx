@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { Check, ImagePlus, Loader2, X } from "lucide-react";
 import { resolveImageUrl } from "@/lib/r2-url";
-import { RichTextEditor } from "@/components/RichTextEditor";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -311,11 +310,15 @@ export default function CustomerFormPage() {
                         </button>
                       </div>
                     ) : field.key === "groomParents" || field.key === "brideParents" ? (
-                      <RichTextEditor
+                      <textarea
+                        required={field.required}
                         value={String(values[field.key] ?? "")}
-                        onChange={(value) => updateValue(field.key, value)}
-                        placeholder="Use the toolbar to format the parents' names and details."
-                        inputStyle={{ minHeight: "7rem", padding: "0.75rem" }}
+                        onChange={(event) => updateValue(field.key, event.target.value)}
+                        placeholder="Enter the parents' names and details."
+                        minLength={field.validation?.minLength}
+                        maxLength={field.validation?.maxLength}
+                        rows={5}
+                        className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2.5 text-sm leading-6 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
                       />
                     ) : field.type === "textarea" ? (
                       <textarea

@@ -52,3 +52,15 @@ Package form visibility is gated by the package's persisted feature list: only p
 **Why:** Older stored form configurations may still contain gallery fields, while feature availability must remain consistent for Standard and Premium packages.
 
 **How to apply:** Normalize package forms with the package feature list, reject gallery uploads server-side when the feature is absent, and add the gallery field when an enabled package lacks it.
+
+Business customer order forms do not collect Event Type or Dress Code fields, and parents' details use native multiline textareas.
+
+**Why:** These values are managed elsewhere in the invitation workflow, while native textareas provide reliable controlled input for customer-submitted parents' details across legacy package configurations.
+
+**How to apply:** Filter `eventType`, `dresscode`, and `dresscodeTheme` by both field key and invitation mapping during normalization; normalize groom/bride parents to `textarea` and keep the customer form state controlled.
+
+Both Standard and Premium customer order forms include an optional song/music URL that maps directly to the invitation's existing audio field.
+
+**Why:** Customers need to provide the invitation soundtrack during the order flow, while the existing invitation playback already supports YouTube and audio URLs.
+
+**How to apply:** Add `musicUrl` to the shared default form configuration so normalization backfills it into legacy package configurations and the existing customer-to-invitation mapping carries it through.
