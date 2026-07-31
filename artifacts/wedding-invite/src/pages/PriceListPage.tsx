@@ -310,12 +310,6 @@ export default function PriceListPage() {
         {/* Final CTA */}
         <section className="py-12 px-4 sm:px-6 bg-white text-center">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Ready to create your beautiful digital wedding invitation?
-            </h2>
-            <p className="mt-3 text-sm text-gray-500 max-w-md mx-auto">
-              Start creating your wedding invitation and share your special day with the people you love.
-            </p>
             <button
               onClick={() => goToEditor()}
               className="mt-8 inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold tracking-widest px-8 py-4 rounded-xl hover:bg-gray-800 transition-colors"
