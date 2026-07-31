@@ -39,14 +39,22 @@ export function EnvelopeDoors({
         className={`relative h-full w-full flex items-center justify-center ${isOpened ? "pointer-events-none" : "pointer-events-auto"}`}
         style={{ maxWidth, perspective: 1500 }}
       >
-        {envelopeImageUrl && (
-          <DesignImage
-            src={envelopeImageUrl}
-            fallbackSrc={defaultEnvelopeRef}
-            opacity={0.35}
-            className="z-0"
-          />
-        )}
+        {/* Background design — fades out when doors open so it doesn't ghost over content */}
+        <motion.div
+          animate={{ opacity: isOpened ? 0 : 1 }}
+          transition={{ duration: 0.6 }}
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden
+        >
+          {envelopeImageUrl && (
+            <DesignImage
+              src={envelopeImageUrl}
+              fallbackSrc={defaultEnvelopeRef}
+              opacity={0.35}
+              className="z-0"
+            />
+          )}
+        </motion.div>
 
         {/* Left Door */}
         <motion.div
