@@ -13,4 +13,4 @@ The current visual direction is a compact floating glass card: centered message 
 
 **Why:** The Wishes section should feel like a small premium glass element rather than a large content box or social comment feed.
 
-**How to apply:** Keep this visual treatment confined to the Wishes section; use responsive fixed widths of 300/280/260px with auto height, omit the count label above the carousel, and never alter carousel state, controls, timing, or the wishes data contract.
+**How to apply:** Keep this visual treatment confined to the Wishes section; use responsive fixed widths of 300/280/260px with auto height, omit the count label above the carousel, keep pagination about 12px below the card, and never alter carousel state, controls, timing, or the wishes data contract.
