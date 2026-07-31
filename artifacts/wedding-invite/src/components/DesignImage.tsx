@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 type ObjectPosition = "center" | "left center" | "right center" | "top center" | "bottom center";
 
@@ -8,6 +8,7 @@ interface DesignImageProps {
   objectPosition?: ObjectPosition;
   className?: string;
   style?: React.CSSProperties;
+  fallbackSrc?: string;
 }
 
 /**
@@ -21,15 +22,31 @@ export function DesignImage({
   objectPosition = "center",
   className = "",
   style,
+  fallbackSrc,
 }: DesignImageProps) {
+  const [currentSrc, setCurrentSrc] = useState<string | null>(src);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+  }, [src]);
+
+  if (!currentSrc) return null;
+
   return (
     <img
-      src={src}
+      src={currentSrc}
       aria-hidden
       alt=""
       draggable={false}
       className={`absolute inset-0 w-full h-full object-cover pointer-events-none select-none ${className}`}
       style={{ opacity, objectPosition, ...style }}
+      onError={() => {
+        if (fallbackSrc && currentSrc !== fallbackSrc) {
+          setCurrentSrc(fallbackSrc);
+        } else {
+          setCurrentSrc(null);
+        }
+      }}
     />
   );
 }

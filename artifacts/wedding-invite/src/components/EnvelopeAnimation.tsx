@@ -53,7 +53,7 @@ export function EnvelopeAnimation({
             >
               {/* ── Body ── */}
               <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
-                <DesignImage src={bgImage} opacity={0.25} />
+                <DesignImage src={bgImage} fallbackSrc={defaultEnvelopeRef} opacity={0.25} />
                 <div className="absolute inset-0 bg-secondary/80" />
               </div>
 
@@ -130,7 +130,7 @@ export function EnvelopeAnimation({
                     backfaceVisibility: "hidden",
                   }}
                 >
-                  <DesignImage src={bgImage} opacity={0.2} />
+                  <DesignImage src={bgImage} fallbackSrc={defaultEnvelopeRef} opacity={0.2} />
                 </div>
                 {/* Back face of flap (shown after flip) */}
                 <div

@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { DesignImage } from "@/components/DesignImage";
+import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeDoorsProps {
   isOpened: boolean;
@@ -25,6 +27,7 @@ export function EnvelopeDoors({
   initialsSize,
   initialsImageUrl,
   initialsImageScale = 100,
+  envelopeImageUrl,
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
   const maxWidth = cardMaxWidth || "420px";
@@ -36,6 +39,15 @@ export function EnvelopeDoors({
         className={`relative h-full w-full flex items-center justify-center ${isOpened ? "pointer-events-none" : "pointer-events-auto"}`}
         style={{ maxWidth, perspective: 1500 }}
       >
+        {envelopeImageUrl && (
+          <DesignImage
+            src={envelopeImageUrl}
+            fallbackSrc={defaultEnvelopeRef}
+            opacity={0.35}
+            className="z-0"
+          />
+        )}
+
         {/* Left Door */}
         <motion.div
           initial={{ rotateY: 0, opacity: 1 }}
