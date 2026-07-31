@@ -274,7 +274,7 @@ export default function PriceListPage() {
 
         {/* Comparison */}
         <section className="py-10 px-4 sm:px-6 bg-white">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-2xl font-bold text-gray-900">Compare Features</h2>
               <p className="mt-2 text-sm text-gray-500">See what is included in each plan.</p>
@@ -286,9 +286,9 @@ export default function PriceListPage() {
                   className="grid text-xs font-bold tracking-widest text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50"
                   style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
                 >
-                  <div className="px-4 py-3">Feature</div>
+                  <div className="px-3 py-2.5">Feature</div>
                   {packageNames.map((name) => (
-                    <div key={name} className="px-4 py-3 text-center">{name}</div>
+                    <div key={name} className="px-3 py-2.5 text-center">{name}</div>
                   ))}
                 </div>
                 {featureNames.map((featureName) => (
@@ -297,11 +297,11 @@ export default function PriceListPage() {
                     className="grid text-sm border-b border-gray-100 last:border-0"
                     style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
                   >
-                    <div className="px-4 py-3.5 text-gray-700 font-medium">{featureName}</div>
+                    <div className="px-3 py-3 text-gray-700 font-medium">{featureName}</div>
                     {sortedPackages.map((pkg) => {
                       const hasFeature = (pkg.features ?? []).some((f) => f.name === featureName);
                       return (
-                        <div key={pkg.id} className="px-4 py-3.5 flex justify-center items-center text-gray-900">
+                        <div key={pkg.id} className="px-3 py-3 flex justify-center items-center text-gray-900">
                           {hasFeature ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
                         </div>
                       );

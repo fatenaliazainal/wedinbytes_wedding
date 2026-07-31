@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useSearch } from "wouter";
+import { useLocation, useParams, useSearch } from "wouter";
 import { useGetInvitation, useListDesigns, useGetRsvpCount } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
@@ -34,6 +34,7 @@ import { extractYouTubeId } from "@/lib/youtube";
 
 export default function InvitationPage() {
   const { token, dateCode, slug } = useParams<{ token?: string; dateCode?: string; slug?: string }>();
+  const [, navigate] = useLocation();
   const [publicToken, setPublicToken] = useState<string | null>(null);
   const isPublicPath = Boolean(dateCode && slug);
   useEffect(() => {
@@ -48,22 +49,32 @@ export default function InvitationPage() {
         if (!cancelled) setPublicToken(data.token);
       })
       .catch(() => {
-        if (!cancelled) setPublicToken("");
+        if (!cancelled) navigate("/", { replace: true });
       });
     return () => { cancelled = true; };
-  }, [dateCode, slug, isPublicPath]);
+  }, [dateCode, slug, isPublicPath, navigate]);
 
   const resolvedToken = token ?? publicToken ?? "";
   const tokenReady = Boolean(resolvedToken);
   const search = useSearch();
   const urlParams = new URLSearchParams(search);
   const overrideDesignCode = urlParams.get("designCode");
-  const { data: invitation, isLoading: invitationLoading } = useGetInvitation(resolvedToken, {
+  const {
+    data: invitation,
+    isLoading: invitationLoading,
+    isError: invitationError,
+  } = useGetInvitation(resolvedToken, {
     query: {
       queryKey: [`/api/invitation/${resolvedToken}`],
       enabled: tokenReady,
+      retry: false,
     },
   });
+
+  useEffect(() => {
+    if (!tokenReady || invitationLoading || !invitationError) return;
+    navigate("/", { replace: true });
+  }, [invitationError, invitationLoading, navigate, tokenReady]);
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
   const { data: rsvpCount } = useGetRsvpCount(
     tokenReady ? { invitationToken: resolvedToken } : undefined,

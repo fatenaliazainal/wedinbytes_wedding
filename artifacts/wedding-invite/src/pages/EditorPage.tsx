@@ -18,6 +18,7 @@ import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
+import logo from "@assets/LOGO WEDINBYTES (1).png";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
@@ -1046,9 +1047,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             )}
             <button
               onClick={() => navigate("/")}
-              className="font-serif text-xl text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
+              className="hover:opacity-70 transition-opacity"
+              aria-label="WedInBytes logo"
             >
-              WedInBytes
+              <img
+                src={logo}
+                alt="WedInBytes logo"
+                className="h-10 w-10 sm:h-11 sm:w-11 object-contain"
+              />
             </button>
             {mode === "demo" && (
               <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold tracking-wider">
@@ -1114,9 +1120,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
                 <button
                   onClick={() => { navigate("/"); setNavOpen(false); }}
-                  className="font-serif text-lg text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
+                  className="hover:opacity-70 transition-opacity"
+                  aria-label="WedInBytes logo"
                 >
-                  WedInBytes
+                  <img
+                    src={logo}
+                    alt="WedInBytes logo"
+                    className="h-9 w-9 object-contain"
+                  />
                 </button>
                 <button onClick={() => setNavOpen(false)} className="text-gray-400 hover:text-gray-700 transition-colors">
                   <X size={18} />

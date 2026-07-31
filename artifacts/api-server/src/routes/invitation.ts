@@ -9,6 +9,7 @@ import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/secu
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
 import { invitationHasFeature } from "../lib/pricing-features";
+import { isInvitationExpired } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
 
@@ -216,6 +217,10 @@ router.get("/invitation/:token", async (req, res) => {
       return;
     }
     const row = rows[0];
+    if (row.token !== "demo" && isInvitationExpired(row.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
+      return;
+    }
     // Return full row (merge extra fields beyond what api-zod knows)
      res.json(await publicInvitation(row));
   } catch (err) {
@@ -234,6 +239,10 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
     );
     if (!row) {
       res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (row.token !== "demo" && isInvitationExpired(row.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
       return;
     }
      res.json({ ...(await publicInvitation(row)), token: row.token });
@@ -443,6 +452,10 @@ router.post("/invitation/:token/unlock", pinUnlockRateLimit, async (req, res) =>
     const [row] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!row) {
       res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (isInvitationExpired(row.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
       return;
     }
     if (!row.lockPinHash || !(await bcrypt.compare(pin, row.lockPinHash))) {

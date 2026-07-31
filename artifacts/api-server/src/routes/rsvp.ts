@@ -3,6 +3,7 @@ import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountR
 import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
 import { auditEvent, canManageInvitation, rsvpSubmitRateLimit } from "../lib/security";
+import { isInvitationExpired } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
 
@@ -34,6 +35,10 @@ router.get("/rsvp", async (req, res) => {
         .limit(1);
       if (!invitation) {
         res.status(404).json({ error: "Invitation not found" });
+        return;
+      }
+      if (isInvitationExpired(invitation.eventDate)) {
+        res.status(410).json({ error: "Invitation expired" });
         return;
       }
       if (!(await canManageInvitation(req, invitation))) {
@@ -69,12 +74,16 @@ router.get("/rsvp/wishes", async (req, res) => {
       return;
     }
     const [invitation] = await db
-      .select({ id: invitationTable.id })
+      .select({ id: invitationTable.id, eventDate: invitationTable.eventDate })
       .from(invitationTable)
       .where(eq(invitationTable.token, invitationToken))
       .limit(1);
     if (!invitation) {
       res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (isInvitationExpired(invitation.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
       return;
     }
     const rows = await db
@@ -178,6 +187,11 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
     }
     const invitation = invitationRows[0];
 
+    if (isInvitationExpired(invitation.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
+      return;
+    }
+
     if (!invitation.rsvpEnabled) {
       res.status(400).json({ error: "RSVP is currently disabled" });
       return;
@@ -259,12 +273,19 @@ router.get("/rsvp/count", async (req, res) => {
       res.status(400).json({ error: "Invitation token is required" });
       return;
     }
-    const [invitation] = await db.select({ exists: invitationTable.id })
+    const [invitation] = await db.select({
+      exists: invitationTable.id,
+      eventDate: invitationTable.eventDate,
+    })
       .from(invitationTable)
       .where(eq(invitationTable.token, invitationToken))
       .limit(1);
     if (!invitation) {
       res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    if (isInvitationExpired(invitation.eventDate)) {
+      res.status(410).json({ error: "Invitation expired" });
       return;
     }
     let query = db

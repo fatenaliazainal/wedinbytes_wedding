@@ -21,3 +21,4 @@
 - [Catalog preview style](catalog-preview-style.md) — public card catalog uses direct portrait invitation previews with soft shadows instead of phone frames.
 - [Invitation audio controls](invitation-audio-controls.md) — public invitations show only a mute/unmute toggle after opening, not replay/restart.
 - [Premium money gift assets](premium-money-gift-assets.md) — Gift is a Premium-only invitation feature; QR artwork is invitation-owned, limited to two, and served through the R2 proxy.
+- [Invitation expiration](invitation-expiration.md) — public invitations expire after three calendar months and redirect guests home without exposing expired data.
