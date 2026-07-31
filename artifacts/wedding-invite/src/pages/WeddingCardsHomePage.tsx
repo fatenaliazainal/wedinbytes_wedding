@@ -208,15 +208,10 @@ export default function WeddingCardsHomePage() {
                   </button>
 
                   <div className="flex flex-col items-center px-2.5 pb-3 pt-2.5 text-center sm:px-3 sm:pb-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Digital Invitation</p>
                     <p className="mt-1 text-xs font-bold leading-tight text-gray-900 sm:text-sm">{design.name}</p>
                     <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-rose-700">
                       WED{String(design.id).padStart(2, "0")}
                     </p>
-                    <span className="mt-2 rounded-full bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-rose-700">
-                      General
-                    </span>
-                    <p className="mt-2 text-[10px] font-medium text-gray-400">View PDF <span aria-hidden>↗</span></p>
                     <button
                       type="button"
                       onClick={() => goToEditor(design.designCode ?? undefined)}
