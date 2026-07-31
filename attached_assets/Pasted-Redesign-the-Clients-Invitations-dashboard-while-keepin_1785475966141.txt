@@ -1,0 +1,133 @@
+Redesign the Clients & Invitations dashboard while keeping the existing branding, colors, typography, and backend functionality.
+
+Do NOT add workflow status badges or progress indicators because invitation statuses are already managed elsewhere in the system.
+
+The goal is to make the dashboard faster and easier for wedding businesses to manage many customers.
+
+Improve the dashboard by adding:
+1. Dashboard Summary
+
+Display summary cards at the top:
+
+Total Customers
+Total Invitations
+Upcoming Events
+Recent Customers
+2. Search & Filters
+
+Above the customer list add:
+
+Search by customer name
+Filter by package
+Filter by event month
+Sort by newest
+Sort by wedding date
+Sort alphabetically
+
+Filtering should happen instantly.
+
+3. Better Customer Cards
+
+Replace the simple row layout with modern cards.
+
+Each card should display:
+
+Couple names
+Wedding date
+Days remaining until the event
+Package purchased
+Customer email
+Customer phone number (if available)
+
+Include quick action buttons:
+
+Open Customer
+Edit
+Create Invitation
+Copy Form Link
+Preview Form
+More (three-dot menu)
+
+Do not display workflow statuses.
+
+4. Countdown
+
+Display
+
+31 Days Remaining
+Tomorrow
+Today
+Event Passed
+
+using subtle styling.
+
+5. Better Empty States
+
+Instead of plain text, display a friendly illustration with a call-to-action button.
+
+6. Responsive Layout
+
+Desktop:
+
+3-column card layout
+
+Tablet:
+
+2-column
+
+Mobile:
+
+1-column
+7. Better Create Customer Section
+
+Convert the top area into a cleaner layout:
+
+Package Selection
+
+↓
+
+Generate Customer Form
+
+↓
+
+Share Link
+
+↓
+
+Customer Submission
+
+↓
+
+Create Invitation
+
+This is only a visual guide, not a status tracker.
+
+8. Better Invitation Cards
+
+Improve the Invitations section by displaying:
+
+Couple names
+Wedding date
+Package
+Preview button
+Open button
+Duplicate button
+Copy Link
+QR Code
+Analytics (if available)
+9. UI Improvements
+Modern card design
+Better spacing
+Consistent button hierarchy
+Smooth hover animations
+Skeleton loaders while loading
+Responsive design
+Keep the interface clean and premium
+Important
+Do NOT modify backend APIs.
+Do NOT change the database schema.
+Do NOT add workflow status badges.
+Do NOT remove existing functionality.
+Only improve the frontend layout, usability, and organization while preserving the current design language.
+
+This version makes the dashboard feel more like a client management hub rather than a project tracker, which is a better fit if statuses already exist inside each invitation.

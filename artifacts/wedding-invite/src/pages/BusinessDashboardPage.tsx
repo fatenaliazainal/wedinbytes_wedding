@@ -15,11 +15,17 @@ import {
   ExternalLink,
   Link2,
   LogOut,
+  Mail,
+  MoreVertical,
+  Phone,
   Plus,
   ReceiptText,
+  Search,
+  TrendingUp,
   Trash2,
   User,
   Users,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
@@ -45,8 +51,11 @@ type Client = {
   groomName: string;
   email?: string | null;
   eventDate?: string | null;
+  createdAt?: string | null;
   invitationId?: number | null;
   invitationToken?: string | null;
+  phone?: string | null;
+  packageId?: number | null;
 };
 type Invitation = {
   id: number;
@@ -56,6 +65,7 @@ type Invitation = {
   eventDate?: string | null;
   eventType: string;
   venueCity?: string | null;
+  packageId?: number | null;
   isPurchased: boolean;
 };
 type FormField = {
@@ -93,6 +103,24 @@ function businessNamePathSegment(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function getDaysUntilEvent(eventDate: string | null | undefined): number | null {
+  if (!eventDate) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const event = new Date(eventDate);
+  event.setHours(0, 0, 0, 0);
+  const diff = event.getTime() - today.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function formatCountdown(days: number | null): { label: string; variant: "default" | "warning" | "success" | "muted" } {
+  if (days === null) return { label: "Date not set", variant: "muted" };
+  if (days < 0) return { label: "Event Passed", variant: "muted" };
+  if (days === 0) return { label: "Today", variant: "success" };
+  if (days === 1) return { label: "Tomorrow", variant: "warning" };
+  return { label: `${days} Days Remaining`, variant: "default" };
+}
+
 export default function BusinessDashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
@@ -117,6 +145,11 @@ export default function BusinessDashboardPage() {
   const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
   const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [packageFilter, setPackageFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "date" | "alpha">("newest");
+  const [openClientMenuId, setOpenClientMenuId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "business_account")) {
@@ -156,6 +189,70 @@ export default function BusinessDashboardPage() {
     [invitations],
   );
   const selectedPackage = packages.find((pkg) => String(pkg.id) === selectedPackageId);
+
+  const recentCustomersCount = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return clients.filter((client) => client.createdAt && new Date(client.createdAt) >= thirtyDaysAgo).length;
+  }, [clients]);
+
+  const filteredAndSortedClients = useMemo(() => {
+    let filtered = [...clients];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.groomName?.toLowerCase().includes(query) ||
+          c.brideName?.toLowerCase().includes(query) ||
+          c.email?.toLowerCase().includes(query)
+      );
+    }
+
+    // Package filter
+    if (packageFilter) {
+      filtered = filtered.filter((c) => String(c.packageId) === packageFilter);
+    }
+
+    // Month filter
+    if (monthFilter) {
+      filtered = filtered.filter((c) => {
+        if (!c.eventDate) return false;
+        const eventMonth = new Date(c.eventDate).toISOString().slice(0, 7);
+        return eventMonth === monthFilter;
+      });
+    }
+
+    // Sort
+    if (sortBy === "newest") {
+      filtered.sort((a, b) => b.id - a.id);
+    } else if (sortBy === "date") {
+      filtered.sort((a, b) => {
+        if (!a.eventDate) return 1;
+        if (!b.eventDate) return -1;
+        return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime();
+      });
+    } else if (sortBy === "alpha") {
+      filtered.sort((a, b) => {
+        const nameA = `${a.groomName || ""} ${a.brideName || ""}`.trim();
+        const nameB = `${b.groomName || ""} ${b.brideName || ""}`.trim();
+        return nameA.localeCompare(nameB);
+      });
+    }
+
+    return filtered;
+  }, [clients, searchQuery, packageFilter, monthFilter, sortBy]);
+
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    clients.forEach((c) => {
+      if (c.eventDate) {
+        months.add(new Date(c.eventDate).toISOString().slice(0, 7));
+      }
+    });
+    return Array.from(months).sort();
+  }, [clients]);
 
   const createFormShare = async () => {
     if (!selectedPackageId) {
@@ -264,7 +361,35 @@ export default function BusinessDashboardPage() {
   };
 
   if (authLoading || busy || !user || user.role !== "business_account") {
-    return <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]"><div className="h-8 w-8 rounded-full border-b-2 border-gray-900 animate-spin" /></div>;
+    return (
+      <div className="min-h-screen bg-[#fdfdfc] flex flex-col font-sans">
+        <div className="h-14 bg-white border-b border-gray-200" />
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="lg:w-56 shrink-0">
+              <div className="h-8 bg-gray-200 rounded animate-pulse mb-6" />
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </aside>
+            <section className="flex-1 min-w-0">
+              <div className="h-10 bg-gray-200 rounded animate-pulse mb-8" />
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="h-10 w-10 bg-gray-200 rounded-lg animate-pulse mb-4" />
+                    <div className="h-8 bg-gray-200 rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   const sections = [
@@ -326,108 +451,451 @@ export default function BusinessDashboardPage() {
           <section className="flex-1 min-w-0">
             {section === "dashboard" && (
               <>
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-                  <div>
-                    <h2 className="text-3xl font-serif text-gray-900">Welcome back</h2>
-                    <p className="mt-1 text-sm text-gray-500">{profile?.businessName || user.name}. Manage your customers and invitations in one place.</p>
-                  </div>
-                  <button onClick={() => setSection("clients")} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white"><Plus size={16} /> New customer</button>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-semibold text-gray-900">Welcome back</h2>
+                  <p className="mt-2 text-sm text-gray-600">Here's an overview of your business invitations</p>
                 </div>
-                <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                  {[
-                    { Icon: Calendar, value: invitations.length, label: "Total invitations" },
-                    { Icon: Users, value: clients.length, label: "Customers" },
-                    { Icon: CheckCircle2, value: upcoming, label: "Upcoming events" },
-                  ].map(({ Icon, value, label }) => (
-                    <div key={label} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                      <Icon size={20} className="text-gray-500" />
-                      <p className="mt-4 text-2xl font-bold text-gray-900">{value}</p>
-                      <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow" data-testid="card-total-customers">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+                        <Users size={20} className="text-green-600" />
+                      </div>
+                      <TrendingUp size={16} className="text-gray-400" />
                     </div>
-                  ))}
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-total-customers">{clients.length}</p>
+                    <p className="text-sm text-gray-600 mt-1">Total Customers</p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow" data-testid="card-total-invitations">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center">
+                        <Calendar size={20} className="text-pink-600" />
+                      </div>
+                      <TrendingUp size={16} className="text-gray-400" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-total-invitations">{invitations.length}</p>
+                    <p className="text-sm text-gray-600 mt-1">Total Invitations</p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow" data-testid="card-upcoming-events">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center">
+                        <CheckCircle2 size={20} className="text-yellow-600" />
+                      </div>
+                      <TrendingUp size={16} className="text-gray-400" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-upcoming-events">{upcoming}</p>
+                    <p className="text-sm text-gray-600 mt-1">Upcoming Events</p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow" data-testid="card-recent-customers">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <User size={20} className="text-blue-600" />
+                      </div>
+                      <TrendingUp size={16} className="text-gray-400" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-recent-customers">{recentCustomersCount}</p>
+                    <p className="text-sm text-gray-600 mt-1">Recent Customers</p>
+                  </div>
                 </div>
+
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-900">Recent invitations</h3>
-                    <button onClick={() => setSection("clients")} className="text-xs text-gray-500 hover:text-gray-900">View all</button>
+                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Recent Invitations</h3>
+                    <button onClick={() => setSection("clients")} className="text-sm text-green-600 hover:text-green-700 font-medium" data-testid="button-view-all-invitations">View all</button>
                   </div>
-                  {invitations.slice(0, 5).map((item) => (
-                    <div key={item.id} className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
-                      <div><p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.eventType}</p></div>
-                      <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-gray-700 inline-flex gap-1 items-center">View <ArrowRight size={13} /></a>
+                  {invitations.length > 0 ? (
+                    <div className="divide-y divide-gray-100">
+                      {invitations.slice(0, 5).map((item) => {
+                        const days = getDaysUntilEvent(item.eventDate);
+                        const countdown = formatCountdown(days);
+                        return (
+                          <div key={item.id} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors" data-testid={`row-invitation-${item.id}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p>
+                              <p className="text-sm text-gray-500 mt-0.5">{item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={`text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-50 text-gray-500" : "bg-blue-50 text-blue-700"}`}>
+                                {countdown.label}
+                              </span>
+                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
+                                View <ArrowRight size={14} />
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                  {!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet. Create one for your first customer.</p>}
+                  ) : (
+                    <div className="px-6 py-16 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                        <Calendar size={28} className="text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No invitations yet</h3>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Start by creating a customer form or fill in an invitation yourself</p>
+                      <button onClick={() => setSection("clients")} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-invitation">
+                        <Plus size={16} /> Create Invitation
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
 
             {section === "clients" && (
               <>
-                <div className="mb-6">
-                  <h2 className="text-2xl font-serif text-gray-900">Clients & Invitations</h2>
-                  <p className="text-sm text-gray-500 mt-1">Create a customer form, review submissions, and manage invitations from one place.</p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-semibold text-gray-900">Clients & Invitations</h2>
+                  <p className="text-sm text-gray-600 mt-2">Create customer forms, review submissions, and manage invitations</p>
                 </div>
-                <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 mb-8">
+
+                {/* Process Guide */}
+                <div className="bg-gradient-to-br from-green-50 to-pink-50 border border-gray-200 rounded-xl p-6 mb-8">
+                  <h3 className="font-semibold text-gray-900 mb-4">How it works</h3>
+                  <div className="grid sm:grid-cols-5 gap-4">
+                    {[
+                      { step: "1", label: "Select Package", icon: Calendar },
+                      { step: "2", label: "Generate Form Link", icon: Link2 },
+                      { step: "3", label: "Customer Submits", icon: User },
+                      { step: "4", label: "Review Submission", icon: CheckCircle2 },
+                      { step: "5", label: "Create Invitation", icon: Plus },
+                    ].map(({ step, label, icon: Icon }, idx) => (
+                      <div key={step} className="relative">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-12 h-12 rounded-full bg-white border-2 border-green-600 flex items-center justify-center mb-2">
+                            <Icon size={20} className="text-green-600" />
+                          </div>
+                          <p className="text-xs font-medium text-gray-700">{label}</p>
+                        </div>
+                        {idx < 4 && (
+                          <div className="hidden sm:block absolute top-6 left-full w-full h-0.5 bg-green-200" style={{ transform: "translateX(-50%)" }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Create Customer Form */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+                  <h3 className="font-semibold text-gray-900 mb-4">Create Customer Form</h3>
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
                     <label className="block flex-1 text-sm text-gray-700">
-                      <span className="mb-1 block font-medium">Package for customer form</span>
-                      <select value={selectedPackageId} onChange={(event) => { setSelectedPackageId(event.target.value); setFormShareUrl(""); }} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm">
+                      <span className="mb-2 block font-medium">Select Package</span>
+                      <select value={selectedPackageId} onChange={(event) => { setSelectedPackageId(event.target.value); setFormShareUrl(""); }} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100" data-testid="select-package">
                         <option value="">Choose a package</option>
                         {packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name} · RM{pkg.price}</option>)}
                       </select>
                     </label>
                     <div className="flex flex-col gap-2 sm:flex-row">
-                      <button type="button" onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700"><Plus size={16} /> Fill in yourself</button>
-                      <button type="button" onClick={() => void createFormShare()} disabled={formShareLoading || !selectedPackageId} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"><Link2 size={16} />{formShareLoading ? "Creating link..." : "Create share link"}</button>
+                      <button type="button" onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid="button-fill-yourself">
+                        <Plus size={16} /> Fill in yourself
+                      </button>
+                      <button type="button" onClick={() => void createFormShare()} disabled={formShareLoading || !selectedPackageId} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 hover:bg-gray-800 transition-colors" data-testid="button-create-share-link">
+                        <Link2 size={16} />{formShareLoading ? "Creating..." : "Create Share Link"}
+                      </button>
                     </div>
                   </div>
-                  {selectedPackage && <p className="mt-4 text-xs text-gray-500">{selectedPackage.description}</p>}
+                  {selectedPackage && <p className="mt-4 text-sm text-gray-600">{selectedPackage.description}</p>}
                   {formShareUrl && (
-                    <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Copy this link for your customer</p>
+                    <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-4">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-green-700">Share this link with your customer</p>
                       <div className="flex items-center gap-2">
-                        <input readOnly value={formShareUrl} onClick={(event) => event.currentTarget.select()} className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none" aria-label="Customer form link" />
-                        <button type="button" onClick={() => void copyFormLink()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm border border-gray-200">{copyingFormLink ? <Check size={14} /> : <Copy size={14} />} {copyingFormLink ? "Copied" : "Copy"}</button>
-                        <a href={formShareUrl} target="_blank" rel="noreferrer" className="rounded-md border border-gray-200 bg-white p-2 text-gray-500" aria-label="Open customer form"><ExternalLink size={14} /></a>
+                        <input readOnly value={formShareUrl} onClick={(event) => event.currentTarget.select()} className="min-w-0 flex-1 bg-white border border-green-200 rounded-lg px-3 py-2 text-sm text-gray-700 outline-none" aria-label="Customer form link" data-testid="input-form-share-url" />
+                        <button type="button" onClick={() => void copyFormLink()} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white border border-green-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-green-100 transition-colors" data-testid="button-copy-form-link">
+                          {copyingFormLink ? <Check size={14} /> : <Copy size={14} />} {copyingFormLink ? "Copied" : "Copy"}
+                        </button>
+                        <a href={formShareUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-green-200 bg-white p-2 text-gray-600 hover:bg-green-100 transition-colors" aria-label="Open customer form" data-testid="link-open-form">
+                          <ExternalLink size={14} />
+                        </a>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-gray-900">Customer submissions</h3><span className="text-xs text-gray-500">{clients.length} customer{clients.length === 1 ? "" : "s"}</span></div>
-                <div className="bg-white border border-gray-200 rounded-xl divide-y mb-8">
-                  {clients.map((client) => (
-                    <div key={client.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <p className="font-medium">{client.groomName || "Customer submission"}{client.brideName ? ` & ${client.brideName}` : ""}</p>
-                        <p className="text-xs text-gray-500">{client.email || "No email"} · {client.eventDate || "Date not set"}</p>
-                        <span className="mt-2 inline-flex rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-600">{client.invitationId ? "Invitation created" : "Waiting for invitation"}</span>
+                {/* Customer Submissions */}
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900">Customer Submissions</h3>
+                    <span className="text-sm text-gray-500">{filteredAndSortedClients.length} of {clients.length}</span>
+                  </div>
+
+                  {/* Search and Filters */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search by name or email..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100"
+                          data-testid="input-search-customers"
+                        />
+                        {searchQuery && (
+                          <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" data-testid="button-clear-search">
+                            <X size={16} />
+                          </button>
+                        )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => client.invitationId && client.invitationToken ? navigate(`/business/editor?token=${encodeURIComponent(client.invitationToken)}`) : void createInvitation(client)} disabled={creatingInvitationFor === client.id} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{client.invitationId ? "Edit Invitation" : creatingInvitationFor === client.id ? "Creating..." : "Create Invitation"}</button>
-                        <button onClick={() => void deleteClient(client.id)} className="text-gray-400 hover:text-red-600" aria-label="Delete client"><Trash2 size={16} /></button>
-                      </div>
+
+                      <select value={packageFilter} onChange={(e) => setPackageFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100" data-testid="select-filter-package">
+                        <option value="">All Packages</option>
+                        {packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}
+                      </select>
+
+                      <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100" data-testid="select-filter-month">
+                        <option value="">All Months</option>
+                        {availableMonths.map((month) => (
+                          <option key={month} value={month}>
+                            {new Date(month + "-01").toLocaleDateString("en-MY", { month: "long", year: "numeric" })}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select value={sortBy} onChange={(e) => setSortBy(e.target.value as "newest" | "date" | "alpha")} className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100" data-testid="select-sort-by">
+                        <option value="newest">Sort by: Newest</option>
+                        <option value="date">Sort by: Wedding Date</option>
+                        <option value="alpha">Sort by: Alphabetical</option>
+                      </select>
                     </div>
-                  ))}
-                  {!clients.length && <p className="p-8 text-sm text-gray-500 text-center">No customer submissions yet.</p>}
+                  </div>
+
+                  {/* Customer Cards */}
+                  {filteredAndSortedClients.length > 0 ? (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {filteredAndSortedClients.map((client) => {
+                        const days = getDaysUntilEvent(client.eventDate);
+                        const countdown = formatCountdown(days);
+                        const packageName = packages.find((p) => p.id === client.packageId)?.name || "Package";
+
+                        return (
+                          <div key={client.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-shadow" data-testid={`card-customer-${client.id}`}>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 truncate">
+                                  {client.groomName || "Customer"}{client.brideName ? ` & ${client.brideName}` : ""}
+                                </h4>
+                                <p className="text-xs text-gray-500 mt-1">{packageName}</p>
+                              </div>
+                              <div className="relative">
+                                <button
+                                  onClick={() => setOpenClientMenuId((current) => current === client.id ? null : client.id)}
+                                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                                  aria-label={`More actions for ${client.groomName || "customer"}`}
+                                  data-testid={`button-more-customer-${client.id}`}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
+                                {openClientMenuId === client.id && (
+                                  <div className="absolute right-0 top-9 z-10 w-44 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
+                                    {client.invitationToken && (
+                                      <>
+                                        <a
+                                          href={`/invite/${client.invitationToken}`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          onClick={() => setOpenClientMenuId(null)}
+                                          className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                        >
+                                          Preview invitation
+                                        </a>
+                                        <button
+                                          onClick={async () => {
+                                            await navigator.clipboard.writeText(`${window.location.origin}${BASE}/invite/${client.invitationToken}`);
+                                            toast.success("Invitation link copied");
+                                            setOpenClientMenuId(null);
+                                          }}
+                                          className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                        >
+                                          Copy invitation link
+                                        </button>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setOpenClientMenuId(null);
+                                        void deleteClient(client.id);
+                                      }}
+                                      className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50"
+                                    >
+                                      Delete customer
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                                <span className="truncate">{client.eventDate ? new Date(client.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</span>
+                              </div>
+                              {client.email && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Mail size={14} className="text-gray-400 flex-shrink-0" />
+                                  <span className="truncate">{client.email}</span>
+                                </div>
+                              )}
+                              {client.phone && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Phone size={14} className="text-gray-400 flex-shrink-0" />
+                                  <span className="truncate">{client.phone}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-4">
+                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
+                                {countdown.label}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => client.invitationId && client.invitationToken ? navigate(`/business/editor?token=${encodeURIComponent(client.invitationToken)}`) : void createInvitation(client)}
+                                disabled={creatingInvitationFor === client.id}
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                data-testid={`button-${client.invitationId ? "edit" : "create"}-invitation-${client.id}`}
+                              >
+                                {client.invitationId ? "Edit Invitation" : creatingInvitationFor === client.id ? "Creating..." : "Create Invitation"}
+                              </button>
+                              <button
+                                onClick={() => void deleteClient(client.id)}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                aria-label="Delete client"
+                                data-testid={`button-delete-customer-${client.id}`}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : clients.length === 0 ? (
+                    <div className="bg-white border border-gray-200 rounded-xl px-6 py-16 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                        <Users size={28} className="text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No customer submissions yet</h3>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create a customer form link and share it with your clients to start collecting submissions</p>
+                      <button onClick={() => document.querySelector<HTMLSelectElement>('[data-testid="select-package"]')?.focus()} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-form">
+                        <Link2 size={16} /> Create Customer Form
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-xl px-6 py-16 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                        <Search size={28} className="text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers found</h3>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Try adjusting your search or filter criteria</p>
+                      <button onClick={() => { setSearchQuery(""); setPackageFilter(""); setMonthFilter(""); }} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid="button-clear-filters">
+                        <X size={16} /> Clear Filters
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mb-3 flex items-center justify-between"><div><h3 className="font-semibold text-gray-900">Invitations</h3><p className="text-xs text-gray-500 mt-1">Your business-owned invitations.</p></div><button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-semibold"><Plus size={15} /> New invitation</button></div>
-                <div className="bg-white border border-gray-200 rounded-xl divide-y">
-                  {invitations.map((item) => (
-                    <div key={item.id} className="p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div><p className="font-semibold">{item.groomName} & {item.brideName}</p><p className="text-xs text-gray-500">{item.eventDate || "Date not set"} · {item.venueCity || "Venue not set"}</p></div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
-                        <span className={`rounded-full px-2 py-1 ${item.isPurchased ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{item.isPurchased ? "Active" : "Pending payment"}</span>
-                        {!item.isPurchased && <button onClick={() => void startPayment({ invitationId: item.id })} disabled={paymentStartingFor === item.id} className="inline-flex items-center gap-1 rounded-lg bg-gray-900 px-3 py-2 text-white disabled:opacity-60"><CreditCard size={13} /> {paymentStartingFor === item.id ? "Starting..." : "Pay Now"}</button>}
-                        <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="text-gray-700">Edit</button>
-                        <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-gray-500">Preview</a>
-                        <button onClick={() => setDeleteInvitation(item)} className="inline-flex items-center gap-1 text-gray-500 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`}><Trash2 size={13} /> Delete</button>
-                      </div>
+                {/* Business Invitations */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">Your Invitations</h3>
+                      <p className="text-sm text-gray-500 mt-1">Business-owned invitations you've created</p>
                     </div>
-                  ))}
-                  {!invitations.length && <p className="p-8 text-sm text-gray-500 text-center">No invitations yet.</p>}
+                    <button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-gray-800 transition-colors" data-testid="button-new-invitation">
+                      <Plus size={16} /> New Invitation
+                    </button>
+                  </div>
+
+                  {invitations.length > 0 ? (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {invitations.map((item) => {
+                        const days = getDaysUntilEvent(item.eventDate);
+                        const countdown = formatCountdown(days);
+                        const inviteUrl = `${window.location.origin}${BASE}/invite/${item.token}`;
+                        const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
+
+                        return (
+                          <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-shadow" data-testid={`card-invitation-${item.id}`}>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900">{item.groomName} & {item.brideName}</h4>
+                                <p className="text-xs text-gray-500 mt-1">{packageName || item.eventType}</p>
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {item.isPurchased ? "Active" : "Pending"}
+                              </span>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                                <span className="truncate">{item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</span>
+                              </div>
+                              {item.venueCity && (
+                                <div className="text-sm text-gray-600 truncate pl-6">{item.venueCity}</div>
+                              )}
+                            </div>
+
+                            <div className="mb-4">
+                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
+                                {countdown.label}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors" data-testid={`button-edit-invitation-${item.id}`}>
+                                Edit
+                              </button>
+                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
+                                Preview
+                              </a>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                              <button
+                                onClick={async () => {
+                                  await navigator.clipboard.writeText(inviteUrl);
+                                  toast.success("Link copied");
+                                }}
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+                                data-testid={`button-copy-link-${item.id}`}
+                              >
+                                <Copy size={13} /> Copy Link
+                              </button>
+                              <button onClick={() => setDeleteInvitation(item)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`} data-testid={`button-delete-invitation-${item.id}`}>
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+
+                            {!item.isPurchased && (
+                              <button onClick={() => void startPayment({ invitationId: item.id })} disabled={paymentStartingFor === item.id} className="w-full mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-60" data-testid={`button-pay-now-${item.id}`}>
+                                <CreditCard size={13} /> {paymentStartingFor === item.id ? "Starting..." : "Pay Now"}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-xl px-6 py-16 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                        <Calendar size={28} className="text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No invitations yet</h3>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create your first invitation or wait for customer submissions</p>
+                      <button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-invitation-card">
+                        <Plus size={16} /> Create Invitation
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
