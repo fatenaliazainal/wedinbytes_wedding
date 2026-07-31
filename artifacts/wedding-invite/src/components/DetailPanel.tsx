@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Gift, Copy, Download } from "lucide-react";
+import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { type Invitation } from "@workspace/api-client-react";
 
@@ -276,33 +276,34 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-5 py-4">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-        <Gift size={36} className="text-primary" />
-      </div>
+    <div className="flex flex-col items-center gap-5 py-2">
       <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>{title}</p>
       <div className="h-px w-16 bg-primary/30" />
-      {recipient && <p className="text-center text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: bodyFont }}>{recipient}</p>}
-      {bankName && <p className="text-center text-sm text-muted-foreground" style={{ fontFamily: bodyFont }}>{bankName}</p>}
-      {accountNumber && (
-        <div className="w-full rounded-2xl border border-primary/10 bg-background/80 p-4 text-center">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Account Number</p>
-          <p className="mt-2 text-lg font-semibold tracking-wide text-foreground" style={{ fontFamily: bodyFont }}>{accountNumber}</p>
-          <button type="button" onClick={() => void copyAccount()} className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
-            <Copy size={14} /> Copy account number
-          </button>
-        </div>
-      )}
       {qrCodes.length > 0 && (
-        <div className="grid w-full gap-4 sm:grid-cols-2">
+        <div className="flex w-full flex-col items-center gap-4">
           {qrCodes.map((url, index) => (
-            <div key={`${url}-${index}`} className="rounded-2xl border border-primary/10 bg-white p-3 text-center">
-              <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full max-w-[210px] object-contain" />
+            <div key={`${url}-${index}`} className="w-full max-w-[250px] text-center">
+              <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full rounded-lg border border-primary/10 bg-white p-2 object-contain" />
               <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 px-4 py-2 text-xs font-semibold text-primary">
                 <Download size={14} /> Save QR
               </a>
             </div>
           ))}
+        </div>
+      )}
+      {(recipient || bankName || accountNumber) && (
+        <div className="w-full space-y-2 text-center" style={{ fontFamily: bodyFont }}>
+          {recipient && <p className="text-base font-semibold text-foreground">{recipient}</p>}
+          {bankName && <p className="text-sm text-muted-foreground">{bankName}</p>}
+          {accountNumber && (
+            <>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Account Number</p>
+              <p className="text-base font-semibold tracking-wide text-foreground">{accountNumber}</p>
+              <button type="button" onClick={() => void copyAccount()} className="mt-1 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
+                <Copy size={14} /> Copy account number
+              </button>
+            </>
+          )}
         </div>
       )}
       {!accountNumber && qrCodes.length === 0 && <p className="text-sm text-muted-foreground">Gift details are not available yet.</p>}
