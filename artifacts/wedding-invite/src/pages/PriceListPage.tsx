@@ -310,7 +310,7 @@ export default function PriceListPage() {
         {/* Final CTA */}
         <section className="py-12 px-4 sm:px-6 bg-white text-center">
           <div className="max-w-2xl mx-auto">
-            <p className="font-sans text-xl font-normal leading-relaxed text-gray-900 sm:text-2xl">
+            <p className="font-sans text-sm font-normal leading-relaxed text-gray-500 sm:text-base">
               Ready to create your beautiful digital wedding invitation?
             </p>
             <button
