@@ -227,10 +227,10 @@ export default function PriceListPage() {
         <section className="bg-white py-5 px-4 sm:px-6 text-center sm:py-6">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-              Choose the perfect invitation for your special day.
+              Find the Perfect Plan
             </h1>
             <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto leading-relaxed">
-              Beautiful digital wedding invitations designed to make your special day even more memorable.
+              Choose the package that best suits your wedding and create a beautiful digital invitation with ease.
             </p>
           </div>
         </section>
