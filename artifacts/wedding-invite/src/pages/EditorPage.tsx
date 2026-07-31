@@ -1325,6 +1325,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     <input className={inputCls} value={inv.coverBrideName} onChange={(e) => setI("coverBrideName")(e.target.value)} placeholder="Contoh: F" />
                   </Field>
                 </div>
+                <p className="-mt-2 text-xs leading-relaxed text-gray-500">
+                  Your invitation URL is generated from the Cover Groom Name and Cover Bride Name above. Please ensure both names are entered accurately before sharing your link.
+                </p>
                 <Field label="Cover Initials (Optional)">
                   <input
                     className={inputCls}

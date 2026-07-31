@@ -841,12 +841,17 @@ export default function DashboardPage() {
                                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center border border-slate-100 shrink-0">
                                     <Link2 size={12} className="text-slate-400" />
                                  </div>
-                                 <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-xs text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
+                                  <input readOnly value={cardInviteLink} placeholder="Complete Cover names to generate URL" className="flex-1 bg-transparent text-xs text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text placeholder:text-slate-400" onClick={e => e.currentTarget.select()} />
                                   <button onClick={() => copyLink(card)} disabled={!cardInviteLink} title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy link"} className="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-40">
                                    {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                                    <span>Copy</span>
                                  </button>
                                </div>
+                                {!cardInviteLink && (
+                                  <p className="-mt-2 mb-3 text-[11px] leading-relaxed text-slate-400">
+                                    The invitation URL is based on the Cover Groom Name and Cover Bride Name. Complete both fields in Edit before sharing.
+                                  </p>
+                                )}
 
                                {/* Action Row */}
                                 <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 overflow-x-auto">
@@ -920,11 +925,16 @@ export default function DashboardPage() {
                                </td>
                                <td className="px-4 py-4 min-w-[200px]">
                                   <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 shadow-sm transition-colors group-hover:border-slate-300">
-                                     <input readOnly value={cardInviteLink} className="flex-1 bg-transparent text-[11px] text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text" onClick={e => e.currentTarget.select()} />
+                                      <input readOnly value={cardInviteLink} placeholder="Complete Cover names to generate URL" className="flex-1 bg-transparent text-[11px] text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text placeholder:text-slate-400" onClick={e => e.currentTarget.select()} />
                                       <button onClick={() => copyLink(card)} disabled={!cardInviteLink} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-40" title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy Link"}>
                                        {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                                      </button>
                                   </div>
+                                   {!cardInviteLink && (
+                                     <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                                       URL generated from the Cover Groom Name and Cover Bride Name.
+                                     </p>
+                                   )}
                                </td>
                                <td className="px-4 py-4 whitespace-nowrap text-right">
                                    <div className="flex items-center justify-end gap-1 w-max ml-auto">

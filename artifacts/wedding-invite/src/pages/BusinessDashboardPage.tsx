@@ -863,7 +863,7 @@ export default function BusinessDashboardPage() {
                                   Preview
                                 </a>
                               ) : (
-                                <button disabled title="Enter both Cover names and the event date first" className="inline-flex cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400">
+                                <button disabled title="The invitation URL is generated from the Cover Groom Name and Cover Bride Name" className="inline-flex cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400">
                                   Preview
                                 </button>
                               )}
@@ -883,6 +883,11 @@ export default function BusinessDashboardPage() {
                               >
                                 <Copy size={15} />
                               </button>
+                              {!inviteUrl && (
+                                <span className="basis-full text-[11px] leading-relaxed text-gray-400">
+                                  Invitation URL is generated from the Cover Groom Name and Cover Bride Name.
+                                </span>
+                              )}
                               <button onClick={() => setDeleteInvitation(item)} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`} data-testid={`button-delete-invitation-${item.id}`}>
                                 <Trash2 size={15} />
                               </button>
