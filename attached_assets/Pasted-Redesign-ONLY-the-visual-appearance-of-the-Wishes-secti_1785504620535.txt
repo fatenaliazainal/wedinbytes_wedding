@@ -1,0 +1,93 @@
+Redesign ONLY the visual appearance of the Wishes section into a modern "Letter Style" guestbook.
+
+IMPORTANT:
+- Do NOT modify any functionality.
+- Do NOT change the carousel behavior.
+- Do NOT change APIs, database, business logic, or existing animations.
+- Only redesign the visual appearance of the wish cards.
+
+Design Goal:
+The wishes should feel like handwritten messages inside an elegant wedding guestbook instead of social media comments.
+
+Requirements:
+
+1. Remove the traditional card appearance.
+   - No heavy box.
+   - No thick borders.
+   - No large shadows.
+   - No social media comment styling.
+
+2. Replace it with an elegant paper/letter aesthetic.
+   - Warm ivory background (#FFFCF8 or similar)
+   - Very subtle paper texture or paper-like gradient (CSS only, no image texture)
+   - Rounded corners around 12–16px
+   - Very soft shadow
+   - Plenty of white space
+
+3. Remove the avatar/initials completely.
+   - Do not display any circular avatar.
+   - Do not display initials like ZA, EZ, etc.
+
+4. Layout:
+   - Center the message.
+   - Display the wish message first.
+   - Display the sender's name underneath.
+   - Display timestamp below the name if available.
+
+Example:
+
+────────────────────────
+
+Semoga Allah memberkati
+perkahwinan kalian dan
+dikurniakan kebahagiaan
+hingga ke syurga.
+
+— Zaidi
+2 hours ago
+
+────────────────────────
+
+5. Typography:
+   - Message:
+     - Slightly larger font
+     - Comfortable line height
+     - Elegant serif font if already available, otherwise keep the existing font.
+   - Sender name:
+     - Semi Bold
+     - Slightly darker than timestamp
+   - Timestamp:
+     - Small
+     - Muted color
+
+6. Decorative elements:
+   Add a very subtle floral divider or elegant ornament above and below the message.
+
+Example:
+
+❦
+
+(message)
+
+❦
+
+Keep it minimal and elegant.
+
+7. Animations:
+   - Fade in
+   - Slight upward motion
+   - Smooth transition
+   - No bouncing effects
+
+8. Responsive:
+   - Mobile
+   - Tablet
+   - Desktop
+
+9. Keep the existing carousel, pagination dots, swipe gestures, and auto-slide exactly as they are.
+
+10. The overall appearance should resemble a premium wedding guestbook or handwritten letter, not a social media comment section.
+
+IMPORTANT:
+Do not redesign the rest of the website.
+Only update the visual styling of the Wishes section.

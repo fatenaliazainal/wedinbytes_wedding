@@ -341,51 +341,43 @@ function WishCard({
       whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card group relative overflow-hidden rounded-[22px] border border-white/[0.35] bg-white/[0.22] p-4 text-left shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_38px_rgba(0,0,0,0.12)] sm:p-5"
+      className="wishes-card rounded-[14px] border border-[#eadfd3]/70 bg-[#fffcf8] p-6 text-center shadow-[0_6px_20px_rgba(93,64,47,0.07)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_9px_24px_rgba(93,64,47,0.1)] sm:p-8"
       style={{
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
+        backgroundImage:
+          "linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,252,248,0.9)), repeating-linear-gradient(0deg, rgba(132,96,70,0.025) 0px, rgba(132,96,70,0.025) 1px, transparent 1px, transparent 5px)",
       }}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.2] via-white/[0.07] to-transparent"
-      />
-      <div className="relative z-10 flex items-start gap-3">
-        <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-xs font-semibold tracking-[0.12em] text-primary shadow-sm"
-          aria-hidden="true"
+      <div className="flex flex-col items-center">
+        <span aria-hidden="true" className="mb-3 text-lg leading-none text-primary/45">
+          ❦
+        </span>
+        <p
+          ref={messageRef}
+          className={`max-w-2xl break-words text-base leading-8 text-foreground/85 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}
+          style={{ fontFamily: bodyFontFamily }}
         >
-          {getWishInitials(wish.name)}
-        </div>
-        <div className="min-w-0 flex-1 pt-0.5">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <p className="break-words text-sm font-bold text-foreground" style={{ fontFamily: bodyFontFamily }}>
-              {wish.name}
-            </p>
-            {timestamp && (
-              <time className="shrink-0 text-[10px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
-                {timestamp}
-              </time>
-            )}
-          </div>
-          <p
-            ref={messageRef}
-            className={`mt-2 break-words text-sm leading-7 text-foreground/80 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}
-            style={{ fontFamily: bodyFontFamily }}
+          {message}
+        </p>
+        <span aria-hidden="true" className="mt-3 text-lg leading-none text-primary/45">
+          ❦
+        </span>
+        <p className="mt-3 break-words text-sm font-semibold text-foreground/80" style={{ fontFamily: bodyFontFamily }}>
+          — {wish.name}
+        </p>
+        {timestamp && (
+          <time className="mt-1 text-[10px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
+            {timestamp}
+          </time>
+        )}
+        {isLong && (
+          <button
+            type="button"
+            onClick={() => setExpanded((current) => !current)}
+            className="mt-2 text-xs font-semibold text-primary underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
-            {message}
-          </p>
-          {isLong && (
-            <button
-              type="button"
-              onClick={() => setExpanded((current) => !current)}
-              className="mt-2 text-xs font-semibold text-primary underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              {expanded ? "Show Less" : "Read More"}
-            </button>
-          )}
-        </div>
+            {expanded ? "Show Less" : "Read More"}
+          </button>
+        )}
       </div>
     </motion.article>
   );
