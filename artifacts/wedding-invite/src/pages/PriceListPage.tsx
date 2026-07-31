@@ -262,13 +262,6 @@ export default function PriceListPage() {
               </div>
             )}
 
-            <p className="mt-8 text-center text-xs text-gray-400">
-              LIMIT TO:<br />
-              2 pairs of brides and grooms<br />
-              2 pairs of parents<br />
-              LANGUAGE:<br />
-              Malay OR English
-            </p>
           </div>
         </section>
 
