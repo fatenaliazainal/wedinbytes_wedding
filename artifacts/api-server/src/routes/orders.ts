@@ -269,6 +269,31 @@ router.get("/admin/orders/stats", async (req, res) => {
     const revenue = rows
       .filter((row) => row.paymentStatus === "PAID")
       .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const packageStats = new Map<string, {
+      packageId: number | null;
+      packageName: string;
+      totalOrders: number;
+      successfulOrders: number;
+      revenue: number;
+    }>();
+    for (const row of rows) {
+      const packageId = row.package?.id ?? null;
+      const packageName = row.package?.name ?? "Unassigned Package";
+      const key = packageId === null ? "unassigned" : String(packageId);
+      const current = packageStats.get(key) ?? {
+        packageId,
+        packageName,
+        totalOrders: 0,
+        successfulOrders: 0,
+        revenue: 0,
+      };
+      current.totalOrders += 1;
+      if (row.paymentStatus === "PAID") {
+        current.successfulOrders += 1;
+        current.revenue += Number(row.amount || 0);
+      }
+      packageStats.set(key, current);
+    }
     const activeWebsites = (await db.select().from(invitationTable))
       .filter((row) => invitationStatus(row) === "ACTIVE").length;
     const monthFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -294,13 +319,66 @@ router.get("/admin/orders/stats", async (req, res) => {
         totalOrders: 0,
         successfulOrders: 0,
         revenue: 0,
+        dailyRevenue: [] as Array<{
+          date: string;
+          label: string;
+          totalOrders: number;
+          successfulOrders: number;
+          revenue: number;
+        }>,
       };
     });
     const monthlyByKey = new Map(monthlyRevenue.map((month) => [month.month, month]));
+    const dailyByMonth = new Map<string, Map<string, {
+      date: string;
+      label: string;
+      totalOrders: number;
+      successfulOrders: number;
+      revenue: number;
+    }>>();
+    const dayFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kuala_Lumpur",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    const dayKey = (date: Date) => {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kuala_Lumpur",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(date);
+      const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+      return `${values.year}-${values.month}-${values.day}`;
+    };
+    const ensureDailyRow = (monthKeyValue: string, date: Date) => {
+      let days = dailyByMonth.get(monthKeyValue);
+      if (!days) {
+        days = new Map();
+        dailyByMonth.set(monthKeyValue, days);
+      }
+      const dateKey = dayKey(date);
+      let day = days.get(dateKey);
+      if (!day) {
+        day = {
+          date: dateKey,
+          label: dayFormatter.format(date),
+          totalOrders: 0,
+          successfulOrders: 0,
+          revenue: 0,
+        };
+        days.set(dateKey, day);
+      }
+      return day;
+    };
     for (const row of rows) {
       const createdAt = new Date(row.createdAt);
       const createdMonth = monthlyByKey.get(monthKey(createdAt));
-      if (createdMonth) createdMonth.totalOrders += 1;
+      if (createdMonth) {
+        createdMonth.totalOrders += 1;
+        ensureDailyRow(createdMonth.month, createdAt).totalOrders += 1;
+      }
 
       if (row.paymentStatus === "PAID") {
         const paidAt = row.paidAt ? new Date(row.paidAt) : createdAt;
@@ -308,8 +386,15 @@ router.get("/admin/orders/stats", async (req, res) => {
         if (paidMonth) {
           paidMonth.successfulOrders += 1;
           paidMonth.revenue += Number(row.amount || 0);
+          const paidDay = ensureDailyRow(paidMonth.month, paidAt);
+          paidDay.successfulOrders += 1;
+          paidDay.revenue += Number(row.amount || 0);
         }
       }
+    }
+    for (const month of monthlyRevenue) {
+      month.dailyRevenue = Array.from(dailyByMonth.get(month.month)?.values() ?? [])
+        .sort((a, b) => b.date.localeCompare(a.date));
     }
     res.json({
       totalOrders: rows.length,
@@ -319,6 +404,7 @@ router.get("/admin/orders/stats", async (req, res) => {
       totalRevenue: revenue,
       activeWebsites,
       recentOrders: rows.slice(0, 5),
+      packageOrderStats: Array.from(packageStats.values()).sort((a, b) => b.totalOrders - a.totalOrders),
       monthlyRevenue,
     });
   } catch (err) {

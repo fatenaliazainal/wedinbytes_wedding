@@ -3,6 +3,13 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* Admin keeps the existing typography and accent tokens, but uses a white
+   workspace and white data surfaces instead of the invitation background. */
+.admin-page .bg-background,
+.admin-page .bg-card {
+  background-color: #fff;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

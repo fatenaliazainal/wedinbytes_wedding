@@ -25,7 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers" | "revenue";
+type Tab = "designs" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers" | "revenue";
 
 type RawCard = {
   id: number;
@@ -61,12 +61,26 @@ type AdminOrderStats = {
   totalRevenue: number;
   activeWebsites: number;
   recentOrders: AdminOrder[];
+  packageOrderStats: Array<{
+    packageId: number | null;
+    packageName: string;
+    totalOrders: number;
+    successfulOrders: number;
+    revenue: number;
+  }>;
   monthlyRevenue: Array<{
     month: string;
     label: string;
     totalOrders: number;
     successfulOrders: number;
     revenue: number;
+    dailyRevenue: Array<{
+      date: string;
+      label: string;
+      totalOrders: number;
+      successfulOrders: number;
+      revenue: number;
+    }>;
   }>;
 };
 
@@ -1805,6 +1819,7 @@ function CustomersTab() {
 function RevenueTab() {
   const [stats, setStats] = useState<AdminOrderStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -1828,6 +1843,7 @@ function RevenueTab() {
 
   const monthly = stats?.monthlyRevenue ?? [];
   const maxRevenue = Math.max(...monthly.map((month) => month.revenue), 1);
+  const totalDailyOrders = monthly.reduce((sum, month) => sum + month.totalOrders, 0);
   const money = (value: number) => `RM ${value.toLocaleString("en-MY", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -1867,6 +1883,28 @@ function RevenueTab() {
         </div>
       </div>
 
+      {stats?.packageOrderStats && stats.packageOrderStats.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <ShoppingBag size={15} className="text-primary" />
+            <h3 className="text-sm font-semibold">Orders by Package</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {stats.packageOrderStats.map((pkg) => (
+              <div key={pkg.packageId ?? "unassigned"} className="rounded-xl border border-border bg-card p-3">
+                <p className="truncate text-xs font-medium" title={pkg.packageName}>{pkg.packageName}</p>
+                <p className="mt-2 text-xl font-semibold leading-none">{pkg.totalOrders}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Orders</p>
+                <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                  <span>{pkg.successfulOrders} successful</span>
+                  <span className="font-medium text-primary">{money(pkg.revenue)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-4 flex items-center gap-2">
           <BarChart3 size={15} className="text-primary" />
@@ -1875,27 +1913,58 @@ function RevenueTab() {
         {monthly.length === 0 ? (
           <div className="py-10 text-center text-sm text-muted-foreground">No order data available yet.</div>
         ) : (
-          <div className="space-y-4">
+          <div className="overflow-hidden rounded-lg border border-border">
             {monthly.map((month) => (
-              <div key={month.month} className="grid grid-cols-[84px_1fr_auto] items-center gap-2 text-xs">
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <CalendarDays size={12} />
-                  <span>{month.label}</span>
-                </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${Math.max((month.revenue / maxRevenue) * 100, month.revenue > 0 ? 3 : 0)}%` }}
-                  />
-                </div>
-                <div className="min-w-[108px] text-right">
-                  <p className="text-xs font-medium">{money(month.revenue)}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {month.successfulOrders} successful · {month.totalOrders} orders
-                  </p>
-                </div>
+              <div key={month.month} className="border-b border-border last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => setExpandedMonth((current) => current === month.month ? null : month.month)}
+                  className="grid w-full grid-cols-[minmax(115px,1fr)_80px_minmax(112px,auto)_18px] items-center gap-2 px-3 py-2.5 text-left text-xs transition-colors hover:bg-muted/40"
+                  aria-expanded={expandedMonth === month.month}
+                >
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <CalendarDays size={12} className="text-muted-foreground" />
+                    {month.label}
+                  </span>
+                  <span className="text-right text-muted-foreground">{month.totalOrders} orders</span>
+                  <span className="text-right font-semibold text-primary">{money(month.revenue)}</span>
+                  <span className="text-muted-foreground">{expandedMonth === month.month ? "⌃" : "⌄"}</span>
+                </button>
+                {expandedMonth === month.month && (
+                  <div className="border-t border-border bg-muted/10">
+                    <div className="grid grid-cols-[minmax(115px,1fr)_80px_80px_minmax(112px,auto)] gap-2 border-b border-border px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <span>Date</span>
+                      <span className="text-right">Orders</span>
+                      <span className="text-right">Successful</span>
+                      <span className="text-right text-primary">Total Revenue</span>
+                    </div>
+                    {month.dailyRevenue.length === 0 ? (
+                      <p className="px-3 py-4 text-center text-xs text-muted-foreground">No orders in this month.</p>
+                    ) : (
+                      month.dailyRevenue.map((day) => (
+                        <div key={day.date} className="grid grid-cols-[minmax(115px,1fr)_80px_80px_minmax(112px,auto)] gap-2 border-b border-border/70 px-3 py-2 text-xs last:border-b-0">
+                          <span>{day.label}</span>
+                          <span className="text-right text-muted-foreground">{day.totalOrders}</span>
+                          <span className="text-right text-muted-foreground">{day.successfulOrders}</span>
+                          <span className="text-right font-medium text-primary">{money(day.revenue)}</span>
+                        </div>
+                      ))
+                    )}
+                    <div className="grid grid-cols-[minmax(115px,1fr)_80px_80px_minmax(112px,auto)] gap-2 border-t border-border bg-muted/20 px-3 py-2.5 text-xs font-semibold">
+                      <span>MONTH TOTAL</span>
+                      <span className="text-right">{month.totalOrders}</span>
+                      <span className="text-right">{month.successfulOrders}</span>
+                      <span className="text-right text-primary">{money(month.revenue)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
+            <div className="grid grid-cols-[minmax(115px,1fr)_80px_minmax(112px,auto)] gap-2 bg-muted/20 px-3 py-2.5 text-xs font-semibold">
+              <span>TOTAL</span>
+              <span className="text-right">{totalDailyOrders}</span>
+              <span className="text-right text-primary">{money(stats?.totalRevenue ?? 0)}</span>
+            </div>
           </div>
         )}
       </div>
@@ -1947,8 +2016,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background px-3 py-5 sm:px-5 lg:px-6">
-      <div className="mx-auto max-w-[1440px]">
+    <div className="admin-page min-h-[100dvh] bg-white px-4 py-5 sm:px-8 lg:px-10">
+      <div className="mx-auto w-full max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="font-serif text-xl text-foreground">Admin Dashboard</h1>
@@ -1977,7 +2046,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -1996,7 +2065,6 @@ export default function AdminPage() {
       </div>
 
       {tab === "designs" && <DesignsTab />}
-      {tab === "rawcard" && <RawCardTab />}
       {tab === "reviews" && <ReviewsTab />}
       {tab === "pricing" && <PricingTab />}
       {tab === "orders" && <OrdersTab />}
