@@ -14,3 +14,9 @@ The admin Live Demo invitation is sample content only; its saved per-invitation 
 **Why:** The demo record can contain legacy copied fonts or colours, which made a successfully saved catalogue design appear unchanged in the editor and public preview.
 
 **How to apply:** Resolve Live Demo typography, colours, opening style, and layout from the selected catalogue design after every load; invalidate both the design list and active-design queries after Card Design saves or activation.
+
+Catalogue previews should use shared sample invitation content only as demo data; every Card Design must retain its own artwork and visual styling. Blank or legacy placeholder demo fields should fall back to readable sample names and event details.
+
+**Why:** The catalogue needs consistent content for comparing designs, but a shared “default design” would make distinct card artwork and styling appear interchangeable.
+
+**How to apply:** Keep demo content separate from Card Design records, patch only blank/placeholder demo fields, and render the sample content over each selected design’s artwork.

@@ -18,6 +18,20 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
   const secondary = design.colorSecondary ? `hsl(${design.colorSecondary})` : "#e8f0de";
   const headingFont = design.fontHeading ?? "Playfair Display";
   const bodyFont = design.fontBody ?? "Lato";
+  const demoEventType = invitation.eventType?.trim() || "Walimatul Urus";
+  const demoBrideName = invitation.brideName?.trim() === "Nama Pengantin Perempuan"
+    ? "Ain"
+    : invitation.brideName?.trim() || "Ain";
+  const demoGroomName = invitation.groomName?.trim() === "Nama Pengantin Lelaki"
+    ? "Hidayat"
+    : invitation.groomName?.trim() || "Hidayat";
+  const demoEventDay = invitation.eventDay?.trim() || "Sabtu";
+  const demoEventDate = invitation.eventDate?.trim() || "15 November 2025";
+  const demoEventTime = invitation.eventTime?.trim() || "11:00 pagi – 3:00 petang";
+  const demoVenueName = invitation.venueName?.trim() || "Dewan Seri Cahaya";
+  const demoVenueCity = invitation.venueCity?.trim() || "Shah Alam";
+  const demoVenueState = invitation.venueState?.trim() || "Selangor";
+  const demoDresscode = invitation.dresscode?.trim() || "Hijau Sage & Pink";
 
   return (
     <div className="absolute inset-0 overflow-hidden" aria-hidden>
@@ -36,7 +50,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
             height: "100%",
             objectFit: "cover",
             pointerEvents: "none",
-            zIndex: 2,
+            zIndex: 0,
           }}
         />
       ) : null}
@@ -48,6 +62,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
           transformOrigin: "top left",
           backgroundColor: bg,
           position: "relative",
+          zIndex: 1,
           fontFamily: bodyFont + ", sans-serif",
           overflow: "hidden",
         }}
@@ -104,7 +119,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
               textTransform: "uppercase",
               marginBottom: 10,
             }}
-            dangerouslySetInnerHTML={{ __html: invitation.eventType || "" }}
+            dangerouslySetInnerHTML={{ __html: demoEventType }}
           />
 
           <h1
@@ -117,7 +132,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
               textShadow: "0 1px 2px rgba(0,0,0,0.08)",
             }}
           >
-            {invitation.brideName}
+            {demoBrideName}
           </h1>
           <span
             style={{
@@ -139,7 +154,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
               textShadow: "0 1px 2px rgba(0,0,0,0.08)",
             }}
           >
-            {invitation.groomName}
+            {demoGroomName}
           </h1>
 
           <div
@@ -175,7 +190,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
                 marginBottom: 3,
               }}
             >
-              {invitation.eventDay}
+              {demoEventDay}
             </p>
             <p
               style={{
@@ -185,21 +200,21 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
                 marginBottom: 3,
               }}
             >
-              {invitation.eventDate}
+              {demoEventDate}
             </p>
-            <p style={{ fontSize: 7, color: "rgba(0,0,0,0.6)" }}>{invitation.eventTime}</p>
+            <p style={{ fontSize: 7, color: "rgba(0,0,0,0.6)" }}>{demoEventTime}</p>
           </div>
 
           <div style={{ width: "100%", textAlign: "center" }}>
             <p style={{ fontSize: 8, fontWeight: 700, color: primary, marginBottom: 2 }}>
-              {invitation.venueName}
+              {demoVenueName}
             </p>
             <p style={{ fontSize: 7, color: "rgba(0,0,0,0.6)", lineHeight: 1.4 }}>
-              {invitation.venueCity}, {invitation.venueState}
+              {demoVenueCity}, {demoVenueState}
             </p>
           </div>
 
-          {(invitation.dresscode || invitation.dresscodeTheme || (Array.isArray(invitation.dresscodeColors) && invitation.dresscodeColors.length > 0)) && (
+          {(demoDresscode || invitation.dresscodeTheme || (Array.isArray(invitation.dresscodeColors) && invitation.dresscodeColors.length > 0)) && (
             <div
               style={{
                 marginTop: 10,
@@ -211,7 +226,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
                 backgroundColor: "rgba(255,255,255,0.45)",
               }}
             >
-              Tema: {invitation.dresscodeTheme || invitation.dresscode}
+              Tema: {invitation.dresscodeTheme || demoDresscode}
               {Array.isArray(invitation.dresscodeColors) && invitation.dresscodeColors.length > 0 && (
                 <span style={{ display: "inline-flex", gap: 3, marginLeft: 6, verticalAlign: "middle" }}>
                   {invitation.dresscodeColors.slice(0, 4).map((color, index) => (

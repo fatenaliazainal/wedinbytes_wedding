@@ -62,6 +62,14 @@ const cardDesignValues = {
 };
 
 const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
+const DEMO_PLACEHOLDER_VALUES = new Set([
+  "Nama Pengantin Lelaki",
+  "Nama Pengantin Perempuan",
+  "Nama Bapa Pengantin",
+  "Nama Ibu Pengantin",
+  "Pengantin Lelaki",
+  "Pengantin Perempuan",
+]);
 
 export async function autoSeedIfEmpty() {
   try {
@@ -125,6 +133,8 @@ export async function autoSeedIfEmpty() {
 
     // --- Patch existing demo rows that are missing any invitationBase fields (idempotent) ---
     // Automatically picks up new fields added to invitationBase — no manual enumeration needed.
+    // Demo content is sample copy, so blank legacy values should receive the
+    // same sample defaults as newly seeded demo rows.
     if (existingTokenSet.size > 0) {
       const existingRows = await db
         .select()
@@ -139,7 +149,15 @@ export async function autoSeedIfEmpty() {
         const patch: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(invitationBase)) {
           const rowValue = (row as Record<string, unknown>)[key];
-          if (rowValue === null || rowValue === undefined) {
+          const normalizedRowValue = typeof rowValue === "string"
+            ? rowValue.replace(/<[^>]*>/g, "").trim()
+            : "";
+          if (
+            rowValue === null
+            || rowValue === undefined
+            || (typeof rowValue === "string" && rowValue.trim() === "")
+            || DEMO_PLACEHOLDER_VALUES.has(normalizedRowValue)
+          ) {
             patch[key] = value;
           }
         }
