@@ -10,9 +10,10 @@ import {
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
   Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag, Home, LogOut,
+  BarChart3, TrendingUp, CalendarDays,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListDesignsQueryKey } from "@workspace/api-client-react";
+import { getGetActiveDesignQueryKey, getListDesignsQueryKey } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
@@ -24,7 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers";
+type Tab = "designs" | "rawcard" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers" | "revenue";
 
 type RawCard = {
   id: number;
@@ -60,6 +61,13 @@ type AdminOrderStats = {
   totalRevenue: number;
   activeWebsites: number;
   recentOrders: AdminOrder[];
+  monthlyRevenue: Array<{
+    month: string;
+    label: string;
+    totalOrders: number;
+    successfulOrders: number;
+    revenue: number;
+  }>;
 };
 
 type AdminCustomer = {
@@ -351,6 +359,8 @@ const ANIMATION_OPTIONS = ["doors", "envelope", "fade", "none"];
 
 const SCRIPT_FONT_OPTIONS = [
   { value: "Dancing Script", label: "Dancing Script" },
+  // Used by the original FL001 catalogue template.
+  { value: "Playfair Display", label: "Playfair Display" },
   { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
   { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
   { value: "Allura", label: "Allura" },
@@ -551,7 +561,10 @@ function DesignForm({
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { error?: string }).error ?? "Failed to save.");
       }
-      await qc.invalidateQueries({ queryKey: getListDesignsQueryKey() });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: getListDesignsQueryKey() }),
+        qc.invalidateQueries({ queryKey: getGetActiveDesignQueryKey() }),
+      ]);
       toast.success(mode === "add" ? "Design added successfully!" : "Design updated!");
       onClose();
     } catch (err) {
@@ -871,6 +884,7 @@ function DesignsTab() {
     mutation: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getListDesignsQueryKey() });
+        qc.invalidateQueries({ queryKey: getGetActiveDesignQueryKey() });
         toast.success("Active design updated.");
       },
       onError: () => toast.error("Failed to activate design."),
@@ -1634,38 +1648,38 @@ function OrdersTab() {
   ] as const;
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {statsCards.map(([label, value, Icon]) => (
-          <div key={label} className="rounded-2xl border border-border bg-card p-4">
-            <Icon size={17} className="mb-2 text-primary" />
-            <p className="text-2xl font-semibold">{value}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
+          <div key={label} className="rounded-xl border border-border bg-card p-3">
+            <Icon size={14} className="mb-1.5 text-primary" />
+            <p className="text-xl font-semibold leading-none">{value}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{label}</p>
           </div>
         ))}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         <div className="relative min-w-[220px] flex-1">
-          <Search size={15} className="absolute left-3 top-3 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search order, name or email..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+          <Search size={13} className="absolute left-2.5 top-2.5 text-muted-foreground" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search order, name or email..." className="w-full rounded-lg border border-border bg-card py-2 pl-8 pr-2.5 text-xs outline-none focus:ring-2 focus:ring-primary/20" />
         </div>
-        <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="rounded-xl border border-border bg-card px-3 text-sm">
+        <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="rounded-lg border border-border bg-card px-2.5 py-2 text-xs">
           <option value="">All payments</option><option>PENDING</option><option>PAID</option><option>FAILED</option><option>EXPIRED</option><option>REFUNDED</option>
         </select>
-        <select value={invitationStatus} onChange={(e) => setInvitationStatus(e.target.value)} className="rounded-xl border border-border bg-card px-3 text-sm">
+        <select value={invitationStatus} onChange={(e) => setInvitationStatus(e.target.value)} className="rounded-lg border border-border bg-card px-2.5 py-2 text-xs">
           <option value="">All websites</option><option>PREVIEW</option><option>ACTIVE</option><option>DISABLED</option><option>EXPIRED</option>
         </select>
-        <button onClick={load} className="rounded-xl border border-border px-3 text-sm hover:bg-muted"><RefreshCw size={15} /></button>
+        <button onClick={load} className="rounded-lg border border-border px-2.5 text-xs hover:bg-muted"><RefreshCw size={13} /></button>
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
         {loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading orders…</div> : orders.length === 0 ? (
           <div className="py-16 text-center"><ShoppingBag size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No orders yet</p><p className="mt-1 text-xs text-muted-foreground">Orders will appear here when payment is connected.</p></div>
         ) : (
-          <table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Order ID","Customer","Design / Package","Amount","Payment","Website","Order date"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead>
+          <table className="w-full min-w-[760px] text-left text-xs"><thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground"><tr>{["Order ID","Customer","Design / Package","Amount","Payment","Website","Order date"].map((x) => <th key={x} className="px-2.5 py-2 font-medium">{x}</th>)}</tr></thead>
             <tbody className="divide-y divide-border">{orders.map((order) => <tr key={order.id} onClick={() => setSelected(order)} className="cursor-pointer hover:bg-muted/40">
-              <td className="px-4 py-3 font-mono text-xs">#{order.id}</td><td className="px-4 py-3"><p className="font-medium">{order.customer?.name ?? "Unknown"}</p><p className="text-xs text-muted-foreground">{order.customer?.email}</p></td>
-              <td className="px-4 py-3"><p>{order.invitation ? `${order.invitation.brideName} & ${order.invitation.groomName}` : "—"}</p><p className="text-xs text-muted-foreground">{order.package?.name ?? "—"}</p></td>
-              <td className="px-4 py-3">{order.amount}</td><td className="px-4 py-3"><StatusBadge value={order.paymentStatus} /></td><td className="px-4 py-3"><StatusBadge value={order.invitation?.websiteStatus ?? "DISABLED"} /></td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
+              <td className="px-2.5 py-2 font-mono text-[11px]">#{order.id}</td><td className="px-2.5 py-2"><p className="font-medium">{order.customer?.name ?? "Unknown"}</p><p className="text-[10px] text-muted-foreground">{order.customer?.email}</p></td>
+              <td className="px-2.5 py-2"><p>{order.invitation ? `${order.invitation.brideName} & ${order.invitation.groomName}` : "—"}</p><p className="text-[10px] text-muted-foreground">{order.package?.name ?? "—"}</p></td>
+              <td className="px-2.5 py-2">{order.amount}</td><td className="px-2.5 py-2"><StatusBadge value={order.paymentStatus} /></td><td className="px-2.5 py-2"><StatusBadge value={order.invitation?.websiteStatus ?? "DISABLED"} /></td><td className="px-2.5 py-2 text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
             </tr>)}</tbody>
           </table>
         )}
@@ -1782,10 +1796,122 @@ function CustomersTab() {
       toast.error(error instanceof Error ? error.message : "Failed to update role.");
     }
   };
-  return <div className="space-y-5">
-    <div className="relative"><Search size={15} className="absolute left-3 top-3 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customer name or email..." className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" /></div>
-    <div className="overflow-x-auto rounded-2xl border border-border bg-card">{loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading customers…</div> : customers.length === 0 ? <div className="py-16 text-center"><UserRound size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No customer accounts yet</p><p className="mt-1 text-xs text-muted-foreground">Registered Buyer and Business Account customers will appear here.</p></div> : <table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground"><tr>{["Customer","Role","Orders","Total paid","Websites","Registered"].map((x) => <th key={x} className="px-4 py-3 font-medium">{x}</th>)}</tr></thead><tbody className="divide-y divide-border">{customers.map((customer) => <tr key={customer.id} className="hover:bg-muted/40"><td className="px-4 py-3"><p className="font-medium">{customer.name}</p><p className="text-xs text-muted-foreground">{customer.email}</p></td><td className="px-4 py-3"><select value={customer.role === "business_account" ? "business_account" : "buyer"} onChange={(event) => updateRole(customer, event.target.value as "buyer" | "business_account")} className="rounded-md border border-border bg-background px-2 py-1 text-xs"><option value="buyer">Buyer</option><option value="business_account">Business Account</option></select></td><td className="px-4 py-3">{customer.totalOrders}</td><td className="px-4 py-3">{customer.totalPaid.toFixed(2)}</td><td className="px-4 py-3">{customer.websites.length}</td><td className="px-4 py-3 text-xs text-muted-foreground">{new Date(customer.createdAt).toLocaleDateString("ms-MY")}</td></tr>)}</tbody></table>}</div>
+  return <div className="space-y-4">
+    <div className="relative"><Search size={13} className="absolute left-2.5 top-2.5 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customer name or email..." className="w-full rounded-lg border border-border bg-card py-2 pl-8 pr-2.5 text-xs outline-none focus:ring-2 focus:ring-primary/20" /></div>
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">{loading ? <div className="py-16 text-center text-sm text-muted-foreground">Loading customers…</div> : customers.length === 0 ? <div className="py-16 text-center"><UserRound size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No customer accounts yet</p><p className="mt-1 text-xs text-muted-foreground">Registered Buyer and Business Account customers will appear here.</p></div> : <table className="w-full min-w-[820px] text-left text-xs"><thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground"><tr>{["Customer","Role","Orders","Total paid","Websites","Registered"].map((x) => <th key={x} className="px-2.5 py-2 font-medium">{x}</th>)}</tr></thead><tbody className="divide-y divide-border">{customers.map((customer) => <tr key={customer.id} className="hover:bg-muted/40"><td className="px-2.5 py-2"><p className="font-medium">{customer.name}</p><p className="text-[10px] text-muted-foreground">{customer.email}</p></td><td className="px-2.5 py-2"><select value={customer.role === "business_account" ? "business_account" : "buyer"} onChange={(event) => updateRole(customer, event.target.value as "buyer" | "business_account")} className="rounded-md border border-border bg-background px-2 py-1 text-[11px]"><option value="buyer">Buyer</option><option value="business_account">Business Account</option></select></td><td className="px-2.5 py-2">{customer.totalOrders}</td><td className="px-2.5 py-2">{customer.totalPaid.toFixed(2)}</td><td className="px-2.5 py-2">{customer.websites.length}</td><td className="px-2.5 py-2 text-[10px] text-muted-foreground">{new Date(customer.createdAt).toLocaleDateString("ms-MY")}</td></tr>)}</tbody></table>}</div>
   </div>;
+}
+
+function RevenueTab() {
+  const [stats, setStats] = useState<AdminOrderStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${BASE}/api/admin/orders/stats`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Unable to load revenue");
+      setStats(await response.json());
+    } catch {
+      toast.error("Failed to load revenue report.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const monthly = stats?.monthlyRevenue ?? [];
+  const maxRevenue = Math.max(...monthly.map((month) => month.revenue), 1);
+  const money = (value: number) => `RM ${value.toLocaleString("en-MY", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+  if (loading) {
+    return <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 size={18} className="animate-spin" />Loading revenue report…</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold">Revenue Report</h2>
+          <p className="text-xs text-muted-foreground">Payment performance for the last 12 months</p>
+        </div>
+        <button onClick={() => void load()} className="rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted" aria-label="Refresh revenue report">
+          <RefreshCw size={13} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-3">
+          <DollarSign size={14} className="mb-1.5 text-emerald-600" />
+          <p className="text-xl font-semibold leading-none">{money(stats?.totalRevenue ?? 0)}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Total Revenue</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-3">
+          <ShoppingBag size={14} className="mb-1.5 text-primary" />
+          <p className="text-xl font-semibold leading-none">{stats?.totalOrders ?? 0}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Total Orders</p>
+        </div>
+        <div className="col-span-2 rounded-xl border border-border bg-card p-3 sm:col-span-1">
+          <CheckCircle2 size={14} className="mb-1.5 text-emerald-600" />
+          <p className="text-xl font-semibold leading-none">{stats?.successfulPayments ?? 0}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Successful Orders</p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <BarChart3 size={15} className="text-primary" />
+          <h3 className="text-sm font-semibold">Monthly Revenue</h3>
+        </div>
+        {monthly.length === 0 ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">No order data available yet.</div>
+        ) : (
+          <div className="space-y-4">
+            {monthly.map((month) => (
+              <div key={month.month} className="grid grid-cols-[84px_1fr_auto] items-center gap-2 text-xs">
+                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <CalendarDays size={12} />
+                  <span>{month.label}</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${Math.max((month.revenue / maxRevenue) * 100, month.revenue > 0 ? 3 : 0)}%` }}
+                  />
+                </div>
+                <div className="min-w-[108px] text-right">
+                  <p className="text-xs font-medium">{money(month.revenue)}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {month.successfulOrders} successful · {month.totalOrders} orders
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <TrendingUp size={15} className="text-primary" />
+          <h3 className="text-sm font-semibold">How this is calculated</h3>
+        </div>
+        <p className="text-xs leading-5 text-muted-foreground">
+          Revenue and successful orders include only orders marked <strong>PAID</strong>.
+          Revenue is grouped by the payment date; orders without a payment date use their order date.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 // ── Admin Page ────────────────────────────────────────────────────────────────
@@ -1821,11 +1947,12 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background px-4 py-8 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-[100dvh] bg-background px-3 py-5 sm:px-5 lg:px-6">
+      <div className="mx-auto max-w-[1440px]">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl text-foreground">Admin Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Orders, Customers &amp; Card Design Management</p>
+          <h1 className="font-serif text-xl text-foreground">Admin Dashboard</h1>
+          <p className="text-xs text-muted-foreground">Orders, Customers &amp; Card Design Management</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -1849,8 +1976,8 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+      <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["rawcard", "Raw Card"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -1859,7 +1986,7 @@ export default function AdminPage() {
               else if (key === "editor") navigate("/admin/editor");
               else setTab(key);
             }}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
+            className={`px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
               tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -1873,7 +2000,9 @@ export default function AdminPage() {
       {tab === "reviews" && <ReviewsTab />}
       {tab === "pricing" && <PricingTab />}
       {tab === "orders" && <OrdersTab />}
+      {tab === "revenue" && <RevenueTab />}
       {tab === "customers" && <CustomersTab />}
+      </div>
     </div>
   );
 }

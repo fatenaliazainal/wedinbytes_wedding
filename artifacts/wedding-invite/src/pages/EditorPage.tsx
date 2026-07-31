@@ -75,6 +75,8 @@ function fontFamilyStack(fontName?: string | null): string {
 // names and a classic font for body text independently.
 const SCRIPT_FONTS = [
   { value: "Dancing Script", label: "Dancing Script" },
+  // Used by the original FL001 catalogue template.
+  { value: "Playfair Display", label: "Playfair Display" },
   { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
   { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
   { value: "Allura", label: "Allura" },
@@ -620,22 +622,25 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           colorBackground:  tpl.colorBackground,
           colorCard:        tpl.colorCard,
         });
-        // Buyer per-invitation overrides take priority; template values are the fallback
+        // The admin demo is the live catalogue preview. Its invitation record is
+        // only sample content, so stale style values on that record must never
+        // mask the currently saved Card Design template.
+        const invitationOwnsStyle = mode !== "demo";
         setDesign({
           designCode:       resolvedCode,
-          openingAnimation: d.openingAnimation ?? tpl.openingAnimation,
-          openButtonText:   d.openButtonText   ?? "BUKA",
-          nameFontFamily:   normalizeFont(d.nameFontFamily   ?? tpl.nameFontFamily),
-          nameFontSize:     d.nameFontSize      ?? tpl.nameFontSize ?? "38",
-          badgeFontSize:    d.badgeFontSize     ?? tpl.badgeFontSize ?? "24",
-          nameColor:        d.nameColor         ?? tpl.nameColor,
-          cardMaxWidth:     d.cardMaxWidth      ?? tpl.cardMaxWidth,
-          bodyFontFamily:   normalizeFont(d.bodyFontFamily    ?? tpl.bodyFontFamily),
-          colorPrimary:     d.colorPrimary      ?? tpl.colorPrimary,
-          colorSecondary:   d.colorSecondary    ?? tpl.colorSecondary,
-          colorAccent:      d.colorAccent       ?? tpl.colorAccent,
-          colorBackground:  d.colorBackground   ?? tpl.colorBackground,
-          colorCard:        d.colorCard         ?? tpl.colorCard,
+          openingAnimation: invitationOwnsStyle ? (d.openingAnimation ?? tpl.openingAnimation) : tpl.openingAnimation,
+          openButtonText:   invitationOwnsStyle ? (d.openButtonText ?? "BUKA") : "BUKA",
+          nameFontFamily:   normalizeFont(invitationOwnsStyle ? (d.nameFontFamily ?? tpl.nameFontFamily) : tpl.nameFontFamily),
+          nameFontSize:     invitationOwnsStyle ? (d.nameFontSize ?? tpl.nameFontSize ?? "38") : (tpl.nameFontSize ?? "38"),
+          badgeFontSize:    invitationOwnsStyle ? (d.badgeFontSize ?? tpl.badgeFontSize ?? "24") : (tpl.badgeFontSize ?? "24"),
+          nameColor:        invitationOwnsStyle ? (d.nameColor ?? tpl.nameColor) : tpl.nameColor,
+          cardMaxWidth:     invitationOwnsStyle ? (d.cardMaxWidth ?? tpl.cardMaxWidth) : tpl.cardMaxWidth,
+          bodyFontFamily:   normalizeFont(invitationOwnsStyle ? (d.bodyFontFamily ?? tpl.bodyFontFamily) : tpl.bodyFontFamily),
+          colorPrimary:     invitationOwnsStyle ? (d.colorPrimary ?? tpl.colorPrimary) : tpl.colorPrimary,
+          colorSecondary:   invitationOwnsStyle ? (d.colorSecondary ?? tpl.colorSecondary) : tpl.colorSecondary,
+          colorAccent:      invitationOwnsStyle ? (d.colorAccent ?? tpl.colorAccent) : tpl.colorAccent,
+          colorBackground:  invitationOwnsStyle ? (d.colorBackground ?? tpl.colorBackground) : tpl.colorBackground,
+          colorCard:        invitationOwnsStyle ? (d.colorCard ?? tpl.colorCard) : tpl.colorCard,
           cardImageUrl:     tpl.cardImageUrl,
           envelopeImageUrl: tpl.envelopeImageUrl,
           musicUrl:         d.musicUrl || tpl.musicUrl,
@@ -1667,7 +1672,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {activeTab === "galeri" && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Upload up to 4 images. Supports R2 keys or full URLs.
+                  Upload up to 4 images.
                 </p>
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">

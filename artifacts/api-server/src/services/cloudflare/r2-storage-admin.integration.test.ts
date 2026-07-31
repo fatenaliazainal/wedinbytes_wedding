@@ -15,9 +15,14 @@ const requiredEnv = [
   "CF_R2_ACCOUNT_ID",
   "CF_R2_ACCESS_KEY_ID",
   "CF_R2_SECRET_ACCESS_KEY",
-  "CF_R2_BUCKET_NAME",
 ];
-const missingEnv = requiredEnv.filter((name) => !process.env[name]);
+const bucketConfigured = process.env.NODE_ENV === "production"
+  ? process.env.CF_R2_BUCKET_NAME_PRODUCTION || process.env.CF_R2_BUCKET_NAME
+  : process.env.CF_R2_BUCKET_NAME_DEVELOPMENT || process.env.CF_R2_BUCKET_NAME;
+const missingEnv = [
+  ...requiredEnv.filter((name) => !process.env[name]),
+  ...(!bucketConfigured ? ["environment-specific R2 bucket name"] : []),
+];
 
 if (missingEnv.length > 0) {
   console.warn(

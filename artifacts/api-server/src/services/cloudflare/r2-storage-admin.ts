@@ -22,7 +22,14 @@ const R2_CONFIG = {
   accountId: process.env.CF_R2_ACCOUNT_ID ?? "",
   accessKeyId: process.env.CF_R2_ACCESS_KEY_ID ?? "",
   secretAccessKey: process.env.CF_R2_SECRET_ACCESS_KEY ?? "",
-  bucketName: process.env.CF_R2_BUCKET_NAME ?? "",
+  // Keep the legacy shared bucket as a fallback while allowing development
+  // and production to use completely separate R2 buckets.
+  bucketName:
+    (process.env.NODE_ENV === "production"
+      ? process.env.CF_R2_BUCKET_NAME_PRODUCTION
+      : process.env.CF_R2_BUCKET_NAME_DEVELOPMENT)
+    ?? process.env.CF_R2_BUCKET_NAME
+    ?? "",
   region: process.env.CF_R2_REGION ?? "auto",
   /**
    * Optional custom public domain for R2 objects (e.g. "https://assets.example.com").
@@ -47,6 +54,10 @@ export function isR2Configured(): boolean {
   );
 }
 
+export function getConfiguredR2BucketName(): string {
+  return R2_CONFIG.bucketName;
+}
+
 /**
  * Throws a descriptive error listing any missing R2 environment variables.
  * Call this at the top of any function that needs R2 access.
@@ -56,7 +67,13 @@ function assertR2Configured(): void {
   if (!R2_CONFIG.accountId) missing.push("CF_R2_ACCOUNT_ID");
   if (!R2_CONFIG.accessKeyId) missing.push("CF_R2_ACCESS_KEY_ID");
   if (!R2_CONFIG.secretAccessKey) missing.push("CF_R2_SECRET_ACCESS_KEY");
-  if (!R2_CONFIG.bucketName) missing.push("CF_R2_BUCKET_NAME");
+  if (!R2_CONFIG.bucketName) {
+    missing.push(
+      process.env.NODE_ENV === "production"
+        ? "CF_R2_BUCKET_NAME_PRODUCTION"
+        : "CF_R2_BUCKET_NAME_DEVELOPMENT",
+    );
+  }
 
   if (missing.length > 0) {
     throw new Error(

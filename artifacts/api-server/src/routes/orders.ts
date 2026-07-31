@@ -271,6 +271,46 @@ router.get("/admin/orders/stats", async (req, res) => {
       .reduce((sum, row) => sum + Number(row.amount || 0), 0);
     const activeWebsites = (await db.select().from(invitationTable))
       .filter((row) => invitationStatus(row) === "ACTIVE").length;
+    const monthFormatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kuala_Lumpur",
+      year: "numeric",
+      month: "2-digit",
+    });
+    const monthLabelFormatter = new Intl.DateTimeFormat("en-MY", {
+      timeZone: "Asia/Kuala_Lumpur",
+      year: "numeric",
+      month: "long",
+    });
+    const monthKey = (date: Date) => monthFormatter.format(date);
+    const monthLabel = (date: Date) => monthLabelFormatter.format(date);
+    const now = new Date();
+    const monthlyRevenue = Array.from({ length: 12 }, (_, index) => {
+      // Use noon UTC so formatting in Asia/Kuala_Lumpur cannot shift the
+      // first day into the previous calendar month.
+      const monthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - index), 15, 12));
+      return {
+        month: monthKey(monthDate),
+        label: monthLabel(monthDate),
+        totalOrders: 0,
+        successfulOrders: 0,
+        revenue: 0,
+      };
+    });
+    const monthlyByKey = new Map(monthlyRevenue.map((month) => [month.month, month]));
+    for (const row of rows) {
+      const createdAt = new Date(row.createdAt);
+      const createdMonth = monthlyByKey.get(monthKey(createdAt));
+      if (createdMonth) createdMonth.totalOrders += 1;
+
+      if (row.paymentStatus === "PAID") {
+        const paidAt = row.paidAt ? new Date(row.paidAt) : createdAt;
+        const paidMonth = monthlyByKey.get(monthKey(paidAt));
+        if (paidMonth) {
+          paidMonth.successfulOrders += 1;
+          paidMonth.revenue += Number(row.amount || 0);
+        }
+      }
+    }
     res.json({
       totalOrders: rows.length,
       successfulPayments: rows.filter((row) => row.paymentStatus === "PAID").length,
@@ -279,6 +319,7 @@ router.get("/admin/orders/stats", async (req, res) => {
       totalRevenue: revenue,
       activeWebsites,
       recentOrders: rows.slice(0, 5),
+      monthlyRevenue,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to load order stats");

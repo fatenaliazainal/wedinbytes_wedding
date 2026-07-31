@@ -111,7 +111,7 @@ router.post("/raw-card", requireAdmin, upload.single("file"), async (req, res) =
   if (!isR2Configured()) {
     res.status(503).json({
       error:
-        "Photo storage is not configured. The server administrator must set the CF_R2_ACCOUNT_ID, CF_R2_ACCESS_KEY_ID, CF_R2_SECRET_ACCESS_KEY, and CF_R2_BUCKET_NAME secrets before uploads will work.",
+        "Photo storage is not configured. The server administrator must set the R2 account credentials and the environment-specific bucket name before uploads will work.",
     });
     return;
   }
@@ -174,7 +174,7 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
   if (!isR2Configured()) {
     res.status(503).json({
       error:
-        "Photo storage is not configured. The server administrator must set the CF_R2_ACCOUNT_ID, CF_R2_ACCESS_KEY_ID, CF_R2_SECRET_ACCESS_KEY, and CF_R2_BUCKET_NAME secrets before uploads will work.",
+        "Photo storage is not configured. The server administrator must set the R2 account credentials and the environment-specific bucket name before uploads will work.",
     });
     return;
   }

@@ -382,6 +382,192 @@ function WishCard({
   );
 }
 
+function WishesCarousel({
+  wishes,
+  lang,
+  bodyFontFamily,
+}: {
+  wishes: { name: string; message?: string | null; createdAt?: string }[];
+  lang: "ms" | "en";
+  bodyFontFamily: string;
+}) {
+  const [viewportRef, emblaApi] = useEmblaCarousel({
+    align: "center",
+    loop: wishes.length > 1,
+    duration: 28,
+  });
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const activeIndexRef = React.useRef(0);
+  const isHoveredRef = React.useRef(false);
+  const isDraggingRef = React.useRef(false);
+  const carouselRootRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+
+    const updateActiveSlide = () => {
+      const nextIndex = emblaApi.selectedScrollSnap();
+      activeIndexRef.current = nextIndex;
+      setActiveIndex(nextIndex);
+    };
+
+    updateActiveSlide();
+    emblaApi.on("select", updateActiveSlide);
+    emblaApi.on("reInit", updateActiveSlide);
+    const pauseWhileDragging = () => {
+      isDraggingRef.current = true;
+    };
+    const resumeAfterDragging = () => {
+      isDraggingRef.current = false;
+    };
+    emblaApi.on("pointerDown", pauseWhileDragging);
+    emblaApi.on("pointerUp", resumeAfterDragging);
+
+    return () => {
+      emblaApi.off("select", updateActiveSlide);
+      emblaApi.off("reInit", updateActiveSlide);
+      emblaApi.off("pointerDown", pauseWhileDragging);
+      emblaApi.off("pointerUp", resumeAfterDragging);
+    };
+  }, [emblaApi]);
+
+  const advanceAutomatically = React.useCallback(() => {
+    if (!emblaApi || wishes.length <= 1) return;
+    const nextIndex = (activeIndexRef.current + 1) % wishes.length;
+    activeIndexRef.current = nextIndex;
+    setActiveIndex(nextIndex);
+    emblaApi.scrollTo(nextIndex);
+  }, [emblaApi, wishes.length]);
+
+  React.useEffect(() => {
+    if (!emblaApi || wishes.length <= 1) return;
+    const timer = window.setInterval(() => {
+      if (!isHoveredRef.current && !isDraggingRef.current) advanceAutomatically();
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [advanceAutomatically, emblaApi, wishes.length]);
+
+  React.useEffect(() => {
+    const updatePointerPosition = (event: PointerEvent) => {
+      const element = carouselRootRef.current;
+      if (!element) return;
+      const bounds = element.getBoundingClientRect();
+      const isInside = event.clientX >= bounds.left
+        && event.clientX <= bounds.right
+        && event.clientY >= bounds.top
+        && event.clientY <= bounds.bottom;
+      isHoveredRef.current = isInside;
+    };
+    const releaseDragging = () => {
+      isDraggingRef.current = false;
+    };
+    document.addEventListener("pointermove", updatePointerPosition);
+    document.addEventListener("pointerup", releaseDragging);
+    document.addEventListener("pointercancel", releaseDragging);
+    return () => {
+      document.removeEventListener("pointermove", updatePointerPosition);
+      document.removeEventListener("pointerup", releaseDragging);
+      document.removeEventListener("pointercancel", releaseDragging);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (activeIndex >= wishes.length && wishes.length > 0) {
+      emblaApi?.scrollTo(0);
+    }
+  }, [activeIndex, emblaApi, wishes.length]);
+
+  if (!wishes.length) return null;
+
+  return (
+    <div
+      ref={carouselRootRef}
+      className="w-full max-w-xl"
+      onMouseEnter={() => {
+        isHoveredRef.current = true;
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false;
+      }}
+      onTouchStart={() => {
+        isDraggingRef.current = true;
+      }}
+      onTouchEnd={() => {
+        isDraggingRef.current = false;
+      }}
+      onTouchCancel={() => {
+        isDraggingRef.current = false;
+      }}
+    >
+      <div className="relative px-1 sm:px-8">
+        <div ref={viewportRef} className="overflow-hidden rounded-[24px]">
+          <div className="flex">
+            {wishes.map((wish, index) => (
+              <div
+                key={`${wish.createdAt ?? "wish"}-${index}`}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Wish ${index + 1} of ${wishes.length}`}
+                aria-hidden={activeIndex !== index}
+                className="min-w-0 shrink-0 grow-0 basis-full px-1 sm:px-2"
+              >
+                <WishCard
+                  wish={wish}
+                  index={index}
+                  lang={lang}
+                  bodyFontFamily={bodyFontFamily}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        {wishes.length > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous wish"
+              onClick={() => {
+                emblaApi?.scrollPrev();
+              }}
+              className="absolute left-0 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-primary/15 bg-white/90 text-primary shadow-sm backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next wish"
+              onClick={() => {
+                emblaApi?.scrollNext();
+              }}
+              className="absolute right-0 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-primary/15 bg-white/90 text-primary shadow-sm backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </>
+        )}
+      </div>
+      {wishes.length > 1 && (
+        <div className="mt-5 flex items-center justify-center gap-2" aria-label="Wish pagination">
+          {wishes.map((wish, index) => (
+            <button
+              key={`wish-dot-${wish.createdAt ?? "wish"}-${index}`}
+              type="button"
+              aria-label={`Go to wish ${index + 1}`}
+              aria-current={activeIndex === index ? "true" : undefined}
+              onClick={() => {
+                emblaApi?.scrollTo(index);
+              }}
+              className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                activeIndex === index ? "w-7 bg-primary" : "w-2 bg-primary/25 hover:bg-primary/50"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const CARD_TEXT = {
   ms: {
     coverTitle: "RAIKAN CINTA",
@@ -745,21 +931,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <div className={detailBlock}>
               <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
               <OrnamentDivider />
-              <div className="w-full max-w-sm">
+              <div className="flex w-full flex-col items-center">
                 <p className="mb-4 text-left text-sm font-semibold tracking-wide text-foreground/80" style={{ fontFamily: bodyFontFamily }}>
                   💌 {guestWishes.length} Wishes
                 </p>
-                <div className="wishes-scrollbar max-h-80 overflow-y-auto space-y-4 pr-2">
-                  {guestWishes.map((wish, idx) => (
-                    <WishCard
-                      key={`${wish.createdAt ?? "wish"}-${idx}`}
-                      wish={wish}
-                      index={idx}
-                      lang={lang}
-                      bodyFontFamily={bodyFontFamily}
-                    />
-                  ))}
-                </div>
+                <WishesCarousel
+                  wishes={guestWishes}
+                  lang={lang}
+                  bodyFontFamily={bodyFontFamily}
+                />
               </div>
             </div>
             </RevealOnScroll>

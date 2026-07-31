@@ -32,7 +32,10 @@ app.listen(port, async (err) => {
           !process.env.CF_R2_ACCOUNT_ID && "CF_R2_ACCOUNT_ID",
           !process.env.CF_R2_ACCESS_KEY_ID && "CF_R2_ACCESS_KEY_ID",
           !process.env.CF_R2_SECRET_ACCESS_KEY && "CF_R2_SECRET_ACCESS_KEY",
-          !process.env.CF_R2_BUCKET_NAME && "CF_R2_BUCKET_NAME",
+          !process.env.CF_R2_BUCKET_NAME
+            && !process.env.CF_R2_BUCKET_NAME_DEVELOPMENT
+            && !process.env.CF_R2_BUCKET_NAME_PRODUCTION
+            && "environment-specific R2 bucket name",
         ].filter(Boolean),
       },
       "R2 storage is NOT configured — photo uploads will return 503 until these secrets are added in the Replit Secrets panel",

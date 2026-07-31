@@ -33,3 +33,7 @@
 - [Cover-name invitation links](cover-name-invitation-links.md) — public URLs use Cover Groom Name and Cover Bride Name across Buyer, Business Account, Admin, and email.
 - [Dress code palette](dress-code-palette.md) — preserve legacy dresscode while optional themes use up to four validated hex swatches.
 - [HEX color picker convention](hex-color-picker-convention.md) — user-facing pickers use #RRGGBB; convert only at the legacy theme boundary.
+- [Receipt downloads](receipt-download.md) — buyer payment receipts are generated as valid browser-side PDFs, not text files.
+- [Wishes carousel](wishes-carousel.md) — public wishes use a responsive single-card swipe carousel with arrows, dots, and six-second auto-advance.
+- [Admin revenue reporting](admin-revenue-reporting.md) — revenue is based on PAID orders and grouped by Malaysia payment month; order volume uses order creation month.
+- [Admin UI density](admin-ui-density.md) — preserve the existing Admin font, colors, and flows while making the layout compact and reference-like.

@@ -141,3 +141,9 @@ TOYYIBPAY_CATEGORY_CODE = "8bw99mw0"
 TOYYIBPAY_SANDBOX = "true"
 TOYYIBPAY_PUBLIC_BASE_URL = "https://wedinstudio.replit.app"
 TOYYIBPAY_DUITNOW_QR_ENABLED = "true"
+
+[userenv.development]
+CF_R2_BUCKET_NAME_DEVELOPMENT = "wedinbytes"
+
+[userenv.production]
+CF_R2_BUCKET_NAME_PRODUCTION = "wedinstudio"

@@ -10,7 +10,7 @@ Malaysian wedding e-invitation SaaS platform. Buyers register, customise their c
 - `pnpm run typecheck` — Full typecheck
 - `pnpm --filter @workspace/api-spec run codegen` — Regenerate API hooks from OpenAPI spec
 
-Required env vars: `DATABASE_URL`, `SESSION_SECRET`, `CF_R2_ACCOUNT_ID`, `CF_R2_ACCESS_KEY_ID`, `CF_R2_SECRET_ACCESS_KEY`, `CF_R2_BUCKET_NAME`
+Required env vars: `DATABASE_URL`, `SESSION_SECRET`, `CF_R2_ACCOUNT_ID`, `CF_R2_ACCESS_KEY_ID`, `CF_R2_SECRET_ACCESS_KEY`, and an R2 bucket name. Development uses `CF_R2_BUCKET_NAME_DEVELOPMENT` (`wedinbytes`); production uses `CF_R2_BUCKET_NAME_PRODUCTION` (`wedinstudio`). Legacy `CF_R2_BUCKET_NAME` remains a fallback.
 
 Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. `https://pub-xxx.r2.dev`). Leave empty to serve local/public assets only.
 
