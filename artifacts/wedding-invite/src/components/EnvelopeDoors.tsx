@@ -43,7 +43,7 @@ export function EnvelopeDoors({
           <DesignImage
             src={envelopeImageUrl}
             fallbackSrc={defaultEnvelopeRef}
-            opacity={0.35}
+            opacity={1}
             className="z-0"
           />
         )}
