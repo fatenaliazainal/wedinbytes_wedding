@@ -23,6 +23,12 @@ Business Account profile UI should expose one editable custom business link, whi
 
 **How to apply:** Label the field “Business link”, accept a custom name or pasted `/business/...` URL, normalize it to a safe unique slug on the server, and never expose the word “slug” in the UI.
 
+Customer form share URLs use a URL-safe segment derived from the displayed Business name, not the separately editable Business link.
+
+**Why:** The share link should identify the business customers recognise, while the editable business link remains a separate public-profile setting.
+
+**How to apply:** Normalize the current `businessName` for the `/business/{name}/customer-form/{token}` path when generating share links.
+
 Required customer contact number belongs near the top of the business order form, immediately after the couple names, rather than buried among venue and invitation details.
 
 **Why:** Customers could mistake the form as missing contact information when the required field was only visible much further down the page.
@@ -40,3 +46,9 @@ Standard registration creates a Buyer account without exposing an account-type s
 **Why:** New customers should not be asked to choose an internal account workflow during ordinary signup.
 
 **How to apply:** Keep the signup request on the default Buyer role and preserve backend/admin support for Business Account users.
+
+Package form visibility is gated by the package's persisted feature list: only packages with the `Photo Gallery` feature receive the gallery field and upload capability.
+
+**Why:** Older stored form configurations may still contain gallery fields, while feature availability must remain consistent for Standard and Premium packages.
+
+**How to apply:** Normalize package forms with the package feature list, reject gallery uploads server-side when the feature is absent, and add the gallery field when an enabled package lacks it.

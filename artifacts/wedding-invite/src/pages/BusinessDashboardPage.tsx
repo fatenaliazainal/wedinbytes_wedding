@@ -83,6 +83,16 @@ type PaymentHistoryItem = {
   invitation?: { id: number; brideName: string; groomName: string } | null;
 };
 
+function businessNamePathSegment(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default function BusinessDashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
@@ -165,7 +175,12 @@ export default function BusinessDashboardPage() {
         toast.error(data.error || "Unable to create form link.");
         return;
       }
-      setFormShareUrl(`${window.location.origin}${BASE}/customer-form/${encodeURIComponent(data.token)}`);
+      const businessNameSegment = businessNamePathSegment(profile?.businessName || user?.name || "");
+      if (!businessNameSegment) {
+        toast.error("Set your Business name before creating a customer form link.");
+        return;
+      }
+      setFormShareUrl(`${window.location.origin}${BASE}/business/${encodeURIComponent(businessNameSegment)}/customer-form/${encodeURIComponent(data.token)}`);
       toast.success("Customer form link created.");
     } finally {
       setFormShareLoading(false);

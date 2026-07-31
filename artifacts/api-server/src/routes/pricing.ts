@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, asc, or } from "drizzle-orm";
+import { and, eq, sql, asc, or } from "drizzle-orm";
 import { db, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
 import { DEFAULT_BUSINESS_FORM_CONFIG, normalizeBusinessFormConfig } from "../lib/business-package";
 
@@ -38,7 +38,9 @@ router.get("/pricing", async (req, res) => {
 
     const result = packages.map((pkg) => ({
       ...pkg,
-      formConfig: normalizeBusinessFormConfig(pkg.formConfig),
+      formConfig: normalizeBusinessFormConfig(pkg.formConfig, {
+        allowGallery: (featuresByPackage.get(pkg.id) ?? []).some((feature) => feature.name === "Photo Gallery"),
+      }),
       features: featuresByPackage.get(pkg.id) ?? [],
     }));
 
@@ -71,7 +73,9 @@ router.get("/admin/pricing", async (req, res) => {
 
     const result = packages.map((pkg) => ({
       ...pkg,
-      formConfig: normalizeBusinessFormConfig(pkg.formConfig),
+      formConfig: normalizeBusinessFormConfig(pkg.formConfig, {
+        allowGallery: (featuresByPackage.get(pkg.id) ?? []).some((feature) => feature.name === "Photo Gallery"),
+      }),
       features: featuresByPackage.get(pkg.id) ?? [],
     }));
 
@@ -133,7 +137,17 @@ router.patch("/admin/pricing/:id", async (req, res) => {
     for (const field of fields) {
       if (field in body) update[field] = body[field];
     }
-    if ("formConfig" in body) update.formConfig = normalizeBusinessFormConfig(body.formConfig);
+    if ("formConfig" in body) {
+      const [galleryFeature] = await db
+        .select({ id: pricingFeatureTable.id })
+        .from(pricingFeatureTable)
+        .where(and(
+          eq(pricingFeatureTable.packageId, id),
+          eq(pricingFeatureTable.name, "Photo Gallery"),
+        ))
+        .limit(1);
+      update.formConfig = normalizeBusinessFormConfig(body.formConfig, { allowGallery: Boolean(galleryFeature) });
+    }
     if (Object.keys(update).length === 0) {
       res.status(400).json({ error: "No valid fields to update" });
       return;

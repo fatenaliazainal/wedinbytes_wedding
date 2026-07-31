@@ -9,6 +9,7 @@ import {
   db,
   invitationTable,
   pricingPackageTable,
+  pricingFeatureTable,
   userTable,
 } from "@workspace/db";
 import { auditEvent, customerFormSubmitRateLimit } from "../lib/security";
@@ -134,6 +135,18 @@ function keepCustomerFormGalleryKeys(value: unknown, token: string): string[] {
       .filter((item) => item.startsWith(prefix) && !item.includes(".."))
       .slice(0, 4)
     : [];
+}
+
+async function packageAllowsFeature(packageId: number, featureName: string) {
+  const [feature] = await db
+    .select({ id: pricingFeatureTable.id })
+    .from(pricingFeatureTable)
+    .where(and(
+      eq(pricingFeatureTable.packageId, packageId),
+      eq(pricingFeatureTable.name, featureName),
+    ))
+    .limit(1);
+  return Boolean(feature);
 }
 
 function slugPart(value: string) {
@@ -413,6 +426,7 @@ router.get("/business/form-shares/:token", async (req, res) => {
       res.status(404).json({ error: "Customer form link not found." });
       return;
     }
+    const allowGallery = await packageAllowsFeature(share.packageId, "Photo Gallery");
     res.json({
       token: share.token,
       businessName: share.businessName,
@@ -420,7 +434,7 @@ router.get("/business/form-shares/:token", async (req, res) => {
       packageId: share.packageId,
       packageName: share.packageName,
       packageDescription: share.packageDescription,
-      formConfig: normalizeBusinessFormConfig(share.formConfig),
+      formConfig: normalizeBusinessFormConfig(share.formConfig, { allowGallery }),
     });
   } catch (err) {
     req.log.error({ err }, "Failed to load customer form share");
@@ -450,7 +464,10 @@ router.post("/business/form-shares/:token/gallery-upload", customerFormSubmitRat
       res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image dimensions." });
       return;
     }
-    const [share] = await db.select({ token: businessFormShareTable.token })
+    const [share] = await db.select({
+      token: businessFormShareTable.token,
+      packageId: businessFormShareTable.packageId,
+    })
       .from(businessFormShareTable)
       .innerJoin(pricingPackageTable, eq(pricingPackageTable.id, businessFormShareTable.packageId))
       .where(and(
@@ -461,6 +478,10 @@ router.post("/business/form-shares/:token/gallery-upload", customerFormSubmitRat
       .limit(1);
     if (!share) {
       res.status(404).json({ error: "Customer form link not found." });
+      return;
+    }
+    if (!(await packageAllowsFeature(share.packageId, "Photo Gallery"))) {
+      res.status(403).json({ error: "Photo Gallery is available with the Premium package." });
       return;
     }
     const key = await uploadImage({
@@ -505,7 +526,8 @@ router.post("/business/form-shares/:token/submit", customerFormSubmitRateLimit, 
       res.status(404).json({ error: "The selected package is no longer available." });
       return;
     }
-    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const allowGallery = await packageAllowsFeature(selectedPackage.id, "Photo Gallery");
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig, { allowGallery });
     const { errors, cleaned } = validateBusinessCustomerData(formConfig, (req.body as Record<string, unknown>).customerData);
     if (errors.length) {
       res.status(400).json({ error: errors.join(" ") });
@@ -567,7 +589,8 @@ router.post("/business/clients/:id/create-invitation", async (req, res) => {
       res.status(400).json({ error: "The client's package is no longer available." });
       return;
     }
-    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const allowGallery = await packageAllowsFeature(selectedPackage.id, "Photo Gallery");
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig, { allowGallery });
     const { errors, cleaned } = validateBusinessCustomerData(formConfig, client.customerData);
     if (errors.length) {
       res.status(400).json({ error: errors.join(" ") });
@@ -622,7 +645,8 @@ router.post("/business/clients", async (req, res) => {
       res.status(400).json({ error: "The selected package is not available." });
       return;
     }
-    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig);
+    const allowGallery = await packageAllowsFeature(selectedPackage.id, "Photo Gallery");
+    const formConfig = normalizeBusinessFormConfig(selectedPackage.formConfig, { allowGallery });
     const { errors, cleaned } = validateBusinessCustomerData(formConfig, body.customerData);
     if (errors.length) {
       res.status(400).json({ error: errors.join(" ") });

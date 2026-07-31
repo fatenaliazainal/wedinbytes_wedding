@@ -21,7 +21,6 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
     { key: "email", label: "Customer email", type: "email" },
-    { key: "galleryImages", label: "Photo gallery", type: "textarea", invitationField: "galleryImages" },
     { key: "rsvpEnabled", label: "Enable RSVP", type: "checkbox", invitationField: "rsvpEnabled" },
     { key: "rsvpDeadline", label: "RSVP deadline", type: "text", invitationField: "rsvpDeadline" },
     { key: "rsvpMaxOverallGuests", label: "Overall guest limit", type: "text", defaultValue: "1000", invitationField: "rsvpMaxOverallGuests" },
@@ -33,6 +32,13 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     venueCity: "",
     venueState: "",
   },
+};
+
+const PHOTO_GALLERY_FIELD: PricingFormField = {
+  key: "galleryImages",
+  label: "Photo gallery",
+  type: "textarea",
+  invitationField: "galleryImages",
 };
 
 const REMOVED_BUSINESS_FORM_KEYS = new Set([
@@ -88,8 +94,13 @@ function invitationFieldName(value: unknown) {
   return INVITATION_FIELDS.has(camelCase) ? camelCase : undefined;
 }
 
-export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
-  if (!value || typeof value !== "object") return DEFAULT_BUSINESS_FORM_CONFIG;
+export function normalizeBusinessFormConfig(value: unknown, options: { allowGallery?: boolean } = {}): PricingFormConfig {
+  const allowGallery = options.allowGallery === true;
+  if (!value || typeof value !== "object") {
+    return allowGallery
+      ? { ...DEFAULT_BUSINESS_FORM_CONFIG, fields: [...DEFAULT_BUSINESS_FORM_CONFIG.fields, PHOTO_GALLERY_FIELD] }
+      : DEFAULT_BUSINESS_FORM_CONFIG;
+  }
   const raw = value as { fields?: unknown; hiddenFields?: unknown };
   const configuredFields = Array.isArray(raw.fields)
     ? raw.fields
@@ -115,6 +126,7 @@ export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
       .filter((field) =>
         field.key &&
         !REMOVED_BUSINESS_FORM_KEYS.has(field.key) &&
+        (allowGallery || field.key !== "galleryImages") &&
         field.label &&
         ["text", "email", "date", "tel", "url", "textarea", "checkbox"].includes(field.type),
       )
@@ -123,8 +135,11 @@ export function normalizeBusinessFormConfig(value: unknown): PricingFormConfig {
   const fieldsWithoutDefaults = [
     ...configuredFields,
     ...DEFAULT_BUSINESS_FORM_CONFIG.fields.filter((field) =>
-      !configuredKeys.has(field.key) && !REMOVED_BUSINESS_FORM_KEYS.has(field.key),
+      !configuredKeys.has(field.key) &&
+      !REMOVED_BUSINESS_FORM_KEYS.has(field.key) &&
+      (allowGallery || field.key !== "galleryImages"),
     ),
+    ...(allowGallery && !configuredKeys.has("galleryImages") ? [PHOTO_GALLERY_FIELD] : []),
   ];
   const contactField = fieldsWithoutDefaults.find((field) => field.key === "contactPhone")
     ?? DEFAULT_BUSINESS_FORM_CONFIG.fields.find((field) => field.key === "contactPhone");

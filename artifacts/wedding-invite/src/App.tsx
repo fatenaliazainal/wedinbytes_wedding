@@ -78,6 +78,7 @@ function Router() {
       <Route path="/business/dashboard" component={BusinessDashboardPage} />
       <Route path="/business/profile" component={BusinessProfilePage} />
       <Route path="/business/editor" component={BusinessEditorRoute} />
+      <Route path="/business/:slug/customer-form/:token" component={CustomerFormPage} />
       <Route path="/customer-form/:token" component={CustomerFormPage} />
       <Route path="/payment/toyyibpay/return" component={ToyyibPayReturnPage} />
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
