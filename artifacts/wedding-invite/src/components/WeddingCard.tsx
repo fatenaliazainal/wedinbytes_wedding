@@ -338,11 +338,20 @@ function WishCard({
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card rounded-[20px] border border-primary/15 bg-gradient-to-br from-white/90 via-white/75 to-primary/[0.06] p-4 text-left shadow-[0_10px_28px_hsl(var(--primary)/0.12)] sm:p-5"
+      className="wishes-card group relative overflow-hidden rounded-[22px] border border-white/[0.35] bg-white/[0.22] p-4 text-left shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_38px_rgba(0,0,0,0.12)] sm:p-5"
+      style={{
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+      }}
     >
-      <div className="flex items-start gap-3">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.2] via-white/[0.07] to-transparent"
+      />
+      <div className="relative z-10 flex items-start gap-3">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-xs font-semibold tracking-[0.12em] text-primary shadow-sm"
           aria-hidden="true"
