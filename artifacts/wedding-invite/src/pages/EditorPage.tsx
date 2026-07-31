@@ -1988,7 +1988,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       title={packageLocked
                         ? (inv.isCustomerOrder && !inv.isPurchased
                           ? "The package assigned to a customer order cannot be changed."
-                          : "Paid invitations cannot change package. Contact us on WhatsApp if you wish to change it.")
+                          : "Package changes are not available for paid invitations. For further assistance, please contact us on WhatsApp.")
                         : undefined}
                       onChange={(e) => {
                         const id = e.target.value ? parseInt(e.target.value, 10) : null;
@@ -2007,10 +2007,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         <p>
                           {inv.isCustomerOrder && !inv.isPurchased
                           ? "Package assigned by customer order cannot be changed."
-                           : "Paid invitations cannot change package."}
+                           : "Package changes are not available for paid invitations."}
                         </p>
                         <p className="mt-1">
-                          If you wish to change your package, please contact us on WhatsApp.
+                          For further assistance, please contact us on WhatsApp.
                         </p>
                         <a
                           href={PACKAGE_SUPPORT_WHATSAPP}

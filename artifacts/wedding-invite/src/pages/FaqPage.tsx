@@ -9,6 +9,8 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 
+const PACKAGE_SUPPORT_WHATSAPP = "https://wa.me/601128134211";
+
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
@@ -117,13 +119,26 @@ const FAQS = [
       },
       {
         question: "Can I change my package after creating my invitation?",
-        answer: "Please contact us for assistance with package changes.",
+        answer: (
+          <>
+            Package changes are not available for paid invitations. For further assistance, please contact us on{" "}
+            <a
+              href={PACKAGE_SUPPORT_WHATSAPP}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gray-900"
+            >
+              WhatsApp
+            </a>
+            .
+          </>
+        ),
       },
     ],
   },
 ];
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
+function FaqItem({ question, answer }: { question: string; answer: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-gray-100 last:border-0">

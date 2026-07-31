@@ -373,7 +373,7 @@ router.patch("/invitation/:token", async (req, res) => {
       if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
         res.status(409).json({
           error: isPaid
-            ? "Paid invitations cannot change package. Please contact us on WhatsApp to request a package change."
+            ? "Package changes are not available for paid invitations. For further assistance, please contact us on WhatsApp."
             : customerOrder
             ? "The package assigned to a customer order cannot be changed."
             : "The pricing package cannot be changed.",
