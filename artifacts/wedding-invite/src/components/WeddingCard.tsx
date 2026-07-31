@@ -281,6 +281,107 @@ function RevealOnScroll({ children, className }: { children: React.ReactNode; cl
   );
 }
 
+function getWishInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+}
+
+function formatWishTimestamp(createdAt: string | undefined, lang: "ms" | "en"): string | null {
+  if (!createdAt) return null;
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat(lang === "ms" ? "ms-MY" : "en-MY", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function WishCard({
+  wish,
+  index,
+  lang,
+  bodyFontFamily,
+}: {
+  wish: { name: string; message?: string | null; createdAt?: string };
+  index: number;
+  lang: "ms" | "en";
+  bodyFontFamily: string;
+}) {
+  const message = wish.message ?? "";
+  const messageRef = React.useRef<HTMLParagraphElement>(null);
+  const [expanded, setExpanded] = React.useState(false);
+  const [isLong, setIsLong] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    const element = messageRef.current;
+    if (!element) return;
+
+    const measure = () => {
+      const lineHeight = Number.parseFloat(window.getComputedStyle(element).lineHeight) || 28;
+      setIsLong(element.scrollHeight > (lineHeight * 3) + 1);
+    };
+
+    measure();
+    const resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(measure)
+      : null;
+    resizeObserver?.observe(element);
+    return () => resizeObserver?.disconnect();
+  }, [message]);
+
+  const timestamp = formatWishTimestamp(wish.createdAt, lang);
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
+      className="wishes-card rounded-[20px] border border-primary/15 bg-gradient-to-br from-white/90 via-white/75 to-primary/[0.06] p-4 text-left shadow-[0_10px_28px_hsl(var(--primary)/0.12)] sm:p-5"
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-xs font-semibold tracking-[0.12em] text-primary shadow-sm"
+          aria-hidden="true"
+        >
+          {getWishInitials(wish.name)}
+        </div>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <p className="break-words text-sm font-bold text-foreground" style={{ fontFamily: bodyFontFamily }}>
+              {wish.name}
+            </p>
+            {timestamp && (
+              <time className="shrink-0 text-[10px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
+                {timestamp}
+              </time>
+            )}
+          </div>
+          <p
+            ref={messageRef}
+            className={`mt-2 break-words text-sm leading-7 text-foreground/80 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}
+            style={{ fontFamily: bodyFontFamily }}
+          >
+            {message}
+          </p>
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setExpanded((current) => !current)}
+              className="mt-2 text-xs font-semibold text-primary underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              {expanded ? "Show Less" : "Read More"}
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
 const CARD_TEXT = {
   ms: {
     coverTitle: "RAIKAN CINTA",
@@ -529,18 +630,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           </RevealOnScroll>
 
           <RevealOnScroll>
-          {/* Programme & Dress Code */}
+          {/* Programme */}
           {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0
-            || Boolean(schedule)
-            || Boolean(invitation.dresscode)
-            || Boolean(inv.dresscodeTheme)
-            || (Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0)) && (
+            || Boolean(schedule)) && (
             <div className={detailBlock}>
-              <p className={sectionTitleCls} style={sectionTitleStyle}>
-                {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0) || Boolean(schedule)
-                  ? t.programmeLabel
-                  : t.dressCodeLabel}
-              </p>
+              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.programmeLabel}</p>
               <OrnamentDivider />
               {Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? (
                 <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
@@ -554,26 +648,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               ) : schedule ? (
                 <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
               ) : null}
-              {(invitation.dresscode || inv.dresscodeTheme || (Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0)) && (
-                <div className="mt-5 flex flex-col items-center gap-3">
-                  <p className="text-xs text-foreground/70 tracking-wider" style={{ fontFamily: bodyFontFamily }}>
-                    {t.dressCodeLabel}: {String(inv.dresscodeTheme || invitation.dresscode || "").toUpperCase()}
-                  </p>
-                  {Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0 && (
-                    <div className="flex items-center justify-center gap-3" aria-label="Dress code colours">
-                      {(inv.dresscodeColors as string[]).slice(0, 4).map((color, index) => (
-                        <span
-                          key={`${color}-${index}`}
-                          className="h-10 w-10 rounded-full border-2 border-white shadow-md"
-                          style={{ backgroundColor: color }}
-                          title={color}
-                          aria-label={`Dress code colour ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
           </RevealOnScroll>
@@ -599,6 +673,40 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               );
             })()}
           </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll>
+          {/* Dress Code — kept immediately above RSVP */}
+          {(Boolean(invitation.dresscode) || Boolean(inv.dresscodeTheme)
+            || (Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0)) && (
+            <div className={detailBlock}>
+              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.dressCodeLabel}</p>
+              <OrnamentDivider />
+              {Boolean(inv.dresscodeTheme || invitation.dresscode) && (
+                <div className="space-y-1" style={{ fontFamily: bodyFontFamily }}>
+                  <p className="text-xs uppercase tracking-wider text-foreground/60">Theme</p>
+                  <p className="text-base font-medium text-primary">
+                    {String(inv.dresscodeTheme || invitation.dresscode)}
+                  </p>
+                </div>
+              )}
+              {Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0 && (
+                <div className="space-y-2" style={{ fontFamily: bodyFontFamily }}>
+                  <div className="flex items-center justify-center gap-3" aria-label="Dress code colours">
+                    {(inv.dresscodeColors as string[]).slice(0, 4).map((color, index) => (
+                      <span
+                        key={`${color}-${index}`}
+                        className="h-10 w-10 rounded-full border-2 border-white shadow-md"
+                        style={{ backgroundColor: color }}
+                        title={color}
+                        aria-label={`Dress code colour ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           </RevealOnScroll>
 
           <RevealOnScroll>
@@ -637,20 +745,19 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <div className={detailBlock}>
               <p className={sectionTitleCls} style={sectionTitleStyle}>{t.wishesLabel}</p>
               <OrnamentDivider />
-              <div className="w-full max-w-xs">
-                <div className="max-h-64 overflow-y-auto pr-1 space-y-3">
+              <div className="w-full max-w-sm">
+                <p className="mb-4 text-left text-sm font-semibold tracking-wide text-foreground/80" style={{ fontFamily: bodyFontFamily }}>
+                  💌 {guestWishes.length} Wishes
+                </p>
+                <div className="wishes-scrollbar max-h-80 overflow-y-auto space-y-4 pr-2">
                   {guestWishes.map((wish, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white/60 rounded-xl p-4 border border-primary/10 text-left"
-                    >
-                      <p className="text-sm font-semibold text-foreground" style={{ fontFamily: bodyFontFamily }}>
-                        {wish.name}
-                      </p>
-                      <p className="text-sm text-foreground/80 whitespace-pre-wrap" style={{ fontFamily: bodyFontFamily }}>
-                        {wish.message}
-                      </p>
-                    </div>
+                    <WishCard
+                      key={`${wish.createdAt ?? "wish"}-${idx}`}
+                      wish={wish}
+                      index={idx}
+                      lang={lang}
+                      bodyFontFamily={bodyFontFamily}
+                    />
                   ))}
                 </div>
               </div>

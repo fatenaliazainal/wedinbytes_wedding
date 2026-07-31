@@ -29,6 +29,7 @@ const TABS = [
   { id: "ayat-undangan", label: "INVITATION TEXT" },
   { id: "tarikh-lokasi", label: "DATE & LOCATION" },
   { id: "aturcara", label: "PROGRAMME" },
+  { id: "dresscode", label: "DRESS CODE" },
   { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
   { id: "gift", label: "GIFT" },
@@ -1499,77 +1500,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 <Field label="GPS / Google Maps Link">
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder={t("placeholders.mapsUrl")} />
                 </Field>
-                <Field label="Dress Code">
-                  <div className="space-y-3">
-                    <input
-                      className={inputCls}
-                      value={inv.dresscodeTheme}
-                      onChange={(e) => setI("dresscodeTheme")(e.target.value)}
-                      placeholder="Contoh: Melayu Klasik, Corporate"
-                      maxLength={120}
-                      data-testid="input-dresscode-theme"
-                    />
-                    <input
-                      type="hidden"
-                      value={inv.dresscode}
-                      readOnly
-                      aria-hidden="true"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Pilih tema pakaian untuk dipaparkan kepada tetamu.
-                    </p>
-                    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Colour palette</p>
-                        <span className="text-xs text-gray-400">{inv.dresscodeColors.length}/4</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-3">
-                        {inv.dresscodeColors.map((color, index) => (
-                          <div key={`${color}-${index}`} className="relative">
-                            <HexColorInput
-                              value={color}
-                              compact
-                              label={`Colour ${index + 1}`}
-                              testId={`input-dresscode-color-${index}`}
-                              onChange={(hex) => setInv((current) => ({
-                                ...current,
-                                dresscodeColors: current.dresscodeColors.map((item, itemIndex) =>
-                                  itemIndex === index ? hex : item,
-                                ),
-                              }))}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setInv((current) => ({
-                                ...current,
-                                dresscodeColors: current.dresscodeColors.filter((_, itemIndex) => itemIndex !== index),
-                              }))}
-                              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-xs leading-none text-white shadow"
-                              aria-label={`Remove dress code colour ${index + 1}`}
-                              data-testid={`button-remove-dresscode-color-${index}`}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                        {inv.dresscodeColors.length < 4 && (
-                          <button
-                            type="button"
-                            onClick={() => setInv((current) => ({
-                              ...current,
-                              dresscodeColors: [...current.dresscodeColors, "#d8c7a1"].slice(0, 4),
-                            }))}
-                            className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-xl text-gray-400 transition hover:border-gray-500 hover:text-gray-700"
-                            aria-label="Add dress code colour"
-                            data-testid="button-add-dresscode-color"
-                          >
-                            +
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Field>
               </>
             )}
 
@@ -1641,6 +1571,84 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 </div>
               </>
             )}
+
+             {/* ── DRESS CODE ── */}
+             {activeTab === "dresscode" && (
+               <div className="space-y-5">
+                 <Field label="Theme">
+                   <input
+                     className={inputCls}
+                     value={inv.dresscodeTheme}
+                     onChange={(e) => setI("dresscodeTheme")(e.target.value)}
+                     placeholder="Contoh: Melayu Klasik, Corporate"
+                     maxLength={120}
+                     data-testid="input-dresscode-theme"
+                   />
+                   <input
+                     type="hidden"
+                     value={inv.dresscode}
+                     readOnly
+                     aria-hidden="true"
+                   />
+                   <p className="text-xs text-gray-500">
+                     Tema pakaian yang akan dipaparkan kepada tetamu.
+                   </p>
+                 </Field>
+
+                 <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+                   <div className="flex items-center justify-between gap-3">
+                     <span className="text-xs text-gray-400">{inv.dresscodeColors.length}/4</span>
+                   </div>
+                   <p className="mt-1 text-xs text-gray-500">
+                     Pilih sehingga empat warna untuk dipaparkan dalam invitation.
+                   </p>
+                   <div className="mt-4 flex flex-wrap items-center gap-3">
+                     {inv.dresscodeColors.map((color, index) => (
+                       <div key={`${color}-${index}`} className="relative">
+                         <HexColorInput
+                           value={color}
+                           compact
+                           label={`Colour ${index + 1}`}
+                           testId={`input-dresscode-color-${index}`}
+                           onChange={(hex) => setInv((current) => ({
+                             ...current,
+                             dresscodeColors: current.dresscodeColors.map((item, itemIndex) =>
+                               itemIndex === index ? hex : item,
+                             ),
+                           }))}
+                         />
+                         <button
+                           type="button"
+                           onClick={() => setInv((current) => ({
+                             ...current,
+                             dresscodeColors: current.dresscodeColors.filter((_, itemIndex) => itemIndex !== index),
+                           }))}
+                           className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-xs leading-none text-white shadow"
+                           aria-label={`Remove dress code colour ${index + 1}`}
+                           data-testid={`button-remove-dresscode-color-${index}`}
+                         >
+                           ×
+                         </button>
+                       </div>
+                     ))}
+                     {inv.dresscodeColors.length < 4 && (
+                       <button
+                         type="button"
+                         onClick={() => setInv((current) => ({
+                           ...current,
+                           dresscodeColors: [...current.dresscodeColors, "#d8c7a1"].slice(0, 4),
+                         }))}
+                         className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-xl text-gray-400 transition hover:border-gray-500 hover:text-gray-700"
+                         aria-label="Add dress code colour"
+                         data-testid="button-add-dresscode-color"
+                       >
+                         +
+                       </button>
+                     )}
+                   </div>
+                 </div>
+               </div>
+             )}
 
             {/* ── DOA ── */}
             {activeTab === "doa" && (

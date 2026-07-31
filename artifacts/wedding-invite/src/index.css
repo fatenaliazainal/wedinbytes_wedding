@@ -217,6 +217,28 @@
 }
 
 @layer utilities {
+  .wishes-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.45) transparent;
+  }
+
+  .wishes-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .wishes-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .wishes-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: hsl(var(--primary) / 0.45);
+  }
+
+  .wishes-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.7);
+  }
+
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
   }
