@@ -302,9 +302,18 @@ router.patch("/invitation/:token", async (req, res) => {
       .from(businessClientTable)
       .where(eq(businessClientTable.invitationId, rows[0].id))
       .limit(1);
+    const [paidOrder] = await db
+      .select({ id: orderTable.id })
+      .from(orderTable)
+      .where(and(
+        eq(orderTable.invitationId, rows[0].id),
+        eq(orderTable.paymentStatus, "PAID"),
+      ))
+      .limit(1);
+    const isPaid = Boolean(rows[0].isPurchased || paidOrder);
     if (
       req.session.role !== "admin"
-      && rows[0].isPurchased
+      && isPaid
       && isEventDatePassed(rows[0].eventDate)
     ) {
       res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
@@ -352,20 +361,22 @@ router.patch("/invitation/:token", async (req, res) => {
         }
       }
     }
-    // Invitations created from a Business order form keep the package
-    // assigned by that order. Buyer invitations may still change package
-    // selection from the editor.
+    // Invitations created from a Business order form and paid invitations
+    // keep their assigned package. Package changes after payment require
+    // support assistance.
     if (
-      Boolean(customerOrder)
+      (Boolean(customerOrder) || isPaid)
       && req.session.role !== "admin"
       && "packageId" in body
     ) {
       const currentPackageId = rows[0].packageId ?? null;
       if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
         res.status(409).json({
-          error: customerOrder
+          error: isPaid
+            ? "Paid invitations cannot change package. Please contact us on WhatsApp to request a package change."
+            : customerOrder
             ? "The package assigned to a customer order cannot be changed."
-            : "The pricing package cannot be changed after payment.",
+            : "The pricing package cannot be changed.",
         });
         return;
       }

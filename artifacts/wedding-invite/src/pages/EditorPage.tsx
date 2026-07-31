@@ -15,6 +15,7 @@ import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react"
 import type { BusinessInvitationSummary, PricingPackage } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const PACKAGE_SUPPORT_WHATSAPP = "https://wa.me/601128134211";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
@@ -729,14 +730,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         }
       }
 
-      // Business order-form invitations keep their assigned package. Buyers
-      // may still choose a package in the editor, including after payment.
+      // Business order-form invitations and paid invitations keep their
+      // assigned package.
       if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
         const urlPackage = new URLSearchParams(window.location.search).get("package");
-        const pkgId = loadedInv?.isCustomerOrder
+        const pkgId = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
           ? (loadedInv.packageId ?? null)
           : (urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null));
-        const resolvedPkg = loadedInv?.isCustomerOrder
+        const resolvedPkg = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
           ? loadedPackages.find((p) => p.id === pkgId)
           : loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
         setActivePackageId(resolvedPkg?.id ?? null);
@@ -771,7 +772,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
 
-  const packageLocked = inv.isCustomerOrder && mode !== "admin";
+  const packageLocked = mode !== "admin" && (inv.isCustomerOrder || inv.isPurchased);
   const customerEditLocked =
     mode !== "admin"
     && mode !== "demo"
@@ -1985,9 +1986,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       value={activePackageId ?? ""}
                       disabled={packageLocked}
                       title={packageLocked
-                        ? (inv.isCustomerOrder
+                        ? (inv.isCustomerOrder && !inv.isPurchased
                           ? "The package assigned to a customer order cannot be changed."
-                          : "The package cannot be changed after payment.")
+                          : "Paid invitations cannot change package. Contact us on WhatsApp if you wish to change it.")
                         : undefined}
                       onChange={(e) => {
                         const id = e.target.value ? parseInt(e.target.value, 10) : null;
@@ -2002,11 +2003,24 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       ))}
                     </select>
                     {packageLocked && (
-                      <p className="mt-1 text-xs text-gray-500">
-                        {inv.isCustomerOrder
+                      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
+                        <p>
+                          {inv.isCustomerOrder && !inv.isPurchased
                           ? "Package assigned by customer order cannot be changed."
-                          : "Package cannot be changed after payment."}
-                      </p>
+                           : "Paid invitations cannot change package."}
+                        </p>
+                        <p className="mt-1">
+                          If you wish to change your package, please contact us on WhatsApp.
+                        </p>
+                        <a
+                          href={PACKAGE_SUPPORT_WHATSAPP}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex items-center rounded-md bg-[#25D366] px-3 py-1.5 font-semibold text-white transition-colors hover:bg-[#1ebe5d]"
+                        >
+                          Contact us on WhatsApp
+                        </a>
+                      </div>
                     )}
                   </Field>
                 )}
