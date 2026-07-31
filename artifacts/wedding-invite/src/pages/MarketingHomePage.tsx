@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { ChevronRight, ExternalLink, Heart, PenLine, Send, Smartphone, User, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Heart, PenLine, Send, Smartphone, User, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -30,7 +30,25 @@ type Collaboration = {
   logoUrl?: string | null;
   website?: string | null;
   instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
 };
+
+function externalBusinessLink(business: Collaboration): { url: string; label: string } | null {
+  const candidates: Array<[keyof Pick<Collaboration, "instagram" | "facebook" | "tiktok" | "website">, string]> = [
+    ["instagram", "Instagram"],
+    ["facebook", "Facebook"],
+    ["tiktok", "TikTok"],
+    ["website", "Website"],
+  ];
+  for (const [field, label] of candidates) {
+    const value = business[field]?.trim();
+    if (!value) continue;
+    const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+    return { url, label };
+  }
+  return null;
+}
 
 export default function MarketingHomePage() {
   const [, navigate] = useLocation();
@@ -55,6 +73,27 @@ export default function MarketingHomePage() {
 
   const previewCards = designs.slice(0, 8);
   const logoCollaborations = collaborations.filter((business) => business.logoUrl);
+  const [businessSlide, setBusinessSlide] = useState(0);
+  const [businessCarouselPaused, setBusinessCarouselPaused] = useState(false);
+  const businessSlides = useMemo(() => {
+    if (!logoCollaborations.length) return [];
+    return Array.from(
+      { length: Math.ceil(logoCollaborations.length / 2) },
+      (_, index) => logoCollaborations.slice(index * 2, index * 2 + 2),
+    );
+  }, [logoCollaborations]);
+
+  useEffect(() => {
+    setBusinessSlide((current) => Math.min(current, Math.max(0, businessSlides.length - 1)));
+  }, [businessSlides.length]);
+
+  useEffect(() => {
+    if (businessCarouselPaused || businessSlides.length < 2) return;
+    const timer = window.setInterval(() => {
+      setBusinessSlide((current) => (current + 1) % businessSlides.length);
+    }, 4500);
+    return () => window.clearInterval(timer);
+  }, [businessCarouselPaused, businessSlides.length]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -282,7 +321,7 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 px-4 sm:px-6 border-t border-gray-100">
+      <section id="collaborations" className="bg-white py-16 px-4 sm:px-6 border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-9">
             <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Our Network</p>
@@ -292,23 +331,104 @@ export default function MarketingHomePage() {
           {logoCollaborations.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center text-sm text-gray-400">Our collaboration partners will appear here soon.</div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto px-1 pb-3 snap-x snap-mandatory scrollbar-thin">
-              {logoCollaborations.map((business) => (
-                <a
-                  key={business.slug}
-                  href={`/business/${encodeURIComponent(business.slug)}`}
-                  aria-label={`View ${business.businessName} business profile`}
-                  title={business.businessName}
-                  className="flex h-32 w-44 shrink-0 snap-start items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-300"
+            <div
+              className="relative mx-auto max-w-2xl"
+              onMouseEnter={() => setBusinessCarouselPaused(true)}
+              onMouseLeave={() => setBusinessCarouselPaused(false)}
+              onFocus={() => setBusinessCarouselPaused(true)}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setBusinessCarouselPaused(false);
+                }
+              }}
+            >
+              <div className="overflow-hidden px-1 py-1">
+                <div
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${businessSlide * 100}%)` }}
                 >
-                  <img
-                    src={resolveImageUrl(business.logoUrl ?? "")}
-                    alt={`${business.businessName} logo`}
-                    loading="lazy"
-                    className="h-full w-full object-contain"
-                  />
-                </a>
-              ))}
+                  {businessSlides.map((slide, slideIndex) => (
+                    <div
+                      key={slideIndex}
+                      className="grid w-full shrink-0 grid-cols-2 gap-4 px-1"
+                      aria-hidden={businessSlide !== slideIndex}
+                    >
+                      {slide.map((business) => {
+                        const socialLink = externalBusinessLink(business);
+                        const tile = (
+                          <>
+                            <img
+                              src={resolveImageUrl(business.logoUrl ?? "")}
+                              alt={`${business.businessName} logo`}
+                              loading="lazy"
+                              className="h-full w-full object-contain"
+                            />
+                            {socialLink && (
+                              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold text-gray-500 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+                                Visit {socialLink.label}
+                              </span>
+                            )}
+                          </>
+                        );
+                        return socialLink ? (
+                          <a
+                            key={business.slug}
+                            href={socialLink.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Visit ${business.businessName} on ${socialLink.label}`}
+                            title={`Visit ${business.businessName} on ${socialLink.label}`}
+                            className="group relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-300"
+                          >
+                            {tile}
+                          </a>
+                        ) : (
+                          <div
+                            key={business.slug}
+                            title={business.businessName}
+                            className="relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4"
+                          >
+                            {tile}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {businessSlides.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setBusinessSlide((current) => (current - 1 + businessSlides.length) % businessSlides.length)}
+                    className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    aria-label="Previous businesses"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBusinessSlide((current) => (current + 1) % businessSlides.length)}
+                    className="absolute right-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    aria-label="Next businesses"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                  <div className="mt-4 flex justify-center gap-1.5" role="tablist" aria-label="Business carousel pages">
+                    {businessSlides.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        role="tab"
+                        aria-selected={businessSlide === index}
+                        aria-label={`Show business page ${index + 1}`}
+                        onClick={() => setBusinessSlide(index)}
+                        className={`h-1.5 rounded-full transition-all ${businessSlide === index ? "w-6 bg-gray-900" : "w-1.5 bg-gray-300 hover:bg-gray-500"}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -249,7 +249,14 @@ router.patch("/business/me", async (req, res) => {
     }
     const body = req.body as Record<string, unknown>;
     const update: Record<string, unknown> = {};
-    const editableProfileFields = ["businessName", "businessType"] as const;
+    const editableProfileFields = [
+      "businessName",
+      "businessType",
+      "website",
+      "instagram",
+      "facebook",
+      "tiktok",
+    ] as const;
     for (const field of editableProfileFields) {
       if (!(field in body)) continue;
       const value = body[field];

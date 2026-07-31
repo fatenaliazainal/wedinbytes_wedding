@@ -21,13 +21,25 @@ type FormState = {
   businessName: string;
   businessType: string;
   businessLink: string;
+  website: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
 };
 
 export default function BusinessProfilePage() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [navOpen, setNavOpen] = useState(false);
-  const [form, setForm] = useState<FormState>({ businessName: "", businessType: "", businessLink: "" });
+  const [form, setForm] = useState<FormState>({
+    businessName: "",
+    businessType: "",
+    businessLink: "",
+    website: "",
+    instagram: "",
+    facebook: "",
+    tiktok: "",
+  });
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -50,6 +62,10 @@ export default function BusinessProfilePage() {
           businessName: data.businessName ?? "",
           businessType: data.businessType ?? "",
           businessLink: data.slug ?? "",
+          website: data.website ?? "",
+          instagram: data.instagram ?? "",
+          facebook: data.facebook ?? "",
+          tiktok: data.tiktok ?? "",
         });
       })
       .catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Unable to load profile."))
@@ -70,11 +86,28 @@ export default function BusinessProfilePage() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName: form.businessName, businessType: form.businessType, slug: form.businessLink }),
+        body: JSON.stringify({
+          businessName: form.businessName,
+          businessType: form.businessType,
+          slug: form.businessLink,
+          website: form.website,
+          instagram: form.instagram,
+          facebook: form.facebook,
+          tiktok: form.tiktok,
+        }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Unable to save profile.");
-      setForm((current) => ({ ...current, businessName: data.businessName ?? current.businessName, businessType: data.businessType ?? current.businessType, businessLink: data.slug ?? current.businessLink }));
+       setForm((current) => ({
+         ...current,
+         businessName: data.businessName ?? current.businessName,
+         businessType: data.businessType ?? current.businessType,
+         businessLink: data.slug ?? current.businessLink,
+         website: data.website ?? current.website,
+         instagram: data.instagram ?? current.instagram,
+         facebook: data.facebook ?? current.facebook,
+         tiktok: data.tiktok ?? current.tiktok,
+       }));
       toast.success("Business profile saved.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to save profile.");
@@ -170,6 +203,32 @@ export default function BusinessProfilePage() {
                 <a href={publicBusinessLink} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-gray-900" aria-label="Open business link"><ExternalLink size={15} /></a>
               </div>
               <p className="mt-1 text-xs text-gray-400">Masukkan nama custom untuk pautan business anda. Gunakan huruf, nombor atau tanda sempang.</p>
+            </div>
+            <div className="border-t border-gray-100 pt-5">
+              <h3 className="text-sm font-semibold text-gray-900">Social media links</h3>
+              <p className="mt-1 text-xs text-gray-500">
+                Homepage visitors will be sent directly to the first available link, prioritising Instagram, Facebook, TikTok, then website.
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {([
+                  ["instagram", "Instagram URL", "https://instagram.com/yourbusiness"],
+                  ["facebook", "Facebook URL", "https://facebook.com/yourbusiness"],
+                  ["tiktok", "TikTok URL", "https://tiktok.com/@yourbusiness"],
+                  ["website", "Website URL", "https://yourbusiness.com"],
+                ] as const).map(([field, label, placeholder]) => (
+                  <label key={field} className="block text-sm text-gray-700">
+                    <span className="mb-1 block font-medium">{label}</span>
+                    <input
+                      type="text"
+                      inputMode="url"
+                      value={form[field]}
+                      onChange={(event) => setForm((current) => ({ ...current, [field]: event.target.value }))}
+                      placeholder={placeholder}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
+                    />
+                  </label>
+                ))}
+              </div>
             </div>
           </section>
 
