@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { businessProfileTable, db, invitationTable } from "@workspace/db";
+import { businessClientTable, businessProfileTable, db, invitationTable } from "@workspace/db";
 import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
@@ -276,6 +276,11 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(403).json({ error: "You do not own this invitation" });
       return;
     }
+    const [customerOrder] = await db
+      .select({ id: businessClientTable.id })
+      .from(businessClientTable)
+      .where(eq(businessClientTable.invitationId, rows[0].id))
+      .limit(1);
     if (
       req.session.role !== "admin"
       && rows[0].isPurchased
@@ -306,7 +311,7 @@ router.patch("/invitation/:token", async (req, res) => {
     // may still edit the invitation content, but cannot change the package
     // after payment (including by calling the API directly).
     if (
-      rows[0].isPurchased
+      (rows[0].isPurchased || Boolean(customerOrder))
       && req.session.role !== "admin"
       && "packageId" in body
     ) {
@@ -315,7 +320,11 @@ router.patch("/invitation/:token", async (req, res) => {
         : Number(body.packageId);
       const currentPackageId = rows[0].packageId ?? null;
       if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
-        res.status(409).json({ error: "The pricing package cannot be changed after payment." });
+        res.status(409).json({
+          error: customerOrder
+            ? "The package assigned to a customer order cannot be changed."
+            : "The pricing package cannot be changed after payment.",
+        });
         return;
       }
     }

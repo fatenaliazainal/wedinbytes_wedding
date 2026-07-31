@@ -108,6 +108,7 @@ interface InvData {
   id: number;
   token: string;
   isPurchased: boolean;
+  isCustomerOrder: boolean;
   groomName: string;
   brideName: string;
   eventType: string;
@@ -370,6 +371,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     id: 0,
     token: "",
     isPurchased: false,
+    isCustomerOrder: false,
     groomName: "", brideName: "", eventType: "Walimatul Urus",
     eventDate: "", eventDay: "", eventTime: "11:00 pagi – 4:00 petang",
     eventStartTime: "11:00", eventEndTime: "16:00",
@@ -515,11 +517,27 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           return;
         }
         const d = loadedInv;
+        let isCustomerOrder = false;
+        if (mode === "business" && d?.id) {
+          const clientsRes = await fetch(`${BASE}/api/business/clients`, {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (clientsRes.ok) {
+            const clients = await clientsRes.json() as Array<{
+              invitationId?: number | null;
+              invitationToken?: string | null;
+            }>;
+            isCustomerOrder = clients.some((client) =>
+              client.invitationId === d.id || client.invitationToken === d.token,
+            );
+          }
+        }
         // Keep a previously purchased package available even if an admin has
         // since deactivated it from the public pricing list.
         if (
           (mode === "buyer" || mode === "business")
-          && d?.isPurchased === true
+          && (d?.isPurchased === true || isCustomerOrder)
           && Number.isInteger(d.packageId)
           && !loadedPackages.some((pkg) => pkg.id === d.packageId)
         ) {
@@ -531,10 +549,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             loadedPackages = await purchasedPackageRes.json() as PricingPackage[];
           }
         }
+        // Keep an assigned paid/customer-order package visible in the locked
+        // selector even when it is no longer active in the public price list.
+        setPackages(loadedPackages);
         setInv({
           id: d.id ?? 0,
           token: d.token ?? "",
           isPurchased: d.isPurchased === true,
+          isCustomerOrder,
           groomName: d.groomName ?? "", brideName: d.brideName ?? "",
           eventType: d.eventType ?? "Walimatul Urus",
           eventDate: d.eventDate ?? "", eventDay: d.eventDay ?? "",
@@ -758,7 +780,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
 
-  const packageLocked = inv.isPurchased && mode !== "admin";
+  const packageLocked = (inv.isPurchased || inv.isCustomerOrder) && mode !== "admin";
   const customerEditLocked =
     mode !== "admin"
     && mode !== "demo"
@@ -1893,7 +1915,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       className={selectCls}
                       value={activePackageId ?? ""}
                       disabled={packageLocked}
-                      title={packageLocked ? "The package cannot be changed after payment." : undefined}
+                      title={packageLocked
+                        ? (inv.isCustomerOrder
+                          ? "The package assigned to a customer order cannot be changed."
+                          : "The package cannot be changed after payment.")
+                        : undefined}
                       onChange={(e) => {
                         const id = e.target.value ? parseInt(e.target.value, 10) : null;
                         setActivePackageId(id);
@@ -1908,7 +1934,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </select>
                     {packageLocked && (
                       <p className="mt-1 text-xs text-gray-500">
-                        Package cannot be changed after payment.
+                        {inv.isCustomerOrder
+                          ? "Package assigned by customer order cannot be changed."
+                          : "Package cannot be changed after payment."}
                       </p>
                     )}
                   </Field>
