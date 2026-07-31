@@ -822,7 +822,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <p className={sectionTitleCls} style={sectionTitleStyle}>{t.programmeLabel}</p>
               <OrnamentDivider />
               {Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? (
-                <div className="space-y-4 text-center" style={{ fontFamily: bodyFontFamily }}>
+                <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
                   {(inv.itinerary as { time?: string; event?: string }[]).map((item, idx) => (
                     <div key={idx} className="space-y-0.5">
                       <p className="text-sm font-semibold text-primary">{item.time || "—"}</p>
@@ -831,7 +831,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                   ))}
                 </div>
               ) : schedule ? (
-                <p className="text-xs text-center text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
+                <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
               ) : null}
             </div>
           )}
