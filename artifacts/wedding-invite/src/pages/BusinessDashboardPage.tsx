@@ -61,6 +61,8 @@ type Invitation = {
   token: string;
   brideName: string;
   groomName: string;
+  coverBrideName?: string | null;
+  coverGroomName?: string | null;
   eventDate?: string | null;
   eventType: string;
   venueCity?: string | null;

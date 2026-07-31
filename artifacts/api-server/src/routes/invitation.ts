@@ -31,8 +31,8 @@ function publicDateCode(eventDate: string | null | undefined) {
 }
 
 function publicSlug(row: typeof invitationTable.$inferSelect) {
-  const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
-  const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
+  const groomSlug = slugPart(row.coverGroomName) || slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
+  const brideSlug = slugPart(row.coverBrideName) || slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
   return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
 }
 
@@ -40,6 +40,12 @@ function legacyPublicSlug(row: typeof invitationTable.$inferSelect) {
   const brideInitial = slugPart(row.brideName || row.brideShortName || row.brideInitial).charAt(0);
   const groomInitial = slugPart(row.groomName || row.groomShortName || row.groomInitial).charAt(0);
   return `${brideInitial}${groomInitial}` || "wi";
+}
+
+function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect) {
+  const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
+  const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
+  return [groomSlug, brideSlug].filter(Boolean).join("-") || "wi";
 }
 
 const ALLOWED_FIELDS = [
@@ -235,7 +241,11 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
     const rows = await db.select().from(invitationTable);
     const row = rows.find((candidate) =>
       publicDateCode(candidate.eventDate) === req.params.dateCode &&
-      (publicSlug(candidate) === req.params.slug || legacyPublicSlug(candidate) === req.params.slug),
+      (
+        publicSlug(candidate) === req.params.slug
+        || legacyNamedPublicSlug(candidate) === req.params.slug
+        || legacyPublicSlug(candidate) === req.params.slug
+      ),
     );
     if (!row) {
       res.status(404).json({ error: "Invitation not found" });
@@ -307,11 +317,11 @@ router.patch("/invitation/:token", async (req, res) => {
         }
       }
     }
-    // A paid invitation is tied to the package that was purchased. Customers
-    // may still edit the invitation content, but cannot change the package
-    // after payment (including by calling the API directly).
+    // Invitations created from a Business order form keep the package
+    // assigned by that order. Buyer invitations may still change package
+    // selection from the editor.
     if (
-      (rows[0].isPurchased || Boolean(customerOrder))
+      Boolean(customerOrder)
       && req.session.role !== "admin"
       && "packageId" in body
     ) {

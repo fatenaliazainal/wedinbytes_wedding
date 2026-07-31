@@ -30,7 +30,7 @@ export interface PaymentConfirmationData {
   paymentReference: string;
   amount: string;
   packageName: string;
-  invitationToken: string;
+  invitationPath: string;
   /** Base URL for the invitation link, e.g. https://wedinstudio.replit.app */
   siteBaseUrl: string;
 }
@@ -42,7 +42,7 @@ function formatAmount(amount: string) {
 }
 
 function buildHtml(data: PaymentConfirmationData) {
-  const inviteUrl = `${data.siteBaseUrl}/invite/${data.invitationToken}`;
+  const inviteUrl = `${data.siteBaseUrl}${data.invitationPath}`;
   const formattedAmount = formatAmount(data.amount);
 
   return `<!DOCTYPE html>
@@ -136,7 +136,7 @@ function buildHtml(data: PaymentConfirmationData) {
 }
 
 function buildText(data: PaymentConfirmationData) {
-  const inviteUrl = `${data.siteBaseUrl}/invite/${data.invitationToken}`;
+  const inviteUrl = `${data.siteBaseUrl}${data.invitationPath}`;
   const formattedAmount = formatAmount(data.amount);
   return [
     `Dear ${data.recipientName},`,

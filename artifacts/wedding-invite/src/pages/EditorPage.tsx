@@ -750,14 +750,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         }
       }
 
-      // A paid invitation must always keep its purchased package. Before
-      // payment, the pricing page may pass a package through the URL.
+      // Business order-form invitations keep their assigned package. Buyers
+      // may still choose a package in the editor, including after payment.
       if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
         const urlPackage = new URLSearchParams(window.location.search).get("package");
-        const pkgId = loadedInv?.isPurchased
+        const pkgId = loadedInv?.isCustomerOrder
           ? (loadedInv.packageId ?? null)
           : (urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null));
-        const resolvedPkg = loadedInv?.isPurchased
+        const resolvedPkg = loadedInv?.isCustomerOrder
           ? loadedPackages.find((p) => p.id === pkgId)
           : loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
         setActivePackageId(resolvedPkg?.id ?? null);
@@ -792,7 +792,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
 
-  const packageLocked = (inv.isPurchased || inv.isCustomerOrder) && mode !== "admin";
+  const packageLocked = inv.isCustomerOrder && mode !== "admin";
   const customerEditLocked =
     mode !== "admin"
     && mode !== "demo"

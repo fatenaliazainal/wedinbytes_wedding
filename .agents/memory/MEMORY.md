@@ -29,3 +29,4 @@
 - [Business list density](business-list-density.md) — use compact table-like rows so larger invitation lists remain scannable.
 - [Editor package feature save](editor-package-feature-save.md) — omit gated feature fields from saves when the active package does not support them.
 - [Card design template styling](design-template-styling.md) — admin styling flows into editor and public invitations; customer content remains separate.
+- [Cover-name invitation links](cover-name-invitation-links.md) — public URLs use Cover Groom Name and Cover Bride Name across Buyer, Business Account, Admin, and email.

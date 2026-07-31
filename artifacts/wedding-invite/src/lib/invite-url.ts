@@ -31,15 +31,15 @@ export function publicInvitePath(invitation: {
   eventDate?: string | null;
   brideName?: string | null;
   groomName?: string | null;
+  coverBrideName?: string | null;
+  coverGroomName?: string | null;
   brideShortName?: string | null;
   groomShortName?: string | null;
   brideInitial?: string | null;
   groomInitial?: string | null;
 }): string {
   return `/invite/${inviteDateCode(invitation.eventDate)}/${inviteNameSlug(
-    invitation.groomShortName || invitation.groomName || invitation.groomInitial,
-    invitation.brideShortName || invitation.brideName || invitation.brideInitial,
-    invitation.groomName,
-    invitation.brideName,
+    invitation.coverGroomName || invitation.groomShortName || invitation.groomName || invitation.groomInitial,
+    invitation.coverBrideName || invitation.brideShortName || invitation.brideName || invitation.brideInitial,
   )}`;
 }

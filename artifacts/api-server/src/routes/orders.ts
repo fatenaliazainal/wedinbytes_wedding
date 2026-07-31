@@ -71,6 +71,8 @@ router.get("/buyer/payment-history", async (req, res) => {
         id: invitationTable.id,
         brideName: invitationTable.brideName,
         groomName: invitationTable.groomName,
+        coverBrideName: invitationTable.coverBrideName,
+        coverGroomName: invitationTable.coverGroomName,
       })
       .from(invitationTable)
       .where(eq(invitationTable.userId, req.session.userId));
@@ -107,7 +109,13 @@ router.get("/buyer/payment-history", async (req, res) => {
           createdAt: order.createdAt,
           packageName: pkg?.name ?? null,
           invitation: invitation
-            ? { id: invitation.id, brideName: invitation.brideName, groomName: invitation.groomName }
+             ? {
+                 id: invitation.id,
+                 brideName: invitation.brideName,
+                 groomName: invitation.groomName,
+                 coverBrideName: invitation.coverBrideName,
+                 coverGroomName: invitation.coverGroomName,
+               }
             : null,
         };
       }));
@@ -140,6 +148,8 @@ router.get("/business/payment-history", async (req, res) => {
         id: invitationTable.id,
         brideName: invitationTable.brideName,
         groomName: invitationTable.groomName,
+        coverBrideName: invitationTable.coverBrideName,
+        coverGroomName: invitationTable.coverGroomName,
       })
       .from(invitationTable)
       .where(eq(invitationTable.businessId, profile.id));
@@ -176,7 +186,13 @@ router.get("/business/payment-history", async (req, res) => {
           createdAt: order.createdAt,
           packageName: pkg?.name ?? null,
           invitation: invitation
-            ? { id: invitation.id, brideName: invitation.brideName, groomName: invitation.groomName }
+             ? {
+                 id: invitation.id,
+                 brideName: invitation.brideName,
+                 groomName: invitation.groomName,
+                 coverBrideName: invitation.coverBrideName,
+                 coverGroomName: invitation.coverGroomName,
+               }
             : null,
         };
       }));
@@ -211,6 +227,8 @@ async function readOrderRows() {
         brideName: invitation.brideName,
         groomName: invitation.groomName,
         eventDate: invitation.eventDate,
+        coverBrideName: invitation.coverBrideName,
+        coverGroomName: invitation.coverGroomName,
         venueName: invitation.venueName,
         websiteStatus: invitationStatus(invitation),
         isPurchased: invitation.isPurchased,

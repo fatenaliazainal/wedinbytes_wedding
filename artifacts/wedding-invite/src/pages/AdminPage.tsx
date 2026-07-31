@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import PricingTab from "@/components/PricingTab";
+import { publicInvitePath } from "@/lib/invite-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
@@ -44,6 +45,7 @@ type AdminOrder = {
   package?: { id: number; name: string; price: string } | null;
   invitation?: {
     id: number; token: string; brideName: string; groomName: string;
+    coverBrideName?: string | null; coverGroomName?: string | null;
     eventDate: string; venueName: string; websiteStatus: string; isPurchased: boolean;
   } | null;
 };
@@ -1787,8 +1789,8 @@ function OrdersTab() {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                  <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={`/invite/${selected.invitation.token}`} target="_blank" rel="noreferrer">View Website</a>
-                  <button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/${selected.invitation?.token}`)}>Copy Link</button>
+                   <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={publicInvitePath(selected.invitation)} target="_blank" rel="noreferrer">View Website</a>
+                   <button className="rounded-xl border border-border px-3 py-2 text-sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}${publicInvitePath(selected.invitation!)}`)}>Copy Link</button>
                 </div>
               </div>
             )}

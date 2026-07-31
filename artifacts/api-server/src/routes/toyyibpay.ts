@@ -18,6 +18,7 @@ import {
 } from "../services/toyyibpay";
 import { sendPaymentConfirmationEmail, isEmailConfigured } from "../services/email";
 import { logger } from "../lib/logger";
+import { publicInvitePath } from "../lib/invite-url";
 
 const router: IRouter = Router();
 const BILL_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
@@ -77,7 +78,20 @@ async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$in
   const [invitationRow, packageRow] = await Promise.all([
     order.invitationId
       ? db
-          .select({ token: invitationTable.token, userId: invitationTable.userId, businessId: invitationTable.businessId })
+      .select({
+        token: invitationTable.token,
+        userId: invitationTable.userId,
+        businessId: invitationTable.businessId,
+        eventDate: invitationTable.eventDate,
+        coverGroomName: invitationTable.coverGroomName,
+        coverBrideName: invitationTable.coverBrideName,
+        groomShortName: invitationTable.groomShortName,
+        brideShortName: invitationTable.brideShortName,
+        groomName: invitationTable.groomName,
+        brideName: invitationTable.brideName,
+        groomInitial: invitationTable.groomInitial,
+        brideInitial: invitationTable.brideInitial,
+      })
           .from(invitationTable)
           .where(eq(invitationTable.id, order.invitationId))
           .limit(1)
@@ -120,7 +134,7 @@ async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$in
     paymentReference: order.paymentReference ?? "",
     amount: order.amount,
     packageName: packageRow?.name ?? "Wedding Invitation",
-    invitationToken: invitationRow.token,
+    invitationPath: publicInvitePath(invitationRow),
     siteBaseUrl,
   });
 }

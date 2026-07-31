@@ -29,6 +29,8 @@ interface Invitation {
   brideName: string;
   eventType: string;
   eventDate?: string | null;
+  coverBrideName?: string | null;
+  coverGroomName?: string | null;
   brideShortName?: string | null;
   groomShortName?: string | null;
   brideInitial?: string | null;
