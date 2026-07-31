@@ -765,6 +765,17 @@ components:
           maxItems: 4
         dresscode:
           type: string
+        dresscodeTheme:
+          type: string
+          maxLength: 120
+          description: Customer-entered dress-code theme, such as Melayu Klasik or Corporate
+        dresscodeColors:
+          type: array
+          maxItems: 4
+          items:
+            type: string
+            pattern: "^#[0-9A-Fa-f]{6}$"
+          description: Up to four dress-code palette colours
         message:
           type: string
         coverTitle:

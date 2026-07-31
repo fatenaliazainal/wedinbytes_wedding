@@ -51,7 +51,7 @@ function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect) {
 const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
   "venueName","venueAddress","venueCity","venueState","venueMapUrl",
-  "groomParents","brideParents","contactPhone","contacts","dresscode","message","galleryImages",
+  "groomParents","brideParents","contactPhone","contacts","dresscode","dresscodeTheme","dresscodeColors","message","galleryImages",
   "giftDisplay","giftTitle","giftRecipient","giftBankName","giftAccountNumber","giftQrCodes",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","coverGroomName","coverBrideName","envelopeInitials","envelopeInitialsSize","page2Initials","logoInitialsUrl","initialsImageUrl","initialsImageScale",
   "eventStartDateTime","eventEndDateTime",
@@ -303,6 +303,26 @@ router.patch("/invitation/:token", async (req, res) => {
       ? (body.packageId == null || body.packageId === "" ? null : Number(body.packageId))
       : (rows[0].packageId ?? null);
     const effectivePackage = { packageId: requestedPackageId };
+    if ("dresscodeTheme" in body) {
+      if (body.dresscodeTheme != null && (typeof body.dresscodeTheme !== "string" || body.dresscodeTheme.trim().length > 120)) {
+        res.status(400).json({ error: "Dress code theme must be 120 characters or fewer." });
+        return;
+      }
+    }
+    if ("dresscodeColors" in body) {
+      const colors = body.dresscodeColors;
+      if (
+        colors != null
+        && (
+          !Array.isArray(colors)
+          || colors.length > 4
+          || colors.some((color) => typeof color !== "string" || !/^#[0-9a-fA-F]{6}$/.test(color))
+        )
+      ) {
+        res.status(400).json({ error: "Dress code palette may contain up to 4 valid hex colours." });
+        return;
+      }
+    }
     const giftFields = ["giftDisplay", "giftTitle", "giftRecipient", "giftBankName", "giftAccountNumber", "giftQrCodes"];
     if (giftFields.some((field) => field in body)) {
       if (!(await invitationHasFeature(effectivePackage, "Money Gift"))) {
@@ -350,6 +370,12 @@ router.patch("/invitation/:token", async (req, res) => {
         }
         if (field === "giftQrCodes" && Array.isArray(value)) {
           value = value.slice(0, 2);
+        }
+        if (field === "dresscodeTheme" && typeof value === "string") {
+          value = value.trim() || null;
+        }
+        if (field === "dresscodeColors" && Array.isArray(value)) {
+          value = value.slice(0, 4).map((color) => String(color).toLowerCase());
         }
         // timestamp columns expect a Date instance, not a string.
         if (field === "rsvpDeadline" && typeof value === "string" && value.trim()) {

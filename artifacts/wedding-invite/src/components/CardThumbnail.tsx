@@ -199,7 +199,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
             </p>
           </div>
 
-          {invitation.dresscode && (
+          {(invitation.dresscode || invitation.dresscodeTheme || (Array.isArray(invitation.dresscodeColors) && invitation.dresscodeColors.length > 0)) && (
             <div
               style={{
                 marginTop: 10,
@@ -211,7 +211,17 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
                 backgroundColor: "rgba(255,255,255,0.45)",
               }}
             >
-              Tema: {invitation.dresscode}
+              Tema: {invitation.dresscodeTheme || invitation.dresscode}
+              {Array.isArray(invitation.dresscodeColors) && invitation.dresscodeColors.length > 0 && (
+                <span style={{ display: "inline-flex", gap: 3, marginLeft: 6, verticalAlign: "middle" }}>
+                  {invitation.dresscodeColors.slice(0, 4).map((color, index) => (
+                    <span
+                      key={`${color}-${index}`}
+                      style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: color, display: "inline-block", border: "1px solid rgba(255,255,255,0.8)" }}
+                    />
+                  ))}
+                </span>
+              )}
             </div>
           )}
         </div>

@@ -27,6 +27,9 @@ export interface Invitation {
   /** @maxItems 4 */
   contacts?: InvitationContactsItem[];
   dresscode?: string;
+  dresscodeTheme?: string;
+  /** Up to four dress-code palette colours */
+  dresscodeColors?: string[];
   message?: string;
   coverTitle?: string;
   hashtag?: string;

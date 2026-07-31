@@ -530,9 +530,17 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
           <RevealOnScroll>
           {/* Programme & Dress Code */}
-          {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? true : Boolean(schedule)) && (
+          {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0
+            || Boolean(schedule)
+            || Boolean(invitation.dresscode)
+            || Boolean(inv.dresscodeTheme)
+            || (Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0)) && (
             <div className={detailBlock}>
-              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.programmeLabel}</p>
+              <p className={sectionTitleCls} style={sectionTitleStyle}>
+                {(Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0) || Boolean(schedule)
+                  ? t.programmeLabel
+                  : t.dressCodeLabel}
+              </p>
               <OrnamentDivider />
               {Array.isArray(inv.itinerary) && (inv.itinerary as { time?: string; event?: string }[]).length > 0 ? (
                 <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
@@ -543,13 +551,28 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : schedule ? (
                 <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
-              )}
-              {invitation.dresscode && (
-                <p className="text-xs text-foreground/60 border border-primary/25 bg-white/40 rounded-full px-5 py-1.5 inline-block tracking-wider" style={{ fontFamily: bodyFontFamily }}>
-                  {t.dressCodeLabel}: {invitation.dresscode.toUpperCase()}
-                </p>
+              ) : null}
+              {(invitation.dresscode || inv.dresscodeTheme || (Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0)) && (
+                <div className="mt-5 flex flex-col items-center gap-3">
+                  <p className="text-xs text-foreground/70 tracking-wider" style={{ fontFamily: bodyFontFamily }}>
+                    {t.dressCodeLabel}: {String(inv.dresscodeTheme || invitation.dresscode || "").toUpperCase()}
+                  </p>
+                  {Array.isArray(inv.dresscodeColors) && inv.dresscodeColors.length > 0 && (
+                    <div className="flex items-center justify-center gap-3" aria-label="Dress code colours">
+                      {(inv.dresscodeColors as string[]).slice(0, 4).map((color, index) => (
+                        <span
+                          key={`${color}-${index}`}
+                          className="h-10 w-10 rounded-full border-2 border-white shadow-md"
+                          style={{ backgroundColor: color }}
+                          title={color}
+                          aria-label={`Dress code colour ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}

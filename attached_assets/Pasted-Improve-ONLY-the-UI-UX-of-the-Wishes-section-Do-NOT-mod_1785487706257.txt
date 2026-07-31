@@ -1,0 +1,78 @@
+Improve ONLY the UI/UX of the "Wishes" section. Do NOT modify any existing functionality, backend logic, API calls, database schema, RSVP flow, or other sections of the website.
+
+Requirements:
+
+1. Keep all existing features exactly the same.
+   - Display wishes
+   - Submit new wish
+   - Pagination/load more (if any)
+   - Existing data structure
+   - Existing API
+
+2. Redesign each wish card to look more premium:
+   - Border radius: 20px
+   - Soft box shadow
+   - Thin subtle border
+   - White/light gradient background
+   - More spacing and padding
+   - Better typography hierarchy
+
+3. Add an avatar using the sender's initial.
+   Example:
+   ZA
+   AN
+   EZ
+
+   The avatar should be:
+   - Circular
+   - Generated automatically from the sender name
+   - No image upload required
+   - Use a soft theme color that matches the invitation design
+
+4. Improve the header inside each card:
+   - Sender name should be bold.
+   - If a created date exists, display it as a small muted timestamp.
+   - If no timestamp exists, do not create fake data.
+
+5. Improve message typography:
+   - Better line height
+   - Better spacing
+   - Word wrapping
+   - Preserve line breaks
+
+6. Long messages:
+   - Clamp to 3 lines.
+   - Show "Read More" and "Show Less" when needed.
+
+7. Add a smooth entrance animation.
+   Each card should fade and slide up when it enters the viewport.
+
+8. Improve spacing between cards.
+
+9. Style the scrollbar:
+   - Thin scrollbar
+   - Rounded thumb
+   - Color should match the website theme.
+
+10. Above the wishes list, display:
+   "💌 XX Wishes"
+   where XX is the actual number of wishes.
+   Use the real count from existing data.
+   Do not hardcode the value.
+
+11. Ensure the UI is fully responsive on:
+   - Mobile
+   - Tablet
+   - Desktop
+
+12. Maintain consistency with the existing WedInBytes design system:
+   - Same fonts
+   - Same color palette
+   - Same elegant aesthetic
+
+IMPORTANT:
+- Do NOT redesign the entire page.
+- Do NOT change section order.
+- Do NOT modify Gallery, RSVP, Countdown, Music, Navigation, or any other component.
+- Do NOT change any existing business logic.
+- Only improve the visual design of the Wishes section.

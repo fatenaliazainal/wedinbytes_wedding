@@ -125,6 +125,8 @@ interface InvData {
   contactPhone: string;
   contacts: Contact[];
   dresscode: string;
+  dresscodeTheme: string;
+  dresscodeColors: string[];
   message: string;
   shortCoupleName: string;
   groomShortName: string;
@@ -378,7 +380,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     eventStartTime: "11:00", eventEndTime: "16:00",
     venueName: "", venueAddress: "", venueCity: "", venueState: "",
     venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
-    dresscode: "", message: "",
+    dresscode: "", dresscodeTheme: "", dresscodeColors: [], message: "",
     shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
     groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", initialsImageUrl: "", initialsImageScale: 100, page2Initials: "",
     eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
@@ -572,7 +574,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           venueMapUrl: d.venueMapUrl ?? "", groomParents: d.groomParents ?? "",
           brideParents: d.brideParents ?? "", contactPhone: d.contactPhone ?? "",
           contacts: normalizeContacts(d.contacts, d.contactPhone ?? ""),
-          dresscode: d.dresscode ?? "", message: d.message ?? "",
+          dresscode: d.dresscode ?? "",
+          dresscodeTheme: d.dresscodeTheme ?? d.dresscode ?? "",
+          dresscodeColors: Array.isArray(d.dresscodeColors)
+            ? d.dresscodeColors.filter((color: unknown): color is string => typeof color === "string").slice(0, 4)
+            : [],
+          message: d.message ?? "",
           shortCoupleName: d.shortCoupleName ?? "",
           groomShortName: d.groomShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[1]?.trim() ?? "",
           brideShortName: d.brideShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[0]?.trim() ?? "",
@@ -732,6 +739,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               ? adminDefaults.itinerary as { time: string; event: string }[]
               : prev.itinerary,
             dresscode: typeof adminDefaults.dresscode === "string" ? adminDefaults.dresscode : prev.dresscode,
+            dresscodeTheme: typeof adminDefaults.dresscodeTheme === "string" ? adminDefaults.dresscodeTheme : prev.dresscodeTheme,
+            dresscodeColors: Array.isArray(adminDefaults.dresscodeColors)
+              ? adminDefaults.dresscodeColors.filter((color): color is string => typeof color === "string").slice(0, 4)
+              : prev.dresscodeColors,
             message: typeof adminDefaults.message === "string" ? adminDefaults.message : prev.message,
             rsvpEnabled: typeof adminDefaults.rsvpEnabled === "boolean" ? adminDefaults.rsvpEnabled : prev.rsvpEnabled,
             rsvpAdditionalInfo: typeof adminDefaults.rsvpAdditionalInfo === "string" ? adminDefaults.rsvpAdditionalInfo : prev.rsvpAdditionalInfo,
@@ -867,6 +878,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         contactPhone: inv.contactPhone,
         contacts: inv.contacts,
         dresscode: inv.dresscode || null,
+        dresscodeTheme: inv.dresscodeTheme || null,
+        dresscodeColors: inv.dresscodeColors.slice(0, 4),
         message: inv.message || null,
         shortCoupleName: inv.shortCoupleName || null,
         groomShortName: inv.groomShortName || null,
@@ -1525,7 +1538,76 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder={t("placeholders.mapsUrl")} />
                 </Field>
                 <Field label="Dress Code">
-                  <input className={inputCls} value={inv.dresscode} onChange={(e) => setI("dresscode")(e.target.value)} placeholder={t("placeholders.dressCode")} />
+                  <div className="space-y-3">
+                    <input
+                      className={inputCls}
+                      value={inv.dresscodeTheme}
+                      onChange={(e) => setI("dresscodeTheme")(e.target.value)}
+                      placeholder="Contoh: Melayu Klasik, Corporate"
+                      maxLength={120}
+                      data-testid="input-dresscode-theme"
+                    />
+                    <input
+                      type="hidden"
+                      value={inv.dresscode}
+                      readOnly
+                      aria-hidden="true"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Pilih tema pakaian untuk dipaparkan kepada tetamu.
+                    </p>
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Colour palette</p>
+                        <span className="text-xs text-gray-400">{inv.dresscodeColors.length}/4</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        {inv.dresscodeColors.map((color, index) => (
+                          <div key={`${color}-${index}`} className="relative">
+                            <input
+                              type="color"
+                              value={color}
+                              onChange={(e) => setInv((current) => ({
+                                ...current,
+                                dresscodeColors: current.dresscodeColors.map((item, itemIndex) =>
+                                  itemIndex === index ? e.target.value.toLowerCase() : item,
+                                ),
+                              }))}
+                              className="h-12 w-12 cursor-pointer appearance-none rounded-full border-2 border-white p-0 shadow-md"
+                              aria-label={`Dress code colour ${index + 1}`}
+                              data-testid={`input-dresscode-color-${index}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setInv((current) => ({
+                                ...current,
+                                dresscodeColors: current.dresscodeColors.filter((_, itemIndex) => itemIndex !== index),
+                              }))}
+                              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-xs leading-none text-white shadow"
+                              aria-label={`Remove dress code colour ${index + 1}`}
+                              data-testid={`button-remove-dresscode-color-${index}`}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {inv.dresscodeColors.length < 4 && (
+                          <button
+                            type="button"
+                            onClick={() => setInv((current) => ({
+                              ...current,
+                              dresscodeColors: [...current.dresscodeColors, "#d8c7a1"].slice(0, 4),
+                            }))}
+                            className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-xl text-gray-400 transition hover:border-gray-500 hover:text-gray-700"
+                            aria-label="Add dress code colour"
+                            data-testid="button-add-dresscode-color"
+                          >
+                            +
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </Field>
               </>
             )}

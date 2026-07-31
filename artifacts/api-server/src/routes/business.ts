@@ -54,6 +54,10 @@ function invitationValuesFromCustomer(formConfig: ReturnType<typeof normalizeBus
     contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),
     contacts: Array.isArray(mappedInvitation.contacts) ? mappedInvitation.contacts : null,
     dresscode: mappedInvitation.dresscode ? String(mappedInvitation.dresscode).trim() : null,
+    dresscodeTheme: mappedInvitation.dresscodeTheme ? String(mappedInvitation.dresscodeTheme).trim().slice(0, 120) : null,
+    dresscodeColors: Array.isArray(mappedInvitation.dresscodeColors)
+      ? mappedInvitation.dresscodeColors.filter((color): color is string => typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color)).slice(0, 4)
+      : null,
     message: mappedInvitation.message ? String(mappedInvitation.message).trim() : null,
     eventStartTime: mappedInvitation.eventStartTime ? String(mappedInvitation.eventStartTime).trim() : null,
     eventEndTime: mappedInvitation.eventEndTime ? String(mappedInvitation.eventEndTime).trim() : null,
@@ -676,6 +680,10 @@ router.post("/business/clients", async (req, res) => {
       brideParents: mappedInvitation.brideParents ? String(mappedInvitation.brideParents).trim() : null,
       contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),
       dresscode: mappedInvitation.dresscode ? String(mappedInvitation.dresscode).trim() : null,
+      dresscodeTheme: mappedInvitation.dresscodeTheme ? String(mappedInvitation.dresscodeTheme).trim().slice(0, 120) : null,
+      dresscodeColors: Array.isArray(mappedInvitation.dresscodeColors)
+        ? mappedInvitation.dresscodeColors.filter((color): color is string => typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color)).slice(0, 4)
+        : null,
       message: mappedInvitation.message ? String(mappedInvitation.message).trim() : null,
       designCode: mappedInvitation.designCode ? String(mappedInvitation.designCode).trim() : null,
       galleryImages: Array.isArray(mappedInvitation.galleryImages) ? mappedInvitation.galleryImages : null,

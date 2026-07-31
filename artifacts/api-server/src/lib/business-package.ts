@@ -17,6 +17,7 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "venueHijriDate", label: "Islamic date", type: "text", invitationField: "venueHijriDate" },
     { key: "venueMapUrl", label: "Google Maps link", type: "url", invitationField: "venueMapUrl" },
     { key: "dresscode", label: "Dress code", type: "text", invitationField: "dresscode" },
+    { key: "dresscodeTheme", label: "Dress code theme", type: "text", invitationField: "dresscodeTheme", placeholder: "Melayu Klasik, Corporate" },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
     { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
     { key: "contacts", label: "Contact persons", type: "textarea", invitationField: "contacts" },
@@ -66,7 +67,7 @@ const REMOVED_BUSINESS_FORM_KEYS = new Set([
 const INVITATION_FIELDS = new Set([
   "groomName", "brideName", "eventType", "eventDate", "eventDay", "eventTime",
   "venueName", "venueAddress", "venueCity", "venueState", "venueMapUrl",
-  "groomParents", "brideParents", "contactPhone", "contacts", "dresscode", "message",
+  "groomParents", "brideParents", "contactPhone", "contacts", "dresscode", "dresscodeTheme", "dresscodeColors", "message",
   "eventStartDateTime", "eventEndDateTime", "eventStartTime", "eventEndTime",
   "shortCoupleName", "groomShortName", "brideShortName", "coverGroomName",
   "coverBrideName", "coupleCount", "groomInitial", "brideInitial", "envelopeInitials",

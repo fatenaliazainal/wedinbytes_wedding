@@ -50,6 +50,8 @@ export const GetInvitationResponse = zod.object({
   "phone": zod.string()
 })).max(getInvitationResponseContactsMax).optional(),
   "dresscode": zod.string().optional(),
+  "dresscodeTheme": zod.string().max(120).optional(),
+  "dresscodeColors": zod.array(zod.string().regex(/^#[0-9A-Fa-f]{6}$/)).max(4).optional().describe('Up to four dress-code palette colours'),
   "message": zod.string().optional(),
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),
@@ -361,6 +363,8 @@ export const ListBusinessInvitationsResponseItem = zod.object({
   "phone": zod.string()
 })).max(listBusinessInvitationsResponseOneContactsMax).optional(),
   "dresscode": zod.string().optional(),
+  "dresscodeTheme": zod.string().max(120).optional(),
+  "dresscodeColors": zod.array(zod.string().regex(/^#[0-9A-Fa-f]{6}$/)).max(4).optional().describe('Up to four dress-code palette colours'),
   "message": zod.string().optional(),
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),

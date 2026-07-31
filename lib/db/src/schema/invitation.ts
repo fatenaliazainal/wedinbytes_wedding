@@ -34,6 +34,9 @@ export const invitationTable = pgTable("invitation", {
   // JSON array of { name, phone } contacts (max 4). Legacy contactPhone is kept for migration.
   contacts: jsonb("contacts").$type<Contact[]>(),
   dresscode: text("dresscode"),
+  // Customer-selected dress-code theme and up to four palette colours.
+  dresscodeTheme: text("dresscode_theme"),
+  dresscodeColors: jsonb("dresscode_colors").$type<string[]>(),
   message: text("message"),
   // Cover / front page fields
   language: text("language").notNull().default("ms"),
