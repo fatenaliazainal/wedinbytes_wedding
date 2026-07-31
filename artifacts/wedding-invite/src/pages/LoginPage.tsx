@@ -46,11 +46,18 @@ export default function LoginPage() {
     <div className="min-h-[100dvh] bg-[#faf9f7] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img
-            src={logo}
-            alt="WedInBytes"
-            className="mx-auto h-20 w-auto object-contain"
-          />
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="mx-auto block hover:opacity-70 transition-opacity"
+            aria-label="Go to WedInBytes home"
+          >
+            <img
+              src={logo}
+              alt="WedInBytes"
+              className="mx-auto h-20 w-auto object-contain"
+            />
+          </button>
           <p className="text-sm text-gray-500 mt-1">Log in to your account</p>
         </div>
 
