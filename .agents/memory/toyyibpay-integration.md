@@ -12,3 +12,5 @@ ToyyPay's `createBill` endpoint can return HTTP 200 without a `BillCode` when th
 **How to apply:** Keep the user secret in Replit Secrets, keep the category code/mode/public callback base URL in environment configuration, use the Dev host while sandbox testing, send FPX channel `0` for bank-simulator tests, and retain pending/failed states in read-only Payment History.
 
 The same fixed-amount bill can offer DuitNow QR by sending `enableDuitNowQR=1` and `chargeDuitNowQR=0` when `checkDuitNowQRStatus` confirms the account is activated. The QR capability check is optional and must not block the existing FPX checkout if ToyyibPay temporarily cannot answer it.
+
+Verified `PAID` order linkage is authoritative for paid-invitation presentation. If an older callback or imported record leaves `invitation.isPurchased` stale, a paid order must still activate the invitation and suppress unpaid-preview treatment.

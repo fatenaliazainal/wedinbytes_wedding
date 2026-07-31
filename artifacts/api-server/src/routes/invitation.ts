@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
-import { businessClientTable, businessProfileTable, db, invitationTable } from "@workspace/db";
+import { businessClientTable, businessProfileTable, db, invitationTable, orderTable } from "@workspace/db";
 import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
@@ -84,7 +84,18 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
     businessId: _businessId,
     ...safe
   } = row;
+  const [paidOrder] = await db
+    .select({ id: orderTable.id })
+    .from(orderTable)
+    .where(and(
+      eq(orderTable.invitationId, row.id),
+      eq(orderTable.paymentStatus, "PAID"),
+    ))
+    .limit(1);
   (safe as Record<string, unknown>).initialsImageUrl = row.initialsImageUrl ?? null;
+  // A verified paid order is authoritative even if an older callback or
+  // imported record did not update the invitation flag.
+  (safe as Record<string, unknown>).isPurchased = row.isPurchased || Boolean(paidOrder);
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every buyer invitation so old per-invitation branding values
   // cannot override the current admin default.

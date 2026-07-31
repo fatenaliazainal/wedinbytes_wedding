@@ -53,10 +53,10 @@ function adminGuard(req: any, res: any) {
   return true;
 }
 
-function invitationStatus(invitation: typeof invitationTable.$inferSelect | undefined) {
+function invitationStatus(invitation: typeof invitationTable.$inferSelect | undefined, paidByOrder = false) {
   if (!invitation) return "DISABLED";
   if (invitation.websiteStatus !== "ACTIVE") return invitation.websiteStatus;
-  return invitation.isPurchased ? "ACTIVE" : "PREVIEW";
+  return invitation.isPurchased || paidByOrder ? "ACTIVE" : "PREVIEW";
 }
 
 router.get("/buyer/payment-history", async (req, res) => {
@@ -213,6 +213,11 @@ async function readOrderRows() {
   const userById = new Map(users.map((row) => [row.id, row]));
   const invitationById = new Map(invitations.map((row) => [row.id, row]));
   const packageById = new Map(packages.map((row) => [row.id, row]));
+  const paidInvitationIds = new Set(
+    orders
+      .filter((order) => order.paymentStatus === "PAID" && order.invitationId !== null)
+      .map((order) => order.invitationId as number),
+  );
   return orders.map((order) => {
     const user = order.userId ? userById.get(order.userId) : undefined;
     const invitation = order.invitationId ? invitationById.get(order.invitationId) : undefined;
@@ -230,7 +235,7 @@ async function readOrderRows() {
         coverBrideName: invitation.coverBrideName,
         coverGroomName: invitation.coverGroomName,
         venueName: invitation.venueName,
-        websiteStatus: invitationStatus(invitation),
+        websiteStatus: invitationStatus(invitation, invitation ? paidInvitationIds.has(invitation.id) : false),
         isPurchased: invitation.isPurchased,
       } : null,
     };
@@ -436,6 +441,11 @@ router.get("/admin/customers", async (req, res) => {
       db.select().from(orderTable),
       db.select().from(invitationTable),
     ]);
+    const paidInvitationIds = new Set(
+      orders
+        .filter((order) => order.paymentStatus === "PAID" && order.invitationId !== null)
+        .map((order) => order.invitationId as number),
+    );
     const result = users
       .filter((user) => user.role !== "admin")
       .map((user) => {
@@ -453,7 +463,7 @@ router.get("/admin/customers", async (req, res) => {
         websites: websites.map((invitation) => ({
           id: invitation.id,
           token: invitation.token,
-          websiteStatus: invitationStatus(invitation),
+          websiteStatus: invitationStatus(invitation, paidInvitationIds.has(invitation.id)),
           brideName: invitation.brideName,
           groomName: invitation.groomName,
         })),

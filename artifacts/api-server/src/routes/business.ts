@@ -8,6 +8,7 @@ import {
   businessProfileTable,
   db,
   invitationTable,
+  orderTable,
   pricingPackageTable,
   pricingFeatureTable,
   userTable,
@@ -791,7 +792,19 @@ router.get("/business/invitations", async (req, res) => {
     const rows = await db.select().from(invitationTable)
       .where(eq(invitationTable.businessId, profile.id))
       .orderBy(invitationTable.createdAt);
-    res.json(rows.map(({ userId: _userId, businessId: _businessId, lockPinHash: _lockPinHash, ...safe }) => safe));
+    const paidOrders = await db
+      .select({ invitationId: orderTable.invitationId })
+      .from(orderTable)
+      .where(eq(orderTable.paymentStatus, "PAID"));
+    const paidInvitationIds = new Set(
+      paidOrders
+        .filter((order) => order.invitationId !== null)
+        .map((order) => order.invitationId as number),
+    );
+    res.json(rows.map(({ userId: _userId, businessId: _businessId, lockPinHash: _lockPinHash, ...safe }) => ({
+      ...safe,
+      isPurchased: safe.isPurchased || paidInvitationIds.has(safe.id),
+    })));
   } catch (err) {
     req.log.error({ err }, "Failed to list business invitations");
     res.status(500).json({ error: "Internal server error" });
