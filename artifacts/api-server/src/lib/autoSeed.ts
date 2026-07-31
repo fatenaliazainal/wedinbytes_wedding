@@ -5,8 +5,8 @@ import { logger } from "./logger";
 import { DEFAULT_BUSINESS_FORM_CONFIG } from "./business-package";
 
 const invitationBase = {
-  groomName: "Hidayat",
-  brideName: "Ain",
+  groomName: "Nasser",
+  brideName: "Alia",
   eventType: "Walimatul Urus",
   eventDate: "15 November 2025",
   eventDay: "Sabtu",
@@ -19,7 +19,7 @@ const invitationBase = {
   groomParents: "Encik Razali bin Hamid & Puan Rohani binti Yusof",
   brideParents: "Encik Sulaiman bin Othman & Puan Norzahra binti Abdul Rahman",
   contactPhone: "0123456789",
-  contacts: [{ name: "Ain", phone: "0123456789" }],
+  contacts: [{ name: "Alia", phone: "0123456789" }],
   dresscode: "Hijau Sage & Pink",
   message:
     "Dengan penuh kesyukuran ke hadrat Ilahi, kami menjemput Tuan/Puan hadir ke majlis perkahwinan kami.",
@@ -35,8 +35,8 @@ const invitationBase = {
   schedule:
     "11:00 pagi – Ketibaan tetamu\n12:00 tengahari – Majlis makan\n1:00 petang – Bersanding\n3:00 petang – Tamat majlis",
   // Cover
-  shortCoupleName: "Ain & Hidayat",
-  groomInitial: "H",
+  shortCoupleName: "Alia & Nasser",
+  groomInitial: "N",
   brideInitial: "A",
   coverDateText: "15 . 11 . 2025",
   showFrontText: true,
@@ -160,6 +160,20 @@ export async function autoSeedIfEmpty() {
           ) {
             patch[key] = value;
           }
+        }
+        // Migrate the original demo couple without overwriting any other
+        // content that an admin may have intentionally customised.
+        if (row.groomName.trim() === "Hidayat") patch.groomName = invitationBase.groomName;
+        if (row.brideName.trim() === "Ain") patch.brideName = invitationBase.brideName;
+        if (row.shortCoupleName?.trim() === "Ain & Hidayat") {
+          patch.shortCoupleName = invitationBase.shortCoupleName;
+        }
+        if (row.groomInitial?.trim() === "H") patch.groomInitial = invitationBase.groomInitial;
+        if (row.brideInitial?.trim() === "A") patch.brideInitial = invitationBase.brideInitial;
+        if (Array.isArray(row.contacts) && row.contacts.some((contact) => contact?.name === "Ain")) {
+          patch.contacts = row.contacts.map((contact) =>
+            contact?.name === "Ain" ? { ...contact, name: "Alia" } : contact,
+          );
         }
         if (Object.keys(patch).length > 0) {
           logger.info(

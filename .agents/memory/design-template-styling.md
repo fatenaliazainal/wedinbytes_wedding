@@ -26,3 +26,9 @@ New Buyer and Business Account cards should copy all editable invitation content
 **Why:** Customers need a complete, readable starting invitation without making uploaded assets or catalogue styling leak between records.
 
 **How to apply:** Hydrate the new-card editor from the demo content response, persist the full content payload after the initial record is created, and keep per-card uploads plus template visual fields outside the demo-content copy.
+
+Public sample invitations use Alia and Nasser, and all user-facing branding uses Wedinstudio.
+
+**Why:** The sample couple and brand are part of the product presentation and must not expose old placeholder or legacy brand names.
+
+**How to apply:** Update demo seeds and visual fallbacks together; preserve old invitation tokens, storage bucket names, and compatibility identifiers only when they are not user-facing.

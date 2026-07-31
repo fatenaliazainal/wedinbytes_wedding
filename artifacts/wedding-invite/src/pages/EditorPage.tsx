@@ -1126,7 +1126,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const displayName =
     (inv.groomShortName && inv.brideShortName)
       ? `${inv.groomShortName} & ${inv.brideShortName}`
-      : inv.shortCoupleName || `${inv.brideName} & ${inv.groomName}` || "Ain & Hidayat";
+      : inv.shortCoupleName || `${inv.brideName} & ${inv.groomName}` || "Alia & Nasser";
   const fontSize = Number(design.nameFontSize) || 38;
   const fontFamily = fontFamilyStack(design.nameFontFamily);
   const nameColorStyle = design.nameColor ? `hsl(${design.nameColor})` : "#6b4c2a";

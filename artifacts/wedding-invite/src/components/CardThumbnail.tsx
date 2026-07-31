@@ -20,11 +20,11 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
   const bodyFont = design.fontBody ?? "Lato";
   const demoEventType = invitation.eventType?.trim() || "Walimatul Urus";
   const demoBrideName = invitation.brideName?.trim() === "Nama Pengantin Perempuan"
-    ? "Ain"
-    : invitation.brideName?.trim() || "Ain";
+    ? "Alia"
+    : invitation.brideName?.trim() || "Alia";
   const demoGroomName = invitation.groomName?.trim() === "Nama Pengantin Lelaki"
-    ? "Hidayat"
-    : invitation.groomName?.trim() || "Hidayat";
+    ? "Nasser"
+    : invitation.groomName?.trim() || "Nasser";
   const demoEventDay = invitation.eventDay?.trim() || "Sabtu";
   const demoEventDate = invitation.eventDate?.trim() || "15 November 2025";
   const demoEventTime = invitation.eventTime?.trim() || "11:00 pagi – 3:00 petang";
