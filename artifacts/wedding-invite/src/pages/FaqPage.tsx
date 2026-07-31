@@ -130,7 +130,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left"
+        className="flex w-full items-center justify-between gap-4 py-4 text-left"
       >
         <span className="text-sm font-semibold text-gray-900">{question}</span>
         <span className="shrink-0 w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-gray-500">
@@ -224,21 +224,21 @@ export default function FaqPage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-white py-10 px-4 sm:px-6 text-center">
+        <section className="bg-white py-6 px-4 sm:px-6 text-center">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">Frequently Asked Questions</h1>
-            <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-2 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
               Everything you need to know about creating and sharing your digital wedding invitation.
             </p>
           </div>
         </section>
 
         {/* FAQ Categories */}
-        <section className="py-10 px-4 sm:px-6 bg-gray-50">
-          <div className="max-w-2xl mx-auto space-y-8">
+        <section className="pt-5 pb-10 px-4 sm:px-6 bg-gray-50">
+          <div className="max-w-2xl mx-auto space-y-6">
             {FAQS.map((category) => (
               <div key={category.category}>
-                <h2 className="text-xs font-bold tracking-widest text-rose-700 uppercase mb-4">{category.category}</h2>
+                <h2 className="text-xs font-bold tracking-widest text-rose-700 uppercase mb-3">{category.category}</h2>
                 <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-5 sm:px-8">
                   {category.items.map((faq) => (
                     <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />
