@@ -425,6 +425,7 @@ interface DesignFormData {
   thumbnailImageUrl: string;
   thumbnailImageFile?: File | null;
   thumbnailImagePreviewUrl?: string;
+  thumbnailImageChanged?: boolean;
   envelopeImageUrl: string;
   envelopeImageFile?: File | null;
   envelopeImagePreviewUrl?: string;
@@ -560,7 +561,9 @@ function DesignForm({
         designCode: displayCode,
         cardImageUrl,
         envelopeImageUrl,
-        thumbnailImageUrl,
+        ...(mode === "add" || form.thumbnailImageChanged || form.thumbnailImageFile
+          ? { thumbnailImageUrl }
+          : {}),
         openingAnimation: form.openingAnimation,
         nameFontFamily: form.nameFontFamily,
         // Card catalogue thumbnails use fontHeading, while the live editor
@@ -742,13 +745,20 @@ function DesignForm({
             label="Catalog Thumbnail (shown on catalog / home page)"
             value={form.thumbnailImageUrl}
             previewUrl={form.thumbnailImagePreviewUrl}
-            onChange={(url) => setForm((f) => ({ ...f, thumbnailImageUrl: url, thumbnailImageFile: null, thumbnailImagePreviewUrl: "" }))}
+            onChange={(url) => setForm((f) => ({
+              ...f,
+              thumbnailImageUrl: url,
+              thumbnailImageFile: null,
+              thumbnailImagePreviewUrl: "",
+              thumbnailImageChanged: true,
+            }))}
             onFileSelect={(file, previewUrl) => {
               setForm((f) => ({
                 ...f,
                 thumbnailImageFile: file,
                 thumbnailImagePreviewUrl: previewUrl,
                 thumbnailImageUrl: file ? "" : f.thumbnailImageUrl,
+                thumbnailImageChanged: true,
               }));
             }}
           />
@@ -1040,6 +1050,7 @@ function DesignsTab() {
                     cardImageUrl: d.cardImageUrl ?? "",
                     thumbnailImageUrl: d.thumbnailImageUrl ?? "",
                     thumbnailImagePreviewUrl: resolveImageUrl(d.thumbnailImageUrl ?? "") ?? "",
+                     thumbnailImageChanged: false,
                     envelopeImageUrl: d.envelopeImageUrl ?? "",
                     openingAnimation: d.openingAnimation ?? "doors",
                     nameFontFamily: d.nameFontFamily ?? d.fontHeading ?? "Dancing Script",
