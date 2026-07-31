@@ -3,6 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { type Invitation } from "@workspace/api-client-react";
+import {
+  INVITATION_PANEL_CARD_CLASS,
+  INVITATION_PANEL_CLASS,
+  INVITATION_PANEL_CONTENT_CLASS,
+  INVITATION_PANEL_CTA_CLASS,
+  INVITATION_PANEL_HEADER_CLASS,
+  INVITATION_PANEL_ICON_CLASS,
+  INVITATION_PANEL_SECTION_TITLE_CLASS,
+  INVITATION_PANEL_TITLE_CLASS,
+} from "@/components/PanelStyles";
 
 export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift";
 
@@ -119,26 +129,26 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
     : "#";
 
   return (
-    <div className="flex flex-col items-center gap-3 py-2">
-      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+    <div className={INVITATION_PANEL_CONTENT_CLASS}>
+      <div className={INVITATION_PANEL_ICON_CLASS}>
         <Calendar size={32} className="text-primary" />
       </div>
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Event Date</p>
-      <div className="w-full bg-background/80 rounded-2xl p-4 border border-primary/10 text-center space-y-2">
-        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
-        <p className="font-bold text-xl text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
+      <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Date</p>
+      <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
+        <p className="text-[10px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
+        <p className="font-bold text-base text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Date</p>
-        <p className="text-2xl text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDate}</p>
+        <p className="text-[10px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Date</p>
+        <p className="text-[19px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDate}</p>
         <div className="w-12 h-px bg-primary/30 mx-auto" />
-        <p className="text-xs tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Time</p>
-        <p className="text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventTime}</p>
+        <p className="text-[10px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Time</p>
+        <p className="text-[13px] text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventTime}</p>
       </div>
       <a
         href={mapsCalUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold text-center tracking-wide shadow"
+        className={INVITATION_PANEL_CTA_CLASS}
       >
         Save to Calendar
       </a>
@@ -153,19 +163,19 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
     )}`;
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-        <MapPin size={36} className="text-primary" />
+    <div className={INVITATION_PANEL_CONTENT_CLASS}>
+      <div className={INVITATION_PANEL_ICON_CLASS}>
+        <MapPin size={32} className="text-primary" />
       </div>
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Event Venue</p>
-      <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center space-y-2">
-        <p className="font-bold text-base text-foreground">
+      <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Venue</p>
+      <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
+        <p className="text-sm font-bold text-foreground">
           {invitation?.venueName}
         </p>
-        <p className="text-sm text-muted-foreground"
+        <p className="text-xs text-muted-foreground"
           dangerouslySetInnerHTML={{ __html: invitation?.venueAddress || "" }}
         />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
       </div>
@@ -173,7 +183,7 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
         href={mapsUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold text-center tracking-wide shadow"
+        className={INVITATION_PANEL_CTA_CLASS}
       >
         Open in Google Maps
       </a>
@@ -205,15 +215,15 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
   );
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-        <Phone size={36} className="text-primary" />
+    <div className={INVITATION_PANEL_CONTENT_CLASS}>
+      <div className={INVITATION_PANEL_ICON_CLASS}>
+        <Phone size={32} className="text-primary" />
       </div>
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Contact Us</p>
+      <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Contact Us</p>
 
-      <div className="w-full space-y-3">
+      <div className="w-full space-y-2">
         {contacts.length === 0 && (
-          <div className="w-full bg-background/80 rounded-2xl p-5 border border-primary/10 text-center text-sm text-muted-foreground">
+          <div className={`${INVITATION_PANEL_CARD_CLASS} text-xs text-muted-foreground`}>
             No contact information available.
           </div>
         )}
@@ -223,33 +233,33 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
           return (
             <div
               key={idx}
-              className="w-full bg-background/80 rounded-2xl p-4 border border-primary/10 flex items-center justify-between gap-3"
+              className={`${INVITATION_PANEL_CARD_CLASS} flex items-center justify-between gap-2`}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-xs font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
                   {contact.name || "Contact"}
                 </p>
-                <p className="text-sm text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
                   {contact.phone}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <a
                   href={`tel:${contact.phone}`}
-                  className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
                   aria-label={`Call ${contact.name}`}
                 >
-                  <Phone size={18} />
+                  <Phone size={16} />
                 </a>
                 {dial && (
                   <a
                     href={`https://wa.me/${dial}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                    className="w-9 h-9 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
                     aria-label={`WhatsApp ${contact.name}`}
                   >
-                    <WhatsAppIcon className="w-5 h-5" />
+                    <WhatsAppIcon className="w-4 h-4" />
                   </a>
                 )}
               </div>
@@ -332,10 +342,11 @@ export function DetailPanel({
   musicArtist,
   previewMode,
 }: DetailPanelProps) {
+  const isCompactPanel = activeTab === "kalendar" || activeTab === "lokasi" || activeTab === "hubungi";
   const panelContent = (
-    <div className="w-full max-w-[420px] bg-card rounded-t-3xl shadow-2xl border border-primary/10 border-b-0 p-6 pb-6">
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-lg text-primary" style={{ fontFamily: nameFont }}>
+    <div className={isCompactPanel ? INVITATION_PANEL_CLASS : "w-full max-w-[420px] rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl"}>
+      <div className={isCompactPanel ? INVITATION_PANEL_HEADER_CLASS : "mb-6 flex items-center justify-between"}>
+        <p className={isCompactPanel ? INVITATION_PANEL_TITLE_CLASS : "text-lg text-primary"} style={{ fontFamily: nameFont }}>
           {activeTab ? PANEL_TITLES[activeTab] : ""}
         </p>
         <button

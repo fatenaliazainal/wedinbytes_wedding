@@ -14,6 +14,7 @@ import { getListRsvpsQueryKey, getGetRsvpCountQueryKey } from "@workspace/api-cl
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { Invitation } from "@workspace/api-client-react";
+import { INVITATION_PANEL_CLASS, INVITATION_PANEL_TITLE_CLASS } from "@/components/PanelStyles";
 
 function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== "string" || !value.trim()) return fallback;
@@ -189,15 +190,15 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] border-primary/20 bg-card" style={cardFontVars}>
+      <DialogContent className={INVITATION_PANEL_CLASS} style={cardFontVars}>
         <DialogHeader>
           <DialogTitle
-            className="text-2xl text-center text-primary"
+            className={`${INVITATION_PANEL_TITLE_CLASS} text-center`}
             style={{ fontFamily: "var(--name-font-family, 'Dancing Script', serif)" }}
           >
             {closedTitle}
           </DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground" style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}>
+          <DialogDescription className="text-xs text-center text-muted-foreground" style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}>
             {closedState ? closedMessage : (introText || copy.defaultIntro)}
           </DialogDescription>
         </DialogHeader>
@@ -211,7 +212,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         ) : (
           <>
             <Form {...form}>
-              <form className="space-y-5 mt-2">
+              <form className="mt-1 space-y-3 text-sm">
                 <FormField
                   control={form.control}
                   name="name"
@@ -230,7 +231,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                   control={form.control}
                   name="attending"
                   render={({ field }) => (
-                    <FormItem className="space-y-3">
+                    <FormItem className="space-y-2">
                        <FormLabel>{copy.attendance}</FormLabel>
                       <FormControl>
                         <RadioGroup
@@ -267,7 +268,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                         <FormControl>
                           <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background" />
                         </FormControl>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground">
                         {language === "en"
                           ? `Maximum ${maxGuestsPerInvitation} guests for this invitation.`
                           : `Maksimum ${maxGuestsPerInvitation} tetamu untuk jemputan ini.`}
@@ -299,13 +300,13 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
               </form>
             </Form>
 
-            <DialogFooter className="gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            <DialogFooter className="gap-1 pt-1">
+              <Button type="button" variant="outline" onClick={onClose} className="w-full py-2 text-xs sm:w-auto">
                 {copy.cancel}
               </Button>
               <Button
                 type="submit"
-                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 text-xs sm:w-auto"
                 disabled={createRsvp.isPending}
                 onClick={form.handleSubmit(onSubmit)}
               >
