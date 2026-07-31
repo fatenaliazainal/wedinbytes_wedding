@@ -15,9 +15,7 @@ import {
   ExternalLink,
   Link2,
   LogOut,
-  Mail,
   MoreVertical,
-  Phone,
   Plus,
   ReceiptText,
   Search,
@@ -665,24 +663,68 @@ export default function BusinessDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Order Form Submission Cards */}
+                  {/* Order Form Submission Rows */}
                   {filteredAndSortedClients.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="overflow-visible rounded-xl border border-gray-200 bg-white">
                       {filteredAndSortedClients.map((client) => {
                         const days = getDaysUntilEvent(client.eventDate);
                         const countdown = formatCountdown(days);
                         const packageName = packages.find((p) => p.id === client.packageId)?.name || "Package";
 
                         return (
-                          <div key={client.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-shadow" data-testid={`card-customer-${client.id}`}>
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900 truncate">
-                                  {client.groomName || "Order form submission"}{client.brideName ? ` & ${client.brideName}` : ""}
-                                </h4>
-                                <p className="text-xs text-gray-500 mt-1">Order form submitted · {packageName}</p>
+                          <div key={client.id} className="relative grid gap-3 border-b border-gray-100 px-4 py-3.5 last:border-b-0 hover:bg-gray-50/70 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(190px,1fr)_minmax(170px,auto)] lg:items-center" data-testid={`row-order-form-${client.id}`}>
+                            <div className="min-w-0">
+                              <div className="flex items-start gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="truncate text-sm font-semibold text-gray-900">
+                                    {client.groomName || "Order form submission"}{client.brideName ? ` & ${client.brideName}` : ""}
+                                  </h4>
+                                  <p className="mt-0.5 truncate text-xs text-gray-500">Order form submitted · {packageName}</p>
+                                </div>
+                                <div className="relative shrink-0 lg:hidden">
+                                  <button
+                                    onClick={() => setOpenClientMenuId((current) => current === client.id ? null : client.id)}
+                                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                                    aria-label={`More actions for ${client.groomName || "order form submission"}`}
+                                    data-testid={`button-more-customer-${client.id}`}
+                                  >
+                                    <MoreVertical size={16} />
+                                  </button>
+                                </div>
                               </div>
-                              <div className="relative">
+                            </div>
+
+                            <div className="grid min-w-0 grid-cols-1 gap-1 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-1">
+                              <span className="truncate">
+                                <Calendar size={13} className="mr-1.5 inline-block text-gray-400" />
+                                {client.eventDate ? new Date(client.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}
+                              </span>
+                              <span className={`font-medium ${client.invitationId ? "text-green-700" : "text-gray-500"}`}>
+                                {client.invitationId ? "Invitation created" : "Invitation not created"}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
+                                {countdown.label}
+                              </span>
+                              <button
+                                onClick={() => client.invitationId && client.invitationToken ? navigate(`/business/editor?token=${encodeURIComponent(client.invitationToken)}`) : void createInvitation(client)}
+                                disabled={creatingInvitationFor === client.id}
+                                className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                data-testid={`button-${client.invitationId ? "edit" : "create"}-invitation-${client.id}`}
+                              >
+                                {client.invitationId ? "Edit Invitation" : creatingInvitationFor === client.id ? "Creating..." : "Create Invitation"}
+                              </button>
+                              <button
+                                onClick={() => void deleteClient(client.id)}
+                                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                aria-label="Delete order form submission"
+                                data-testid={`button-delete-order-form-${client.id}`}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                              <div className="relative hidden lg:block">
                                 <button
                                   onClick={() => setOpenClientMenuId((current) => current === client.id ? null : client.id)}
                                   className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
@@ -691,91 +733,32 @@ export default function BusinessDashboardPage() {
                                 >
                                   <MoreVertical size={16} />
                                 </button>
-                                {openClientMenuId === client.id && (
-                                  <div className="absolute right-0 top-9 z-10 w-44 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
-                                    {client.invitationToken && (
-                                      <>
-                                        <a
-                                          href={`/invite/${client.invitationToken}`}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          onClick={() => setOpenClientMenuId(null)}
-                                          className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                        >
-                                          Preview invitation
-                                        </a>
-                                        <button
-                                          onClick={async () => {
-                                            await navigator.clipboard.writeText(`${window.location.origin}${BASE}/invite/${client.invitationToken}`);
-                                            toast.success("Invitation link copied");
-                                            setOpenClientMenuId(null);
-                                          }}
-                                          className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                        >
-                                          Copy invitation link
-                                        </button>
-                                      </>
-                                    )}
-                                    <button
-                                      onClick={() => {
-                                        setOpenClientMenuId(null);
-                                        void deleteClient(client.id);
-                                      }}
-                                      className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50"
-                                    >
-                                      Delete order form submission
+                              </div>
+                            </div>
+                            {openClientMenuId === client.id && (
+                              <div className="absolute right-4 top-12 z-10 w-48 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
+                                {client.invitationToken && (
+                                  <>
+                                    <a href={`/invite/${client.invitationToken}`} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                      Preview invitation
+                                    </a>
+                                    <button onClick={async () => {
+                                      await navigator.clipboard.writeText(`${window.location.origin}${BASE}/invite/${client.invitationToken}`);
+                                      toast.success("Invitation link copied");
+                                      setOpenClientMenuId(null);
+                                    }} className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                      Copy invitation link
                                     </button>
-                                  </div>
+                                  </>
                                 )}
+                                <button onClick={() => {
+                                  setOpenClientMenuId(null);
+                                  void deleteClient(client.id);
+                                }} className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50">
+                                  Delete order form submission
+                                </button>
                               </div>
-                            </div>
-
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Calendar size={14} className="text-gray-400 flex-shrink-0" />
-                                <span className="truncate">{client.eventDate ? new Date(client.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</span>
-                              </div>
-                              {client.email && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Mail size={14} className="text-gray-400 flex-shrink-0" />
-                                  <span className="truncate">{client.email}</span>
-                                </div>
-                              )}
-                              {client.phone && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Phone size={14} className="text-gray-400 flex-shrink-0" />
-                                  <span className="truncate">{client.phone}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="mb-4 space-y-2">
-                              <p className={`text-xs font-medium ${client.invitationId ? "text-green-700" : "text-gray-500"}`}>
-                                {client.invitationId ? "Invitation created" : "Invitation not created"}
-                              </p>
-                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
-                                {countdown.label}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => client.invitationId && client.invitationToken ? navigate(`/business/editor?token=${encodeURIComponent(client.invitationToken)}`) : void createInvitation(client)}
-                                disabled={creatingInvitationFor === client.id}
-                                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
-                                data-testid={`button-${client.invitationId ? "edit" : "create"}-invitation-${client.id}`}
-                              >
-                                {client.invitationId ? "Edit Invitation" : creatingInvitationFor === client.id ? "Creating..." : "Create Invitation"}
-                              </button>
-                              <button
-                                onClick={() => void deleteClient(client.id)}
-                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                aria-label="Delete order form submission"
-                                data-testid={`button-delete-order-form-${client.id}`}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                            )}
                           </div>
                         );
                       })}
@@ -818,7 +801,7 @@ export default function BusinessDashboardPage() {
                   </div>
 
                   {invitations.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
                       {invitations.map((item) => {
                         const days = getDaysUntilEvent(item.eventDate);
                         const countdown = formatCountdown(days);
@@ -826,63 +809,57 @@ export default function BusinessDashboardPage() {
                         const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
 
                         return (
-                          <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-shadow" data-testid={`card-invitation-${item.id}`}>
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900">{item.groomName} & {item.brideName}</h4>
-                                <p className="text-xs text-gray-500 mt-1">{packageName || item.eventType}</p>
+                          <div key={item.id} className="grid gap-3 border-b border-gray-100 px-4 py-3.5 last:border-b-0 hover:bg-gray-50/70 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(190px,1fr)_minmax(220px,auto)] lg:items-center" data-testid={`row-invitation-${item.id}`}>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h4 className="truncate text-sm font-semibold text-gray-900">{item.groomName} & {item.brideName}</h4>
+                                  <p className="mt-0.5 truncate text-xs text-gray-500">{packageName || item.eventType}</p>
+                                </div>
+                                <span className={`inline-block shrink-0 text-xs px-2.5 py-1 rounded-full ${item.isPurchased ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
+                                  {item.isPurchased ? "Active" : "Pending"}
+                                </span>
                               </div>
-                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${item.isPurchased ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
-                                {item.isPurchased ? "Active" : "Pending"}
+                            </div>
+
+                            <div className="grid min-w-0 grid-cols-1 gap-1 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-1">
+                              <span className="truncate">
+                                <Calendar size={13} className="mr-1.5 inline-block text-gray-400" />
+                                {item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}
                               </span>
+                              <span className="truncate">{item.venueCity || "Venue not set"}</span>
                             </div>
 
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Calendar size={14} className="text-gray-400 flex-shrink-0" />
-                                <span className="truncate">{item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</span>
-                              </div>
-                              {item.venueCity && (
-                                <div className="text-sm text-gray-600 truncate pl-6">{item.venueCity}</div>
-                              )}
-                            </div>
-
-                            <div className="mb-4">
+                            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                               <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
                               </span>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors" data-testid={`button-edit-invitation-${item.id}`}>
+                              <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors" data-testid={`button-edit-invitation-${item.id}`}>
                                 Edit
                               </button>
-                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
+                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
                                 Preview
                               </a>
-                            </div>
-
-                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                               <button
                                 onClick={async () => {
                                   await navigator.clipboard.writeText(inviteUrl);
                                   toast.success("Link copied");
                                 }}
-                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+                                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                                aria-label="Copy invitation link"
                                 data-testid={`button-copy-link-${item.id}`}
                               >
-                                <Copy size={13} /> Copy Link
+                                <Copy size={15} />
                               </button>
-                              <button onClick={() => setDeleteInvitation(item)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`} data-testid={`button-delete-invitation-${item.id}`}>
-                                <Trash2 size={14} />
+                              <button onClick={() => setDeleteInvitation(item)} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`} data-testid={`button-delete-invitation-${item.id}`}>
+                                <Trash2 size={15} />
                               </button>
+                              {!item.isPurchased && (
+                                <button onClick={() => void startPayment({ invitationId: item.id })} disabled={paymentStartingFor === item.id} className="inline-flex items-center justify-center rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-60" data-testid={`button-pay-now-${item.id}`}>
+                                  {paymentStartingFor === item.id ? "Starting..." : "Pay Now"}
+                                </button>
+                              )}
                             </div>
-
-                            {!item.isPurchased && (
-                              <button onClick={() => void startPayment({ invitationId: item.id })} disabled={paymentStartingFor === item.id} className="w-full mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-60" data-testid={`button-pay-now-${item.id}`}>
-                                <CreditCard size={13} /> {paymentStartingFor === item.id ? "Starting..." : "Pay Now"}
-                              </button>
-                            )}
                           </div>
                         );
                       })}

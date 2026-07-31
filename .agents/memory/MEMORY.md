@@ -26,3 +26,5 @@
 - [Role-aware dashboard routing](role-aware-dashboard-routing.md) — shared navigation and the generic editor must preserve Buyer, Business Account, and Admin destinations.
 - [Business dashboard status copy](business-dashboard-status-copy.md) — keep Active/Pending visible as neutral text, not workflow badges.
 - [Order form submission flow](order-form-submission-flow.md) — present submitted forms as a direct order-form-to-invitation flow, not a separate customer entity.
+- [Business list density](business-list-density.md) — use compact table-like rows so larger invitation lists remain scannable.
+- [Editor package feature save](editor-package-feature-save.md) — omit gated feature fields from saves when the active package does not support them.

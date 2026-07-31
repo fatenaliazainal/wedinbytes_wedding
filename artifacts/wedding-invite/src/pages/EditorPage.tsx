@@ -864,12 +864,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         schedule: inv.schedule || null,
         itinerary: inv.itinerary,
         galleryImages: inv.galleryImages,
-        giftDisplay: inv.giftDisplay,
-        giftTitle: inv.giftTitle || null,
-        giftRecipient: inv.giftRecipient || null,
-        giftBankName: inv.giftBankName || null,
-        giftAccountNumber: inv.giftAccountNumber || null,
-        giftQrCodes: inv.giftQrCodes,
         rsvpEnabled: inv.rsvpEnabled,
         rsvpAdditionalInfo: inv.rsvpAdditionalInfo || null,
         rsvpDeadline: inv.rsvpDeadline || null,
@@ -897,6 +891,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         musicArtist: design.musicArtist || null,
       };
 
+      // Standard invitations do not have the Money Gift feature. Do not send
+      // those fields during an otherwise unrelated save, because the API
+      // correctly rejects Money Gift fields for packages without the feature.
+      if (mode === "admin" || mode === "demo" || activeFeatureNames.has("Money Gift")) {
+        Object.assign(savePayload, {
+          giftDisplay: inv.giftDisplay,
+          giftTitle: inv.giftTitle || null,
+          giftRecipient: inv.giftRecipient || null,
+          giftBankName: inv.giftBankName || null,
+          giftAccountNumber: inv.giftAccountNumber || null,
+          giftQrCodes: inv.giftQrCodes,
+        });
+      }
+
       // Footer branding is admin-owned and must not be included in buyer saves.
       if (mode === "admin" || mode === "demo") {
         savePayload.showFooter = inv.showFooter;
@@ -915,7 +923,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         toast.success("Details saved successfully!");
         await loadData(true);
       } else {
-        toast.error("Save failed. Please try again.");
+        const errorData = await r.json().catch(() => ({}));
+        toast.error(typeof errorData.error === "string" ? errorData.error : "Save failed. Please try again.");
       }
     } catch {
       toast.error("Network error. Please try again.");
