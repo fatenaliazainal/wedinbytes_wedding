@@ -299,9 +299,13 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
+    const requestedPackageId = "packageId" in body
+      ? (body.packageId == null || body.packageId === "" ? null : Number(body.packageId))
+      : (rows[0].packageId ?? null);
+    const effectivePackage = { packageId: requestedPackageId };
     const giftFields = ["giftDisplay", "giftTitle", "giftRecipient", "giftBankName", "giftAccountNumber", "giftQrCodes"];
     if (giftFields.some((field) => field in body)) {
-      if (!(await invitationHasFeature(rows[0], "Money Gift"))) {
+      if (!(await invitationHasFeature(effectivePackage, "Money Gift"))) {
         res.status(403).json({ error: "Money Gift is available with the Premium package." });
         return;
       }
@@ -325,9 +329,6 @@ router.patch("/invitation/:token", async (req, res) => {
       && req.session.role !== "admin"
       && "packageId" in body
     ) {
-      const requestedPackageId = body.packageId == null || body.packageId === ""
-        ? null
-        : Number(body.packageId);
       const currentPackageId = rows[0].packageId ?? null;
       if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
         res.status(409).json({

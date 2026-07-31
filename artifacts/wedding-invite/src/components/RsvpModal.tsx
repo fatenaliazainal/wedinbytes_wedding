@@ -36,12 +36,13 @@ function parseTimeSlots(value: unknown): string[] {
 interface RsvpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitted?: () => void;
   cardFontVars?: React.CSSProperties;
   invitation?: Invitation | Record<string, unknown>;
   token?: string;
 }
 
-export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: RsvpModalProps) {
+export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitation, token }: RsvpModalProps) {
   const queryClient = useQueryClient();
   const createRsvp = useCreateRsvp();
   const inv = invitation as Record<string, unknown> | undefined;
@@ -156,6 +157,7 @@ export function RsvpModal({ isOpen, onClose, cardFontVars, invitation, token }: 
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListRsvpsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetRsvpCountQueryKey(resolvedToken ? { invitationToken: resolvedToken } : undefined) });
+          onSubmitted?.();
            toast.success(copy.success);
           onClose();
           form.reset();

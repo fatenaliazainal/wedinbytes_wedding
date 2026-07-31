@@ -89,6 +89,7 @@ export default function InvitationPage() {
     const controller = new AbortController();
     fetch(`/api/rsvp/wishes?invitationToken=${encodeURIComponent(resolvedToken)}`, {
       signal: controller.signal,
+      cache: "no-store",
     })
       .then((response) => response.ok ? response.json() : [])
       .then((wishes: Array<{ name: string; message: string; createdAt: string }>) => setGuestWishes(wishes))
@@ -98,6 +99,16 @@ export default function InvitationPage() {
       });
     return () => controller.abort();
   }, [resolvedToken, tokenReady]);
+
+  const refreshGuestWishes = () => {
+    if (!tokenReady) return;
+    fetch(`/api/rsvp/wishes?invitationToken=${encodeURIComponent(resolvedToken)}`, {
+      cache: "no-store",
+    })
+      .then((response) => response.ok ? response.json() : [])
+      .then((wishes: Array<{ name: string; message: string; createdAt: string }>) => setGuestWishes(wishes))
+      .catch(() => {});
+  };
 
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
@@ -417,6 +428,7 @@ export default function InvitationPage() {
       <RsvpModal
         isOpen={isRsvpModalOpen}
         onClose={() => setIsRsvpModalOpen(false)}
+        onSubmitted={refreshGuestWishes}
         cardFontVars={cardFontVars}
         invitation={invitation}
         token={resolvedToken}
