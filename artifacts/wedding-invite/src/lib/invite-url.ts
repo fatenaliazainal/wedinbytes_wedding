@@ -37,8 +37,8 @@ export function publicInvitePath(invitation: {
   groomInitial?: string | null;
 }): string {
   return `/invite/${inviteDateCode(invitation.eventDate)}/${inviteNameSlug(
-    invitation.groomShortName || invitation.groomInitial || invitation.groomName,
-    invitation.brideShortName || invitation.brideInitial || invitation.brideName,
+    invitation.groomShortName || invitation.groomName || invitation.groomInitial,
+    invitation.brideShortName || invitation.brideName || invitation.brideInitial,
     invitation.groomName,
     invitation.brideName,
   )}`;

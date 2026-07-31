@@ -257,6 +257,7 @@ export interface CardDesign {
   designCode?: string;
   envelopeImageUrl?: string;
   cardImageUrl?: string;
+  thumbnailImageUrl?: string;
   musicUrl?: string;
   musicTitle?: string;
   musicArtist?: string;

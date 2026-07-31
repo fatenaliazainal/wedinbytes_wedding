@@ -16,6 +16,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
+import { publicInvitePath } from "@/lib/invite-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
@@ -299,7 +300,7 @@ export default function DashboardPage() {
   };
 
   const inviteLinkFor = (card: Invitation) =>
-    `${window.location.origin}${BASE}/invite/${encodeURIComponent(card.token)}`;
+    `${window.location.origin}${BASE}${publicInvitePath(card)}`;
 
   const copyLink = (card: Invitation) => {
     navigator.clipboard.writeText(inviteLinkFor(card));
@@ -329,7 +330,7 @@ export default function DashboardPage() {
 
   const actionButtonsFor = (card: Invitation) => [
     { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
-    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}/invite/${encodeURIComponent(card.token)}`, "_blank") },
+    { icon: Eye,    label: "View",  onClick: () => window.open(`${BASE}${publicInvitePath(card)}`, "_blank") },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: () => copyLink(card) },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },

@@ -21,7 +21,7 @@ const upload = multer({
 });
 
 const ALLOWED_DESIGN_FIELDS = [
-  "envelopeImageUrl","cardImageUrl","musicUrl","musicTitle","musicArtist",
+  "envelopeImageUrl","cardImageUrl","thumbnailImageUrl","musicUrl","musicTitle","musicArtist",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
   "fontHeading","fontBody","nameFontFamily","nameFontSize","badgeFontSize","nameColor",
   "cardMaxWidth","openingAnimation","designCode","openButtonText","name",
@@ -57,7 +57,11 @@ router.post("/upload", requireAdmin, (req, res, next) => {
     const designCode = typeof req.body.designCode === "string"
       ? req.body.designCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "")
       : "";
-    const assetType = req.body.assetType === "envelope" ? "envelope" : "card";
+    const assetType = req.body.assetType === "envelope"
+      ? "envelope"
+      : req.body.assetType === "thumbnail"
+        ? "thumbnail"
+        : "card";
     if (!designCode) {
       res.status(400).json({ error: "Design code is required for image upload." });
       return;

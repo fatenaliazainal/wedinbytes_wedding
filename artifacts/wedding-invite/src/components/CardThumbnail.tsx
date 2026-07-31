@@ -21,6 +21,25 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
 
   return (
     <div className="absolute inset-0 overflow-hidden" aria-hidden>
+      {design.thumbnailImageUrl ? (
+        <img
+          src={resolveImageUrl(design.thumbnailImageUrl)}
+          alt=""
+          draggable={false}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
+      ) : null}
       <div
         style={{
           width: INNER_W,

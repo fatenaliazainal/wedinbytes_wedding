@@ -284,7 +284,7 @@ function ImageScaleControl({
   );
 }
 
-async function uploadFile(file: File, designCode: string, assetType: "card" | "envelope") {
+async function uploadFile(file: File, designCode: string, assetType: "card" | "envelope" | "thumbnail") {
   const fd = new FormData();
   fd.append("designCode", designCode);
   fd.append("assetType", assetType);
@@ -422,6 +422,9 @@ interface DesignFormData {
   cardImageUrl: string;
   cardImageFile?: File | null;
   cardImagePreviewUrl?: string;
+  thumbnailImageUrl: string;
+  thumbnailImageFile?: File | null;
+  thumbnailImagePreviewUrl?: string;
   envelopeImageUrl: string;
   envelopeImageFile?: File | null;
   envelopeImagePreviewUrl?: string;
@@ -443,7 +446,7 @@ interface DesignFormData {
 }
 
 const EMPTY_FORM: DesignFormData = {
-  name: "", designCode: "", cardImageUrl: "", envelopeImageUrl: "",
+  name: "", designCode: "", cardImageUrl: "", thumbnailImageUrl: "", envelopeImageUrl: "",
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
   colorAccent: "", colorBackground: "", colorCard: "", nameColor: "",
   nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
@@ -547,12 +550,17 @@ function DesignForm({
       if (form.envelopeImageFile) {
         envelopeImageUrl = await uploadFile(await scaleImageFile(form.envelopeImageFile, envelopeImageScale), displayCode, "envelope");
       }
+      let thumbnailImageUrl = form.thumbnailImageUrl;
+      if (form.thumbnailImageFile) {
+        thumbnailImageUrl = await uploadFile(form.thumbnailImageFile, displayCode, "thumbnail");
+      }
 
       const payload = {
         name: form.name,
         designCode: displayCode,
         cardImageUrl,
         envelopeImageUrl,
+        thumbnailImageUrl,
         openingAnimation: form.openingAnimation,
         nameFontFamily: form.nameFontFamily,
         // Card catalogue thumbnails use fontHeading, while the live editor
@@ -727,6 +735,22 @@ function DesignForm({
             previewUrl={form.envelopeImagePreviewUrl}
             scale={envelopeImageScale}
             onScaleChange={setEnvelopeImageScale}
+          />
+
+          {/* Catalog thumbnail — shown on the public catalog and home page */}
+          <ImageUploadField
+            label="Catalog Thumbnail (shown on catalog / home page)"
+            value={form.thumbnailImageUrl}
+            previewUrl={form.thumbnailImagePreviewUrl}
+            onChange={(url) => setForm((f) => ({ ...f, thumbnailImageUrl: url, thumbnailImageFile: null, thumbnailImagePreviewUrl: "" }))}
+            onFileSelect={(file, previewUrl) => {
+              setForm((f) => ({
+                ...f,
+                thumbnailImageFile: file,
+                thumbnailImagePreviewUrl: previewUrl,
+                thumbnailImageUrl: file ? "" : f.thumbnailImageUrl,
+              }));
+            }}
           />
 
           {/* Opening animation */}
@@ -952,9 +976,9 @@ function DesignsTab() {
             <div key={d.id} className="flex items-center gap-4 px-5 py-4">
               {/* Thumbnail */}
               <div className="h-20 w-14 shrink-0 rounded-lg overflow-hidden border border-border bg-muted relative">
-                {d.cardImageUrl ? (
+                {(d.thumbnailImageUrl ?? d.cardImageUrl) ? (
                   <img
-                    src={resolveImageUrl(d.cardImageUrl)}
+                    src={resolveImageUrl(d.thumbnailImageUrl ?? d.cardImageUrl)}
                     alt={d.name}
                     className="h-full w-full object-cover"
                     onError={(event) => {
@@ -1014,6 +1038,8 @@ function DesignsTab() {
                     name: d.name ?? "",
                     designCode: d.designCode ?? "",
                     cardImageUrl: d.cardImageUrl ?? "",
+                    thumbnailImageUrl: d.thumbnailImageUrl ?? "",
+                    thumbnailImagePreviewUrl: resolveImageUrl(d.thumbnailImageUrl ?? "") ?? "",
                     envelopeImageUrl: d.envelopeImageUrl ?? "",
                     openingAnimation: d.openingAnimation ?? "doors",
                     nameFontFamily: d.nameFontFamily ?? d.fontHeading ?? "Dancing Script",

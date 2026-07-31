@@ -145,6 +145,7 @@ export const cardDesignTable = pgTable("card_design", {
   // Images
   envelopeImageUrl: text("envelope_image_url"),
   cardImageUrl: text("card_image_url"),
+  thumbnailImageUrl: text("thumbnail_image_url"),
   // Music
   musicUrl: text("music_url"),
   musicTitle: text("music_title"),
