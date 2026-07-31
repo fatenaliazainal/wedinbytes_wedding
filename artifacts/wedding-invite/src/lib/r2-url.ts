@@ -10,10 +10,30 @@
  * on the app origin and avoids failures caused by an unset/misconfigured R2
  * public domain or bucket CORS settings.
  */
+function r2ObjectKeyFromUrl(path: string): string | undefined {
+  try {
+    const url = new URL(path);
+    if (
+      !url.hostname.endsWith(".r2.dev") &&
+      !url.hostname.endsWith(".r2.cloudflarestorage.com")
+    ) {
+      return undefined;
+    }
+    const key = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+    return key && !key.includes("..") ? key : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function resolveImageUrl(path: string | null | undefined): string | undefined {
   if (!path) return undefined;
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) {
+  if (path.startsWith("/")) {
     return path;
+  }
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    const r2Key = r2ObjectKeyFromUrl(path);
+    return r2Key ? `/api/r2?key=${encodeURIComponent(r2Key)}` : path;
   }
   return `/api/r2?key=${encodeURIComponent(path)}`;
 }
@@ -24,10 +44,13 @@ export function resolveImageUrl(path: string | null | undefined): string | undef
  * temporary public-domain issue.
  */
 export function resolveImageFallbackUrl(path: string | null | undefined): string | undefined {
-  if (!path || path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) {
+  if (!path || path.startsWith("/")) {
     return undefined;
   }
-  return `/api/r2?key=${encodeURIComponent(path)}`;
+  const key = path.startsWith("http://") || path.startsWith("https://")
+    ? r2ObjectKeyFromUrl(path)
+    : path;
+  return key ? `/api/r2?key=${encodeURIComponent(key)}` : undefined;
 }
 
 export function fallbackToR2Proxy(
