@@ -341,31 +341,26 @@ function WishCard({
       whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card rounded-[14px] border border-[#eadfd3]/70 bg-[#fffcf8] p-6 text-center shadow-[0_6px_20px_rgba(93,64,47,0.07)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_9px_24px_rgba(93,64,47,0.1)] sm:p-8"
+      className="wishes-card mx-auto my-7 min-h-[220px] w-[calc(100%-72px)] max-w-[320px] rounded-[22px] border border-white/[0.35] p-[18px_16px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:my-8 sm:w-full sm:max-w-[340px] sm:p-[22px_20px] lg:max-w-[360px]"
       style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,252,248,0.9)), repeating-linear-gradient(0deg, rgba(132,96,70,0.025) 0px, rgba(132,96,70,0.025) 1px, transparent 1px, transparent 5px)",
+        background: "rgba(255,255,255,0.22)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
       }}
     >
-      <div className="flex flex-col items-center">
-        <span aria-hidden="true" className="mb-3 text-lg leading-none text-primary/45">
-          ❦
-        </span>
+      <div className="flex min-h-[180px] flex-col items-center justify-center">
         <p
           ref={messageRef}
-          className={`max-w-2xl break-words text-base leading-8 text-foreground/85 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}
+          className={`max-w-[290px] break-words whitespace-pre-wrap text-[15px] leading-[1.8] text-foreground/85 ${expanded ? "" : "line-clamp-3"}`}
           style={{ fontFamily: bodyFontFamily }}
         >
           {message}
         </p>
-        <span aria-hidden="true" className="mt-3 text-lg leading-none text-primary/45">
-          ❦
-        </span>
-        <p className="mt-3 break-words text-sm font-semibold text-foreground/80" style={{ fontFamily: bodyFontFamily }}>
+        <p className="mt-4 break-words text-[18px] font-semibold text-foreground/85" style={{ fontFamily: bodyFontFamily }}>
           — {wish.name}
         </p>
         {timestamp && (
-          <time className="mt-1 text-[10px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
+          <time className="mt-1 text-[12px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
             {timestamp}
           </time>
         )}
