@@ -275,28 +275,28 @@ export default function PriceListPage() {
             </div>
 
             {sortedPackages.length > 0 && (
-              <div className="w-full lg:max-w-[850px] mx-auto rounded-[16px] border border-gray-100 bg-white shadow-sm overflow-hidden">
+              <div className="w-full lg:w-[800px] lg:max-w-full mx-auto rounded-[16px] border border-gray-100 bg-white shadow-sm overflow-hidden">
                 <div
-                  className="grid text-[14px] font-bold tracking-widest text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50"
+                  className="grid text-[11px] font-bold tracking-widest text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50"
                   style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
                 >
-                  <div className="px-4 py-2.5">Feature</div>
+                  <div className="px-3.5 py-2">Feature</div>
                   {packageNames.map((name) => (
-                    <div key={name} className="px-4 py-2.5 text-center">{name}</div>
+                    <div key={name} className="px-3.5 py-2 text-center">{name}</div>
                   ))}
                 </div>
                 {featureNames.map((featureName) => (
                   <div
                     key={featureName}
-                    className="grid text-[15px] border-b border-gray-100 last:border-0"
+                    className="grid text-[12px] border-b border-gray-100 last:border-0"
                     style={{ gridTemplateColumns: `1.5fr repeat(${packageNames.length}, 1fr)` }}
                   >
-                    <div className="px-4 py-2.5 text-gray-700 font-medium">{featureName}</div>
+                    <div className="px-3.5 py-2 text-gray-700 font-medium">{featureName}</div>
                     {sortedPackages.map((pkg) => {
                       const hasFeature = (pkg.features ?? []).some((f) => f.name === featureName);
                       return (
-                        <div key={pkg.id} className="px-4 py-2.5 flex justify-center items-center text-gray-900">
-                          {hasFeature ? <Check size={18} className="text-rose-600" /> : <Minus size={18} className="text-gray-300" />}
+                        <div key={pkg.id} className="px-3.5 py-2 flex justify-center items-center text-gray-900">
+                          {hasFeature ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
                         </div>
                       );
                     })}
