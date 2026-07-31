@@ -4,9 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import SiteHeader, { type SiteNavItem } from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import SiteFooter from "@/components/SiteFooter";
-import { ArrowLeft, ExternalLink, ImagePlus, Link2, LogOut, Save, User } from "lucide-react";
+import { ArrowLeft, ImagePlus, Link2, LogOut, Save, User } from "lucide-react";
 import { toast } from "sonner";
 import { resolveImageUrl } from "@/lib/r2-url";
+import { normalizeBusinessHomepageLink } from "@/lib/business-link";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
@@ -21,10 +22,6 @@ type FormState = {
   businessName: string;
   businessType: string;
   businessLink: string;
-  website: string;
-  instagram: string;
-  facebook: string;
-  tiktok: string;
 };
 
 export default function BusinessProfilePage() {
@@ -35,10 +32,6 @@ export default function BusinessProfilePage() {
     businessName: "",
     businessType: "",
     businessLink: "",
-    website: "",
-    instagram: "",
-    facebook: "",
-    tiktok: "",
   });
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -61,11 +54,7 @@ export default function BusinessProfilePage() {
         setForm({
           businessName: data.businessName ?? "",
           businessType: data.businessType ?? "",
-          businessLink: data.slug ?? "",
-          website: data.website ?? "",
-          instagram: data.instagram ?? "",
-          facebook: data.facebook ?? "",
-          tiktok: data.tiktok ?? "",
+          businessLink: normalizeBusinessHomepageLink(data.website),
         });
       })
       .catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Unable to load profile."))
@@ -75,8 +64,6 @@ export default function BusinessProfilePage() {
   if (authLoading || loading || !user || user.role !== "business_account") {
     return <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]"><div className="h-8 w-8 rounded-full border-b-2 border-gray-900 animate-spin" /></div>;
   }
-
-  const publicBusinessLink = `${window.location.origin}${BASE}/business/${encodeURIComponent(form.businessLink)}`;
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -89,11 +76,10 @@ export default function BusinessProfilePage() {
         body: JSON.stringify({
           businessName: form.businessName,
           businessType: form.businessType,
-          slug: form.businessLink,
-          website: form.website,
-          instagram: form.instagram,
-          facebook: form.facebook,
-          tiktok: form.tiktok,
+          website: form.businessLink,
+          instagram: null,
+          facebook: null,
+          tiktok: null,
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -102,11 +88,7 @@ export default function BusinessProfilePage() {
          ...current,
          businessName: data.businessName ?? current.businessName,
          businessType: data.businessType ?? current.businessType,
-         businessLink: data.slug ?? current.businessLink,
-         website: data.website ?? current.website,
-         instagram: data.instagram ?? current.instagram,
-         facebook: data.facebook ?? current.facebook,
-         tiktok: data.tiktok ?? current.tiktok,
+         businessLink: normalizeBusinessHomepageLink(data.website) || "",
        }));
       toast.success("Business profile saved.");
     } catch (error) {
@@ -195,40 +177,22 @@ export default function BusinessProfilePage() {
               <span className="mb-1 block font-medium">Business type</span>
               <input value={form.businessType} onChange={(event) => setForm({ ...form, businessType: event.target.value })} placeholder="Wedding planner, photographer, venue..." className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" required />
             </label>
-            <div>
-              <span className="mb-1 block text-sm font-medium text-gray-700">Business link</span>
-              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
-                <span className="shrink-0 text-sm text-gray-400">{window.location.origin}{BASE}/business/</span>
-                <input value={form.businessLink} onChange={(event) => setForm({ ...form, businessLink: event.target.value })} placeholder="your-business-name" className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none" aria-label="Business link" required />
-                <a href={publicBusinessLink} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-gray-900" aria-label="Open business link"><ExternalLink size={15} /></a>
-              </div>
-              <p className="mt-1 text-xs text-gray-400">Masukkan nama custom untuk pautan business anda. Gunakan huruf, nombor atau tanda sempang.</p>
-            </div>
             <div className="border-t border-gray-100 pt-5">
-              <h3 className="text-sm font-semibold text-gray-900">Social media links</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Business link</h3>
               <p className="mt-1 text-xs text-gray-500">
-                Homepage visitors will be sent directly to the first available link, prioritising Instagram, Facebook, TikTok, then website.
+                This is the only link shown on the homepage. Visitors can click your business logo to open it.
               </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {([
-                  ["instagram", "Instagram URL", "https://instagram.com/yourbusiness"],
-                  ["facebook", "Facebook URL", "https://facebook.com/yourbusiness"],
-                  ["tiktok", "TikTok URL", "https://tiktok.com/@yourbusiness"],
-                  ["website", "Website URL", "https://yourbusiness.com"],
-                ] as const).map(([field, label, placeholder]) => (
-                  <label key={field} className="block text-sm text-gray-700">
-                    <span className="mb-1 block font-medium">{label}</span>
-                    <input
-                      type="text"
-                      inputMode="url"
-                      value={form[field]}
-                      onChange={(event) => setForm((current) => ({ ...current, [field]: event.target.value }))}
-                      placeholder={placeholder}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
-                    />
-                  </label>
-                ))}
-              </div>
+              <label className="block text-sm text-gray-700">
+                <input
+                  type="text"
+                  inputMode="url"
+                  value={form.businessLink}
+                  onChange={(event) => setForm((current) => ({ ...current, businessLink: event.target.value }))}
+                  placeholder="https://yourbusiness.com"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
+                  aria-label="Business link"
+                />
+              </label>
             </div>
           </section>
 

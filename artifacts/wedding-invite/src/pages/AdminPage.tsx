@@ -9,7 +9,7 @@ import {
   Loader2, RefreshCw,
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
-  Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag,
+  Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag, Home, LogOut,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListDesignsQueryKey } from "@workspace/api-client-react";
@@ -1839,7 +1839,7 @@ function CustomersTab() {
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("orders");
   const [, navigate] = useLocation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
 
   useEffect(() => {
     if (!authLoading) {
@@ -1861,12 +1861,37 @@ export default function AdminPage() {
     );
   }
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/admin/login");
+  };
+
   return (
     <div className="min-h-[100dvh] bg-background px-4 py-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-serif text-2xl text-foreground">Admin Dashboard</h1>
           <p className="text-sm text-muted-foreground">Orders, Customers &amp; Card Design Management</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Back to home"
+          >
+            <Home size={14} />
+            <span className="hidden sm:inline">Back to Home</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:opacity-80"
+            aria-label="Log out"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </div>
 

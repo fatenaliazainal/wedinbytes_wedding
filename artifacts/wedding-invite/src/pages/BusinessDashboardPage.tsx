@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
+import { publicInvitePath } from "@/lib/invite-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
@@ -520,7 +521,7 @@ export default function BusinessDashboardPage() {
                               <span className={`text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-50 text-gray-500" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
                               </span>
-                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
+                              <a href={publicInvitePath(item)} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
                                 View <ArrowRight size={14} />
                               </a>
                             </div>
@@ -737,13 +738,15 @@ export default function BusinessDashboardPage() {
                             </div>
                             {openClientMenuId === client.id && (
                               <div className="absolute right-4 top-12 z-10 w-48 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
-                                {client.invitationToken && (
+                                {client.invitationToken && invitations.some((item) => item.token === client.invitationToken) && (
                                   <>
-                                    <a href={`/invite/${client.invitationToken}`} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                    <a href={publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!)} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
                                       Preview invitation
                                     </a>
                                     <button onClick={async () => {
-                                      await navigator.clipboard.writeText(`${window.location.origin}${BASE}/invite/${client.invitationToken}`);
+                                      const invitation = invitations.find((item) => item.token === client.invitationToken);
+                                      if (!invitation) return;
+                                      await navigator.clipboard.writeText(`${window.location.origin}${BASE}${publicInvitePath(invitation)}`);
                                       toast.success("Invitation link copied");
                                       setOpenClientMenuId(null);
                                     }} className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
@@ -805,7 +808,7 @@ export default function BusinessDashboardPage() {
                       {invitations.map((item) => {
                         const days = getDaysUntilEvent(item.eventDate);
                         const countdown = formatCountdown(days);
-                        const inviteUrl = `${window.location.origin}${BASE}/invite/${item.token}`;
+                        const inviteUrl = `${window.location.origin}${BASE}${publicInvitePath(item)}`;
                         const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
 
                         return (
@@ -837,7 +840,7 @@ export default function BusinessDashboardPage() {
                               <button onClick={() => navigate(`/business/editor?token=${encodeURIComponent(item.token)}`)} className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors" data-testid={`button-edit-invitation-${item.id}`}>
                                 Edit
                               </button>
-                              <a href={`/invite/${item.token}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
+                              <a href={publicInvitePath(item)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid={`link-preview-invitation-card-${item.id}`}>
                                 Preview
                               </a>
                               <button

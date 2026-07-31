@@ -12,6 +12,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+import { normalizeBusinessHomepageLink } from "@/lib/business-link";
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -29,25 +30,11 @@ type Collaboration = {
   description?: string | null;
   logoUrl?: string | null;
   website?: string | null;
-  instagram?: string | null;
-  facebook?: string | null;
-  tiktok?: string | null;
 };
 
-function externalBusinessLink(business: Collaboration): { url: string; label: string } | null {
-  const candidates: Array<[keyof Pick<Collaboration, "instagram" | "facebook" | "tiktok" | "website">, string]> = [
-    ["instagram", "Instagram"],
-    ["facebook", "Facebook"],
-    ["tiktok", "TikTok"],
-    ["website", "Website"],
-  ];
-  for (const [field, label] of candidates) {
-    const value = business[field]?.trim();
-    if (!value) continue;
-    const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-    return { url, label };
-  }
-  return null;
+function businessHomepageLink(business: Collaboration): { url: string; label: string } | null {
+  const url = normalizeBusinessHomepageLink(business.website);
+  return url ? { url, label: "Homepage link" } : null;
 }
 
 export default function MarketingHomePage() {
@@ -354,7 +341,7 @@ export default function MarketingHomePage() {
                       aria-hidden={businessSlide !== slideIndex}
                     >
                       {slide.map((business) => {
-                        const socialLink = externalBusinessLink(business);
+                        const businessLink = businessHomepageLink(business);
                         const tile = (
                           <>
                             <img
@@ -363,21 +350,21 @@ export default function MarketingHomePage() {
                               loading="lazy"
                               className="h-full w-full object-contain"
                             />
-                            {socialLink && (
+                            {businessLink && (
                               <span className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold text-gray-500 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
-                                Visit {socialLink.label}
+                                Visit {businessLink.label}
                               </span>
                             )}
                           </>
                         );
-                        return socialLink ? (
+                        return businessLink ? (
                           <a
                             key={business.slug}
-                            href={socialLink.url}
+                            href={businessLink.url}
                             target="_blank"
                             rel="noreferrer"
-                            aria-label={`Visit ${business.businessName} on ${socialLink.label}`}
-                            title={`Visit ${business.businessName} on ${socialLink.label}`}
+                            aria-label={`Visit ${business.businessName} homepage`}
+                            title={`Visit ${business.businessName} homepage`}
                             className="group relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-300"
                           >
                             {tile}

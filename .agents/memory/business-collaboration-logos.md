@@ -9,11 +9,11 @@ Business Account collaboration logos are uploaded as transparent PNGs and displa
 
 **How to apply:** When adding or changing public business media, keep the upload prefix, public response field, frontend URL resolver, and R2 proxy allow-list in sync; verify the proxy returns the image, not only that the upload returns success.
 
-The homepage collaboration strip is logo-only: businesses with a logo appear in a two-at-a-time auto-advancing carousel, and each logo links directly to the first configured external social or website URL.
+The homepage collaboration strip is logo-only: businesses with a logo appear in a two-at-a-time auto-advancing carousel, and each logo links directly to the business's single configured homepage link.
 
-**Why:** The homepage should showcase the network while sending visitors directly to the business's own social presence instead of an intermediate profile page.
+**Why:** The homepage should showcase the network while sending visitors directly to one destination chosen by the business instead of an intermediate profile page or ambiguous social-link priority.
 
-**How to apply:** Filter out businesses without `logoUrl`, prefer Instagram then Facebook, TikTok, and website, normalize bare domains with `https://`, and leave tiles without an external URL non-clickable.
+**How to apply:** Filter out businesses without `logoUrl`, use the configured website field as the single homepage link, normalize bare domains with `https://`, and leave tiles without a link non-clickable. Legacy social columns remain for data compatibility but are not used by the homepage.
 
 Public customer form headers also show the business logo when one has been uploaded; forms without a logo keep the normal header without an empty placeholder.
 
