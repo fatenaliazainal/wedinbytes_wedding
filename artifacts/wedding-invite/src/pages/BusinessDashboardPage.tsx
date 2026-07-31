@@ -256,7 +256,7 @@ export default function BusinessDashboardPage() {
 
   const createFormShare = async () => {
     if (!selectedPackageId) {
-      toast.error("Select a package before creating the customer form link.");
+      toast.error("Select a package before creating the order form link.");
       return;
     }
     setFormShareLoading(true);
@@ -274,11 +274,11 @@ export default function BusinessDashboardPage() {
       }
       const businessNameSegment = businessNamePathSegment(profile?.businessName || user?.name || "");
       if (!businessNameSegment) {
-        toast.error("Set your Business name before creating a customer form link.");
+        toast.error("Set your Business name before creating an order form link.");
         return;
       }
       setFormShareUrl(`${window.location.origin}${BASE}/business/${encodeURIComponent(businessNameSegment)}/customer-form/${encodeURIComponent(data.token)}`);
-      toast.success("Customer form link created.");
+      toast.success("Order form link created.");
     } finally {
       setFormShareLoading(false);
     }
@@ -288,7 +288,7 @@ export default function BusinessDashboardPage() {
     if (!formShareUrl) return;
     setCopyingFormLink(true);
     await navigator.clipboard.writeText(formShareUrl);
-    toast.success("Customer form link copied.");
+    toast.success("Order form link copied.");
     window.setTimeout(() => setCopyingFormLink(false), 1600);
   };
 
@@ -307,7 +307,7 @@ export default function BusinessDashboardPage() {
       setClients((items) => items.map((item) => item.id === client.id
         ? { ...item, ...data.client, invitationToken: data.invitationToken }
         : item));
-      toast.success("Invitation created from customer details.");
+      toast.success("Invitation created from order form.");
       navigate(`/business/editor?token=${encodeURIComponent(data.invitationToken)}`);
     } finally {
       setCreatingInvitationFor(null);
@@ -320,7 +320,7 @@ export default function BusinessDashboardPage() {
       credentials: "include",
     });
     if (!response.ok) {
-      toast.error("Unable to remove client.");
+      toast.error("Unable to remove order form submission.");
       return;
     }
     setClients((items) => items.filter((item) => item.id !== id));
@@ -394,7 +394,7 @@ export default function BusinessDashboardPage() {
 
   const sections = [
     ["dashboard", "Dashboard"],
-    ["clients", "Clients & Invitations"],
+    ["clients", "Order Forms & Invitations"],
     ["paymentHistory", "Payment History"],
   ] as const;
 
@@ -464,8 +464,8 @@ export default function BusinessDashboardPage() {
                       </div>
                       <TrendingUp size={16} className="text-gray-400" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900" data-testid="text-total-customers">{clients.length}</p>
-                    <p className="text-sm text-gray-600 mt-1">Total Customers</p>
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-total-order-forms">{clients.length}</p>
+                    <p className="text-sm text-gray-600 mt-1">Order Forms Submitted</p>
                   </div>
 
                   <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow" data-testid="card-total-invitations">
@@ -497,8 +497,8 @@ export default function BusinessDashboardPage() {
                       </div>
                       <TrendingUp size={16} className="text-gray-400" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900" data-testid="text-recent-customers">{recentCustomersCount}</p>
-                    <p className="text-sm text-gray-600 mt-1">Recent Customers</p>
+                    <p className="text-2xl font-bold text-gray-900" data-testid="text-recent-submissions">{recentCustomersCount}</p>
+                    <p className="text-sm text-gray-600 mt-1">Recent Submissions</p>
                   </div>
                 </div>
 
@@ -536,7 +536,7 @@ export default function BusinessDashboardPage() {
                         <Calendar size={28} className="text-gray-300" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">No invitations yet</h3>
-                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Start by creating a customer form or fill in an invitation yourself</p>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Start by creating an order form or fill in an invitation yourself</p>
                       <button onClick={() => setSection("clients")} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-invitation">
                         <Plus size={16} /> Create Invitation
                       </button>
@@ -549,8 +549,8 @@ export default function BusinessDashboardPage() {
             {section === "clients" && (
               <>
                 <div className="mb-8">
-                  <h2 className="text-3xl font-semibold text-gray-900">Clients & Invitations</h2>
-                  <p className="text-sm text-gray-600 mt-2">Create customer forms, review submissions, and manage invitations</p>
+                  <h2 className="text-3xl font-semibold text-gray-900">Order Forms & Invitations</h2>
+                  <p className="text-sm text-gray-600 mt-2">Review submitted order forms and create invitations</p>
                 </div>
 
                 {/* Process Guide */}
@@ -560,8 +560,8 @@ export default function BusinessDashboardPage() {
                     {[
                       { step: "1", label: "Select Package", icon: Calendar },
                       { step: "2", label: "Generate Form Link", icon: Link2 },
-                      { step: "3", label: "Customer Submits", icon: User },
-                      { step: "4", label: "Review Submission", icon: CheckCircle2 },
+                      { step: "3", label: "Order Form Submitted", icon: ReceiptText },
+                      { step: "4", label: "Review Order Form", icon: CheckCircle2 },
                       { step: "5", label: "Create Invitation", icon: Plus },
                     ].map(({ step, label, icon: Icon }, idx) => (
                       <div key={step} className="relative">
@@ -579,9 +579,9 @@ export default function BusinessDashboardPage() {
                   </div>
                 </div>
 
-                {/* Create Customer Form */}
+                  {/* Create Order Form */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-4">Create Customer Form</h3>
+                  <h3 className="font-semibold text-gray-900 mb-4">Create Order Form</h3>
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
                     <label className="block flex-1 text-sm text-gray-700">
                       <span className="mb-2 block font-medium">Select Package</span>
@@ -595,14 +595,14 @@ export default function BusinessDashboardPage() {
                         <Plus size={16} /> Fill in yourself
                       </button>
                       <button type="button" onClick={() => void createFormShare()} disabled={formShareLoading || !selectedPackageId} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 hover:bg-gray-800 transition-colors" data-testid="button-create-share-link">
-                        <Link2 size={16} />{formShareLoading ? "Creating..." : "Create Share Link"}
+                        <Link2 size={16} />{formShareLoading ? "Creating..." : "Create Order Form Link"}
                       </button>
                     </div>
                   </div>
                   {selectedPackage && <p className="mt-4 text-sm text-gray-600">{selectedPackage.description}</p>}
                   {formShareUrl && (
                     <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-4">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-green-700">Share this link with your customer</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-green-700">Share this order form link</p>
                       <div className="flex items-center gap-2">
                         <input readOnly value={formShareUrl} onClick={(event) => event.currentTarget.select()} className="min-w-0 flex-1 bg-white border border-green-200 rounded-lg px-3 py-2 text-sm text-gray-700 outline-none" aria-label="Customer form link" data-testid="input-form-share-url" />
                         <button type="button" onClick={() => void copyFormLink()} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white border border-green-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-green-100 transition-colors" data-testid="button-copy-form-link">
@@ -616,10 +616,10 @@ export default function BusinessDashboardPage() {
                   )}
                 </div>
 
-                {/* Customer Submissions */}
+                {/* Order Form Submissions */}
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-gray-900">Customer Submissions</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">Order Form Submissions</h3>
                     <span className="text-sm text-gray-500">{filteredAndSortedClients.length} of {clients.length}</span>
                   </div>
 
@@ -630,7 +630,7 @@ export default function BusinessDashboardPage() {
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                           type="text"
-                          placeholder="Search by name or email..."
+                          placeholder="Search order forms by name or email..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100"
@@ -665,7 +665,7 @@ export default function BusinessDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Customer Cards */}
+                  {/* Order Form Submission Cards */}
                   {filteredAndSortedClients.length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {filteredAndSortedClients.map((client) => {
@@ -678,15 +678,15 @@ export default function BusinessDashboardPage() {
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-gray-900 truncate">
-                                  {client.groomName || "Customer"}{client.brideName ? ` & ${client.brideName}` : ""}
+                                  {client.groomName || "Order form submission"}{client.brideName ? ` & ${client.brideName}` : ""}
                                 </h4>
-                                <p className="text-xs text-gray-500 mt-1">{packageName}</p>
+                                <p className="text-xs text-gray-500 mt-1">Order form submitted · {packageName}</p>
                               </div>
                               <div className="relative">
                                 <button
                                   onClick={() => setOpenClientMenuId((current) => current === client.id ? null : client.id)}
                                   className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                                  aria-label={`More actions for ${client.groomName || "customer"}`}
+                                  aria-label={`More actions for ${client.groomName || "order form submission"}`}
                                   data-testid={`button-more-customer-${client.id}`}
                                 >
                                   <MoreVertical size={16} />
@@ -723,7 +723,7 @@ export default function BusinessDashboardPage() {
                                       }}
                                       className="block w-full rounded-md px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50"
                                     >
-                                      Delete customer
+                                      Delete order form submission
                                     </button>
                                   </div>
                                 )}
@@ -749,7 +749,10 @@ export default function BusinessDashboardPage() {
                               )}
                             </div>
 
-                            <div className="mb-4">
+                            <div className="mb-4 space-y-2">
+                              <p className={`text-xs font-medium ${client.invitationId ? "text-green-700" : "text-gray-500"}`}>
+                                {client.invitationId ? "Invitation created" : "Invitation not created"}
+                              </p>
                               <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
                               </span>
@@ -767,8 +770,8 @@ export default function BusinessDashboardPage() {
                               <button
                                 onClick={() => void deleteClient(client.id)}
                                 className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                aria-label="Delete client"
-                                data-testid={`button-delete-customer-${client.id}`}
+                                aria-label="Delete order form submission"
+                                data-testid={`button-delete-order-form-${client.id}`}
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -780,12 +783,12 @@ export default function BusinessDashboardPage() {
                   ) : clients.length === 0 ? (
                     <div className="bg-white border border-gray-200 rounded-xl px-6 py-16 text-center">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
-                        <Users size={28} className="text-gray-300" />
+                        <ReceiptText size={28} className="text-gray-300" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No customer submissions yet</h3>
-                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create a customer form link and share it with your clients to start collecting submissions</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No order form submissions yet</h3>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create an order form link and share it to start collecting submissions</p>
                       <button onClick={() => document.querySelector<HTMLSelectElement>('[data-testid="select-package"]')?.focus()} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-form">
-                        <Link2 size={16} /> Create Customer Form
+                        <Link2 size={16} /> Create Order Form
                       </button>
                     </div>
                   ) : (
@@ -793,7 +796,7 @@ export default function BusinessDashboardPage() {
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
                         <Search size={28} className="text-gray-300" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers found</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No order forms found</h3>
                       <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Try adjusting your search or filter criteria</p>
                       <button onClick={() => { setSearchQuery(""); setPackageFilter(""); setMonthFilter(""); }} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors" data-testid="button-clear-filters">
                         <X size={16} /> Clear Filters
@@ -807,7 +810,7 @@ export default function BusinessDashboardPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900">Your Invitations</h3>
-                      <p className="text-sm text-gray-500 mt-1">Business-owned invitations you've created</p>
+                      <p className="text-sm text-gray-500 mt-1">Invitations created from your order forms or manually</p>
                     </div>
                     <button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 bg-gray-900 text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-gray-800 transition-colors" data-testid="button-new-invitation">
                       <Plus size={16} /> New Invitation
@@ -829,7 +832,7 @@ export default function BusinessDashboardPage() {
                                 <h4 className="font-semibold text-gray-900">{item.groomName} & {item.brideName}</h4>
                                 <p className="text-xs text-gray-500 mt-1">{packageName || item.eventType}</p>
                               </div>
-                              <span className="text-xs text-gray-500">
+                              <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${item.isPurchased ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
                                 {item.isPurchased ? "Active" : "Pending"}
                               </span>
                             </div>
@@ -890,7 +893,7 @@ export default function BusinessDashboardPage() {
                         <Calendar size={28} className="text-gray-300" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">No invitations yet</h3>
-                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create your first invitation or wait for customer submissions</p>
+                      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Create your first invitation or wait for an order form submission</p>
                       <button onClick={() => navigate("/business/editor?new=1")} className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition-colors" data-testid="button-create-first-invitation-card">
                         <Plus size={16} /> Create Invitation
                       </button>

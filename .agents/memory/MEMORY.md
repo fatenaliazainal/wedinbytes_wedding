@@ -25,3 +25,4 @@
 - [Paid invitation edit lock](paid-invitation-edit-lock.md) — paid invitations become customer read-only after the event date; server and upload routes enforce the rule.
 - [Role-aware dashboard routing](role-aware-dashboard-routing.md) — shared navigation and the generic editor must preserve Buyer, Business Account, and Admin destinations.
 - [Business dashboard status copy](business-dashboard-status-copy.md) — keep Active/Pending visible as neutral text, not workflow badges.
+- [Order form submission flow](order-form-submission-flow.md) — present submitted forms as a direct order-form-to-invitation flow, not a separate customer entity.

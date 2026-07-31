@@ -3,8 +3,8 @@ name: Business dashboard status copy
 description: Business invitation purchase states remain visible as ordinary text instead of colored status badges.
 ---
 
-Business Account invitation cards should keep the `Active` and `Pending` labels visible, but render them as simple neutral text rather than pill badges.
+Business Account invitation cards should keep the `Active` and `Pending` labels visible as the original colored pill badges.
 
-**Why:** The dashboard needs the purchase-state context without making the client-management UI feel like a workflow tracker.
+**Why:** The user explicitly preferred restoring the original status badge treatment after trying neutral text.
 
-**How to apply:** Preserve the labels when redesigning invitation cards, but avoid colored backgrounds, borders, progress styling, or badge-like treatment.
+**How to apply:** Preserve the labels with green `Active` and yellow `Pending` pill styling in invitation cards.
