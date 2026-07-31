@@ -9,7 +9,7 @@ import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/secu
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
 import { invitationHasFeature } from "../lib/pricing-features";
-import { isInvitationExpired } from "../lib/invitation-expiration";
+import { isEventDatePassed, isInvitationExpired } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
 
@@ -274,6 +274,14 @@ router.patch("/invitation/:token", async (req, res) => {
     }
     if (!(await canManageInvitation(req, rows[0]))) {
       res.status(403).json({ error: "You do not own this invitation" });
+      return;
+    }
+    if (
+      req.session.role !== "admin"
+      && rows[0].isPurchased
+      && isEventDatePassed(rows[0].eventDate)
+    ) {
+      res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
     const giftFields = ["giftDisplay", "giftTitle", "giftRecipient", "giftBankName", "giftAccountNumber", "giftQrCodes"];

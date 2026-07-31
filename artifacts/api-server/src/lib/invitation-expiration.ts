@@ -109,3 +109,14 @@ export function isInvitationExpired(eventDate: string | null | undefined, today 
   if (!parsed) return false;
   return compareCalendarDates(today, addMonths(parsed, 3)) > 0;
 }
+
+/**
+ * Editing is locked from the day after the paid invitation's event date.
+ * This is separate from public invitation expiration, which happens three
+ * months later.
+ */
+export function isEventDatePassed(eventDate: string | null | undefined, today = todayUtc()) {
+  const parsed = parseEventDate(eventDate);
+  if (!parsed) return false;
+  return compareCalendarDates(today, parsed) > 0;
+}

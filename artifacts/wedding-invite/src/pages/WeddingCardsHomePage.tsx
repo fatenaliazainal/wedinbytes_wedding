@@ -23,7 +23,7 @@ const NAV_ITEMS: SiteNavItem[] = [
 function CardPreviewFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="relative mx-auto aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-xl bg-transparent shadow-[0_8px_22px_rgba(31,41,55,0.18)] transition-shadow group-hover:shadow-[0_12px_28px_rgba(31,41,55,0.24)]"
+      className="relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-t-xl bg-transparent"
       style={{
         flexShrink: 0,
       }}
@@ -186,13 +186,16 @@ export default function WeddingCardsHomePage() {
           )}
 
           {!isLoading && !isError && visibleCards.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
               {visibleCards.map((design) => (
-                <div key={design.id} className="flex flex-col items-center gap-3">
+                <article
+                  key={design.id}
+                  className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-[0_5px_16px_rgba(31,41,55,0.10)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(31,41,55,0.16)]"
+                >
                   <button
                     type="button"
                     onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
-                    className="group block w-full max-w-[220px]"
+                    className="block w-full"
                     aria-label={`Open live demo for ${design.name}`}
                   >
                     <CardPreviewFrame>
@@ -204,19 +207,26 @@ export default function WeddingCardsHomePage() {
                     </CardPreviewFrame>
                   </button>
 
-                  <div className="text-center">
-                    <p className="text-xs font-semibold text-gray-800 leading-tight">{design.name}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5 font-mono tracking-wider">#{String(design.id).padStart(4, "0")}</p>
+                  <div className="flex flex-col items-center px-2.5 pb-3 pt-2.5 text-center sm:px-3 sm:pb-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Digital Invitation</p>
+                    <p className="mt-1 text-xs font-bold leading-tight text-gray-900 sm:text-sm">{design.name}</p>
+                    <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-rose-700">
+                      WED{String(design.id).padStart(2, "0")}
+                    </p>
+                    <span className="mt-2 rounded-full bg-rose-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-rose-700">
+                      General
+                    </span>
+                    <p className="mt-2 text-[10px] font-medium text-gray-400">View PDF <span aria-hidden>↗</span></p>
+                    <button
+                      type="button"
+                      onClick={() => goToEditor(design.designCode ?? undefined)}
+                      className="mt-3 w-full rounded-full bg-gray-900 px-2 py-2 text-[10px] font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
+                    >
+                      <ShoppingBag size={11} className="mr-1 inline-block align-[-2px]" />
+                      ORDER NOW
+                    </button>
                   </div>
-
-                  <button
-                    onClick={() => goToEditor(design.designCode ?? undefined)}
-                    className="flex items-center gap-1.5 bg-gray-900 text-white text-[10px] font-bold tracking-widest px-3 py-1.5 rounded hover:bg-gray-700 transition-colors"
-                  >
-                    <ShoppingBag size={10} />
-                    GET IT NOW
-                  </button>
-                </div>
+                </article>
               ))}
             </div>
           )}

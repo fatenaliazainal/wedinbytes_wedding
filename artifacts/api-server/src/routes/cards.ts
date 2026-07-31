@@ -6,6 +6,7 @@ import { deleteImage, uploadImage, downloadImage, isR2Configured } from "../serv
 import { auditEvent, canManageInvitation, requireAdmin } from "../lib/security";
 import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
 import { invitationHasFeature } from "../lib/pricing-features";
+import { isEventDatePassed } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
 
@@ -217,6 +218,10 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       res.status(403).json({ error: "You do not own this invitation." });
       return;
     }
+    if (req.session.role !== "admin" && invitation.isPurchased && isEventDatePassed(invitation.eventDate)) {
+      res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
@@ -262,6 +267,10 @@ router.post("/gift-qr-upload", giftQrUpload.single("file"), async (req, res) => 
     }
     if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
+    if (req.session.role !== "admin" && invitation.isPurchased && isEventDatePassed(invitation.eventDate)) {
+      res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
     if (!(await invitationHasFeature(invitation, "Money Gift"))) {
@@ -327,6 +336,10 @@ router.post("/logo-upload", logoUpload.single("file"), async (req, res) => {
       res.status(403).json({ error: "You do not own this invitation." });
       return;
     }
+    if (req.session.role !== "admin" && invitation.isPurchased && isEventDatePassed(invitation.eventDate)) {
+      res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
+      return;
+    }
     try {
       inspectImage(req.file.buffer, mimeType);
     } catch (error) {
@@ -380,6 +393,10 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
     }
     if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation." });
+      return;
+    }
+    if (req.session.role !== "admin" && invitation.isPurchased && isEventDatePassed(invitation.eventDate)) {
+      res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
 

@@ -219,6 +219,53 @@ function formatTime12h(time24: string): string {
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
+const eventDateMonths: Record<string, number> = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  januari: 1, februari: 2, mac: 3, mei: 5, jun: 6,
+  julai: 7, ogos: 8, oktober: 10, disember: 12,
+};
+
+function isEventDatePassed(eventDate: string | null | undefined): boolean {
+  const normalized = String(eventDate ?? "").trim().toLowerCase();
+  if (!normalized) return false;
+
+  let year = 0;
+  let month = 0;
+  let day = 0;
+  let match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) {
+    year = Number(match[1]);
+    month = Number(match[2]);
+    day = Number(match[3]);
+  } else {
+    match = normalized.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (match) {
+      day = Number(match[1]);
+      month = Number(match[2]);
+      year = Number(match[3]);
+    } else {
+      match = normalized.match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/);
+      if (!match) return false;
+      day = Number(match[1]);
+      month = eventDateMonths[match[2]] ?? 0;
+      year = Number(match[3]);
+    }
+  }
+
+  const event = new Date(year, month - 1, day);
+  if (
+    month < 1 || month > 12 || day < 1
+    || event.getFullYear() !== year
+    || event.getMonth() !== month - 1
+    || event.getDate() !== day
+  ) return false;
+  const today = new Date();
+  event.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return today.getTime() > event.getTime();
+}
+
 function hslToHex(hslStr: string): string {
   const parts = (hslStr || "0 0% 0%").trim().split(/\s+/);
   const h = parseFloat(parts[0]) / 360;
@@ -711,8 +758,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     setInv((p) => ({ ...p, [field]: v }));
 
   const packageLocked = inv.isPurchased && mode !== "admin";
+  const customerEditLocked =
+    mode !== "admin"
+    && mode !== "demo"
+    && inv.isPurchased
+    && isEventDatePassed(inv.eventDate);
 
   async function handleSave() {
+    if (customerEditLocked) {
+      toast.info("This paid invitation is locked because its event date has passed.");
+      return;
+    }
     setSaving(true);
     try {
       const token = mode === "demo" ? "demo" : inv.token;
@@ -1211,7 +1267,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             *This preview may not be an exact match of the final product
           </p>
 
-          <div className="space-y-5">
+          {customerEditLocked && (
+            <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              This paid invitation is locked because its event date has passed. You can still view the invitation and preview, but editing is no longer available.
+            </div>
+          )}
+
+          <fieldset disabled={customerEditLocked} className="space-y-5 min-w-0">
             {/* ── MUKA DEPAN ── */}
             {activeTab === "muka-depan" && (
               <>
@@ -2073,13 +2135,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               </>
             )}
 
-          </div>
+          </fieldset>
 
           {/* Action buttons */}
           <div className="flex gap-3 mt-8 pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || customerEditLocked}
               className="text-white px-6 py-2.5 rounded text-sm font-medium transition-colors disabled:opacity-50"
               style={{ backgroundColor: primaryCss }}
             >
@@ -2102,14 +2164,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             <div className="flex items-center justify-between px-1">
               <button
                 onClick={async () => {
-                  await handleSave();
+                  if (!customerEditLocked) await handleSave();
                   const token = inv.token;
                   if (token) window.open(`${BASE}${publicInvitePath(inv)}`, "_blank");
                 }}
                 className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
                 disabled={saving}
               >
-                {saving ? "Saving…" : "↗ Full Preview"}
+                {saving ? "Saving…" : customerEditLocked ? "↗ View Preview" : "↗ Full Preview"}
               </button>
               {previewOpened && (
                 <button
