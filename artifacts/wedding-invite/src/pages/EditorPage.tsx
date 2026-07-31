@@ -19,7 +19,7 @@ import { publicInvitePath } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
-import logo from "@assets/LOGO WEDINBYTES (1).png";
+import logo from "@assets/LOGO WEDINSTUDIO.svg";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },
@@ -392,11 +392,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
-    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinbytes.com",
+    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinstudio.com",
     socialLinks: [
-      { platform: "website", url: "https://wedinbytes.com" },
-      { platform: "tiktok", url: "https://tiktok.com/@wedinbytesstudio" },
-      { platform: "instagram", url: "https://instagram.com/wedinbytesstudio" },
+      { platform: "website", url: "https://wedinstudio.com" },
+      { platform: "tiktok", url: "https://tiktok.com/@wedinstudio" },
+      { platform: "instagram", url: "https://instagram.com/wedinstudio" },
     ],
     business: null,
   });
@@ -624,7 +624,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             ? (adminDefaults?.footerText as string ?? "Dapatkan kad digital anda di:")
             : (d.footerText ?? ""),
           footerUrl: (mode === "buyer" || mode === "business")
-            ? (adminDefaults?.footerUrl as string ?? "wedinbytes.com")
+            ? (adminDefaults?.footerUrl as string ?? "wedinstudio.com")
             : (d.footerUrl ?? ""),
           socialLinks: (mode === "buyer" || mode === "business")
             ? (Array.isArray(adminDefaults?.socialLinks)
@@ -1149,11 +1149,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             <button
               onClick={() => navigate("/")}
               className="hover:opacity-70 transition-opacity"
-              aria-label="WedInBytes logo"
+              aria-label="Wedinstudio logo"
             >
               <img
                 src={logo}
-                alt="WedInBytes logo"
+                alt="Wedinstudio logo"
                 className="h-10 w-10 sm:h-11 sm:w-11 object-contain"
               />
             </button>
@@ -1222,11 +1222,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 <button
                   onClick={() => { navigate("/"); setNavOpen(false); }}
                   className="hover:opacity-70 transition-opacity"
-                  aria-label="WedInBytes logo"
+                  aria-label="Wedinstudio logo"
                 >
                   <img
                     src={logo}
-                    alt="WedInBytes logo"
+                alt="Wedinstudio logo"
                     className="h-9 w-9 object-contain"
                   />
                 </button>

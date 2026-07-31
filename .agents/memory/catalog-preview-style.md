@@ -7,4 +7,4 @@ The public catalog and homepage card showcases use direct portrait invitation pr
 
 **Why:** The public card showcases should resemble physical invitation cards, while the All-in-One hero needs a phone visual to communicate the digital invitation product.
 
-**How to apply:** Keep catalog/home card-grid previews portrait with a transparent background and subtle shadow. For the catalog, group the preview with only the design name, code, and order CTA in one compact card. Borrow structure from references, not their palette or styling; keep the WedInBytes rose/gray visual system. Keep the All-in-One phone preview, three concise feature columns, dual CTAs, and trust strip unchanged.
+**How to apply:** Keep catalog/home card-grid previews portrait with a transparent background and subtle shadow. For the catalog, group the preview with only the design name, code, and order CTA in one compact card. Borrow structure from references, not their palette or styling; keep the Wedinstudio rose/gray visual system. Keep the All-in-One phone preview, three concise feature columns, dual CTAs, and trust strip unchanged.

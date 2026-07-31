@@ -1,4 +1,4 @@
-# WedInBytes
+# Wedinstudio
 
 Malaysian wedding e-invitation SaaS platform. Buyers register, customise their card, and share a unique invite link. Admins manage designs and view RSVPs.
 
@@ -61,7 +61,7 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 ## User preferences
 
 - Malay UI labels (Bahasa Malaysia) throughout the buyer-facing UI
-- Brand name: **WedInBytes** (not KadKahwin.my)
+- Brand name: **Wedinstudio** (not KadKahwin.my)
 
 ## Gotchas
 

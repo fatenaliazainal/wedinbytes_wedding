@@ -130,7 +130,7 @@ export default function CustomerFormPage() {
               />
             </div>
           )}
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">WedInBytes</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">Wedinstudio</p>
           <h1 className="mt-3 text-3xl font-serif text-gray-900">
             {details?.businessName ? `Invitation details for ${details.businessName}` : "Customer details"}
           </h1>

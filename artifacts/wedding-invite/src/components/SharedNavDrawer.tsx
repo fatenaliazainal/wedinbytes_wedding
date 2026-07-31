@@ -52,7 +52,7 @@ export default function SharedNavDrawer({
                 onClick={() => { navigate("/"); setNavOpen(false); }}
                 className="font-serif text-lg text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
               >
-                WedInBytes
+                Wedinstudio
               </button>
               <button
                 onClick={() => setNavOpen(false)}

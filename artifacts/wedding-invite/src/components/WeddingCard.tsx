@@ -700,7 +700,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 function SocialIcon({ platform }: { platform: string }) {
   const p = platform.toLowerCase();
   const className = "w-7 h-7";
-  if (p === "website" || p === "brand" || p === "logo" || p === "wedinbytes") {
+  if (p === "website" || p === "brand" || p === "logo" || p === "wedinstudio" || p === "wedinbytes") {
     return (
       <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
         <rect x="4" y="12" width="32" height="16" rx="2" fill="currentColor" />

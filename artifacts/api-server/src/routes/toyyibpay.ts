@@ -394,10 +394,10 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
 
       const bill = await createToyyibPayBill({
         externalReference,
-        billName: `WedInBytes ${pkg.name}`,
+        billName: `Wedinstudio ${pkg.name}`,
         billDescription: `${pkg.name} wedding invitation`,
         amount: pkg.price,
-        payerName: payer?.name ?? "WedInBytes customer",
+        payerName: payer?.name ?? "Wedinstudio customer",
         payerEmail: payer?.email ?? "",
         payerPhone: invitation.contactPhone?.trim() || businessProfile?.phone?.trim() || undefined,
       });

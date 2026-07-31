@@ -219,7 +219,7 @@ export default function ReviewsPage() {
               Loved by Couples, Made for Memories.
             </h1>
             <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
-              See what couples have to say about their experience with WedInBytes.
+              See what couples have to say about their experience with Wedinstudio.
             </p>
           </div>
         </section>
@@ -270,7 +270,7 @@ export default function ReviewsPage() {
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-5">
               <h2 className="text-2xl font-bold text-gray-900">Share Your Experience</h2>
-              <p className="mt-2 text-sm text-gray-500">We would love to hear about your experience with WedInBytes.</p>
+              <p className="mt-2 text-sm text-gray-500">We would love to hear about your experience with Wedinstudio.</p>
             </div>
 
             <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
@@ -344,7 +344,7 @@ export default function ReviewsPage() {
       <SiteFooter />
 
       <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} WedInBytes · All rights reserved
+        © {new Date().getFullYear()} Wedinstudio · All rights reserved
       </div>
     </div>
   );

@@ -102,13 +102,13 @@ async function seed() {
     .values({
       email: "admin@wedinbytes.test",
       passwordHash: "$2b$10$samplehashsamplehashsamplehashsamplehashsamplehashs",
-      name: "Admin WedInBytes",
+       name: "Admin Wedinstudio",
       role: "admin",
     })
     .onConflictDoUpdate({
       target: adminTable.email,
       set: {
-        name: "Admin WedInBytes",
+         name: "Admin Wedinstudio",
         role: "admin",
       },
     });

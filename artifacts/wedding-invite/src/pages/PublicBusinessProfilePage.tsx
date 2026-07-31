@@ -120,7 +120,7 @@ export default function PublicBusinessProfilePage() {
                     {profile.businessType} · {profile.displayName}
                   </p>
                   <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                    {profile.description || "A business profile on WedInBytes."}
+                    {profile.description || "A business profile on Wedinstudio."}
                   </p>
                   <button
                     onClick={() => navigator.clipboard.writeText(window.location.href)}
@@ -186,7 +186,7 @@ export default function PublicBusinessProfilePage() {
                     </a>
                   )}
                   <p className="text-xs text-gray-400">
-                    {profile.invitationCount ?? 0} invitations created on WedInBytes
+                    {profile.invitationCount ?? 0} invitations created on Wedinstudio
                   </p>
                 </div>
               </div>

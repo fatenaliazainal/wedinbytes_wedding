@@ -1,8 +1,8 @@
-# WedInBytes — System Functionality and Logic
+# Wedinstudio — System Functionality and Logic
 
 ## 1. Purpose of this document
 
-This document explains the current WedInBytes wedding e-invitation system:
+This document explains the current Wedinstudio wedding e-invitation system:
 
 - who can use the system;
 - what each user type can do;
@@ -17,7 +17,7 @@ This document describes the behavior currently implemented in the codebase. It i
 
 ## 2. Product overview
 
-WedInBytes is a Malaysian wedding e-invitation platform. The normal flow is:
+Wedinstudio is a Malaysian wedding e-invitation platform. The normal flow is:
 
 1. A buyer registers or logs in.
 2. The buyer creates one or more invitation cards.

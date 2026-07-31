@@ -50,7 +50,7 @@ function buildHtml(data: PaymentConfirmationData) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Payment Confirmed – WedInBytes</title>
+  <title>Payment Confirmed – Wedinstudio</title>
 </head>
 <body style="margin:0;padding:0;background:#f9f6f2;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f6f2;padding:40px 0;">
@@ -60,7 +60,7 @@ function buildHtml(data: PaymentConfirmationData) {
           <!-- Header -->
           <tr>
             <td style="background:#2c2c2c;padding:32px 40px;text-align:center;">
-              <p style="margin:0;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">WedInBytes</p>
+              <p style="margin:0;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Wedinstudio</p>
               <h1 style="margin:8px 0 0;color:#fff;font-size:24px;font-weight:normal;letter-spacing:1px;">Payment Confirmed</h1>
             </td>
           </tr>
@@ -124,7 +124,7 @@ function buildHtml(data: PaymentConfirmationData) {
           <!-- Footer -->
           <tr>
             <td style="background:#f0ebe3;padding:20px 40px;text-align:center;">
-              <p style="margin:0;color:#bbb;font-size:12px;">© WedInBytes · Your digital wedding invitation platform</p>
+              <p style="margin:0;color:#bbb;font-size:12px;">© Wedinstudio · Your digital wedding invitation platform</p>
             </td>
           </tr>
         </table>
@@ -152,7 +152,7 @@ function buildText(data: PaymentConfirmationData) {
     "View your invitation:",
     inviteUrl,
     "",
-    "WedInBytes · Your digital wedding invitation platform",
+    "Wedinstudio · Your digital wedding invitation platform",
   ].join("\n");
 }
 
@@ -169,7 +169,7 @@ export async function sendPaymentConfirmationEmail(
   const transporter = createTransport();
 
   await transporter.sendMail({
-    from: `WedInBytes <${from}>`,
+    from: `Wedinstudio <${from}>`,
     to: data.recipientEmail,
     subject: `Your invitation is live – ${data.paymentReference}`,
     text: buildText(data),

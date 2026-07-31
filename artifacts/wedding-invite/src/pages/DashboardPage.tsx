@@ -473,7 +473,7 @@ export default function DashboardPage() {
       day: "2-digit", month: "long", year: "numeric",
     });
     const receipt = [
-      "WedInBytes Payment Receipt",
+      "Wedinstudio Payment Receipt",
       "==========================",
       `Invoice ID: ${invoiceId}`,
       `Invitation: ${invitationName}`,
@@ -997,7 +997,7 @@ export default function DashboardPage() {
 
       {/* ── Footer ── */}
       <footer className="py-6 border-t border-slate-200 mt-auto text-center text-slate-400 text-[11px] tracking-wider uppercase font-semibold">
-        <p>&copy; {new Date().getFullYear()} WedInBytes. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Wedinstudio. All rights reserved.</p>
       </footer>
     </div>
   );
