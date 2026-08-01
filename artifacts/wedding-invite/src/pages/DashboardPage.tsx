@@ -16,7 +16,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
-import { publicInvitePath } from "@/lib/invite-url";
+import { publicInvitePathOrToken } from "@/lib/invite-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
@@ -377,16 +377,13 @@ export default function DashboardPage() {
   };
 
   const inviteLinkFor = (card: Invitation) => {
-    const path = publicInvitePath(card);
+    const path = publicInvitePathOrToken(card);
     return path ? `${window.location.origin}${BASE}${path}` : "";
   };
 
   const copyLink = (card: Invitation) => {
     const link = inviteLinkFor(card);
-    if (!link) {
-      toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
-      return;
-    }
+    if (!link) return;
     navigator.clipboard.writeText(link);
     setCopiedToken(card.token);
     setTimeout(() => setCopiedToken(null), 2000);
@@ -413,13 +410,12 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const actionButtonsFor = (card: Invitation) => {
-    const path = publicInvitePath(card);
-    const linkReady = Boolean(path);
+    const path = publicInvitePathOrToken(card);
     return [
     { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
-    { icon: Eye,    label: "View",  disabled: !linkReady, onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : toast.info("Enter both Cover names and the event date first.") },
+    { icon: Eye,    label: "View",  onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : undefined },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
-    { icon: Share2, label: "Share", disabled: !linkReady, onClick: () => copyLink(card) },
+    { icon: Share2, label: "Share", onClick: () => copyLink(card) },
     { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },
     { icon: Lock,   label: "Lock",  onClick: () => {
       setInvitation(card);

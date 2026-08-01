@@ -28,7 +28,7 @@ import {
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
-import { publicInvitePath } from "@/lib/invite-url";
+import { publicInvitePathOrToken } from "@/lib/invite-url";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
@@ -523,13 +523,11 @@ export default function BusinessDashboardPage() {
                               <span className={`text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-50 text-gray-500" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
                               </span>
-                              {publicInvitePath(item) ? (
-                                <a href={publicInvitePath(item) ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
+                              {publicInvitePathOrToken(item) ? (
+                                <a href={publicInvitePathOrToken(item) ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1" data-testid={`link-preview-invitation-${item.id}`}>
                                   View <ArrowRight size={14} />
                                 </a>
-                              ) : (
-                                <span className="text-xs text-gray-400" title="Enter both Cover names and the event date first">Cover names required</span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
                         );
@@ -746,23 +744,20 @@ export default function BusinessDashboardPage() {
                               <div className="absolute right-4 top-12 z-10 w-48 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
                                 {client.invitationToken && invitations.some((item) => item.token === client.invitationToken) && (
                                   <>
-                                    {publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!) ? (
-                                      <a href={publicInvitePath(invitations.find((item) => item.token === client.invitationToken)!) ?? undefined} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
-                                        Preview invitation
-                                      </a>
-                                    ) : (
-                                      <span className="block rounded-md px-3 py-2 text-xs text-gray-400" title="Enter both Cover names and the event date first">
-                                        Cover names required
-                                      </span>
-                                    )}
+                                    {(() => {
+                                      const inv = invitations.find((item) => item.token === client.invitationToken)!;
+                                      const path = publicInvitePathOrToken(inv);
+                                      return path ? (
+                                        <a href={path} target="_blank" rel="noreferrer" onClick={() => setOpenClientMenuId(null)} className="block rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                          Preview invitation
+                                        </a>
+                                      ) : null;
+                                    })()}
                                     <button onClick={async () => {
                                       const invitation = invitations.find((item) => item.token === client.invitationToken);
                                       if (!invitation) return;
-                                      const path = publicInvitePath(invitation);
-                                      if (!path) {
-                                        toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
-                                        return;
-                                      }
+                                      const path = publicInvitePathOrToken(invitation);
+                                      if (!path) return;
                                       await navigator.clipboard.writeText(`${window.location.origin}${BASE}${path}`);
                                       toast.success("Invitation link copied");
                                       setOpenClientMenuId(null);
@@ -825,7 +820,7 @@ export default function BusinessDashboardPage() {
                       {invitations.map((item) => {
                         const days = getDaysUntilEvent(item.eventDate);
                         const countdown = formatCountdown(days);
-                         const publicPath = publicInvitePath(item);
+                         const publicPath = publicInvitePathOrToken(item);
                          const inviteUrl = publicPath ? `${window.location.origin}${BASE}${publicPath}` : "";
                         const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
 

@@ -34,3 +34,17 @@ export function publicInvitePath(invitation: {
   const nameSlug = inviteNameSlug(invitation.coverGroomName, invitation.coverBrideName);
   return dateCode && nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
 }
+
+/**
+ * Like publicInvitePath but falls back to /invite/:token when cover names or
+ * event date are not yet filled in. Use this wherever the link must always
+ * be clickable (preview button, copy-link, dashboard actions).
+ */
+export function publicInvitePathOrToken(invitation: {
+  token?: string | null;
+  eventDate?: string | null;
+  coverBrideName?: string | null;
+  coverGroomName?: string | null;
+}): string | null {
+  return publicInvitePath(invitation) ?? (invitation.token ? `/invite/${invitation.token}` : null);
+}

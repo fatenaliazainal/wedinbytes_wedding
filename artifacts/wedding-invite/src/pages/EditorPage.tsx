@@ -17,7 +17,7 @@ import type { BusinessInvitationSummary, PricingPackage } from "@workspace/api-c
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const PACKAGE_SUPPORT_WHATSAPP = "https://wa.me/601128134211";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
-import { publicInvitePath } from "@/lib/invite-url";
+import { publicInvitePath, publicInvitePathOrToken } from "@/lib/invite-url";
 import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
@@ -779,8 +779,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     && mode !== "demo"
     && inv.isPurchased
     && isEventDatePassed(inv.eventDate);
-  const publicPath = publicInvitePath(inv);
-  const previewReady = Boolean(inv.token && publicPath);
+  const publicPath = publicInvitePathOrToken(inv);
+  const previewReady = Boolean(inv.token);
 
   async function handleSave() {
     if (customerEditLocked) {
@@ -2279,16 +2279,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 onClick={async () => {
                   if (!customerEditLocked) await handleSave();
                   const token = inv.token;
-                  const path = publicInvitePath(inv);
-                  if (!token || !path) {
-                    toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
-                    return;
-                  }
+                  const path = publicInvitePathOrToken(inv);
+                  if (!token || !path) return;
                   window.open(`${BASE}${path}`, "_blank");
                 }}
                 className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
                 disabled={saving || !previewReady}
-                title={!previewReady ? "Enter both Cover names and the event date first" : undefined}
+                title={undefined}
               >
                 {saving ? "Saving…" : customerEditLocked ? "↗ View Preview" : "↗ Full Preview"}
               </button>
