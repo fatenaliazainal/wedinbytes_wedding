@@ -710,10 +710,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const brideParents = invitation.brideParents?.trim() || "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── GROUP 1 BACKGROUND — placed BEFORE the section so it is not clipped by
-          the section's overflow-hidden, which would break position:sticky.
-          No overlay: cover image shown at full opacity. ── */}
-      <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} />
+      {/* ── GROUP 1 BACKGROUND — plain white with opacity, no image ── */}
+      <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
+        <div className="absolute inset-0 bg-white/80" />
+      </div>
 
       {/* ── GROUP 1 / COVER — transparent over the background above ── */}
       <section className={`${sectionBase} z-10`}>
