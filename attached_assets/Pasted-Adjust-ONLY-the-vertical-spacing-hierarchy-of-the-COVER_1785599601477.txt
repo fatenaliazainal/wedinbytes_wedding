@@ -1,0 +1,116 @@
+Adjust ONLY the vertical spacing hierarchy of the COVER content.
+
+Do NOT change typography, font sizes, font families, colors, wording, alignment, artwork, or any other design.
+
+CURRENT ISSUE:
+
+The cover typography itself is good, but the content groups feel too vertically compressed / too close together.
+
+The main groups currently are:
+
+1. UNDANGAN PERKAHWINAN
+2. Couple Names
+3. Day + Date
+4. Hashtag
+
+These should have more intentional breathing room between GROUPS.
+
+IMPORTANT:
+Do NOT increase spacing equally between every individual text element.
+
+Treat related elements as groups.
+
+STRUCTURE:
+
+GROUP 1
+UNDANGAN PERKAHWINAN
+
+
+      larger breathing space
+
+
+GROUP 2
+Nasser
+&
+Alia
+
+Keep Nasser + & + Alia relatively close together because they form ONE hero unit.
+
+
+      larger breathing space
+
+
+GROUP 3
+FRIDAY
+25 September 2026
+
+Keep FRIDAY and the date relatively close together because they belong to ONE information unit.
+
+
+      moderate breathing space
+
+
+GROUP 4
+#couplehashtag
+
+
+SPACING PRINCIPLE:
+
+Within a group = tighter spacing.
+
+Between different groups = larger spacing.
+
+The visual rhythm should feel:
+
+small internal gap
+→
+large group gap
+→
+small internal gap
+→
+large group gap
+→
+small internal gap
+
+This should create a more premium/editorial composition using whitespace.
+
+Do NOT simply apply one global `gap` value to all cover elements.
+
+Use the existing cover wrapper and make the minimum spacing changes necessary.
+
+IMPORTANT:
+Preserve the overall vertical positioning of the cover composition.
+
+Do not push content into the top floral artwork.
+
+Do not push the hashtag into the mosque/dome artwork.
+
+Keep the composition visually centered within the existing safe area.
+
+STRICT SCOPE:
+
+ONLY adjust vertical spacing BETWEEN the existing cover content groups.
+
+DO NOT change:
+- font family
+- font size
+- font weight
+- letter spacing
+- line height unless currently responsible for accidental spacing
+- text color
+- text alignment
+- horizontal positioning
+- invitation dimensions
+- artwork
+- background
+- floral elements
+- mosque/dome
+- opening behavior
+- animation
+- any body section
+- any editor-controlled typography value
+- any other component
+
+Everything else must remain exactly as it is.
+
+After implementation report the exact spacing values changed and confirm nothing else was modified.

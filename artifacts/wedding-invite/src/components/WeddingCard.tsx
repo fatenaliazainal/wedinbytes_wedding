@@ -756,7 +756,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
 
             {/* Hero names — fully editor-controlled: nameFontFamily / nameFontSize / nameColor */}
-            <div className="mt-8 flex flex-col items-center">
+            <div className="mt-10 flex flex-col items-center">
               <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
               {(coverBrideName && coverGroomName) && (
                 <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary drop-shadow-sm">
@@ -766,14 +766,16 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverBrideName}</h1>
             </div>
 
-            {/* Day + Date — grouped; date slightly stronger than day */}
-            <div className="mt-6 flex flex-col items-center space-y-1">
+            {/* Day + Date — own group, tightly spaced internally */}
+            <div className="mt-9 flex flex-col items-center space-y-1">
               <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase">{invitation.eventDay}</p>
               <p className="text-sm text-foreground/80 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
-              {hashtag && (
-                <p className="text-xs italic text-primary/80 mt-2" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
-              )}
             </div>
+
+            {/* Hashtag — own group, moderate breathing room from Day+Date */}
+            {hashtag && (
+              <p className="text-xs italic text-primary/80 mt-5" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
+            )}
           </div>
         )}
       </section>
