@@ -93,9 +93,9 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   // imported record did not update the invitation flag.
   (safe as Record<string, unknown>).isPurchased = row.isPurchased || Boolean(paidOrder);
   // Footer branding is controlled centrally by the admin demo invitation.
-  // Apply it to every buyer invitation so old per-invitation branding values
-  // cannot override the current admin default.
-  if (row.token !== "demo" && !row.businessId) {
+  // Apply it to every invitation (buyer and business) so old per-invitation
+  // branding values cannot override the current admin default.
+  if (row.token !== "demo") {
     const [adminDefaults] = await db
       .select({
         showFooter: invitationTable.showFooter,
