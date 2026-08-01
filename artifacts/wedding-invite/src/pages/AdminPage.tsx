@@ -282,7 +282,10 @@ async function uploadFile(file: File, designCode: string, assetType: "card" | "e
     credentials: "include",
     body: fd,
   });
-  if (!res.ok) throw new Error("Upload failed");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `Upload failed (${res.status})`);
+  }
   const data = await res.json() as { key?: string; url?: string };
   const key = data.key ?? data.url;
   if (!key) throw new Error("Upload response did not include an image key");
