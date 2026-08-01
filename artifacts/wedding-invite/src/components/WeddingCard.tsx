@@ -783,7 +783,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       {/* ── GROUP 2 / ALL REMAINING INVITATION SECTIONS — envelopeImageUrl background ── */}
       <section className="relative z-10">
         <PageBackground imageUrl={envelopeImageUrl || cardImageUrl} overlay />
-        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-[60px]">
+        <div className="relative z-10 flex flex-col items-center gap-14 pt-16 pb-28 px-[60px]">
 
           <RevealOnScroll>
           {/* Invitation Text */}
