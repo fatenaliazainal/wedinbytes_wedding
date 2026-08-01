@@ -177,6 +177,33 @@ export async function autoSeedIfEmpty() {
         "Auto-seed: preserving existing card designs.",
       );
     }
+
+    // --- Active design: auto-activate the first design if none is active ---
+    // Production databases may have designs but no active row (e.g. after a
+    // fresh deploy). Without an active design, /api/design/active returns 404
+    // and invitations fall back to editor-only styles instead of card-design
+    // typography and colours.
+    const activeDesigns = await db
+      .select({ id: cardDesignTable.id })
+      .from(cardDesignTable)
+      .where(eq(cardDesignTable.isActive, true))
+      .limit(1);
+    if (activeDesigns.length === 0) {
+      const firstDesign = await db
+        .select({ id: cardDesignTable.id })
+        .from(cardDesignTable)
+        .limit(1);
+      if (firstDesign.length > 0) {
+        await db
+          .update(cardDesignTable)
+          .set({ isActive: true })
+          .where(eq(cardDesignTable.id, firstDesign[0]!.id));
+        logger.info(
+          { id: firstDesign[0]!.id },
+          "Auto-seed: no active design found — activated first available design.",
+        );
+      }
+    }
     // --- Pricing packages: seed defaults if none exist ---
     const existingPackages = await db.select().from(pricingPackageTable).limit(1);
     if (existingPackages.length === 0) {
