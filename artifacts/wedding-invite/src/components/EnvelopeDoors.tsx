@@ -140,7 +140,7 @@ export function EnvelopeDoors({
           onClick={!isOpened ? onOpen : undefined}
         >
           <div
-            className="flex h-[126px] w-[126px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
+            className={`flex h-[126px] w-[126px] items-center justify-center rounded-full ${waxSealImageUrl ? "" : "bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"}`}
             aria-label={waxSealImageUrl ? "Wax seal" : initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
             <motion.div
