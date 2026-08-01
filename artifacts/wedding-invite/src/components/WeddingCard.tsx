@@ -711,8 +711,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
       {/* ── GROUP 1 BACKGROUND — placed BEFORE the section so it is not clipped by
-          the section's overflow-hidden, which would break position:sticky ── */}
-      <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} overlay />
+          the section's overflow-hidden, which would break position:sticky.
+          No overlay: cover image shown at full opacity. ── */}
+      <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} />
 
       {/* ── GROUP 1 / COVER — transparent over the background above ── */}
       <section className={`${sectionBase} z-10`}>
