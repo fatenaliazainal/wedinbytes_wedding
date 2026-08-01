@@ -153,6 +153,9 @@ export default function InvitationPage() {
 
   // "none" style: skip opening animation entirely — invitation is immediately visible
   const [isOpened, setIsOpened] = useState(openingAnimation === "none");
+  // Tracks when the door/window panel animation has fully completed (0.9s after open click).
+  // Used to reveal first-page content only after the doors have physically swung open.
+  const [doorsComplete, setDoorsComplete] = useState(openingAnimation === "none");
   const [isRsvpModalOpen, setIsRsvpModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -245,6 +248,15 @@ export default function InvitationPage() {
       setShowBottomNav(false);
     }
   }, [isOpened]);
+
+  // After the door/window panels finish rotating (0.9s), mark the reveal complete.
+  // Envelope and none styles skip this — their content is never hidden.
+  useEffect(() => {
+    const usesDoors = openingAnimation !== "envelope" && openingAnimation !== "none";
+    if (!isOpened || !usesDoors) return;
+    const t = setTimeout(() => setDoorsComplete(true), 920);
+    return () => clearTimeout(t);
+  }, [isOpened, openingAnimation]);
 
   // designLoading is excluded: useGetActiveDesign returns 404 in production
   // (no "active" design row), so gating on it blocks the page unnecessarily.
@@ -354,6 +366,7 @@ export default function InvitationPage() {
           guestWishes={guestWishes}
           rsvpCount={rsvpCount ?? undefined}
           onRsvpClick={() => setIsRsvpModalOpen(true)}
+          hideFirstPageContent={openingAnimation !== "envelope" && openingAnimation !== "none" && !doorsComplete}
         />
 
         {/* Hidden YouTube player for background music */}

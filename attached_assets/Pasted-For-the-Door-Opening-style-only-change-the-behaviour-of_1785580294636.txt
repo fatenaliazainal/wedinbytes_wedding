@@ -1,0 +1,91 @@
+For the Door Opening style only, change the behaviour of the FIRST PAGE text/content.
+
+I want ALL text/content shown on the first invitation page, for example:
+
+- "WALIMATUL URUS"
+- Couple names "Ain & Hidayat"
+- Date
+- Venue
+- Any other text/content belonging to the first page
+
+to appear ONLY AFTER the door has opened.
+
+IMPORTANT BEHAVIOUR:
+
+Before door opens:
+→ First-page text/content must be hidden.
+
+While door is opening:
+→ Keep the first-page text/content hidden.
+
+Once the door opening animation is completed:
+→ Reveal ALL first-page text/content together.
+→ Use a subtle fade-in (and optionally very slight upward movement).
+
+MOST IMPORTANT:
+
+After appearing, the text must remain part of the actual FIRST PAGE.
+
+It must NOT become:
+- fixed
+- sticky
+- absolute relative to the viewport
+- part of the door overlay
+- a separate floating layer
+
+The text/content must stay attached to its existing first-page container.
+
+Therefore, when the user scrolls or the first page moves upward, ALL the text must move together with that first page exactly as it normally does.
+
+Think of it as:
+
+DOOR CLOSED
+[ text hidden ]
+
+↓ door opens
+
+DOOR FULLY OPEN
+[ first page ]
+   WALIMATUL URUS
+   Ain
+   &
+   Hidayat
+   Date
+   Venue
+
+↓ user scrolls
+
+The entire first page AND its text move upward together.
+
+IMPLEMENTATION:
+
+Do NOT duplicate the text.
+
+Keep the existing text elements in their existing first-page DOM/container.
+
+Only control their visibility based on the door-opening state.
+
+Example logic:
+
+doorOpening === true / door not completed
+→ first page content opacity: 0
+
+doorOpeningComplete === true
+→ first page content opacity: 1
+
+Use a short smooth transition around 0.6–0.8s.
+
+Do NOT change:
+- text position
+- fonts
+- font sizes
+- invitation design
+- first-page layout
+- scrolling behaviour
+- door design
+- door animation
+- other invitation sections
+
+Only change WHEN the existing first-page content becomes visible.
+
+Apply this generically to ALL invitation designs using the Door Opening style, not specifically Ain & Hidayat.

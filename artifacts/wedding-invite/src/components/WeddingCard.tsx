@@ -13,6 +13,8 @@ interface WeddingCardProps {
   guestWishes?: { name: string; message?: string | null; createdAt?: string }[];
   rsvpCount?: { attending: number; notAttending: number; totalGuests: number };
   onRsvpClick?: () => void;
+  /** When true, hides the first-page cover text until the door animation completes. */
+  hideFirstPageContent?: boolean;
 }
 
 const MONTH_MAP: Record<string, string> = {
@@ -632,7 +634,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -718,7 +720,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       {/* ── GROUP 1 / COVER — transparent over the background above ── */}
       <section className={`${sectionBase} z-10`}>
         {showFrontText && (
-          <div className={coverPanelBase}>
+          <div
+            className={coverPanelBase}
+            style={{
+              opacity: hideFirstPageContent ? 0 : 1,
+              transition: hideFirstPageContent ? "none" : "opacity 0.7s ease",
+            }}
+          >
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
             {(coverBrideName && coverGroomName) && (
