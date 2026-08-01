@@ -32,4 +32,9 @@ export interface CardDesign {
   openButtonText?: string;
   /** Animation pattern key e.g. "doors" or "envelope" */
   openingAnimation?: string;
+  colorForeground?: string;
+  contentOverlayColor?: string;
+  contentOverlayOpacity?: string;
+  /** ID of the default wax seal for this design (null = initials circle) */
+  waxSealId?: number | null;
 }

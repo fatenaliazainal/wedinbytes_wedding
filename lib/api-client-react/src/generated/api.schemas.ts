@@ -284,6 +284,8 @@ export interface CardDesign {
   contentOverlayColor?: string;
   /** Opacity 0–100 for the content overlay e.g. "55" */
   contentOverlayOpacity?: string;
+  /** ID of the default wax seal for this design (null = initials circle) */
+  waxSealId?: number | null;
 }
 
 export interface ErrorResponse {

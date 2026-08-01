@@ -427,6 +427,7 @@ interface DesignFormData {
   openButtonText: string;
   contentOverlayColor: string;
   contentOverlayOpacity: string;
+  waxSealId: string;
 }
 
 const EMPTY_FORM: DesignFormData = {
@@ -438,6 +439,7 @@ const EMPTY_FORM: DesignFormData = {
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
   contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
+  waxSealId: "",
 };
 
 function DesignForm({
@@ -457,11 +459,16 @@ function DesignForm({
   const [envelopePickerId, setEnvelopePickerId] = useState("");
   const [cardImageScale, setCardImageScale] = useState(100);
   const [envelopeImageScale, setEnvelopeImageScale] = useState(100);
+  const [waxSeals, setWaxSeals] = useState<{ id: number; name: string; imageUrl: string }[]>([]);
 
   useEffect(() => {
     fetch(`${BASE}/api/cards`, { credentials: "include" })
       .then((r) => r.ok ? r.json() : [])
       .then((data: RawCard[]) => setRawCards(data))
+      .catch(() => {});
+    fetch(`${BASE}/api/admin/wax-seals`, { credentials: "include" })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: { id: number; name: string; imageUrl: string }[]) => setWaxSeals(data))
       .catch(() => {});
   }, []);
 
@@ -569,6 +576,7 @@ function DesignForm({
         openButtonText: form.openButtonText,
         contentOverlayColor: form.contentOverlayColor || "#FFFFFF",
         contentOverlayOpacity: form.contentOverlayOpacity || "55",
+        waxSealId: form.waxSealId ? parseInt(form.waxSealId, 10) : null,
       };
       const url = mode === "add"
         ? `${BASE}/api/design`
@@ -764,6 +772,37 @@ function DesignForm({
               {ANIMATION_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
+
+          {/* Wax Seal — only relevant when opening animation is "envelope" */}
+          {form.openingAnimation === "envelope" && (
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Default Wax Seal</label>
+              <select
+                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                value={form.waxSealId}
+                onChange={(e) => set("waxSealId")(e.target.value)}
+              >
+                <option value="">— Initials circle (default) —</option>
+                {waxSeals.map((s) => (
+                  <option key={s.id} value={String(s.id)}>{s.name}</option>
+                ))}
+              </select>
+              {form.waxSealId && (() => {
+                const sel = waxSeals.find((s) => String(s.id) === form.waxSealId);
+                return sel ? (
+                  <div className="mt-2 flex items-center gap-3">
+                    <img
+                      src={resolveImageUrl(sel.imageUrl)}
+                      alt={sel.name}
+                      className="h-14 w-14 rounded-full object-contain border border-border bg-muted"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <p className="text-xs text-muted-foreground">{sel.name}</p>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
 
           {/* Open button text */}
           <div>
@@ -1093,6 +1132,7 @@ function DesignsTab() {
                     openButtonText: d.openButtonText ?? "OPEN",
                     contentOverlayColor: d.contentOverlayColor ?? "#FFFFFF",
                     contentOverlayOpacity: d.contentOverlayOpacity ?? "55",
+                    waxSealId: d.waxSealId ? String(d.waxSealId) : "",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
                 >
