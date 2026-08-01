@@ -902,12 +902,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         nameFontSize: design.nameFontSize || null,
         badgeFontSize: design.badgeFontSize || null,
         bodyFontFamily: design.bodyFontFamily || null,
-        nameColor: designCodeChanged || design.nameColor !== inheritedColors.nameColor ? (design.nameColor || null) : null,
-        colorPrimary: designCodeChanged || design.colorPrimary !== inheritedColors.colorPrimary ? (design.colorPrimary || null) : null,
-        colorSecondary: designCodeChanged || design.colorSecondary !== inheritedColors.colorSecondary ? (design.colorSecondary || null) : null,
-        colorAccent: designCodeChanged || design.colorAccent !== inheritedColors.colorAccent ? (design.colorAccent || null) : null,
-        colorBackground: designCodeChanged || design.colorBackground !== inheritedColors.colorBackground ? (design.colorBackground || null) : null,
-        colorCard: designCodeChanged || design.colorCard !== inheritedColors.colorCard ? (design.colorCard || null) : null,
+        // Always persist the exact resolved colour so the public invitation page
+        // and the editor always show the same values, regardless of which card
+        // design template is currently active in the production environment.
+        nameColor: design.nameColor || null,
+        colorPrimary: design.colorPrimary || null,
+        colorSecondary: design.colorSecondary || null,
+        colorAccent: design.colorAccent || null,
+        colorBackground: design.colorBackground || null,
+        colorCard: design.colorCard || null,
         musicUrl: design.musicUrl || null,
         musicTitle: design.musicTitle || null,
         musicArtist: design.musicArtist || null,

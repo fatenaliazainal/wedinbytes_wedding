@@ -31,6 +31,9 @@
 - [Editor package feature save](editor-package-feature-save.md) — omit gated feature fields from saves when the active package does not support them.
 - [Package-change feature validation](package-change-feature-validation.md) — validate gated fields against the package submitted in the same save request, not only the stored package.
 - [Card design template styling](design-template-styling.md) — admin styling flows into editor and public invitations; customer content remains separate.
+- [Invitation color save rule](invitation-color-save.md) — always persist the exact resolved color value; null-cascade optimisation causes editor↔public mismatch when template sources differ.
+- [Design cascade source](design-cascade-source.md) — both demo and real invitations use the active card design as the base template; buyer saves overwrite fields on top.
+- [Admin R2 image preview](admin-r2-image-preview.md) — ImageUploadField must resolve raw R2 keys through resolveImageUrl for the preview img src; previewUrl/localPreviewUrl are already resolved URLs.
 - [Cover-name invitation links](cover-name-invitation-links.md) — public URLs use Cover Groom Name and Cover Bride Name across Buyer, Business Account, Admin, and email.
 - [Dress code palette](dress-code-palette.md) — preserve legacy dresscode while optional themes use up to four validated hex swatches.
 - [HEX color picker convention](hex-color-picker-convention.md) — user-facing pickers use #RRGGBB; convert only at the legacy theme boundary.
