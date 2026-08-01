@@ -682,11 +682,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  // Keep the two background groups explicit: the cover is group 1 and the
-  // scrollable invitation details are group 2. Older templates may only have
-  // one image, so each group falls back to the other image for compatibility.
-  const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
-  const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
+  // envelopeImageUrl is the single persistent background for the whole inner card,
+  // visible behind Group 1 (transparent cover) and Group 2+ (event content).
+  // cardImageUrl belongs to the door/cover mechanism (EnvelopeDoors) only.
+  const persistentBackgroundUrl = envelopeImageUrl || cardImageUrl;
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
@@ -713,19 +712,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const brideParents = invitation.brideParents?.trim() || "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── BACKGROUND GROUP 1 / COVER ── */}
-      <section className={sectionBase}>
-        {groupOneBackgroundUrl ? (
-          <img
-            src={groupOneBackgroundUrl}
-            aria-hidden
-            alt=""
-            draggable={false}
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-secondary" />
-        )}
+      {/* ── PERSISTENT INNER BACKGROUND — starts at scroll=0, spans entire card ── */}
+      <PageBackground imageUrl={persistentBackgroundUrl} overlay />
+
+      {/* ── GROUP 1 / COVER — transparent, reveals the persistent background behind it ── */}
+      <section className={`${sectionBase} z-10`}>
         {showFrontText && (
           <div className={coverPanelBase}>
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
@@ -745,9 +736,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         )}
       </section>
 
-      {/* ── BACKGROUND GROUP 2 / ALL REMAINING INVITATION SECTIONS ── */}
-      <section className="relative">
-        <PageBackground imageUrl={groupTwoBackgroundUrl} overlay />
+      {/* ── GROUP 2 / ALL REMAINING INVITATION SECTIONS — transparent over persistent background ── */}
+      <section className="relative z-10">
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>

@@ -1,0 +1,226 @@
+Implement the following WeddingCard background structural fix.
+
+IMPORTANT:
+
+* Inspect the existing WeddingCard, EnvelopeDoors, PageBackground, Group 1, Group 2, and scroll/reveal structure first.
+* Do not redesign the card.
+* Do not change animations, typography, spacing, content, or unrelated functionality.
+* Only fix the background ownership, placement, and layering described below.
+
+### TARGET BEHAVIOR
+
+`envelopeImageUrl` must become the persistent inner background of the WeddingCard.
+
+It must:
+
+* Start from scroll position 0 of the WeddingCard.
+* Be visible behind Group 1 immediately after/opening through the envelope doors.
+* Continue behind Group 2 and all subsequent card content.
+* Remain visually continuous while scrolling.
+* Not begin only after the current 720px / Group 1 section.
+* Not move independently in a way that exposes an empty background.
+* Cover the full WeddingCard viewport area using the existing intended cover behavior.
+
+### 1. MOVE PageBackground
+
+`PageBackground` must be placed at the top level inside `WeddingCard`.
+
+It should be the first background layer/first child responsible for the WeddingCard inner background.
+
+Conceptually:
+
+WeddingCard
+→ PageBackground (envelopeImageUrl)
+→ EnvelopeDoors (cardImageUrl)
+→ Group 1
+→ Group 2
+→ remaining content
+
+Do NOT keep PageBackground nested inside Group 2 or any section that begins further down the document.
+
+The background must exist from the beginning of the WeddingCard at scroll=0.
+
+### 2. REMOVE Group 1 BACKGROUND
+
+Group 1 must no longer render `cardImageUrl` as its own section background.
+
+Remove only the Group 1 background usage of `cardImageUrl`.
+
+Group 1 itself must become transparent so the persistent `envelopeImageUrl` PageBackground underneath is visible.
+
+Do NOT remove Group 1 content.
+
+Do NOT alter its layout, dimensions, animation, positioning, text, ornaments, or other elements.
+
+Only remove the opaque/separate background layer.
+
+### 3. cardImageUrl OWNERSHIP
+
+Within this envelope-based WeddingCard flow:
+
+`cardImageUrl` should be used by `EnvelopeDoors` as the door/cover artwork.
+
+Do not render `cardImageUrl` again as the Group 1 section background.
+
+Do not globally remove `cardImageUrl` from unrelated templates/components that may still require it.
+
+### 4. envelopeImageUrl OWNERSHIP
+
+`envelopeImageUrl` should be the persistent PageBackground for the inner WeddingCard.
+
+It should visually sit underneath:
+
+* Group 1
+* Group 2
+* subsequent content sections
+
+All those sections should reveal the same continuous background where they do not intentionally have their own foreground elements.
+
+### 5. LAYERING
+
+Preserve correct z-index/layering.
+
+Expected conceptual layering:
+
+Bottom:
+PageBackground using envelopeImageUrl
+
+Above:
+WeddingCard content sections
+
+Above when applicable:
+EnvelopeDoors / opening mechanism
+
+Do not allow PageBackground to:
+
+* cover text
+* cover buttons
+* intercept clicks/touches
+* appear above content
+* interfere with EnvelopeDoors
+
+Use `pointer-events: none` for the background layer if appropriate.
+
+### 6. STICKY BACKGROUND BEHAVIOR
+
+Preserve the existing intended sticky/persistent background behavior, but its containing structure must allow it to operate from the start of WeddingCard.
+
+Check all ancestors for:
+
+* transform
+* overflow
+* contain
+* filter
+* perspective
+* fixed heights
+
+that could unintentionally change the sticky containing block or clip PageBackground.
+
+Do not remove those properties blindly.
+
+Only change an ancestor property if it is actually preventing PageBackground from behaving correctly.
+
+### 7. SCROLL / REVEAL ANIMATIONS
+
+Do not modify existing RevealOnScroll behavior unless its transform is directly affecting PageBackground.
+
+PageBackground itself should NOT be placed inside a RevealOnScroll wrapper.
+
+The persistent background must not inherit:
+
+* translateY
+* opacity reveal
+* entrance animation
+* section-specific transform
+
+from Group 1 or Group 2.
+
+Content can continue using the existing reveal animations.
+
+### 8. DO NOT CREATE A SECOND BACKGROUND
+
+Do not solve this by adding another duplicate `envelopeImageUrl` background to Group 1.
+
+There must be ONE persistent PageBackground responsible for the continuous inner card background.
+
+Avoid:
+
+Group 1 → envelopeImageUrl
+Group 2 → envelopeImageUrl
+
+Instead use:
+
+WeddingCard
+→ ONE persistent PageBackground
+→ Group 1
+→ Group 2
+→ remaining sections
+
+This prevents seams, image-position differences, and visible transitions between sections.
+
+### 9. PRESERVE ENVELOPE OPENING
+
+The initial closed-envelope appearance must remain unchanged.
+
+`EnvelopeDoors` must continue displaying `cardImageUrl` exactly as intended.
+
+When the doors open, the user should naturally see the `envelopeImageUrl` persistent background underneath with Group 1 content over it.
+
+Do not change the existing door opening animation or timing.
+
+### 10. RESPONSIVE BEHAVIOR
+
+Verify the fix at:
+
+* mobile width
+* desktop width
+* initial scroll position
+* during envelope opening
+* immediately after opening
+* Group 1 → Group 2 transition
+* deeper scroll positions
+
+There must be no:
+
+* blank strip
+* white background flash
+* duplicated image
+* background jump
+* visible seam between Group 1 and Group 2
+* unexpected cardImageUrl behind Group 1
+
+### EXPECTED FINAL STRUCTURE
+
+The final architecture should conceptually behave like:
+
+WeddingCard
+├── PageBackground
+│   └── envelopeImageUrl
+│
+├── EnvelopeDoors
+│   └── cardImageUrl
+│
+├── Group 1
+│   └── transparent content
+│
+├── Group 2
+│   └── transparent content
+│
+└── Remaining Sections
+└── content over the same persistent background
+
+### IMPORTANT
+
+Do not make unrelated visual changes.
+
+Do not compensate for the issue using arbitrary negative margins, extra 720px offsets, duplicated backgrounds, or hardcoded scroll-position hacks.
+
+Fix the structural cause.
+
+After implementation, report:
+
+1. Which components/files were changed.
+2. Where PageBackground was moved.
+3. Which Group 1 cardImageUrl background usage was removed.
+4. Whether any parent CSS was interfering with sticky positioning.
+5. Confirm that envelopeImageUrl now starts at WeddingCard scroll=0 and persists behind all inner content.

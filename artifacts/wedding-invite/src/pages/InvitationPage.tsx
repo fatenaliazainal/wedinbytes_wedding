@@ -320,7 +320,7 @@ export default function InvitationPage() {
            initialsImageScale={initialsImageScale}
            names={envelopeInitials}
            initialsSize={envelopeInitialsSize}
-          envelopeImageUrl={resolvedEnvelopeImageUrl}
+          envelopeImageUrl={resolvedCardImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
         />
       )}
