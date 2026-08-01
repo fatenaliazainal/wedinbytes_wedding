@@ -1,0 +1,89 @@
+Adjust ONLY the white translucent overlay used on the content sections after the first page, especially the Event Details / Details Majlis section.
+
+CURRENT ISSUE:
+
+The white overlay is TOO OPAQUE / TOO WHITE.
+
+It is covering too much of the background artwork, so the original background behind the content is barely visible.
+
+I want the background artwork to show through MORE, but still softly.
+
+CHANGE ONLY THIS:
+
+Reduce the opacity of the EXISTING white overlay.
+
+Target visual:
+
+* more transparent than current
+* background artwork should become more visible
+* background should still appear softly through the layer
+* retain the subtle milky/translucent effect
+* do not remove the white overlay completely
+* do not make it fully transparent
+* maintain enough contrast for text readability
+
+Start approximately around:
+
+rgba(255, 255, 255, 0.55)
+
+If necessary, only fine-tune the opacity slightly to achieve the desired softness.
+
+## STRICT SCOPE — DO NOT CHANGE ANYTHING ELSE
+
+This is ONLY an opacity adjustment.
+
+DO NOT:
+
+* change the background image
+* change background positioning
+* change background size
+* change background scrolling/sticky behavior
+* change any image
+* change text
+* change text color
+* change fonts
+* change font sizes
+* change spacing
+* change padding or margins
+* change section height
+* change layout
+* change card dimensions
+* change borders
+* change shadows
+* change blur/backdrop-filter
+* change animations
+* change RevealOnScroll
+* change transition behavior
+* change opening behavior
+* change envelope behavior
+* change door/window behavior
+* change scrolling behavior
+* change RSVP
+* change music
+* change navigation
+* change any other invitation section
+* refactor unrelated components
+* redesign anything
+
+DO NOT add a new overlay.
+
+DO NOT duplicate the background.
+
+DO NOT restructure the section.
+
+Use the EXISTING overlay and ONLY reduce its white opacity.
+
+If the existing implementation uses a different CSS method instead of rgba, modify ONLY the equivalent opacity/alpha value.
+
+Everything else must remain EXACTLY as it is now.
+
+Before editing, identify the exact existing white overlay responsible for this appearance.
+
+Modify ONLY that value.
+
+After implementation, confirm:
+
+1. The previous opacity value.
+2. The new opacity value.
+3. The exact file/component changed.
+4. Confirm that NOTHING ELSE was modified.

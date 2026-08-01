@@ -701,7 +701,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         ) : (
           <div className="absolute inset-0 bg-secondary" />
         )}
-        {overlay && <div className="absolute inset-0 bg-white/70" />}
+        {overlay && <div className="absolute inset-0 bg-white/55" />}
       </div>
     );
   }
