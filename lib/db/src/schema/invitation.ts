@@ -171,6 +171,9 @@ export const cardDesignTable = pgTable("card_design", {
   cardMaxWidth: text("card_max_width"),
   openingAnimation: text("opening_animation").default("doors"),
   openButtonText: text("open_button_text"),
+  // Content overlay — translucent color layer over the Group 2 background behind content sections
+  contentOverlayColor: text("content_overlay_color"),   // hex e.g. "#FFFFFF"
+  contentOverlayOpacity: text("content_overlay_opacity"), // 0–100 e.g. "55"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

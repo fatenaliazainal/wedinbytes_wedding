@@ -367,6 +367,8 @@ export default function InvitationPage() {
           rsvpCount={rsvpCount ?? undefined}
           onRsvpClick={() => setIsRsvpModalOpen(true)}
           hideFirstPageContent={openingAnimation !== "envelope" && openingAnimation !== "none" && !doorsComplete}
+          contentOverlayColor={templateDesign?.contentOverlayColor ?? undefined}
+          contentOverlayOpacity={templateDesign?.contentOverlayOpacity ?? undefined}
         />
 
         {/* Hidden YouTube player for background music */}

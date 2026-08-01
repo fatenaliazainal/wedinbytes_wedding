@@ -15,6 +15,10 @@ interface WeddingCardProps {
   onRsvpClick?: () => void;
   /** When true, hides the first-page cover text until the door animation completes. */
   hideFirstPageContent?: boolean;
+  /** Hex colour for the content overlay (defaults to #FFFFFF). */
+  contentOverlayColor?: string;
+  /** Opacity 0–100 for the content overlay (defaults to 55). */
+  contentOverlayOpacity?: string;
 }
 
 const MONTH_MAP: Record<string, string> = {
@@ -634,7 +638,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -687,6 +691,17 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   // Group 1 (cover screen) uses cardImageUrl; Group 2 (content) uses envelopeImageUrl.
   // Each section carries its own sticky background so each is visible only in its group.
 
+  // Compute overlay background from design settings, falling back to white/55%.
+  const overlayBg = (() => {
+    const hex = contentOverlayColor || "#FFFFFF";
+    const opacity = Math.min(100, Math.max(0, Number(contentOverlayOpacity ?? 55))) / 100;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(255,255,255,0.55)`;
+    return `rgba(${r},${g},${b},${opacity})`;
+  })();
+
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
       <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
@@ -701,7 +716,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         ) : (
           <div className="absolute inset-0 bg-secondary" />
         )}
-        {overlay && <div className="absolute inset-0 bg-white/55" />}
+        {overlay && <div className="absolute inset-0" style={{ background: overlayBg }} />}
       </div>
     );
   }

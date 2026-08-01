@@ -424,6 +424,8 @@ interface DesignFormData {
   musicTitle: string;
   musicArtist: string;
   openButtonText: string;
+  contentOverlayColor: string;
+  contentOverlayOpacity: string;
 }
 
 const EMPTY_FORM: DesignFormData = {
@@ -434,6 +436,7 @@ const EMPTY_FORM: DesignFormData = {
   nameFontSize: "38", badgeFontSize: "24",
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
+  contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
 };
 
 function DesignForm({
@@ -562,6 +565,8 @@ function DesignForm({
         musicTitle: form.musicTitle,
         musicArtist: form.musicArtist,
         openButtonText: form.openButtonText,
+        contentOverlayColor: form.contentOverlayColor || "#FFFFFF",
+        contentOverlayOpacity: form.contentOverlayOpacity || "55",
       };
       const url = mode === "add"
         ? `${BASE}/api/design`
@@ -846,6 +851,37 @@ function DesignForm({
             <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} />
           </div>
 
+          {/* Content Overlay */}
+          <div className="space-y-3 pt-1">
+            <p className="text-xs font-semibold text-foreground">Content Overlay</p>
+            <p className="text-[11px] text-muted-foreground -mt-1">Translucent colour layer shown over the background behind content sections (Event Details, etc.).</p>
+            <ColorRow label="Overlay Colour" value={form.contentOverlayColor} onChange={set("contentOverlayColor")} />
+            <label className="block">
+              <span className="text-xs font-medium text-muted-foreground">
+                Overlay Opacity — {form.contentOverlayOpacity || "55"}%
+              </span>
+              <div className="flex items-center gap-3 mt-1">
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={Number(form.contentOverlayOpacity) || 55}
+                  onChange={(e) => set("contentOverlayOpacity")(e.target.value)}
+                  className="flex-1 accent-primary"
+                />
+                <div
+                  className="h-6 w-6 rounded border border-border shrink-0"
+                  style={{
+                    backgroundColor: form.contentOverlayColor || "#FFFFFF",
+                    opacity: (Number(form.contentOverlayOpacity) || 55) / 100,
+                  }}
+                  title="Preview"
+                />
+              </div>
+            </label>
+          </div>
+
           {/* Music */}
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Background Music</p>
@@ -1051,6 +1087,8 @@ function DesignsTab() {
                     musicTitle: d.musicTitle ?? "",
                     musicArtist: d.musicArtist ?? "",
                     openButtonText: d.openButtonText ?? "OPEN",
+                    contentOverlayColor: d.contentOverlayColor ?? "#FFFFFF",
+                    contentOverlayOpacity: d.contentOverlayOpacity ?? "55",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
                 >

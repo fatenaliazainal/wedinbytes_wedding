@@ -25,6 +25,7 @@ const ALLOWED_DESIGN_FIELDS = [
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard",
   "fontHeading","fontBody","nameFontFamily","nameFontSize","badgeFontSize","nameColor",
   "cardMaxWidth","openingAnimation","designCode","openButtonText","name",
+  "contentOverlayColor","contentOverlayOpacity",
 ];
 
 function stripNulls<T extends Record<string, unknown>>(obj: T): T {

@@ -279,6 +279,10 @@ export interface CardDesign {
   openButtonText?: string;
   /** Animation pattern key e.g. "doors" or "envelope" */
   openingAnimation?: string;
+  /** Hex colour for the translucent overlay on content sections e.g. "#FFFFFF" */
+  contentOverlayColor?: string;
+  /** Opacity 0–100 for the content overlay e.g. "55" */
+  contentOverlayOpacity?: string;
 }
 
 export interface ErrorResponse {

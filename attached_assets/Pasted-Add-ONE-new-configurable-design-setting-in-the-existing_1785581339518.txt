@@ -1,0 +1,192 @@
+Add ONE new configurable design setting in the existing "Add Design" / design configuration:
+
+### Content Overlay Color
+
+Purpose:
+Allow each invitation design to define the translucent color layer that appears over the persistent background behind content sections such as Event Details / Details Majlis.
+
+Currently this overlay appears to use a fixed/hardcoded white translucent color.
+
+Instead, make BOTH the overlay color and transparency configurable per design.
+
+## ADD DESIGN UI
+
+Add:
+
+**Content Overlay Color**
+
+* Color picker
+* Hex input
+
+Example:
+#FFFFFF
+#F8F3EA
+#E8E3D8
+#DDE5DA
+
+Then add:
+
+**Overlay Transparency**
+
+* Slider or percentage input
+* 0–100%
+
+Example:
+
+Content Overlay Color:
+`#F8F3EA`
+
+Transparency:
+`45%`
+
+This should render as a translucent version of that selected color, NOT as a solid color.
+
+IMPORTANT:
+The selected color must NEVER automatically become fully solid unless transparency is intentionally set to 0%.
+
+The purpose is to allow the original invitation background artwork to remain visible underneath.
+
+For example:
+
+Selected color:
+#F8F3EA
+
+Transparency:
+45%
+
+Result:
+
+soft translucent cream layer
++
+original background artwork visible underneath.
+
+## DATA
+
+Store this per design using fields conceptually equivalent to:
+
+contentOverlayColor
+contentOverlayOpacity
+
+If equivalent fields already exist, reuse them instead of creating duplicates.
+
+Keep color and opacity as separate values so they can be edited independently.
+
+Example:
+
+contentOverlayColor: "#F8F3EA"
+contentOverlayOpacity: 0.55
+
+IMPORTANT:
+If the UI displays "Transparency", make sure the conversion is logically correct.
+
+For example:
+
+Transparency 45%
+= opacity 55%
+
+Do not accidentally treat transparency and opacity as the same value.
+
+Alternatively, label the control "Overlay Opacity" to avoid confusion.
+
+I prefer:
+
+Overlay Opacity: 0–100%
+
+because it is clearer.
+
+Example:
+
+Overlay Opacity: 55%
+
+means the selected overlay color is rendered at 55% opacity.
+
+## INVITATION RENDERING
+
+Replace ONLY the currently hardcoded white translucent content overlay with the configured design value.
+
+Conceptually:
+
+Current:
+
+rgba(255, 255, 255, fixedOpacity)
+
+Change to:
+
+selected Content Overlay Color
++
+selected Overlay Opacity
+
+The background artwork underneath must remain unchanged.
+
+Example:
+
+Background artwork
+↓
+Content Overlay Color (#F8F3EA at 55%)
+↓
+Invitation content/text
+
+## LIVE PREVIEW
+
+If the existing Add Design page has a preview, update the preview immediately when:
+
+* Content Overlay Color changes
+* Overlay Opacity changes
+
+This allows us to visually tune each design.
+
+## DEFAULT / BACKWARD COMPATIBILITY
+
+VERY IMPORTANT:
+
+Do NOT change the appearance of existing invitation designs that do not have these new values configured.
+
+For existing designs with no saved Content Overlay Color / Overlay Opacity:
+
+Use the CURRENT existing overlay color and CURRENT existing opacity as fallback values.
+
+This ensures existing invitations continue looking exactly the same.
+
+Only designs where these new settings are explicitly configured should use the new values.
+
+## STRICT SCOPE — DO NOT CHANGE ANYTHING ELSE
+
+Do NOT:
+
+* change the persistent background
+* change background image
+* change background positioning
+* change background size
+* change sticky behavior
+* change first-page behavior
+* change section structure
+* change text
+* change text colors
+* change fonts
+* change spacing
+* change section heights
+* change animations
+* change RevealOnScroll
+* change opening styles
+* change envelope
+* change door/window opening
+* change music
+* change RSVP
+* change navigation
+* redesign Add Design
+* refactor unrelated components
+
+ONLY add the new Content Overlay Color + Overlay Opacity configuration and connect it to the EXISTING translucent content overlay.
+
+Do not create an additional overlay layer.
+
+Modify the EXISTING overlay.
+
+After implementation report:
+
+1. New fields added/reused.
+2. Database/schema changes.
+3. Add Design UI changes.
+4. Where the invitation reads these values.
+5. Current fallback color and opacity used for old designs.
+6. Confirm no unrelated behavior was changed.
