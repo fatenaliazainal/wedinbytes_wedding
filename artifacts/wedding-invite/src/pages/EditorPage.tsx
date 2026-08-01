@@ -332,6 +332,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
       if (tab.id === "footer") return mode === "admin" || mode === "demo";
+      // Demo editor shows every tab so the admin can populate all premium
+      // feature content that will be displayed in the public catalog preview.
+      if (mode === "demo") return true;
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
@@ -356,10 +359,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     greetingText: "Assalamualaikum wbt & salam sejahtera",
     doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
-    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", itinerary: [], galleryImages: [],
-    giftDisplay: false, giftTitle: "SALAM KASIH", giftRecipient: "", giftBankName: "", giftAccountNumber: "", giftQrCodes: [],
+    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", galleryImages: [],
+    itinerary: [
+      { time: "10:00 PG", event: "Ketibaan Tetamu" },
+      { time: "11:00 PG", event: "Majlis Akad Nikah" },
+      { time: "12:30 TGH", event: "Majlis Makan" },
+      { time: "02:00 PTG", event: "Majlis Bersurai" },
+    ],
+    giftDisplay: true, giftTitle: "SALAM KASIH", giftRecipient: "Nama Penerima", giftBankName: "Maybank", giftAccountNumber: "1234567890", giftQrCodes: [],
     designCode: "FL001",
-    rsvpEnabled: false, rsvpAdditionalInfo: "", rsvpDeadline: "",
+    rsvpEnabled: true, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
     showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinstudio.com",

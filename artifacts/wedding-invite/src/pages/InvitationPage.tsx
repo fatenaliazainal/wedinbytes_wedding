@@ -431,8 +431,8 @@ export default function InvitationPage() {
                 onRsvpClick={() => setIsRsvpModalOpen(true)}
                 isVisible={showBottomNav}
                 cardMaxWidth="100%"
-                showRsvp={inv?.rsvpEnabled === true}
-                showGift={inv?.giftDisplay === true}
+                showRsvp={isDemoInvitation || inv?.rsvpEnabled === true}
+                showGift={isDemoInvitation || inv?.giftDisplay === true}
               />
             </div>
           </div>
