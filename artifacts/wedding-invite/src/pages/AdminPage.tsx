@@ -1895,24 +1895,51 @@ function WaxSealsTab() {
 
   useEffect(() => { void loadSeals(); }, []);
 
+  const SEAL_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+  const SEAL_ALLOWED_TYPES = ["image/png", "image/webp", "image/jpeg"] as const;
+
   const handleUpload = async () => {
-    if (!fileRef.current?.files?.[0] || !formName.trim()) {
-      toast.error("Enter a name and select an image file.");
+    const file = fileRef.current?.files?.[0];
+    if (!formName.trim()) {
+      toast.error("Enter a name for the wax seal.");
       return;
     }
+    if (!file) {
+      toast.error("Select an image file (PNG, WebP, or JPEG).");
+      return;
+    }
+    // ── Client-side validation ──────────────────────────────────────────────
+    if (!(SEAL_ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      toast.error(`Unsupported file type "${file.type}". Use PNG, WebP, or JPEG.`);
+      return;
+    }
+    if (file.size > SEAL_MAX_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1);
+      toast.error(`File is ${mb} MB — wax seal images must be 2 MB or smaller.`);
+      return;
+    }
+    // ── Upload ──────────────────────────────────────────────────────────────
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append("file", fileRef.current.files[0]);
+      fd.append("file", file);
       const r = await fetch(`${BASE}/api/admin/wax-seals/upload`, { method: "POST", credentials: "include", body: fd });
-      if (!r.ok) { toast.error("Upload failed"); return; }
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({})) as { error?: string };
+        toast.error(body.error ?? "Upload failed — check that R2 storage is configured.");
+        return;
+      }
       const { key } = await r.json() as { key: string };
       const r2 = await fetch(`${BASE}/api/admin/wax-seals`, {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: formName.trim(), imageUrl: key }),
       });
-      if (!r2.ok) { toast.error("Failed to save wax seal"); return; }
+      if (!r2.ok) {
+        const body = await r2.json().catch(() => ({})) as { error?: string };
+        toast.error(body.error ?? "Failed to save wax seal");
+        return;
+      }
       toast.success("Wax seal added");
       setFormName("");
       if (fileRef.current) fileRef.current.value = "";
@@ -1955,7 +1982,7 @@ function WaxSealsTab() {
     <div className="space-y-6">
       <div>
         <p className="text-xs font-semibold text-foreground">Wax Seal Library</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">Upload PNG or WebP images with transparent backgrounds. Active seals appear in buyers' envelope opening style picker.</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Upload PNG or WebP images with transparent backgrounds (max 2 MB). Active seals appear in buyers' envelope opening style picker.</p>
       </div>
 
       {/* Upload form */}

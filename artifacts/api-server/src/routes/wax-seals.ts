@@ -10,7 +10,7 @@ const router: Router = Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB — wax seals are small decorative images
   fileFilter: (_req, file, cb) => {
     // Transparent formats preferred for wax seals
     const ok = /^image\/(png|webp|jpeg)$/.test(file.mimetype);
@@ -70,7 +70,7 @@ router.post("/admin/wax-seals/upload", requireAdmin, (req, res, _next) => {
       return;
     }
     if (!req.file) {
-      res.status(400).json({ error: "No valid image uploaded (png/webp/jpeg, max 10 MB)" });
+      res.status(400).json({ error: "No valid image uploaded. Use PNG, WebP, or JPEG, max 2 MB." });
       return;
     }
     const mimeType = req.file.mimetype as SupportedImageMime;
