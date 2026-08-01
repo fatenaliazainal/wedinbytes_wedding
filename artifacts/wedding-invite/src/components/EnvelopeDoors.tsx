@@ -31,14 +31,13 @@ export function EnvelopeDoors({
       {/* Constrained to card width */}
       <div
         className={`relative h-full w-full flex items-center justify-center ${isOpened ? "pointer-events-none" : "pointer-events-auto"}`}
-        style={{ maxWidth, perspective: 1500 }}
+        style={{ maxWidth }}
       >
-        {/* ── Left Door — shows left half of cover image ── */}
+        {/* ── Left Curtain — shows left half of cover image, slides left ── */}
         <motion.div
-          initial={{ rotateY: 0, opacity: 1 }}
-          animate={{ rotateY: isOpened ? -110 : 0, opacity: isOpened ? 0 : 1 }}
-          transition={{ type: "spring", stiffness: 70, damping: 18 }}
-          style={{ transformOrigin: "left center", transformStyle: "preserve-3d" }}
+          initial={{ x: "0%" }}
+          animate={{ x: isOpened ? "-100%" : "0%" }}
+          transition={{ type: "spring", stiffness: 55, damping: 20 }}
           className={`absolute inset-y-0 left-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
@@ -59,17 +58,16 @@ export function EnvelopeDoors({
           />
           {/* Inner-edge shadow for depth */}
           <div
-            className="absolute inset-y-0 right-0 w-8 pointer-events-none"
-            style={{ background: "linear-gradient(to left, rgba(0,0,0,0.18), transparent)" }}
+            className="absolute inset-y-0 right-0 w-6 pointer-events-none"
+            style={{ background: "linear-gradient(to left, rgba(0,0,0,0.15), transparent)" }}
           />
         </motion.div>
 
-        {/* ── Right Door — shows right half of cover image ── */}
+        {/* ── Right Curtain — shows right half of cover image, slides right ── */}
         <motion.div
-          initial={{ rotateY: 0, opacity: 1 }}
-          animate={{ rotateY: isOpened ? 110 : 0, opacity: isOpened ? 0 : 1 }}
-          transition={{ type: "spring", stiffness: 70, damping: 18 }}
-          style={{ transformOrigin: "right center", transformStyle: "preserve-3d" }}
+          initial={{ x: "0%" }}
+          animate={{ x: isOpened ? "100%" : "0%" }}
+          transition={{ type: "spring", stiffness: 55, damping: 20 }}
           className={`absolute inset-y-0 right-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
@@ -90,20 +88,20 @@ export function EnvelopeDoors({
           />
           {/* Inner-edge shadow for depth */}
           <div
-            className="absolute inset-y-0 left-0 w-8 pointer-events-none"
-            style={{ background: "linear-gradient(to right, rgba(0,0,0,0.18), transparent)" }}
+            className="absolute inset-y-0 left-0 w-6 pointer-events-none"
+            style={{ background: "linear-gradient(to right, rgba(0,0,0,0.15), transparent)" }}
           />
         </motion.div>
 
-        {/* ── Center seam shadow ── */}
+        {/* ── Center seam line ── */}
         {!isOpened && (
           <div
             className="absolute inset-y-0 pointer-events-none"
             style={{
               left: "50%",
               transform: "translateX(-50%)",
-              width: "2px",
-              background: "rgba(0,0,0,0.10)",
+              width: "1px",
+              background: "rgba(0,0,0,0.08)",
               zIndex: 10,
             }}
           />
