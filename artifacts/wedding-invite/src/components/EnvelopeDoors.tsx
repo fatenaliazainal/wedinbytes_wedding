@@ -35,8 +35,8 @@ export function EnvelopeDoors({
       >
         {/* ── Left Curtain — shows left half of cover image, slides left ── */}
         <motion.div
-          initial={{ x: "0%" }}
-          animate={{ x: isOpened ? "-100%" : "0%" }}
+          initial={{ x: "0%", opacity: 0.5 }}
+          animate={{ x: isOpened ? "-100%" : "0%", opacity: isOpened ? 0 : 0.5 }}
           transition={{ type: "spring", stiffness: 55, damping: 20 }}
           className={`absolute inset-y-0 left-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
@@ -65,8 +65,8 @@ export function EnvelopeDoors({
 
         {/* ── Right Curtain — shows right half of cover image, slides right ── */}
         <motion.div
-          initial={{ x: "0%" }}
-          animate={{ x: isOpened ? "100%" : "0%" }}
+          initial={{ x: "0%", opacity: 0.5 }}
+          animate={{ x: isOpened ? "100%" : "0%", opacity: isOpened ? 0 : 0.5 }}
           transition={{ type: "spring", stiffness: 55, damping: 20 }}
           className={`absolute inset-y-0 right-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
