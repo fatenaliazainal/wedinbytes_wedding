@@ -1,0 +1,286 @@
+STANDARDIZE THE TYPOGRAPHY HIERARCHY AND CONTENT PRESENTATION ACROSS THE INVITATION.
+
+The goal is NOT to redesign the invitation and NOT to replace the existing typography customization system.
+
+The goal is to make the invitation feel more consistent, intentional, elegant, and premium by establishing clear typography roles and consistent content structure.
+
+IMPORTANT:
+Existing Admin and Customer Editor controls must remain functional.
+
+If a font family, font size, or color is already configurable, DO NOT replace it with a hardcoded value.
+
+Instead, standardize how each typography ROLE is used.
+
+==================================================
+CREATE CONSISTENT TYPOGRAPHY ROLES
+==================================================
+
+Organize invitation typography conceptually into these roles:
+
+1. HERO
+Couple Names
+
+This must always be the strongest visual focus.
+
+2. EYEBROW / INTRO
+Examples:
+WALIMATUL URUS
+MAJLIS PERKAHWINAN
+
+Small supporting text above the hero.
+
+It should never visually compete with the couple names.
+
+3. SECTION HEADING
+Examples:
+Details Majlis
+Event Programme
+RSVP
+Our Story
+
+Used consistently for major section titles.
+
+4. LABEL
+Examples:
+DATE
+TIME
+LOCATION
+
+Small supporting label.
+
+Use consistent:
+- capitalization
+- weight treatment
+- letter spacing
+- spacing below label
+
+5. PRIMARY VALUE
+Examples:
+12 September 2026
+11:00 AM – 4:00 PM
+Rimbunan Glass Hall
+
+This should be clearly more prominent than the label.
+
+6. BODY
+Examples:
+Invitation message
+Greeting
+Descriptions
+
+Comfortable reading size and line-height.
+
+7. SECONDARY
+Examples:
+Full venue address
+Additional notes
+Supporting information
+
+Visually quieter than Body and Primary Value.
+
+==================================================
+STANDARDIZE INFORMATION STRUCTURE
+==================================================
+
+For information blocks such as date/time/location, consistently use:
+
+LABEL
+↓
+PRIMARY VALUE
+↓
+SECONDARY INFORMATION if applicable
+
+Example:
+
+LOCATION
+
+Rimbunan Glass Hall
+
+Jalan Example,
+Johor Bahru
+
+Do not allow all three lines to have equal visual importance.
+
+==================================================
+STANDARDIZE SPACING RHYTHM
+==================================================
+
+The premium appearance should come partly from consistent spacing.
+
+Establish consistent relationships between:
+
+Eyebrow
+↓
+Hero
+
+Section Heading
+↓
+Section Content
+
+Label
+↓
+Primary Value
+
+Primary Value
+↓
+Secondary Text
+
+Information Block
+↓
+Next Information Block
+
+Do NOT randomly change margins individually throughout the invitation.
+
+Reuse a consistent spacing rhythm.
+
+There should generally be:
+
+small gap
+between related text
+
+medium gap
+between different information groups
+
+larger gap
+between major sections
+
+==================================================
+AVOID FLAT HIERARCHY
+==================================================
+
+Currently several elements can visually feel equally important.
+
+Avoid:
+
+DATE
+12 September
+LOCATION
+Rimbunan Hall
+Address
+Parents
+Invitation Message
+
+all having almost the same visual treatment.
+
+Instead create obvious levels of importance.
+
+A guest should be able to quickly scan the invitation and immediately identify:
+
+1. Couple
+2. Event
+3. Date / Time / Venue
+4. Supporting information
+
+==================================================
+PREMIUM TYPOGRAPHY PRINCIPLES
+==================================================
+
+Use restraint.
+
+Do not make everything:
+- large
+- bold
+- decorative
+- uppercase
+- script
+
+Decorative/display typography should be reserved for important moments.
+
+Information typography should remain clean.
+
+Use whitespace and hierarchy instead of adding unnecessary visual decoration.
+
+==================================================
+PRESERVE EDITOR CONTROLS
+==================================================
+
+VERY IMPORTANT:
+
+Existing configurable properties remain the source of truth.
+
+Examples:
+
+nameFontFamily
+nameFontSize
+nameColor
+badgeFontSize
+fontHeading
+fontBody
+bodyFontFamily
+colorForeground
+colorPrimary
+colorSecondary
+colorAccent
+
+Do NOT remove or bypass these.
+
+If the buyer changes a configurable font size, the hierarchy system must respect that selected value.
+
+The standardization should define ROLE and STRUCTURE, not fight against user customization.
+
+==================================================
+DO NOT HARDCODE CONFIGURABLE VALUES
+==================================================
+
+Before changing a typography property:
+
+Check whether it already comes from:
+- Admin Design
+- Customer Style Editor
+- CSS variable
+- invitation override
+
+If YES:
+preserve it.
+
+Only standardize properties that are currently inconsistent or unmanaged.
+
+==================================================
+STRICT SCOPE
+==================================================
+
+DO NOT:
+- change font families
+- remove Editor controls
+- remove Admin controls
+- change invitation backgrounds
+- change images
+- change floral elements
+- change section dimensions
+- change opening behavior
+- change envelope
+- change animations
+- change scrolling
+- change footer
+- change popup
+- change RSVP
+- change music
+- change navigation
+- redesign components
+- change invitation content
+
+This task is ONLY about:
+
+TYPOGRAPHY CONSISTENCY
++
+VISUAL HIERARCHY
++
+CONTENT ARRANGEMENT
++
+SPACING RHYTHM
+
+Make the minimum structural/style changes necessary.
+
+Before implementation, first report:
+
+1. Current typography roles.
+2. Which roles are inconsistent.
+3. Which values are Editor-controlled.
+4. Which values are currently hardcoded.
+5. Your proposed standardized hierarchy.
+6. Your proposed spacing rhythm.
+7. Exactly which components would need changes.
+
+DO NOT IMPLEMENT YET.
+
+I want to review the proposed hierarchy first.
