@@ -712,13 +712,23 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const brideParents = invitation.brideParents?.trim() || "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── GROUP 1 BACKGROUND — placed BEFORE the section so it is not clipped by
-          the section's overflow-hidden, which would break position:sticky.
-          No overlay: cover image shown at full opacity. ── */}
-      <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} />
-
-      {/* ── GROUP 1 / COVER — transparent over the background above ── */}
+      {/* ── GROUP 1 / COVER — background is INSIDE the section so both move as one unit.
+          overflow-hidden on the section clips it correctly; no sticky needed here. ── */}
       <section className={`${sectionBase} z-10`}>
+        {/* Non-sticky cover background — travels with the section content on scroll */}
+        <div className="absolute inset-0 pointer-events-none">
+          {(cardImageUrl || envelopeImageUrl) ? (
+            <img
+              src={cardImageUrl || envelopeImageUrl}
+              aria-hidden
+              alt=""
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover select-none"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-secondary" />
+          )}
+        </div>
         {showFrontText && (
           <div
             className={coverPanelBase}

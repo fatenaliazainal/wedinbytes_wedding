@@ -1,0 +1,114 @@
+Fix ONLY the first-section upward slide/scroll behavior.
+
+I want the behavior to match the provided reference video.
+
+CURRENT BEHAVIOR:
+The first section content — including "Walimatul Urus", couple names, date, etc. — moves/slides upward, BUT its background stays stationary.
+
+This is incorrect.
+
+REFERENCE BEHAVIOR:
+The ENTIRE first section must move upward together as ONE complete visual layer.
+
+This includes:
+
+* background image/artwork
+* floral/background decorations
+* frame
+* "Walimatul Urus"
+* couple names
+* date
+* venue
+* all other elements belonging to the first section
+
+Think of the first section as ONE complete physical card/page.
+
+When it moves upward:
+
+[BACKGROUND + ALL CONTENT]
+↑
+↑
+↑
+
+Everything must travel together at exactly the same speed and distance.
+
+Do NOT create this effect by animating only the text/content container.
+
+Do NOT keep the first-section background fixed/sticky while its foreground moves away.
+
+The first-section background must belong to the SAME moving wrapper as the first-section content.
+
+Conceptually:
+
+WRONG:
+
+Persistent/Fixed Background
+└── stays still
+
+Content
+└── translateY / scroll upward
+
+CORRECT:
+
+FirstSectionPage
+├── First Section Background
+├── Decorations
+├── Frame
+└── First Section Content
+
+Then:
+
+FirstSectionPage
+→ moves upward as ONE UNIT.
+
+The relative positions between the background, frame, decorations and text must NEVER change during this movement.
+
+As the complete first section moves upward, the next section/background underneath should progressively be revealed from the bottom, matching the reference video.
+
+IMPORTANT:
+This behavior applies wherever this same first-section transition behavior is used across invitations.
+
+Do NOT hardcode it to one designCode.
+
+However, DO NOT change designs that use a different configured transition behavior.
+
+STRICT SCOPE:
+
+Do not change:
+
+* design
+* image
+* background artwork
+* text
+* fonts
+* spacing
+* dimensions
+* opening animation
+* envelope behavior
+* door/window behavior
+* music
+* RSVP
+* navigation
+* subsequent section animations
+* persistent background behavior elsewhere
+
+Do not redesign or refactor unrelated components.
+
+Only fix the ownership/wrapper of the FIRST SECTION so its background and content move upward together exactly like the reference.
+
+Before changing code, inspect which element currently receives the translate/scroll animation.
+
+If the transform is currently applied only to the foreground/content wrapper, move/apply that movement to the complete first-section wrapper containing BOTH its background and its content.
+
+Do not duplicate the background to fake the effect.
+
+Do not add arbitrary negative margins or hardcoded offsets.
+
+Fix the structural cause.
+
+After implementation, confirm:
+
+1. Which wrapper now moves.
+2. That first-section background and content move together.
+3. That the next section is revealed underneath.
+4. That no unrelated behavior was changed.
