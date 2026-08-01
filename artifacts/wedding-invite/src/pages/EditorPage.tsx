@@ -2336,6 +2336,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 "--background":         design.colorBackground  || "142 20% 96%",
                 "--card":               design.colorCard        || "0 0% 100%",
                 "--popover":            design.colorCard        || "0 0% 100%",
+                "--foreground":         design.colorForeground  || "0 0% 10%",
                 "--border":             "142 20% 80%",
                 "--muted":              "142 15% 94%",
                 "--muted-foreground":   "142 10% 45%",
