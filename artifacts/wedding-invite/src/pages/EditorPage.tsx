@@ -487,6 +487,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           musicUrl:         tpl.musicUrl         ?? gd.musicUrl         ?? "",
           musicTitle:       tpl.musicTitle       ?? gd.musicTitle       ?? "",
           musicArtist:      tpl.musicArtist      ?? gd.musicArtist      ?? "",
+          waxSealId:        tpl.waxSealId        ?? null,
         };
       };
 
@@ -646,7 +647,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         setDesign({
           designCode:       resolvedCode,
           openingAnimation: invitationOwnsStyle ? (d.openingAnimation ?? tpl.openingAnimation) : tpl.openingAnimation,
-          waxSealId:        invitationOwnsStyle && d.waxSealId ? String(d.waxSealId) : "",
+          waxSealId:        invitationOwnsStyle
+            ? (d.waxSealId ? String(d.waxSealId) : (tpl.waxSealId ? String(tpl.waxSealId) : ""))
+            : (tpl.waxSealId ? String(tpl.waxSealId) : ""),
           openButtonText:   invitationOwnsStyle ? (d.openButtonText ?? "BUKA") : "BUKA",
           nameFontFamily:   normalizeFont(invitationOwnsStyle ? (d.nameFontFamily ?? tpl.nameFontFamily) : tpl.nameFontFamily),
           nameFontSize:     invitationOwnsStyle ? (d.nameFontSize ?? tpl.nameFontSize ?? "38") : (tpl.nameFontSize ?? "38"),
@@ -2174,35 +2177,33 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </select>
                   </Field>
                 </div>
-                {design.openingAnimation === "envelope" && (
-                  <div className="space-y-2">
-                    <Field label="Wax Seal">
-                      <select
-                        className={selectCls}
-                        value={design.waxSealId}
-                        onChange={(e) => setDesign((p) => ({ ...p, waxSealId: e.target.value }))}
-                      >
-                        <option value="">Default (initials circle)</option>
-                        {waxSeals.map((s) => (
-                          <option key={s.id} value={String(s.id)}>{s.name}</option>
-                        ))}
-                      </select>
-                    </Field>
-                    {design.waxSealId && (() => {
-                      const sel = waxSeals.find(s => String(s.id) === design.waxSealId);
-                      return sel ? (
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={resolveImageUrl(sel.imageUrl)}
-                            alt={sel.name}
-                            className="h-14 w-14 rounded-full border border-border object-contain bg-muted"
-                          />
-                          <span className="text-xs text-muted-foreground">{sel.name}</span>
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Field label="Wax Seal">
+                    <select
+                      className={selectCls}
+                      value={design.waxSealId}
+                      onChange={(e) => setDesign((p) => ({ ...p, waxSealId: e.target.value }))}
+                    >
+                      <option value="">Default (initials circle)</option>
+                      {waxSeals.map((s) => (
+                        <option key={s.id} value={String(s.id)}>{s.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  {design.waxSealId && (() => {
+                    const sel = waxSeals.find(s => String(s.id) === design.waxSealId);
+                    return sel ? (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={resolveImageUrl(sel.imageUrl)}
+                          alt={sel.name}
+                          className="h-14 w-14 rounded-full border border-border object-contain bg-muted"
+                        />
+                        <span className="text-xs text-muted-foreground">{sel.name}</span>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
                 {/* Colors, fonts, sizes — buyer & business only; admin uses card design settings */}
                 {(mode === "buyer" || mode === "business") && (
                   <>
