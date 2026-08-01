@@ -29,13 +29,14 @@ export function EnvelopeDoors({
   // Shared embossed-glass surface — fully determined by synchronous CSS,
   // no image load required, so no async grey-rectangle flash.
   const glassSurface: React.CSSProperties = {
-    background: "rgba(255,255,255,0.04)",
-    backdropFilter: "blur(0.5px)",
+    background: "rgba(255,255,255,0.19)",
+    backdropFilter: "blur(2px)",
     boxShadow: [
-      "inset 0 0 0 1px rgba(255,255,255,0.20)",  // rim highlight
-      "inset 2px 0 8px rgba(255,255,255,0.08)",   // inner glow
-      "inset -2px 0 8px rgba(0,0,0,0.04)",         // inner shadow
-      "0 0 0 1px rgba(0,0,0,0.03)",               // faint outer ring
+      "inset 0 0 0 1px rgba(255,255,255,0.55)",   // strong rim highlight
+      "inset 3px 0 14px rgba(255,255,255,0.22)",   // inner glow
+      "inset -3px 0 14px rgba(0,0,0,0.10)",         // inner shadow
+      "0 0 0 1px rgba(0,0,0,0.08)",                // outer ring
+      "0 4px 16px rgba(0,0,0,0.06)",               // outer lift shadow
     ].join(", "),
   };
 
