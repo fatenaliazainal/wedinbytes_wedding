@@ -384,20 +384,37 @@ export default function InvitationPage() {
         )}
 
         {isOpened && (
+          // Single fixed container anchored at viewport bottom, constrained to
+          // invitation width. DetailPanel stacks above BottomNav so the footer
+          // is never covered by the popup.
           <div
-            className="sticky bottom-0 z-50 w-full mx-auto"
-            style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+            className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
           >
-            <BottomNav
-              activeTab={activeTab}
-              isMuted={isMuted}
-              onTabClick={handleTabClick}
-              onRsvpClick={() => setIsRsvpModalOpen(true)}
-              isVisible={showBottomNav}
-              cardMaxWidth="100%"
-              showRsvp={inv?.rsvpEnabled === true}
-              showGift={inv?.giftDisplay === true}
-            />
+            <div
+              className="w-full flex flex-col pointer-events-auto"
+              style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+            >
+              <DetailPanel
+                activeTab={activeTab}
+                onClose={() => setActiveTab(null)}
+                invitation={invitation}
+                isMuted={isMuted}
+                onToggleMute={() => setIsMuted((prev) => !prev)}
+                musicTitle={(invitationStyle?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
+                musicArtist={(invitationStyle?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+                inset
+              />
+              <BottomNav
+                activeTab={activeTab}
+                isMuted={isMuted}
+                onTabClick={handleTabClick}
+                onRsvpClick={() => setIsRsvpModalOpen(true)}
+                isVisible={showBottomNav}
+                cardMaxWidth="100%"
+                showRsvp={inv?.rsvpEnabled === true}
+                showGift={inv?.giftDisplay === true}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -439,17 +456,6 @@ export default function InvitationPage() {
         )}
       </AnimatePresence>
 
-      {isOpened && (
-        <DetailPanel
-          activeTab={activeTab}
-          onClose={() => setActiveTab(null)}
-          invitation={invitation}
-          isMuted={isMuted}
-          onToggleMute={() => setIsMuted((prev) => !prev)}
-          musicTitle={(invitationStyle?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
-          musicArtist={(invitationStyle?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
-        />
-      )}
 
       <RsvpModal
         isOpen={isRsvpModalOpen}

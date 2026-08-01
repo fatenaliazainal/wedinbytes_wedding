@@ -25,6 +25,10 @@ interface DetailPanelProps {
   musicTitle?: string;
   musicArtist?: string;
   previewMode?: boolean;
+  /** When true the parent container (InvitationPage) handles width + positioning.
+   *  The panel renders as a full-width block that slides up from within a flex column
+   *  sitting directly above the footer. The backdrop is still fixed/full-screen. */
+  inset?: boolean;
 }
 function MuzikPanel({
   isMuted,
@@ -341,10 +345,19 @@ export function DetailPanel({
   musicTitle,
   musicArtist,
   previewMode,
+  inset,
 }: DetailPanelProps) {
   const isCompactPanel = activeTab === "kalendar" || activeTab === "lokasi" || activeTab === "hubungi";
+  // In inset mode the parent container already constrains width to the invitation width,
+  // so we drop the max-w-* constraints so the panel fills it exactly.
+  const compactPanelClass = inset
+    ? INVITATION_PANEL_CLASS.replace(" max-w-[340px]", "")
+    : INVITATION_PANEL_CLASS;
+  const nonCompactPanelClass = inset
+    ? "w-full rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl"
+    : "w-full max-w-[420px] rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl";
   const panelContent = (
-    <div className={isCompactPanel ? INVITATION_PANEL_CLASS : "w-full max-w-[420px] rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl"}>
+    <div className={isCompactPanel ? compactPanelClass : nonCompactPanelClass}>
       <div className={isCompactPanel ? INVITATION_PANEL_HEADER_CLASS : "mb-6 flex items-center justify-between"}>
         <p className={isCompactPanel ? INVITATION_PANEL_TITLE_CLASS : "text-lg text-primary"} style={{ fontFamily: nameFont }}>
           {activeTab ? PANEL_TITLES[activeTab] : ""}
@@ -392,6 +405,38 @@ export function DetailPanel({
           {panelContent}
         </div>
       </>
+    );
+  }
+
+  // Inset mode: the parent (InvitationPage) renders this inside a fixed bottom-0
+  // container that is already constrained to the invitation width. The panel sits
+  // as a flex-column child directly above the footer — no fixed positioning needed
+  // on the panel itself. The backdrop is still fixed/full-screen.
+  if (inset) {
+    return (
+      <AnimatePresence>
+        <>
+          <motion.div
+            key="backdrop-inset"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm pointer-events-auto"
+            onClick={onClose}
+          />
+          <motion.div
+            key="panel-inset"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="w-full relative z-50"
+          >
+            {panelContent}
+          </motion.div>
+        </>
+      </AnimatePresence>
     );
   }
 

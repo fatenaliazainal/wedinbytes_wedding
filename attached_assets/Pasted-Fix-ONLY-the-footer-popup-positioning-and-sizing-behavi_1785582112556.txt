@@ -1,0 +1,227 @@
+Fix ONLY the footer popup positioning and sizing behavior.
+
+Use the provided reference video as the target behavior.
+
+CURRENT ISSUE:
+The popup/modal opened from the invitation footer is not positioned correctly.
+
+It currently:
+- does not use the full invitation width
+- behaves too much like a centered modal
+- can overlap/cover the footer
+- does not feel attached to the footer
+
+TARGET BEHAVIOR:
+
+The popup must behave like a BOTTOM SHEET attached directly ABOVE the invitation footer.
+
+When any footer action is clicked:
+
+Music
+Calendar
+Location
+Contact
+RSVP
+
+the popup should open upward from the footer.
+
+STRUCTURE:
+
+┌─────────────────────────────┐
+│                             │
+│      INVITATION CONTENT     │
+│                             │
+├─────────────────────────────┤
+│                             │
+│        POPUP / SHEET        │
+│                             │
+│                             │
+├─────────────────────────────┤
+│ Music Calendar Location ... │  ← FOOTER
+└─────────────────────────────┘
+
+IMPORTANT:
+
+The popup must END exactly at the TOP EDGE of the footer.
+
+It must NOT cover the footer.
+
+The footer must remain fully visible and usable while the popup is open.
+
+### WIDTH
+
+The popup must be:
+
+width: 100% of the ACTUAL invitation container.
+
+NOT:
+- browser viewport width
+- arbitrary fixed width
+- narrow centered modal
+- 90% width
+
+Its left and right edges must align EXACTLY with the invitation/card edges.
+
+Example:
+
+Invitation width = 500px
+Popup width = 500px
+Footer width = 500px
+
+All three must align.
+
+On mobile, if invitation width = screen width:
+popup follows that width.
+
+On desktop, if invitation is a centered constrained-width card:
+popup must remain constrained to that invitation width.
+
+DO NOT make it full browser width.
+
+### POSITION
+
+The popup must be anchored relative to the invitation/footer container.
+
+Conceptually:
+
+bottom: footerHeight
+
+NOT:
+
+bottom: 0
+
+because `bottom: 0` would place the popup over the footer.
+
+The bottom edge of the popup must meet the top edge of the footer with NO GAP and NO OVERLAP.
+
+### OPENING ANIMATION
+
+The popup should appear to come FROM the footer.
+
+Closed:
+
+popup hidden below/at footer boundary.
+
+Open:
+
+translateY(...)
+→
+translateY(0)
+
+It should slide smoothly UPWARD from immediately above the footer.
+
+Do NOT animate it from the center of the screen.
+
+Do NOT scale it like a dialog/modal.
+
+It should feel physically connected to the footer.
+
+### HEIGHT
+
+The popup can have dynamic height depending on its content.
+
+Do NOT force every popup to fill the entire invitation.
+
+However:
+
+max-height must respect the available space above the footer.
+
+If content is taller than the available space:
+make the popup content internally scrollable.
+
+The footer itself must stay visible.
+
+### BACKDROP
+
+If the existing popup uses a backdrop/dim/blur effect, preserve it.
+
+However, the actual popup panel must remain constrained to the invitation width.
+
+Do not change the existing backdrop design unless required for positioning.
+
+### BORDER RADIUS
+
+Because the popup rises from the footer:
+
+Use rounded corners ONLY on the top-left and top-right if the existing design uses rounded corners.
+
+The bottom edge should visually connect cleanly to the footer.
+
+Avoid making it look like a floating card with space underneath.
+
+### VERY IMPORTANT — CONTAINER OWNERSHIP
+
+Do not position the popup relative to the entire browser viewport if the invitation has its own constrained container.
+
+The popup positioning must derive from the SAME invitation container used by the footer.
+
+Conceptually:
+
+InvitationContainer
+│
+├── InvitationContent
+│
+├── FooterPopup
+│
+└── Footer
+
+This ensures:
+
+Popup width
+=
+Footer width
+=
+Invitation width.
+
+### STRICT SCOPE — DO NOT CHANGE ANYTHING ELSE
+
+Do NOT change:
+- footer design
+- footer height
+- footer icons
+- footer labels
+- footer colors
+- invitation width
+- invitation layout
+- invitation content
+- backgrounds
+- fonts
+- spacing outside the popup
+- opening/envelope behavior
+- scroll animations
+- music functionality
+- calendar functionality
+- location functionality
+- contact functionality
+- RSVP functionality
+- popup content itself
+- any other invitation behavior
+
+Do NOT redesign the popup.
+
+ONLY fix:
+1. popup width
+2. popup horizontal alignment
+3. popup vertical position
+4. popup relationship to the footer
+5. popup slide-up behavior
+
+The final result must be:
+
+POPUP = full invitation width
+POPUP = directly above footer
+FOOTER = always visible
+POPUP = never covering footer
+
+Before changing code, inspect the existing footer and popup positioning.
+
+Use the MINIMUM code changes required.
+
+Do not refactor unrelated components.
+
+After implementation confirm:
+1. popup width now matches invitation width exactly
+2. popup bottom edge sits exactly above footer
+3. footer remains visible while popup is open
+4. popup slides upward from the footer
+5. no unrelated functionality or styling was changed
