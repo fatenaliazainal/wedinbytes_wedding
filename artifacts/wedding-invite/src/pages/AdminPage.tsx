@@ -25,7 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "designs" | "reviews" | "demo" | "editor" | "pricing" | "orders" | "customers" | "revenue";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue";
 
 type RawCard = {
   id: number;
@@ -2059,13 +2059,12 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"], ["editor", "Editor"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
             onClick={() => {
               if (key === "demo") navigate("/admin/demo");
-              else if (key === "editor") navigate("/admin/editor");
               else setTab(key);
             }}
             className={`px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${

@@ -141,9 +141,17 @@ router.post("/design", requireAdmin, async (req, res) => {
       designCode = `FL${String(existing.length + 1).padStart(3, "0")}`;
     }
 
+    // Auto-activate the new design if no design is currently active.
+    const [existingActive] = await db
+      .select({ id: cardDesignTable.id })
+      .from(cardDesignTable)
+      .where(eq(cardDesignTable.isActive, true))
+      .limit(1);
+    const shouldActivate = !existingActive;
+
     const insert: Record<string, unknown> = {
       name: body.name.trim(),
-      isActive: false,
+      isActive: shouldActivate,
       designCode,
     };
     for (const field of ALLOWED_DESIGN_FIELDS) {
@@ -151,7 +159,7 @@ router.post("/design", requireAdmin, async (req, res) => {
       if (field in body && body[field] !== "") insert[field] = body[field];
     }
     const [created] = await db.insert(cardDesignTable).values(insert as never).returning();
-    auditEvent(req, "design.create", { designId: created.id, designCode });
+    auditEvent(req, "design.create", { designId: created.id, designCode, autoActivated: shouldActivate });
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create design");

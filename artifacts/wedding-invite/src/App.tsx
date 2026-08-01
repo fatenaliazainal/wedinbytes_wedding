@@ -1,4 +1,5 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { useEffect } from "react";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,12 +45,15 @@ function BusinessEditorRoute() {
   return <EditorPage mode="business" />;
 }
 
-function AdminEditorRoute() {
-  return <EditorPage mode="admin" />;
-}
-
 function DemoEditorRoute() {
   return <EditorPage mode="demo" />;
+}
+
+// /admin/editor is now merged into /admin/demo — redirect for backward compat
+function AdminEditorRedirect() {
+  const [, navigate] = useLocation();
+  useEffect(() => { navigate("/admin/demo", { replace: true }); }, [navigate]);
+  return null;
 }
 
 function Router() {
@@ -67,7 +71,7 @@ function Router() {
       <Route path="/invite/:token" component={InvitationPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/demo" component={DemoEditorRoute} />
-      <Route path="/admin/editor" component={AdminEditorRoute} />
+      <Route path="/admin/editor" component={AdminEditorRedirect} />
       <Route path="/editor" component={EditorRoute} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/login" component={LoginPage} />

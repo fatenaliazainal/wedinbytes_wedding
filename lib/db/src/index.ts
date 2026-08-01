@@ -17,13 +17,22 @@ if (!process.env.DATABASE_URL) {
   console.log("Loaded DATABASE_URL from .env file [development mode]");
 }
 
-// Keep at least 1 connection open so the first real request doesn't pay the
-// ~1s TCP + TLS + auth handshake cost of a brand-new connection.
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  min: 1,
-  idleTimeoutMillis: 30_000,  // drop idle connections after 30s to avoid stale sockets
+  // idleTimeoutMillis: drop idle connections before Neon's ~5-min forced eviction.
+  idleTimeoutMillis: 60_000,
   connectionTimeoutMillis: 5_000,
+});
+
+// Neon (and other serverless PG providers) sometimes forcibly close idle
+// connections. Without an 'error' listener on the pool, Node.js treats those
+// as unhandled errors and crashes the process.
+pool.on("error", (err) => {
+  // Ignore benign connection termination codes; rethrow anything unexpected.
+  const benign = ["57P01", "ECONNRESET", "EPIPE"];
+  if (!benign.some((code) => String((err as NodeJS.ErrnoException).code ?? (err as Record<string,unknown>).code).includes(code))) {
+    console.error("[pg-pool] unexpected pool error:", err);
+  }
 });
 export const db = drizzle(pool, { schema });
 
