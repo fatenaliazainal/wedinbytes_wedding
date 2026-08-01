@@ -1,0 +1,148 @@
+Investigation Only — No Code Changes Yet
+
+Do not propose or implement any fixes yet.
+
+The previous hypotheses (RevealOnScroll, object-cover, 100dvh, duplicate PageBackground) have not explained the observed behaviour.
+
+The goal is to identify the exact rendering source before changing anything.
+
+Please perform the following investigation:
+
+1. Create a Minimal Reproduction
+
+Temporarily remove everything except:
+
+the sticky PageBackground
+one static text block
+the same floral background image
+
+If the issue disappears, then gradually add components back one by one until it returns.
+
+2. Binary Elimination
+
+Test each item independently.
+
+Record whether the issue still occurs after disabling only ONE item at a time.
+
+RevealOnScroll
+Framer Motion
+Sticky background
+Overlay layer
+object-cover
+overflow containers
+masks
+filters
+backdrop blur
+opacity
+blend modes
+
+Do not disable multiple things simultaneously.
+
+3. Inspect Rendering Layers
+
+Using Chrome DevTools:
+
+Enable
+
+Paint Flashing
+Layer Borders
+Rendering FPS meter
+
+Determine whether the background is being repainted continuously while scrolling.
+
+Report exactly which layer is repainting.
+
+4. Inspect the Background Image
+
+Verify whether the floral image itself contains:
+
+duplicated flowers
+transparent padding
+hidden artwork outside the visible canvas
+exported bleed
+unexpected margins
+
+Report the image dimensions and visible artwork boundaries.
+
+5. Inspect Computed Styles During Scroll
+
+Log every frame while scrolling:
+
+getBoundingClientRect() of PageBackground
+getBoundingClientRect() of the image
+computed transform
+computed object-position
+computed object-fit
+computed top
+computed height
+computed width
+
+Confirm whether ANY value changes while scrolling.
+
+6. Check for Multiple Compositing Layers
+
+Determine whether Chrome creates multiple GPU layers because of:
+
+sticky
+opacity
+transforms
+Framer Motion
+filters
+
+Show the compositing tree.
+
+7. Inspect Parent Containers
+
+Trace the DOM upward from PageBackground.
+
+For every ancestor report:
+
+position
+overflow
+transform
+contain
+isolation
+perspective
+will-change
+
+Stop only after reaching <body>.
+
+8. Compare Background Position
+
+Take screenshots at:
+
+scroll top
+middle
+bottom
+
+Overlay them to determine whether:
+
+the background actually moves
+the content moves
+both move
+or only the crop changes.
+9. Determine Whether This Is
+
+Choose only after evidence:
+
+rendering issue
+layout issue
+sticky issue
+GPU compositing issue
+image export issue
+browser repaint issue
+animation issue
+
+Do not guess.
+
+Deliverables
+
+Do not modify the code.
+
+Return:
+
+Root cause supported by evidence.
+Screenshots or logs proving it.
+Which experiment isolated the issue.
+Confidence level (%).
+Only after the root cause is proven, recommend a fix.
