@@ -773,36 +773,35 @@ function DesignForm({
             </select>
           </div>
 
-          {/* Wax Seal — only relevant when opening animation is "envelope" */}
-          {form.openingAnimation === "envelope" && (
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Default Wax Seal</label>
-              <select
-                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
-                value={form.waxSealId}
-                onChange={(e) => set("waxSealId")(e.target.value)}
-              >
-                <option value="">— Initials circle (default) —</option>
-                {waxSeals.map((s) => (
-                  <option key={s.id} value={String(s.id)}>{s.name}</option>
-                ))}
-              </select>
-              {form.waxSealId && (() => {
-                const sel = waxSeals.find((s) => String(s.id) === form.waxSealId);
-                return sel ? (
-                  <div className="mt-2 flex items-center gap-3">
-                    <img
-                      src={resolveImageUrl(sel.imageUrl)}
-                      alt={sel.name}
-                      className="h-14 w-14 rounded-full object-contain border border-border bg-muted"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                    />
-                    <p className="text-xs text-muted-foreground">{sel.name}</p>
-                  </div>
-                ) : null;
-              })()}
-            </div>
-          )}
+          {/* Wax Seal — default seal for this design's envelope face */}
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Default Wax Seal</label>
+            <p className="text-[11px] text-muted-foreground mb-2">Sets the default envelope seal for invitations using this design. Buyers can still change it in their editor.</p>
+            <select
+              className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+              value={form.waxSealId}
+              onChange={(e) => set("waxSealId")(e.target.value)}
+            >
+              <option value="">— Initials circle (default) —</option>
+              {waxSeals.map((s) => (
+                <option key={s.id} value={String(s.id)}>{s.name}</option>
+              ))}
+            </select>
+            {form.waxSealId && (() => {
+              const sel = waxSeals.find((s) => String(s.id) === form.waxSealId);
+              return sel ? (
+                <div className="mt-2 flex items-center gap-3">
+                  <img
+                    src={resolveImageUrl(sel.imageUrl)}
+                    alt={sel.name}
+                    className="h-14 w-14 rounded-full object-contain border border-border bg-muted"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                  <p className="text-xs text-muted-foreground">{sel.name}</p>
+                </div>
+              ) : null;
+            })()}
+          </div>
 
           {/* Open button text */}
           <div>
