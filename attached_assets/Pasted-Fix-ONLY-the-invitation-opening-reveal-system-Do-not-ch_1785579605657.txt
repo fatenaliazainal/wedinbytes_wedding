@@ -1,0 +1,140 @@
+Fix ONLY the invitation opening/reveal system. Do not change the invitation design, layout, typography, content, sizing, existing animations after opening, or any unrelated functionality.
+
+I have two visual issues that need to be fixed across ALL invitation designs that use Door Opening or Window Opening styles.
+
+1. FIX DOOR / WINDOW GHOSTING / DOUBLE IMAGE
+
+Currently the opening doors/windows appear to contain another semi-transparent copy of the invitation/card image.
+
+This makes the invitation artwork look doubled/ghosted through the opening panels.
+
+DO NOT use the invitation image, background image, screenshot, duplicated card layer, or any image asset as the visual surface of the doors/windows.
+
+Instead, create the door/window panels entirely with CSS.
+
+The panels should look like subtle TRANSPARENT EMBOSSED GLASS / TRANSPARENT RELIEF.
+
+Required behaviour:
+
+- The actual invitation remains ONE single layer behind the doors/windows.
+- Door/window panels sit above it.
+- The panels themselves are transparent.
+- The invitation underneath should naturally peek through the transparent panels.
+- Do NOT duplicate the invitation artwork inside the panels.
+- Do NOT fake transparency by putting another copy of the invitation image at reduced opacity.
+- Use CSS transparency + borders + highlights + shadows to create the embossed effect.
+
+Suggested visual treatment:
+
+background: rgba(255,255,255,0.03) or similarly very transparent
+border: subtle rgba white/light border
+box-shadow:
+  inset highlight,
+  inset soft shadow,
+  subtle outer shadow
+
+Optional:
+backdrop-filter: blur(0px–1px);
+
+Keep blur extremely low because the invitation underneath should remain visible and sharp.
+
+The embossed effect should come mainly from:
+- inset highlights
+- inset shadows
+- subtle edge borders
+- transparent surfaces
+
+NOT from another image.
+
+When the doors/windows open, they should reveal the EXACT SAME invitation already underneath with no crossfade, duplicate image, ghost image, brightness change, opacity stacking, or double artwork.
+
+The result should feel like transparent embossed glass doors opening over the invitation.
+
+
+2. REMOVE GREEN/GREY RECTANGLE FLASH BEFORE LOADING
+
+In the recording there is a horizontal green/grey rectangle/bar that briefly appears across the screen before the invitation/loading state is fully rendered.
+
+Find the exact DOM element causing this flash.
+
+Do NOT simply hide random elements or change the invitation colours.
+
+Check specifically for:
+- opening overlay backgrounds
+- loading placeholders
+- skeleton elements
+- door/window containers
+- fallback backgrounds
+- progress elements
+- elements rendering before CSS/classes are ready
+- default background-color before initialization
+- animation elements briefly appearing at their final dimensions
+- pseudo-elements ::before / ::after
+- hydration/initial-render flash
+
+That rectangle must NEVER be visible, including for a single frame.
+
+Opening components should have their correct initial styles BEFORE first paint.
+
+If an opening/loading element should initially be invisible, initialize it as:
+opacity: 0;
+visibility: hidden;
+
+and only reveal it once the invitation and opening style are ready.
+
+Do not use a delayed JS workaround that hides the rectangle AFTER it appears. Prevent it from being painted in the first place.
+
+
+3. IMPORTANT ARCHITECTURE
+
+Apply this behaviour to the reusable invitation opening system, NOT specifically to this one design.
+
+It must work automatically based on the selected opening style:
+
+Door Opening → transparent embossed door panels
+Window Opening → transparent embossed window panels
+
+The implementation must work for ALL current and future invitation designs regardless of their background image, colour, template, or artwork.
+
+The invitation itself must remain the source of truth and exist only ONCE behind the opening effect.
+
+
+4. DO NOT CHANGE
+
+Do not modify:
+- invitation/card artwork
+- background image
+- invitation dimensions
+- desktop/mobile positioning
+- fonts
+- colours of the actual invitation
+- floral artwork
+- invitation content
+- scroll behaviour after opening
+- sections below the cover
+- existing customer data
+- other opening styles
+- editor behaviour
+
+Only fix the opening overlay rendering and the initial rectangle flash.
+
+
+5. TEST BEFORE FINISHING
+
+Test Door Opening and Window Opening with several different invitation designs.
+
+Verify:
+
+✓ No duplicated invitation image
+✓ No ghost/double artwork
+✓ Panels are genuinely transparent
+✓ Invitation can be seen naturally through the panels
+✓ Embossed edges are visible but subtle
+✓ Opening animation remains smooth
+✓ No green/grey rectangle appears on initial load
+✓ No flash before loading
+✓ No layout shift
+✓ Works on mobile and desktop
+✓ Works regardless of selected invitation design
+
+Do not redesign anything. Diagnose the existing implementation first and make the smallest reusable code change necessary.
