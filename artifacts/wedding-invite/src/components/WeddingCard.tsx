@@ -744,8 +744,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           )}
         </div>
 
-        {/* All inner content — scrolls over the sticky background */}
-        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
+        {/* All inner content — scrolls over the sticky background.
+            pb-28 gives clearance so the sticky BottomNav (~70 px) never
+            covers the last section. */}
+        <div className="relative z-10 flex flex-col items-center gap-14 pt-16 pb-28 px-6">
 
           <RevealOnScroll>
           {/* Invitation Text */}
