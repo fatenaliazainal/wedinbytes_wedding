@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useParams, useSearch } from "wouter";
-import { useGetInvitation, useListDesigns, useGetRsvpCount } from "@workspace/api-client-react";
+import { useGetInvitation, useListDesigns, useGetRsvpCount, useGetActiveDesign } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
@@ -76,6 +76,7 @@ export default function InvitationPage() {
     navigate("/", { replace: true });
   }, [invitationError, invitationLoading, navigate, tokenReady]);
   const { data: allDesigns = [], isLoading: designsLoading } = useListDesigns();
+  const { data: activeDesign } = useGetActiveDesign();
   const { data: rsvpCount } = useGetRsvpCount(
     tokenReady ? { invitationToken: resolvedToken } : undefined,
   );
@@ -112,9 +113,13 @@ export default function InvitationPage() {
 
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
-  const designCode = overrideDesignCode ?? (inv?.designCode as string | undefined) ?? "FL001";
-  const templateDesign = allDesigns.find((d) => d.designCode === designCode);
   const isDemoInvitation = resolvedToken === "demo";
+  // Demo token: always use active card design — demo row stores content only.
+  const designCode = overrideDesignCode
+    ?? (isDemoInvitation ? activeDesign?.designCode : (inv?.designCode as string | undefined))
+    ?? (inv?.designCode as string | undefined)
+    ?? "FL001";
+  const templateDesign = allDesigns.find((d) => d.designCode === designCode);
   // The demo invitation supplies sample content only. Its saved design values
   // must not override the catalogue template selected by ?designCode=.
   const invitationStyle = isDemoInvitation ? undefined : inv;

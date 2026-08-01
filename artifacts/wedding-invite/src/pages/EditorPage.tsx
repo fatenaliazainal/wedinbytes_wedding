@@ -612,8 +612,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             ? d.business as BusinessInvitationSummary
             : null,
         });
-        // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card)
-        const resolvedCode = urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
+        // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card).
+        // In demo mode the active card design always wins — the demo row stores content only.
+        const resolvedCode = urlDesignCode ?? (mode === "demo" ? gd.designCode : d.designCode) ?? gd.designCode ?? "FL001";
         const tpl = resolveTemplate(resolvedCode);
         setInheritedColors({
           nameColor:        tpl.nameColor,
