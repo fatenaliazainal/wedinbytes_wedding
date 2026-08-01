@@ -259,9 +259,11 @@ export default function InvitationPage() {
     return () => clearTimeout(t);
   }, [isOpened, openingAnimation]);
 
-  // Wax seal: load by ID when the invitation specifies one.
+  // Wax seal: invitation override → design default → none.
   // Must be declared before any early returns to satisfy the rules of hooks.
-  const waxSealId = (inv?.waxSealId as number | undefined) ?? null;
+  const waxSealId = (inv?.waxSealId as number | undefined)
+    ?? (templateDesign?.waxSealId as number | undefined)
+    ?? null;
   const [waxSealImageUrl, setWaxSealImageUrl] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (!waxSealId) { setWaxSealImageUrl(undefined); return; }
