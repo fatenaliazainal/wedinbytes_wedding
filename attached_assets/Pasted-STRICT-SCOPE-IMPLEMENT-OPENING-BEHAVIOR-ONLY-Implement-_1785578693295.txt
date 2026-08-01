@@ -1,0 +1,87 @@
+STRICT SCOPE — IMPLEMENT OPENING BEHAVIOR ONLY.
+
+Implement the reusable invitation opening behavior based ONLY on the opening style already selected/configured for each invitation.
+
+This applies to ALL invitation designs, not one specific design.
+
+CRITICAL: DO NOT CHANGE ANYTHING ELSE.
+
+Do NOT:
+
+* redesign any invitation
+* change existing layout
+* change card dimensions
+* change backgrounds
+* change `cardImageUrl` or `envelopeImageUrl` behavior
+* change existing image positioning
+* change fonts, colors, spacing, ornaments, or content
+* change RevealOnScroll
+* change existing scroll behavior after opening
+* change music/audio behavior
+* change RSVP
+* change navigation
+* change buttons
+* change invitation data unrelated to opening style
+* change existing admin/editor UI unless absolutely required to read the already-selected opening style
+* rename existing database fields
+* refactor unrelated components
+* modify template-specific styling
+* add special logic for FL003
+* hardcode any `designCode`
+* "fix" unrelated issues discovered during implementation
+
+If existing functionality already works, LEAVE IT UNTOUCHED.
+
+Before editing, inspect the existing opening-style field/configuration and use it as the source of truth.
+
+The ONLY behavior being implemented/fixed is:
+
+selected opening style
+→ determines how the existing cover opens
+→ reveals the existing invitation underneath.
+
+For example:
+
+`door`
+→ two vertical panels open outward like physical double doors.
+
+`window`
+→ two vertical window/shutter panels open outward from their outer hinges.
+
+`none`
+→ no opening-cover animation.
+
+Use the existing cover image and existing invitation structure.
+
+Do NOT change which image is assigned as the cover or background.
+
+The invitation underneath must remain exactly as it currently looks.
+
+For Door/Window opening:
+
+* Split the existing cover visually into left and right halves.
+* Closed state must look exactly like the current full cover.
+* Left half uses the outer-left edge as its hinge.
+* Right half uses the outer-right edge as its hinge.
+* Use perspective + `rotateY` for the physical opening effect.
+* Both panels open simultaneously.
+* The existing invitation underneath becomes visible progressively from the center.
+* After the animation finishes, remove/disable only the opening-cover interaction layer.
+* Restore normal existing invitation interaction/scrolling.
+* Do not alter the invitation underneath.
+
+The opening system must be reusable globally and determine behavior from the invitation's existing selected opening style.
+
+DO NOT create different implementations based on individual design codes.
+
+Before making changes, identify the MINIMUM files/components required.
+
+Modify ONLY those files.
+
+If implementing this requires changing unrelated invitation behavior, STOP rather than making that change.
+
+After implementation, report exactly:
+
+1. Files changed.
+2. What was changed in each file.
+3. Confirm no unrelated components/styles/behaviors were modified.

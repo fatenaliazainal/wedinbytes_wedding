@@ -26,21 +26,25 @@ export function EnvelopeDoors({
   const maxWidth = cardMaxWidth || "420px";
   const coverSrc = envelopeImageUrl || defaultEnvelopeRef;
 
+  // Both panels open simultaneously with the same timing
+  const panelTransition = { duration: 0.9, ease: [0.25, 1, 0.5, 1] as const };
+
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-      {/* Constrained to card width */}
+      {/* Constrained to card width; perspective set here so rotateY has depth */}
       <div
         className={`relative h-full w-full flex items-center justify-center ${isOpened ? "pointer-events-none" : "pointer-events-auto"}`}
-        style={{ maxWidth }}
+        style={{ maxWidth, perspective: "1000px" }}
       >
-        {/* ── Left Curtain — shows left half of cover image, slides left ── */}
+        {/* ── Left Door panel — hinge at outer-left edge ── */}
         <motion.div
-          initial={{ x: "0%", opacity: 0.5 }}
-          animate={{ x: isOpened ? "-100%" : "0%", opacity: isOpened ? 0 : 0.5 }}
-          transition={{ type: "spring", stiffness: 55, damping: 20 }}
+          initial={{ rotateY: 0, opacity: 0.5 }}
+          animate={{ rotateY: isOpened ? -95 : 0, opacity: isOpened ? 0 : 0.5 }}
+          transition={panelTransition}
           className={`absolute inset-y-0 left-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
+          style={{ transformOrigin: "left center", backfaceVisibility: "hidden" }}
           onClick={!isOpened ? onOpen : undefined}
         >
           <img
@@ -63,14 +67,15 @@ export function EnvelopeDoors({
           />
         </motion.div>
 
-        {/* ── Right Curtain — shows right half of cover image, slides right ── */}
+        {/* ── Right Door panel — hinge at outer-right edge ── */}
         <motion.div
-          initial={{ x: "0%", opacity: 0.5 }}
-          animate={{ x: isOpened ? "100%" : "0%", opacity: isOpened ? 0 : 0.5 }}
-          transition={{ type: "spring", stiffness: 55, damping: 20 }}
+          initial={{ rotateY: 0, opacity: 0.5 }}
+          animate={{ rotateY: isOpened ? 95 : 0, opacity: isOpened ? 0 : 0.5 }}
+          transition={panelTransition}
           className={`absolute inset-y-0 right-0 w-1/2 overflow-hidden ${
             isOpened ? "pointer-events-none" : "pointer-events-auto"
           }`}
+          style={{ transformOrigin: "right center", backfaceVisibility: "hidden" }}
           onClick={!isOpened ? onOpen : undefined}
         >
           <img

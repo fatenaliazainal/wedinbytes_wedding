@@ -151,7 +151,8 @@ export default function InvitationPage() {
   const resolvedCardImageUrl = resolveImageUrl(templateDesign?.cardImageUrl ?? design?.cardImageUrl);
   const resolvedEnvelopeImageUrl = resolveImageUrl(templateDesign?.envelopeImageUrl ?? design?.envelopeImageUrl);
 
-  const [isOpened, setIsOpened] = useState(false);
+  // "none" style: skip opening animation entirely — invitation is immediately visible
+  const [isOpened, setIsOpened] = useState(openingAnimation === "none");
   const [isRsvpModalOpen, setIsRsvpModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);

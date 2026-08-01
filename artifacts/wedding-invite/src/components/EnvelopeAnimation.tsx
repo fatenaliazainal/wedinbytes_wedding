@@ -46,10 +46,11 @@ export function EnvelopeAnimation({
             className="relative flex flex-col items-center"
             style={{ perspective: 1200 }}
           >
-            {/* Envelope wrapper */}
+            {/* Envelope wrapper — tap anywhere to trigger open */}
             <div
-              className="relative w-[300px] h-[200px]"
+              className="relative w-[300px] h-[200px] cursor-pointer"
               style={{ perspective: 1200 }}
+              onClick={handleOpen}
             >
               {/* ── Body ── */}
               <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
