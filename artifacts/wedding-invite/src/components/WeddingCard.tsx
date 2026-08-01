@@ -682,10 +682,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  // envelopeImageUrl is the single persistent background for the whole inner card,
-  // visible behind Group 1 (transparent cover) and Group 2+ (event content).
-  // cardImageUrl belongs to the door/cover mechanism (EnvelopeDoors) only.
-  const persistentBackgroundUrl = envelopeImageUrl || cardImageUrl;
+  // cardImageUrl drives both the curtain panels (EnvelopeDoors) and the persistent
+  // inner background so the reveal feels seamless — the same design is already behind
+  // the curtains before they slide away. envelopeImageUrl is kept as a fallback only.
+  const persistentBackgroundUrl = cardImageUrl || envelopeImageUrl;
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
