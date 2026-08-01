@@ -1,0 +1,411 @@
+Implement a configurable WAX SEAL system for the existing ENVELOPE opening style.
+
+STRICT SCOPE:
+This feature is ONLY for replacing the existing circular seal/button on the envelope opening.
+
+DO NOT redesign or change the existing envelope, envelope animation, invitation, backgrounds, layout, or other opening styles.
+
+First inspect the current envelope opening implementation and identify the existing circular seal/button in the center of the envelope.
+
+The existing circle currently used as the envelope seal/open trigger should be replaced by the selected Wax Seal image.
+
+==================================================
+1. ADMIN — WAX SEAL MANAGEMENT
+==================================================
+
+Create an admin-managed Wax Seal library.
+
+Admin must be able to:
+
+- Add Wax Seal
+- Upload transparent PNG/WebP wax seal image
+- Enter Wax Seal Name
+- Enable / Disable wax seal
+- Delete wax seal
+- Reorder wax seal options if the existing admin architecture supports ordering
+
+Example:
+
+Wax Seal Library
+
+[Image] Classic Gold
+[Image] Burgundy Floral
+[Image] Ivory Initial
+[Image] Sage Green
+[Image] Rose Gold
+
+Only ACTIVE wax seals should be available to customers.
+
+Store wax seals as reusable records.
+
+Conceptually:
+
+wax_seals
+
+- id
+- name
+- imageUrl
+- isActive
+- sortOrder
+- createdAt
+
+Follow the project's existing database/schema naming conventions.
+
+Do NOT create a completely separate architecture if an existing asset/library system can be safely reused.
+
+==================================================
+2. CUSTOMER — WAX SEAL SELECTION
+==================================================
+
+When the customer's selected invitation opening style is:
+
+Envelope
+
+show an additional setting:
+
+Wax Seal
+
+Customer CANNOT upload a wax seal.
+
+Customer can ONLY choose from wax seals created and enabled by Admin.
+
+Use a dropdown/select control.
+
+Preferably each option can show:
+
+[small thumbnail] Wax Seal Name
+
+Example:
+
+Wax Seal
+┌────────────────────────────┐
+│ [thumbnail] Classic Gold ▼ │
+└────────────────────────────┘
+
+Dropdown:
+
+[thumbnail] Classic Gold
+[thumbnail] Burgundy Floral
+[thumbnail] Ivory
+[thumbnail] Sage Green
+
+If the current select component cannot support thumbnails cleanly, a normal dropdown with wax seal names is acceptable.
+
+But the selected wax seal should preferably have a small preview beside/below the dropdown.
+
+==================================================
+3. SAVE SELECTION PER INVITATION
+==================================================
+
+Save the customer's selected wax seal with that invitation.
+
+Conceptually:
+
+waxSealId
+
+Do NOT save a duplicated image URL into every invitation if the existing architecture can safely reference the wax seal record by ID.
+
+The invitation should resolve:
+
+waxSealId
+→ Wax Seal record
+→ imageUrl
+
+This allows the admin Wax Seal library to remain centralized.
+
+==================================================
+4. REPLACE EXISTING ENVELOPE CIRCLE
+==================================================
+
+IMPORTANT:
+
+Do NOT add the wax seal on top of the existing circular seal.
+
+REPLACE the existing circle completely.
+
+CURRENT:
+
+Envelope flap
+
+        ●
+   existing circle
+
+CHANGE TO:
+
+Envelope flap
+
+      [WAX]
+      [SEAL]
+
+The old visible circle/background must no longer appear behind the wax seal.
+
+There should be only ONE seal element.
+
+The selected transparent Wax Seal image becomes the visual seal.
+
+==================================================
+5. POSITION
+==================================================
+
+Keep the wax seal at the SAME functional position as the existing envelope circle.
+
+It should sit centered around the envelope flap closure point.
+
+Do NOT move the envelope flap.
+
+Do NOT change envelope geometry just to accommodate the wax seal.
+
+The wax seal should overlay the flap naturally like a physical wax seal.
+
+Example:
+
+        envelope flap
+            \   /
+             \ /
+           [WAX]
+           [SEAL]
+        ───────────
+
+Use absolute positioning relative to the existing envelope/seal container if that is how the current circle is positioned.
+
+==================================================
+6. WAX SEAL SIZE
+==================================================
+
+Keep the seal responsive.
+
+Do not stretch the image.
+
+Use:
+
+object-fit: contain
+
+Preserve the original aspect ratio.
+
+Use a consistent maximum visual size so different uploaded wax seals do not unexpectedly become huge.
+
+Admin images may have slightly different dimensions, but the invitation should normalize their DISPLAY size.
+
+The transparent area around the PNG must not create an oversized clickable area unnecessarily.
+
+==================================================
+7. WAX SEAL IS STILL THE OPEN TRIGGER
+==================================================
+
+VERY IMPORTANT:
+
+The existing circle currently has opening interaction/behavior.
+
+Replacing the circle visually must NOT remove this functionality.
+
+The selected Wax Seal becomes the new visible interaction element.
+
+Guest should be able to:
+
+Tap Wax Seal
+→ existing envelope opening starts.
+
+Preserve the EXISTING envelope opening sequence and animation exactly.
+
+Do NOT rewrite the envelope opening animation.
+
+Only replace the visual circle with the selected wax seal while preserving the existing click/tap handler.
+
+==================================================
+8. OPENING BEHAVIOR
+==================================================
+
+When guest first sees the invitation:
+
+Envelope closed
+↓
+Selected Wax Seal visible at flap closure
+↓
+Guest taps Wax Seal / existing allowed envelope trigger
+↓
+Existing envelope opening animation runs
+↓
+Invitation revealed normally
+
+The wax seal should participate naturally in the opening.
+
+If the existing circle currently moves/fades with the flap, attach the Wax Seal to the SAME existing animated wrapper so it inherits the SAME behavior.
+
+Do NOT create a separate unrelated animation for the Wax Seal.
+
+==================================================
+9. CUSTOMER PREVIEW
+==================================================
+
+When customer changes:
+
+Wax Seal dropdown
+
+the invitation preview should immediately display the selected wax seal if the existing editor supports live preview.
+
+Example:
+
+Select:
+Burgundy Floral
+
+↓
+
+Envelope preview immediately shows:
+Burgundy Floral Wax Seal
+
+Do not require a page refresh if the existing editor architecture supports reactive preview.
+
+==================================================
+10. NO WAX SEAL / FALLBACK
+==================================================
+
+Handle old invitations safely.
+
+Existing invitations may not have waxSealId.
+
+DO NOT break them.
+
+Use the CURRENT existing circular seal as the fallback ONLY for invitations where no Wax Seal has been selected.
+
+Therefore:
+
+waxSealId exists
+→ show selected Wax Seal image
+→ do NOT show old circle.
+
+waxSealId missing
+→ preserve current existing circle exactly as it currently works.
+
+This provides backward compatibility.
+
+==================================================
+11. ADMIN DISABLED WAX SEALS
+==================================================
+
+If Admin disables a Wax Seal:
+
+- Do not show it as a NEW option in the customer dropdown.
+
+However, be careful with existing invitations already using that Wax Seal.
+
+Do NOT automatically break/remove the seal from existing invitations.
+
+If an existing invitation already references a disabled Wax Seal, continue rendering it unless the current system has an established archival behavior.
+
+"Disabled" should primarily mean:
+Not available for new selection.
+
+==================================================
+12. OTHER OPENING STYLES
+==================================================
+
+Wax Seal selection applies ONLY to:
+
+openingStyle = envelope
+
+Do NOT show Wax Seal settings for:
+
+door
+window
+none
+or any other opening style.
+
+Do NOT modify Door Opening.
+
+Do NOT modify Window Opening.
+
+==================================================
+13. STRICT — DO NOT CHANGE ANYTHING ELSE
+==================================================
+
+DO NOT change:
+
+- existing envelope design
+- envelope size
+- envelope color
+- envelope transparency
+- envelope embossed effect
+- envelope flap shape
+- envelope flap animation
+- envelope opening timing
+- envelope opening physics
+- invitation reveal behavior
+- invitation backgrounds
+- invitation content
+- first page
+- fonts
+- colors
+- spacing
+- scrolling
+- footer
+- footer popup
+- music
+- RSVP
+- navigation
+- other opening styles
+- other admin design settings
+- unrelated database fields
+- unrelated components
+
+DO NOT redesign the envelope.
+
+DO NOT rebuild the envelope opening system.
+
+DO NOT add another seal on top of the current circle.
+
+The ONLY visual change to the envelope itself is:
+
+EXISTING CIRCLE
+→ REPLACED BY SELECTED ADMIN WAX SEAL IMAGE
+
+Everything else must remain exactly as it is.
+
+==================================================
+FINAL EXPECTED FLOW
+==================================================
+
+ADMIN:
+
+Admin
+→ Wax Seal Library
+→ Add Wax Seal
+→ Upload transparent image
+→ Name it
+→ Activate it
+
+CUSTOMER:
+
+Opening Style
+[ Envelope ▼ ]
+
+Wax Seal
+[ Classic Gold ▼ ]
+
+Customer can ONLY select Admin-provided Wax Seals.
+
+↓
+
+INVITATION:
+
+Closed Envelope
+       ↓
+Selected Wax Seal appears IN PLACE of existing circle
+       ↓
+Guest taps it
+       ↓
+Existing envelope opening animation runs normally.
+
+Before implementation:
+Inspect the existing seal/button component and identify exactly how its click handler and animation are currently connected.
+
+Make the MINIMUM changes required.
+
+After implementation report:
+
+1. Database/schema changes.
+2. Admin Wax Seal management files/components added.
+3. Customer dropdown added.
+4. Where waxSealId is stored.
+5. Where the existing circle was replaced.
+6. How the existing opening click/animation behavior was preserved.
+7. Confirm no unrelated functionality or styling was changed.

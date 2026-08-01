@@ -281,6 +281,19 @@ export default function InvitationPage() {
   const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
   const initialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
+
+  // Wax seal: load by ID when the invitation specifies one.
+  const waxSealId = (invitationRecord?.waxSealId as number | undefined) ?? null;
+  const [waxSealImageUrl, setWaxSealImageUrl] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!waxSealId) { setWaxSealImageUrl(undefined); return; }
+    fetch(`/api/wax-seals/${waxSealId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then((seal: { imageUrl?: string } | null) => {
+        if (seal?.imageUrl) setWaxSealImageUrl(resolveImageUrl(seal.imageUrl) || undefined);
+      })
+      .catch(() => {});
+  }, [waxSealId]);
   const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
   const cardFontVars = {
@@ -330,11 +343,12 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-           initialsImageUrl={initialsImageUrl || undefined}
-           initialsImageScale={initialsImageScale}
-           names={envelopeInitials}
-           initialsSize={envelopeInitialsSize}
+          initialsImageUrl={initialsImageUrl || undefined}
+          initialsImageScale={initialsImageScale}
+          names={envelopeInitials}
+          initialsSize={envelopeInitialsSize}
           envelopeImageUrl={resolvedEnvelopeImageUrl}
+          waxSealImageUrl={waxSealImageUrl}
         />
       ) : (
         <EnvelopeDoors

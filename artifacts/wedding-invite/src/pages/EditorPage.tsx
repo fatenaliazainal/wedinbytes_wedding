@@ -210,6 +210,7 @@ interface DesignData {
   cardImageUrl: string;
   envelopeImageUrl: string;
   cardMaxWidth: string;
+  waxSealId: string;
 }
 
 function getDayName(dateStr: string, lang: "ms" | "en"): string {
@@ -380,7 +381,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     musicUrl: "", musicTitle: "", musicArtist: "",
     cardImageUrl: "wed_card_design/20260531-041903-27796.jpg", envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
     cardMaxWidth: "420px",
+    waxSealId: "",
   });
+  // Wax seals — loaded once for the envelope-style picker.
+  const [waxSeals, setWaxSeals] = useState<{ id: number; name: string; imageUrl: string; isActive: boolean }[]>([]);
+  useEffect(() => {
+    fetch("/api/wax-seals")
+      .then(r => r.ok ? r.json() : [])
+      .then(seals => { if (Array.isArray(seals)) setWaxSeals(seals); })
+      .catch(() => {});
+  }, []);
   const t = createTranslator(inv.language);
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
@@ -636,6 +646,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         setDesign({
           designCode:       resolvedCode,
           openingAnimation: invitationOwnsStyle ? (d.openingAnimation ?? tpl.openingAnimation) : tpl.openingAnimation,
+          waxSealId:        invitationOwnsStyle && d.waxSealId ? String(d.waxSealId) : "",
           openButtonText:   invitationOwnsStyle ? (d.openButtonText ?? "BUKA") : "BUKA",
           nameFontFamily:   normalizeFont(invitationOwnsStyle ? (d.nameFontFamily ?? tpl.nameFontFamily) : tpl.nameFontFamily),
           nameFontSize:     invitationOwnsStyle ? (d.nameFontSize ?? tpl.nameFontSize ?? "38") : (tpl.nameFontSize ?? "38"),
@@ -903,6 +914,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         // Buyer design overrides are stored per invitation, never in the global template.
         designCode: design.designCode || null,
         openingAnimation: design.openingAnimation || null,
+        waxSealId: design.waxSealId ? parseInt(design.waxSealId, 10) : null,
         openButtonText: design.openButtonText || null,
         nameFontFamily: design.nameFontFamily || null,
         nameFontSize: design.nameFontSize || null,
@@ -2162,6 +2174,35 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </select>
                   </Field>
                 </div>
+                {design.openingAnimation === "envelope" && (
+                  <div className="space-y-2">
+                    <Field label="Wax Seal">
+                      <select
+                        className={selectCls}
+                        value={design.waxSealId}
+                        onChange={(e) => setDesign((p) => ({ ...p, waxSealId: e.target.value }))}
+                      >
+                        <option value="">Default (initials circle)</option>
+                        {waxSeals.map((s) => (
+                          <option key={s.id} value={String(s.id)}>{s.name}</option>
+                        ))}
+                      </select>
+                    </Field>
+                    {design.waxSealId && (() => {
+                      const sel = waxSeals.find(s => String(s.id) === design.waxSealId);
+                      return sel ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={resolveImageUrl(sel.imageUrl)}
+                            alt={sel.name}
+                            className="h-14 w-14 rounded-full border border-border object-contain bg-muted"
+                          />
+                          <span className="text-xs text-muted-foreground">{sel.name}</span>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Name Font">
                     <select
@@ -2381,6 +2422,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     initialsImageScale={inv.initialsImageScale}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                    waxSealImageUrl={design.waxSealId ? resolveImageUrl(waxSeals.find(s => String(s.id) === design.waxSealId)?.imageUrl || "") || undefined : undefined}
                   />
                 ) : (
                   <EnvelopeDoors

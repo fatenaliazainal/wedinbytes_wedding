@@ -9,6 +9,8 @@ interface EnvelopeAnimationProps {
   initialsImageUrl?: string;
   initialsImageScale?: number;
   envelopeImageUrl?: string; // kept in interface; not used for CSS envelope rendering
+  /** Admin-selected wax seal image URL. When provided it REPLACES the default circle entirely. */
+  waxSealImageUrl?: string;
 }
 
 export function EnvelopeAnimation({
@@ -18,6 +20,7 @@ export function EnvelopeAnimation({
   initialsSize,
   initialsImageUrl,
   initialsImageScale = 100,
+  waxSealImageUrl,
 }: EnvelopeAnimationProps) {
   const [phase, setPhase] = useState<"idle" | "flap" | "done">("idle");
 
@@ -123,7 +126,7 @@ export function EnvelopeAnimation({
                 />
               </div>
 
-              {/* ── Names / seal on face ── */}
+              {/* ── Seal on face — wax seal image (when selected) or default initials circle ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <motion.div
                   animate={
@@ -136,10 +139,22 @@ export function EnvelopeAnimation({
                       ? { repeat: Infinity, duration: 2 }
                       : { duration: 0.2 }
                   }
-                  className="flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
-                  aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+                  className={
+                    waxSealImageUrl
+                      ? "flex h-[122px] w-[122px] items-center justify-center"
+                      : "flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
+                  }
+                  aria-label={waxSealImageUrl ? "Wax seal" : initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
                 >
-                  {initialsImageUrl ? (
+                  {waxSealImageUrl ? (
+                    /* Selected wax seal — replaces the circle entirely */
+                    <img
+                      src={waxSealImageUrl}
+                      alt="Wax seal"
+                      className="h-full w-full object-contain"
+                      draggable={false}
+                    />
+                  ) : initialsImageUrl ? (
                     <img
                       src={initialsImageUrl}
                       alt="Uploaded initials"

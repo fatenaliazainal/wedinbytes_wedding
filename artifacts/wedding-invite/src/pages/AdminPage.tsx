@@ -25,7 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals";
 
 type RawCard = {
   id: number;
@@ -1873,6 +1873,169 @@ function CustomersTab() {
   </div>;
 }
 
+function WaxSealsTab() {
+  type SealRecord = { id: number; name: string; imageUrl: string; isActive: boolean; sortOrder: number };
+  const [seals, setSeals] = useState<SealRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [formName, setFormName] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const loadSeals = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${BASE}/api/admin/wax-seals`, { credentials: "include" });
+      if (r.ok) setSeals(await r.json());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void loadSeals(); }, []);
+
+  const handleUpload = async () => {
+    if (!fileRef.current?.files?.[0] || !formName.trim()) {
+      toast.error("Enter a name and select an image file.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", fileRef.current.files[0]);
+      const r = await fetch(`${BASE}/api/admin/wax-seals/upload`, { method: "POST", credentials: "include", body: fd });
+      if (!r.ok) { toast.error("Upload failed"); return; }
+      const { key } = await r.json() as { key: string };
+      const r2 = await fetch(`${BASE}/api/admin/wax-seals`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: formName.trim(), imageUrl: key }),
+      });
+      if (!r2.ok) { toast.error("Failed to save wax seal"); return; }
+      toast.success("Wax seal added");
+      setFormName("");
+      if (fileRef.current) fileRef.current.value = "";
+      await loadSeals();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const toggleActive = async (seal: SealRecord) => {
+    const r = await fetch(`${BASE}/api/admin/wax-seals/${seal.id}`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: !seal.isActive }),
+    });
+    if (r.ok) setSeals(s => s.map(x => x.id === seal.id ? { ...x, isActive: !x.isActive } : x));
+  };
+
+  const deleteSeal = async (id: number) => {
+    if (!confirm("Delete this wax seal? This cannot be undone.")) return;
+    const r = await fetch(`${BASE}/api/admin/wax-seals/${id}`, { method: "DELETE", credentials: "include" });
+    if (r.ok) setSeals(s => s.filter(x => x.id !== id));
+    else toast.error("Failed to delete");
+  };
+
+  const saveEditName = async (id: number) => {
+    if (!editName.trim()) return;
+    const r = await fetch(`${BASE}/api/admin/wax-seals/${id}`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: editName.trim() }),
+    });
+    if (r.ok) {
+      setSeals(s => s.map(x => x.id === id ? { ...x, name: editName.trim() } : x));
+      setEditId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-semibold text-foreground">Wax Seal Library</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Upload PNG or WebP images with transparent backgrounds. Active seals appear in buyers' envelope opening style picker.</p>
+      </div>
+
+      {/* Upload form */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+        <p className="text-xs font-medium text-foreground">Add New Wax Seal</p>
+        <input
+          type="text"
+          placeholder="Seal name (e.g. Classic Rose)"
+          value={formName}
+          onChange={e => setFormName(e.target.value)}
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <input type="file" ref={fileRef} accept="image/png,image/webp,image/jpeg" className="text-xs" />
+          <button
+            type="button"
+            onClick={() => void handleUpload()}
+            disabled={uploading || !formName.trim()}
+            className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:opacity-80 disabled:opacity-40"
+          >
+            {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+            {uploading ? "Uploading…" : "Upload & Save"}
+          </button>
+        </div>
+      </div>
+
+      {/* Seals list */}
+      {loading ? (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading…</div>
+      ) : seals.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No wax seals yet. Upload one above.</p>
+      ) : (
+        <div className="divide-y divide-border rounded-lg border border-border">
+          {seals.map(seal => (
+            <div key={seal.id} className="flex items-center gap-3 p-3">
+              <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                <img src={resolveImageUrl(seal.imageUrl)} alt={seal.name} className="h-full w-full object-contain" />
+              </div>
+              <div className="min-w-0 flex-1">
+                {editId === seal.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") void saveEditName(seal.id); if (e.key === "Escape") setEditId(null); }}
+                      autoFocus
+                    />
+                    <button type="button" onClick={() => void saveEditName(seal.id)} className="text-xs text-primary hover:underline">Save</button>
+                    <button type="button" onClick={() => setEditId(null)} className="text-xs text-muted-foreground hover:underline">Cancel</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => { setEditId(seal.id); setEditName(seal.name); }} className="group flex items-center gap-1 text-xs font-medium text-foreground hover:underline text-left">
+                    {seal.name}
+                    <Pencil size={10} className="text-muted-foreground opacity-0 group-hover:opacity-100" />
+                  </button>
+                )}
+                <p className="text-[10px] text-muted-foreground">ID {seal.id} · {seal.isActive ? "Active" : "Disabled"}</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  type="button"
+                  title={seal.isActive ? "Click to disable" : "Click to enable"}
+                  onClick={() => void toggleActive(seal)}
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${seal.isActive ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
+                >
+                  {seal.isActive ? "Active" : "Disabled"}
+                </button>
+                <button type="button" onClick={() => void deleteSeal(seal.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete wax seal">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RevenueTab() {
   const [stats, setStats] = useState<AdminOrderStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -2103,7 +2266,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -2121,6 +2284,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "designs" && <DesignsTab />}
+      {tab === "waxseals" && <WaxSealsTab />}
       {tab === "reviews" && <ReviewsTab />}
       {tab === "pricing" && <PricingTab />}
       {tab === "orders" && <OrdersTab />}

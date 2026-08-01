@@ -61,7 +61,7 @@ const ALLOWED_FIELDS = [
   "rsvpIntroText","rsvpFormNote",
   "rsvpMaxOverallGuests","rsvpMaxGuestsPerInvitation","rsvpTimeSlots",
   // Buyer design overrides
-  "designCode","openingAnimation","openButtonText",
+  "designCode","openingAnimation","openButtonText","waxSealId",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard","colorForeground",
   "nameFontFamily","nameFontSize","badgeFontSize","nameColor",
   "bodyFontFamily",

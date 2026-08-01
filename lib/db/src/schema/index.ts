@@ -5,3 +5,4 @@ export * from "./card";
 export * from "./pricing";
 export * from "./order";
 export * from "./business";
+export * from "./wax-seal";
