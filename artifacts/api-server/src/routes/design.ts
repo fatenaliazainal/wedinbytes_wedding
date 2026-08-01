@@ -76,12 +76,16 @@ router.post("/upload", requireAdmin, (req, res, next) => {
     const extension = mimeType === "image/jpeg"
       ? "jpg"
       : mimeType.replace("image/", "");
+    // Include a timestamp in the key so each upload produces a unique URL.
+    // Same-key re-uploads hit the 1-hour browser cache on the R2 proxy and
+    // the new image would not be visible until the cache expires.
+    const objectKey = `${designCode}-${assetType}-${Date.now()}.${extension}`;
     uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,
       contentType: mimeType,
       folder: "wed_card_design",
-      objectKey: `${designCode}-${assetType}.${extension}`,
+      objectKey,
       metadata: { uploadedAt: new Date().toISOString(), type: "card-design", designCode, assetType },
     })
       .then((key) => {
