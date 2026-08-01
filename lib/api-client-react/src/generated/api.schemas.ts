@@ -273,6 +273,7 @@ export interface CardDesign {
   nameFontSize?: string;
   badgeFontSize?: string;
   nameColor?: string;
+  colorForeground?: string;
   fontHeading?: string;
   fontBody?: string;
   cardMaxWidth?: string;

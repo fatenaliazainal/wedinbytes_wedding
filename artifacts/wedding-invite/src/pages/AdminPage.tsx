@@ -419,6 +419,7 @@ interface DesignFormData {
   colorAccent: string;
   colorBackground: string;
   colorCard: string;
+  colorForeground: string;
   nameColor: string;
   musicUrl: string;
   musicTitle: string;
@@ -431,7 +432,7 @@ interface DesignFormData {
 const EMPTY_FORM: DesignFormData = {
   name: "", designCode: "", cardImageUrl: "", thumbnailImageUrl: "", envelopeImageUrl: "",
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
-  colorAccent: "", colorBackground: "", colorCard: "", nameColor: "",
+  colorAccent: "", colorBackground: "", colorCard: "", colorForeground: "", nameColor: "",
   nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
   nameFontSize: "38", badgeFontSize: "24",
   musicUrl: "", musicTitle: "",
@@ -560,6 +561,7 @@ function DesignForm({
         colorAccent: form.colorAccent,
         colorBackground: form.colorBackground,
         colorCard: form.colorCard,
+        colorForeground: form.colorForeground,
         nameColor: form.nameColor,
         musicUrl: form.musicUrl,
         musicTitle: form.musicTitle,
@@ -844,6 +846,7 @@ function DesignForm({
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
             <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} />
+            <ColorRow label="Body Text — Paragraphs, dates & detail text" value={form.colorForeground ?? ""} onChange={set("colorForeground")} />
             <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} />
             <ColorRow label="Secondary — Supporting controls and highlights" value={form.colorSecondary} onChange={set("colorSecondary")} />
             <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} />
@@ -1082,6 +1085,7 @@ function DesignsTab() {
                     colorAccent: d.colorAccent ?? "",
                     colorBackground: d.colorBackground ?? "",
                     colorCard: d.colorCard ?? "",
+                    colorForeground: d.colorForeground ?? "",
                     nameColor: d.nameColor ?? "",
                     musicUrl: d.musicUrl ?? "",
                     musicTitle: d.musicTitle ?? "",

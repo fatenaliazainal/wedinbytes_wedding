@@ -167,6 +167,7 @@ export const cardDesignTable = pgTable("card_design", {
   nameFontSize: text("name_font_size"),
   badgeFontSize: text("badge_font_size"),
   nameColor: text("name_color"),
+  colorForeground: text("color_foreground"),
   // Layout
   cardMaxWidth: text("card_max_width"),
   openingAnimation: text("opening_animation").default("doors"),

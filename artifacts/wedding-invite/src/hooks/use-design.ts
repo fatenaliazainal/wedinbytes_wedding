@@ -24,6 +24,7 @@ function applyDesignTokens(design: CardDesign) {
     root.style.setProperty("--card", design.colorCard);
     root.style.setProperty("--popover", design.colorCard);
   }
+  if (design.colorForeground) root.style.setProperty("--foreground", design.colorForeground);
 
   const fonts: string[] = [];
   if (design.fontHeading) fonts.push(design.fontHeading);
@@ -43,6 +44,7 @@ export type DesignOverrides = {
   colorAccent?: string | null;
   colorBackground?: string | null;
   colorCard?: string | null;
+  colorForeground?: string | null;
   nameColor?: string | null;
   nameFontFamily?: string | null;
   bodyFontFamily?: string | null;
@@ -60,6 +62,7 @@ function applyOverrides(overrides: DesignOverrides) {
     root.style.setProperty("--card", overrides.colorCard);
     root.style.setProperty("--popover", overrides.colorCard);
   }
+  if (overrides.colorForeground) root.style.setProperty("--foreground", overrides.colorForeground);
   if (overrides.nameColor) root.style.setProperty("--name-color", overrides.nameColor);
   if (overrides.nameFontFamily) {
     root.style.setProperty("--name-font-family", `"${overrides.nameFontFamily}", cursive`);

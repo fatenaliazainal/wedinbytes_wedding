@@ -197,6 +197,7 @@ interface DesignData {
   nameFontSize: string;
   badgeFontSize: string;
   nameColor: string;
+  colorForeground: string;
   bodyFontFamily: string;
   colorPrimary: string;
   colorSecondary: string;
@@ -372,7 +373,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [design, setDesign] = useState<DesignData>({
     designCode: "FL001", openingAnimation: "doors", openButtonText: "BUKA",
     nameFontFamily: "Dancing Script", nameFontSize: "38", badgeFontSize: "24",
-    nameColor: "0 0% 20%", bodyFontFamily: "Poppins",
+    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", bodyFontFamily: "Poppins",
     colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
     colorAccent: "142 30% 92%",
     colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
@@ -384,8 +385,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
-  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
-    nameColor: "0 0% 20%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
+  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorForeground" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
+    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
   });
 
   // Redirect if not logged in (buyer mode → /login; demo mode → /admin/login)
@@ -468,6 +469,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           nameFontSize:     tpl.nameFontSize     ?? "38",
           badgeFontSize:    tpl.badgeFontSize    ?? "24",
           nameColor:        tpl.nameColor        ?? "0 0% 20%",
+          colorForeground:  tpl.colorForeground  ?? "0 0% 10%",
           bodyFontFamily:   tpl.fontBody         ?? "Poppins",
           cardMaxWidth:     tpl.cardMaxWidth     ?? gd.cardMaxWidth    ?? "420px",
           cardImageUrl:     tpl.cardImageUrl     ?? gd.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
@@ -620,6 +622,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         const tpl = resolveTemplate(resolvedCode);
         setInheritedColors({
           nameColor:        tpl.nameColor,
+          colorForeground:  tpl.colorForeground,
           colorPrimary:     tpl.colorPrimary,
           colorSecondary:   tpl.colorSecondary,
           colorAccent:      tpl.colorAccent,
@@ -638,6 +641,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           nameFontSize:     invitationOwnsStyle ? (d.nameFontSize ?? tpl.nameFontSize ?? "38") : (tpl.nameFontSize ?? "38"),
           badgeFontSize:    invitationOwnsStyle ? (d.badgeFontSize ?? tpl.badgeFontSize ?? "24") : (tpl.badgeFontSize ?? "24"),
           nameColor:        invitationOwnsStyle ? (d.nameColor ?? tpl.nameColor) : tpl.nameColor,
+          colorForeground:  invitationOwnsStyle ? (d.colorForeground ?? tpl.colorForeground) : tpl.colorForeground,
           cardMaxWidth:     invitationOwnsStyle ? (d.cardMaxWidth ?? tpl.cardMaxWidth) : tpl.cardMaxWidth,
           bodyFontFamily:   normalizeFont(invitationOwnsStyle ? (d.bodyFontFamily ?? tpl.bodyFontFamily) : tpl.bodyFontFamily),
           colorPrimary:     invitationOwnsStyle ? (d.colorPrimary ?? tpl.colorPrimary) : tpl.colorPrimary,
@@ -657,6 +661,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         const tplFallback = resolveTemplate(resolvedCode);
         setInheritedColors({
           nameColor:        tplFallback.nameColor,
+          colorForeground:  tplFallback.colorForeground,
           colorPrimary:     tplFallback.colorPrimary,
           colorSecondary:   tplFallback.colorSecondary,
           colorAccent:      tplFallback.colorAccent,
@@ -676,6 +681,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
            nameFontSize:     tplFallback.nameFontSize,
            badgeFontSize:    tplFallback.badgeFontSize,
           nameColor:        tplFallback.nameColor,
+          colorForeground:  tplFallback.colorForeground,
           cardMaxWidth:     tplFallback.cardMaxWidth,
            bodyFontFamily:   normalizeFont(tplFallback.bodyFontFamily),
           cardImageUrl:     tplFallback.cardImageUrl,
@@ -906,6 +912,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         // and the editor always show the same values, regardless of which card
         // design template is currently active in the production environment.
         nameColor: design.nameColor || null,
+        colorForeground: design.colorForeground || null,
         colorPrimary: design.colorPrimary || null,
         colorSecondary: design.colorSecondary || null,
         colorAccent: design.colorAccent || null,
@@ -2095,12 +2102,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           const gd = activeDesign as Record<string, string> | undefined;
                           const primary = picked.colorPrimary ?? gd?.colorPrimary ?? "142 45% 35%";
                           const nextInherited = {
-                            nameColor:        picked.nameColor       ?? gd?.nameColor       ?? "0 0% 20%",
+                            nameColor:        picked.nameColor        ?? gd?.nameColor        ?? "0 0% 20%",
+                            colorForeground:  picked.colorForeground  ?? gd?.colorForeground  ?? "0 0% 10%",
                             colorPrimary:     primary,
-                            colorSecondary:   picked.colorSecondary  ?? gd?.colorSecondary  ?? primary,
-                            colorAccent:      picked.colorAccent     ?? gd?.colorAccent     ?? picked.colorSecondary ?? gd?.colorSecondary ?? primary,
-                            colorBackground:  picked.colorBackground ?? gd?.colorBackground ?? primary,
-                            colorCard:        picked.colorCard       ?? gd?.colorCard       ?? "0 0% 100%",
+                            colorSecondary:   picked.colorSecondary   ?? gd?.colorSecondary   ?? primary,
+                            colorAccent:      picked.colorAccent      ?? gd?.colorAccent      ?? picked.colorSecondary ?? gd?.colorSecondary ?? primary,
+                            colorBackground:  picked.colorBackground  ?? gd?.colorBackground  ?? primary,
+                            colorCard:        picked.colorCard        ?? gd?.colorCard        ?? "0 0% 100%",
                           };
                           setInheritedColors(nextInherited);
                           setDesign((p) => ({
@@ -2205,6 +2213,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     label="Couple names"
                     testId="editor-name-color"
                     onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                  />
+                </Field>
+                <Field label="Body Text Color">
+                  <HexColorInput
+                    value={design.colorForeground || "0 0% 10%"}
+                    label="Paragraph & detail text"
+                    testId="editor-foreground-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
                   />
                 </Field>
                 <Field label="Button / Primary Accent">

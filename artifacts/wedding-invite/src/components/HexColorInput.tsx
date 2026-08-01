@@ -10,8 +10,9 @@ type HexColorInputProps = {
 };
 
 export function HexColorInput({ value, onChange, label, compact = false, testId }: HexColorInputProps) {
-  const [draft, setDraft] = useState(() => colorToHex(value));
-  const hexValue = colorToHex(value);
+  const safeValue = value ?? "";
+  const [draft, setDraft] = useState(() => colorToHex(safeValue));
+  const hexValue = colorToHex(safeValue);
 
   useEffect(() => {
     setDraft(hexValue);
