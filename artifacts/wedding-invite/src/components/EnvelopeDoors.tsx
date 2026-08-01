@@ -8,6 +8,7 @@ interface EnvelopeDoorsProps {
   initialsSize?: string;
   initialsImageUrl?: string;
   initialsImageScale?: number;
+  waxSealImageUrl?: string;
   envelopeImageUrl?: string; // kept in interface; panels are pure CSS — no image rendered
   cardMaxWidth?: string;
 }
@@ -19,6 +20,7 @@ export function EnvelopeDoors({
   initialsSize,
   initialsImageUrl,
   initialsImageScale = 100,
+  waxSealImageUrl,
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
   const maxWidth = cardMaxWidth || "420px";
@@ -139,7 +141,7 @@ export function EnvelopeDoors({
         >
           <div
             className="flex h-[126px] w-[126px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
-            aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+            aria-label={waxSealImageUrl ? "Wax seal" : initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
             <motion.div
               animate={isOpened ? { scale: 1 } : { scale: [1, 1.05, 1] }}
@@ -150,7 +152,14 @@ export function EnvelopeDoors({
               }
               className="flex h-full w-full items-center justify-center"
             >
-              {initialsImageUrl ? (
+              {waxSealImageUrl ? (
+                <img
+                  src={waxSealImageUrl}
+                  alt="Wax seal"
+                  className="h-full w-full rounded-full object-cover"
+                  draggable={false}
+                />
+              ) : initialsImageUrl ? (
                 <img
                   src={initialsImageUrl}
                   alt="Uploaded initials"

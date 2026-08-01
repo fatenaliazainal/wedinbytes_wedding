@@ -358,11 +358,12 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => setIsOpened(true)}
-           initialsImageUrl={initialsImageUrl || undefined}
-           initialsImageScale={initialsImageScale}
-           names={envelopeInitials}
-           initialsSize={envelopeInitialsSize}
+          initialsImageUrl={initialsImageUrl || undefined}
+          initialsImageScale={initialsImageScale}
+          names={envelopeInitials}
+          initialsSize={envelopeInitialsSize}
           envelopeImageUrl={resolvedCardImageUrl}
+          waxSealImageUrl={waxSealImageUrl}
           cardMaxWidth={templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? undefined}
         />
       )}
