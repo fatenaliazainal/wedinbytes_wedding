@@ -6,9 +6,9 @@ description: waxSealImageUrl must reach every opening-animation component — mi
 # Wax Seal Component Coverage
 
 ## Rule
-Every opening-animation component must accept and render `waxSealImageUrl`. Priority order: wax seal image → uploaded initials image → text initials.
+Every opening-animation component must accept and render `waxSealImageUrl`. The wax seal is a **background layer** (absolute inset-0); the uploaded initials/logo image and text initials render on top of it (relative z-10). All three are composited, not mutually exclusive.
 
-**Why:** InvitationPage fetches the seal once and passes it as a prop. If a component doesn't declare the prop, the data is silently discarded and the initials circle renders instead. This affected `EnvelopeDoors` (doors/window styles) while `EnvelopeAnimation` (envelope style) was already correct.
+**Why:** InvitationPage fetches the seal once and passes it as a prop. If a component doesn't declare the prop, the data is silently discarded and the initials circle renders instead. This affected `EnvelopeDoors` (doors/window styles) while `EnvelopeAnimation` (envelope style) was already correct. Logo/initials must overlay the seal so both are visible simultaneously.
 
 ## How to apply
 When adding a new opening-animation component, or reviewing why a seal isn't showing for a specific animation style, check that:

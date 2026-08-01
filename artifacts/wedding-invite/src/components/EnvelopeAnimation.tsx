@@ -144,27 +144,29 @@ export function EnvelopeAnimation({
                       ? "flex h-[122px] w-[122px] items-center justify-center"
                       : "flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"
                   }
-                  aria-label={waxSealImageUrl ? "Wax seal" : initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+                  aria-label={initialsImageUrl ? "Uploaded initials over wax seal" : waxSealImageUrl ? "Wax seal" : "Envelope initials"}
                 >
-                  {waxSealImageUrl ? (
-                    /* Selected wax seal — replaces the circle entirely */
+                  {/* Wax seal — always rendered when present (background layer) */}
+                  {waxSealImageUrl && (
                     <img
                       src={waxSealImageUrl}
                       alt="Wax seal"
-                      className="h-full w-full object-contain"
+                      className="absolute inset-0 h-full w-full object-contain"
                       draggable={false}
                     />
-                  ) : initialsImageUrl ? (
+                  )}
+                  {/* Initials / logo — rendered on top of wax seal when present */}
+                  {initialsImageUrl ? (
                     <img
                       src={initialsImageUrl}
                       alt="Uploaded initials"
-                      className="h-[76%] w-[76%] object-contain"
+                      className="relative z-10 h-[76%] w-[76%] object-contain"
                       style={{ transform: `scale(${initialsImageScale / 100})` }}
                       draggable={false}
                     />
                   ) : (
                     <span
-                      className="max-w-[82%] text-center leading-none text-[#5c4b52]"
+                      className={`relative z-10 max-w-[82%] text-center leading-none text-[#5c4b52]`}
                       style={{
                         fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
                         fontSize: initialsSize ? `${initialsSize}px` : "24px",

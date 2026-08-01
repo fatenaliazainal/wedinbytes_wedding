@@ -140,8 +140,8 @@ export function EnvelopeDoors({
           onClick={!isOpened ? onOpen : undefined}
         >
           <div
-            className={`flex h-[126px] w-[126px] items-center justify-center rounded-full ${waxSealImageUrl ? "" : "bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"}`}
-            aria-label={waxSealImageUrl ? "Wax seal" : initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
+            className={`relative flex h-[126px] w-[126px] items-center justify-center rounded-full ${waxSealImageUrl ? "" : "bg-white shadow-[0_7px_20px_rgba(0,0,0,0.2)]"}`}
+            aria-label={initialsImageUrl ? "Uploaded initials over wax seal" : waxSealImageUrl ? "Wax seal" : "Envelope initials"}
           >
             <motion.div
               animate={isOpened ? { scale: 1 } : { scale: [1, 1.05, 1] }}
@@ -150,26 +150,29 @@ export function EnvelopeDoors({
                   ? { duration: 0.2 }
                   : { repeat: Infinity, duration: 2 }
               }
-              className="flex h-full w-full items-center justify-center"
+              className="relative flex h-full w-full items-center justify-center"
             >
-              {waxSealImageUrl ? (
+              {/* Wax seal — always rendered when present (background layer) */}
+              {waxSealImageUrl && (
                 <img
                   src={waxSealImageUrl}
                   alt="Wax seal"
-                  className="h-full w-full rounded-full object-cover"
+                  className="absolute inset-0 h-full w-full rounded-full object-cover"
                   draggable={false}
                 />
-              ) : initialsImageUrl ? (
+              )}
+              {/* Initials / logo — rendered on top of wax seal when present */}
+              {initialsImageUrl ? (
                 <img
                   src={initialsImageUrl}
                   alt="Uploaded initials"
-                  className="h-[76%] w-[76%] object-contain"
+                  className="relative z-10 h-[76%] w-[76%] object-contain"
                   style={{ transform: `scale(${initialsImageScale / 100})` }}
                   draggable={false}
                 />
-              ) : (
+              ) : !waxSealImageUrl ? (
                 <span
-                  className="max-w-[82%] text-center leading-none text-[#5c4b52]"
+                  className="relative z-10 max-w-[82%] text-center leading-none text-[#5c4b52]"
                   style={{
                     fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
                     fontSize: initialsSize ? `${initialsSize}px` : "24px",
@@ -177,7 +180,17 @@ export function EnvelopeDoors({
                 >
                   {names}
                 </span>
-              )}
+              ) : names ? (
+                <span
+                  className="relative z-10 max-w-[82%] text-center leading-none text-[#5c4b52]"
+                  style={{
+                    fontFamily: "var(--name-font-family, 'Dancing Script', serif)",
+                    fontSize: initialsSize ? `${initialsSize}px` : "24px",
+                  }}
+                >
+                  {names}
+                </span>
+              ) : null}
             </motion.div>
           </div>
         </motion.div>
