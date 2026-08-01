@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { DesignImage } from "@/components/DesignImage";
 import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeDoorsProps {
@@ -14,12 +13,6 @@ interface EnvelopeDoorsProps {
   cardMaxWidth?: string;
 }
 
-const frostedGlass: React.CSSProperties = {
-  backdropFilter: "blur(18px) saturate(1.2)",
-  WebkitBackdropFilter: "blur(18px) saturate(1.2)",
-  background: "rgba(255, 255, 255, 0.05)",
-};
-
 export function EnvelopeDoors({
   isOpened,
   onOpen,
@@ -31,6 +24,7 @@ export function EnvelopeDoors({
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
   const maxWidth = cardMaxWidth || "420px";
+  const coverSrc = envelopeImageUrl || defaultEnvelopeRef;
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -39,40 +33,83 @@ export function EnvelopeDoors({
         className={`relative h-full w-full flex items-center justify-center ${isOpened ? "pointer-events-none" : "pointer-events-auto"}`}
         style={{ maxWidth, perspective: 1500 }}
       >
-        {envelopeImageUrl && (
-          <DesignImage
-            src={envelopeImageUrl}
-            fallbackSrc={defaultEnvelopeRef}
-            opacity={0.35}
-            className="z-0"
+        {/* ── Left Door — shows left half of cover image ── */}
+        <motion.div
+          initial={{ rotateY: 0, opacity: 1 }}
+          animate={{ rotateY: isOpened ? -110 : 0, opacity: isOpened ? 0 : 1 }}
+          transition={{ type: "spring", stiffness: 70, damping: 18 }}
+          style={{ transformOrigin: "left center", transformStyle: "preserve-3d" }}
+          className={`absolute inset-y-0 left-0 w-1/2 overflow-hidden ${
+            isOpened ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+          onClick={!isOpened ? onOpen : undefined}
+        >
+          <img
+            src={coverSrc}
+            alt=""
+            aria-hidden
+            draggable={false}
+            className="absolute inset-y-0 h-full select-none pointer-events-none"
+            style={{
+              width: "200%",
+              left: 0,
+              objectFit: "cover",
+              objectPosition: "left center",
+            }}
+          />
+          {/* Inner-edge shadow for depth */}
+          <div
+            className="absolute inset-y-0 right-0 w-8 pointer-events-none"
+            style={{ background: "linear-gradient(to left, rgba(0,0,0,0.18), transparent)" }}
+          />
+        </motion.div>
+
+        {/* ── Right Door — shows right half of cover image ── */}
+        <motion.div
+          initial={{ rotateY: 0, opacity: 1 }}
+          animate={{ rotateY: isOpened ? 110 : 0, opacity: isOpened ? 0 : 1 }}
+          transition={{ type: "spring", stiffness: 70, damping: 18 }}
+          style={{ transformOrigin: "right center", transformStyle: "preserve-3d" }}
+          className={`absolute inset-y-0 right-0 w-1/2 overflow-hidden ${
+            isOpened ? "pointer-events-none" : "pointer-events-auto"
+          }`}
+          onClick={!isOpened ? onOpen : undefined}
+        >
+          <img
+            src={coverSrc}
+            alt=""
+            aria-hidden
+            draggable={false}
+            className="absolute inset-y-0 h-full select-none pointer-events-none"
+            style={{
+              width: "200%",
+              right: 0,
+              objectFit: "cover",
+              objectPosition: "right center",
+            }}
+          />
+          {/* Inner-edge shadow for depth */}
+          <div
+            className="absolute inset-y-0 left-0 w-8 pointer-events-none"
+            style={{ background: "linear-gradient(to right, rgba(0,0,0,0.18), transparent)" }}
+          />
+        </motion.div>
+
+        {/* ── Center seam shadow ── */}
+        {!isOpened && (
+          <div
+            className="absolute inset-y-0 pointer-events-none"
+            style={{
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "2px",
+              background: "rgba(0,0,0,0.10)",
+              zIndex: 10,
+            }}
           />
         )}
 
-        {/* Left Door */}
-        <motion.div
-          initial={{ rotateY: 0, opacity: 1 }}
-          animate={{ rotateY: isOpened ? -100 : 0, opacity: isOpened ? 0 : 1 }}
-          transition={{ type: "spring", stiffness: 80, damping: 20 }}
-          style={{ transformOrigin: "left center", transformStyle: "preserve-3d", ...frostedGlass }}
-          className={`absolute inset-y-0 left-0 w-1/2 border-r border-white/30 overflow-hidden ${
-            isOpened ? "pointer-events-none" : "pointer-events-auto"
-          }`}
-          onClick={!isOpened ? onOpen : undefined}
-        />
-
-        {/* Right Door */}
-        <motion.div
-          initial={{ rotateY: 0, opacity: 1 }}
-          animate={{ rotateY: isOpened ? 100 : 0, opacity: isOpened ? 0 : 1 }}
-          transition={{ type: "spring", stiffness: 80, damping: 20 }}
-          style={{ transformOrigin: "right center", transformStyle: "preserve-3d", ...frostedGlass }}
-          className={`absolute inset-y-0 right-0 w-1/2 border-l border-white/30 overflow-hidden ${
-            isOpened ? "pointer-events-none" : "pointer-events-auto"
-          }`}
-          onClick={!isOpened ? onOpen : undefined}
-        />
-
-        {/* Central badge/seal */}
+        {/* ── Central badge / seal ── */}
         <motion.div
           animate={{ opacity: isOpened ? 0 : 1, scale: isOpened ? 1.5 : 1 }}
           transition={{ duration: 0.5 }}
@@ -86,11 +123,7 @@ export function EnvelopeDoors({
             aria-label={initialsImageUrl ? "Uploaded initials" : "Envelope initials"}
           >
             <motion.div
-              animate={
-                isOpened
-                  ? { scale: 1 }
-                  : { scale: [1, 1.05, 1] }
-              }
+              animate={isOpened ? { scale: 1 } : { scale: [1, 1.05, 1] }}
               transition={
                 isOpened
                   ? { duration: 0.2 }
@@ -119,7 +152,6 @@ export function EnvelopeDoors({
               )}
             </motion.div>
           </div>
-
         </motion.div>
       </div>
     </div>
