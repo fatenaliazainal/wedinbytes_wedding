@@ -1005,7 +1005,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           {inv.showFooter !== false && (
             <div className={detailBlock}>
               <OrnamentDivider />
-              <div className="text-center space-y-3">
+              <div className="text-center space-y-3" style={{ zoom: 0.6 }}>
                 <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>
                   {(inv.footerText as string) || t.footerTextDefault}
                 </p>
