@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
-import logo from "@assets/LOGO WEDINSTUDIO.svg";
+import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
 
 export type SiteNavItem = {
   label: string;
@@ -48,11 +48,11 @@ export default function SiteHeader({
           <button
             onClick={onLogoClick ?? (() => navigate("/"))}
             className="hover:opacity-70 transition-opacity"
-            aria-label="Wedinstudio logo"
+            aria-label="Wedinbytes logo"
           >
             <img
               src={logo}
-              alt="Wedinstudio logo"
+              alt="Wedinbytes logo"
               className="h-8 sm:h-10 w-auto object-contain"
             />
           </button>

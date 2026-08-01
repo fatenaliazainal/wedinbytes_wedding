@@ -22,7 +22,7 @@ export const en = {
     rsvpNote: "Note for guests...",
     wishes: "Wishes or additional note for guests...",
     footerText: "Dapatkan kad digital anda di:",
-    footerUrl: "wedinstudio.com",
+    footerUrl: "wedinbytes.com",
     socialPlatform: "Platform (website, tiktok, instagram)",
     url: "https://...",
     package: "Select a package",

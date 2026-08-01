@@ -219,7 +219,7 @@ export default function WeddingCardsHomePage() {
       <SiteFooter />
 
       <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} Wedinstudio · All rights reserved
+        © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>
   );

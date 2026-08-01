@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import logo from "@assets/LOGO WEDINSTUDIO.svg";
+import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
 
 export default function RegisterPage() {
   const { register, user, loading: authLoading } = useAuth();
@@ -40,11 +40,11 @@ export default function RegisterPage() {
             type="button"
             onClick={() => navigate("/")}
             className="mx-auto block hover:opacity-70 transition-opacity"
-              aria-label="Go to Wedinstudio home"
+              aria-label="Go to Wedinbytes home"
           >
             <img
               src={logo}
-                alt="Wedinstudio"
+                alt="Wedinbytes"
               className="mx-auto h-20 w-auto object-contain"
             />
           </button>
