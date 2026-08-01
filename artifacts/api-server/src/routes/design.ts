@@ -115,10 +115,14 @@ router.get("/design/active", async (req, res) => {
   }
 });
 
-// ── List all designs ─────────────────────────────────────────────────────────
+// ── List designs ─────────────────────────────────────────────────────────────
+// Admins see all designs; everyone else sees only active (catalog-visible) ones.
 router.get("/design", async (req, res) => {
   try {
-    const rows = await db.select().from(cardDesignTable).orderBy(cardDesignTable.id);
+    const isAdmin = (req.session as unknown as { user?: { role?: string } })?.user?.role === "admin";
+    const rows = isAdmin
+      ? await db.select().from(cardDesignTable).orderBy(cardDesignTable.id)
+      : await db.select().from(cardDesignTable).where(eq(cardDesignTable.isActive, true)).orderBy(cardDesignTable.id);
     res.json(rows.map(stripNulls));
   } catch (err) {
     req.log.error({ err }, "Failed to list designs");
@@ -142,17 +146,10 @@ router.post("/design", requireAdmin, async (req, res) => {
       designCode = `FL${String(existing.length + 1).padStart(3, "0")}`;
     }
 
-    // Auto-activate the new design if no design is currently active.
-    const [existingActive] = await db
-      .select({ id: cardDesignTable.id })
-      .from(cardDesignTable)
-      .where(eq(cardDesignTable.isActive, true))
-      .limit(1);
-    const shouldActivate = !existingActive;
-
+    // New designs start inactive — admin must explicitly show them in the catalog.
     const insert: Record<string, unknown> = {
       name: body.name.trim(),
-      isActive: shouldActivate,
+      isActive: false,
       designCode,
     };
     for (const field of ALLOWED_DESIGN_FIELDS) {
@@ -160,7 +157,7 @@ router.post("/design", requireAdmin, async (req, res) => {
       if (field in body && body[field] !== "") insert[field] = body[field];
     }
     const [created] = await db.insert(cardDesignTable).values(insert as never).returning();
-    auditEvent(req, "design.create", { designId: created.id, designCode, autoActivated: shouldActivate });
+    auditEvent(req, "design.create", { designId: created.id, designCode });
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create design");
@@ -202,7 +199,8 @@ router.patch("/design/:id", requireAdmin, async (req, res) => {
   }
 });
 
-// ── Activate design ──────────────────────────────────────────────────────────
+// ── Toggle catalog visibility ─────────────────────────────────────────────────
+// Flips isActive for the given design independently of all other designs.
 router.post("/design/:id/activate", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(String(req.params.id), 10);
@@ -210,21 +208,25 @@ router.post("/design/:id/activate", requireAdmin, async (req, res) => {
       res.status(400).json({ error: "Invalid design id" });
       return;
     }
-    await db.update(cardDesignTable).set({ isActive: false });
-    const [updated] = await db
-      .update(cardDesignTable)
-      .set({ isActive: true })
+    const [current] = await db
+      .select({ isActive: cardDesignTable.isActive })
+      .from(cardDesignTable)
       .where(eq(cardDesignTable.id, id))
-      .returning();
-    if (!updated) {
+      .limit(1);
+    if (!current) {
       res.status(404).json({ error: "Design not found" });
       return;
     }
+    const [updated] = await db
+      .update(cardDesignTable)
+      .set({ isActive: !current.isActive })
+      .where(eq(cardDesignTable.id, id))
+      .returning();
     const data = ActivateDesignResponse.parse(stripNulls(updated));
-    auditEvent(req, "design.activate", { designId: id });
+    auditEvent(req, "design.toggleActive", { designId: id, isActive: updated.isActive });
     res.json(data);
   } catch (err) {
-    req.log.error({ err }, "Failed to activate design");
+    req.log.error({ err }, "Failed to toggle design active state");
     res.status(500).json({ error: "Internal server error" });
   }
 });

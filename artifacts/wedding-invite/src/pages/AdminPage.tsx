@@ -490,8 +490,9 @@ function DesignForm({
         qc.invalidateQueries({ queryKey: getListDesignsQueryKey() }),
         qc.invalidateQueries({ queryKey: getGetActiveDesignQueryKey() }),
       ]);
-      setForm((f) => ({ ...f, isActive: true }));
-      toast.success("Design set as active — demo and new invitations now use this design.");
+      const next = !form.isActive;
+      setForm((f) => ({ ...f, isActive: next }));
+      toast.success(next ? "Design is now shown in catalog." : "Design hidden from catalog.");
     } catch {
       toast.error("Could not activate design.");
     } finally {
@@ -644,10 +645,15 @@ function DesignForm({
             {mode === "edit" && (
               form.isActive
                 ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                  <button
+                    type="button"
+                    onClick={handleActivate}
+                    disabled={activating}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-200 transition-colors disabled:opacity-50"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Active — demo &amp; new invitations use this design
-                  </span>
+                    {activating ? "Updating…" : "Active — shown in catalog (click to hide)"}
+                  </button>
                 ) : (
                   <button
                     type="button"
@@ -656,7 +662,7 @@ function DesignForm({
                     className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                    {activating ? "Setting…" : "Not active — click to set as default"}
+                    {activating ? "Updating…" : "Not active — hidden from catalog (click to show)"}
                   </button>
                 )
             )}
@@ -1128,25 +1134,21 @@ function DesignsTab() {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {d.openingAnimation ?? "—"} · {d.envelopeImageUrl ? "✓ envelope" : "no envelope"}
                 </p>
-                {d.isActive && (
-                  <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                    <CheckCircle2 size={10} /> Active
-                  </span>
-                )}
+                <span className={`inline-flex items-center gap-1 mt-1 text-xs font-medium px-2 py-0.5 rounded-full ${d.isActive ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                  {d.isActive ? <><CheckCircle2 size={10} /> Active</> : <><Circle size={10} /> Hidden</>}
+                </span>
               </div>
 
               {/* Actions */}
               <div className="flex items-center gap-1.5 shrink-0">
-                {!d.isActive && (
-                  <button
-                    type="button"
-                    disabled={activating}
-                    onClick={() => activate({ id: d.id })}
-                    className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-40"
-                  >
-                    <Circle size={10} /> Activate
-                  </button>
-                )}
+                <button
+                  type="button"
+                  disabled={activating}
+                  onClick={() => activate({ id: d.id })}
+                  className={`flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 ${d.isActive ? "border-amber-300 text-amber-700 hover:bg-amber-50" : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"}`}
+                >
+                  {d.isActive ? <><Circle size={10} /> Hide</> : <><CheckCircle2 size={10} /> Show</>}
+                </button>
                 <button
                   type="button"
                   onClick={() => setEditTarget({
