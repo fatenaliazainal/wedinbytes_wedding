@@ -16,6 +16,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import EditorPage from "@/pages/EditorPage";
+import AdminEditorPage from "@/pages/AdminEditorPage";
 import DashboardPage from "@/pages/DashboardPage";
 import RsvpDashboardPage from "@/pages/RsvpDashboardPage";
 import MarketingHomePage from "@/pages/MarketingHomePage";
@@ -46,7 +47,7 @@ function BusinessEditorRoute() {
 }
 
 function DemoEditorRoute() {
-  return <EditorPage mode="demo" />;
+  return <AdminEditorPage />;
 }
 
 // /admin/editor is now merged into /admin/demo — redirect for backward compat

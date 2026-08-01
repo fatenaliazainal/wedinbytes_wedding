@@ -524,7 +524,11 @@ export const GetActiveDesignResponse = zod.object({
   "fontBody": zod.string().optional(),
   "cardMaxWidth": zod.string().optional(),
   "openButtonText": zod.string().optional(),
-  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"')
+  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"'),
+  "colorForeground": zod.string().optional(),
+  "contentOverlayColor": zod.string().optional(),
+  "contentOverlayOpacity": zod.string().optional(),
+  "waxSealId": zod.number().nullable().optional()
 })
 
 
@@ -555,7 +559,11 @@ export const ListDesignsResponseItem = zod.object({
   "fontBody": zod.string().optional(),
   "cardMaxWidth": zod.string().optional(),
   "openButtonText": zod.string().optional(),
-  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"')
+  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"'),
+  "colorForeground": zod.string().optional(),
+  "contentOverlayColor": zod.string().optional(),
+  "contentOverlayOpacity": zod.string().optional(),
+  "waxSealId": zod.number().nullable().optional()
 })
 export const ListDesignsResponse = zod.array(ListDesignsResponseItem)
 

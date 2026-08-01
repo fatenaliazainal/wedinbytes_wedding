@@ -1307,6 +1307,15 @@ components:
         openingAnimation:
           type: string
           description: Animation pattern key e.g. "doors" or "envelope"
+        colorForeground:
+          type: string
+        contentOverlayColor:
+          type: string
+        contentOverlayOpacity:
+          type: string
+        waxSealId:
+          type: integer
+          nullable: true
       required:
         - id
         - name

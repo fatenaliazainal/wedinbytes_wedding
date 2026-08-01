@@ -2203,91 +2203,93 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     })()}
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Name Font">
-                    <select
-                      className={selectCls}
-                      value={normalizeFont(design.nameFontFamily)}
-                      style={{ fontFamily: design.nameFontFamily }}
-                      onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
-                    >
-                      {SCRIPT_FONTS.map((f) => (
-                        <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Body Font">
-                    <select
-                      className={selectCls}
-                      value={normalizeFont(design.bodyFontFamily)}
-                      style={{ fontFamily: design.bodyFontFamily }}
-                      onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
-                    >
-                      {CLASSIC_FONTS.map((f) => (
-                        <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-                      ))}
-                    </select>
-                  </Field>
-                </div>
-                <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
-                  <input
-                    type="range" min={20} max={70}
-                    value={Number(design.nameFontSize) || 38}
-                    onChange={(e) => setDesign((p) => ({ ...p, nameFontSize: e.target.value }))}
-                    className="w-full accent-blue-500"
-                  />
-                </Field>
-                <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
-                  <input
-                    type="range"
-                    min={12}
-                    max={60}
-                    step={1}
-                    value={design.badgeFontSize || 24}
-                    onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
-                    className="w-full accent-blue-500"
-                  />
-                </Field>
-                <Field label="Name Font Color">
-                  <HexColorInput
-                    value={design.nameColor || "20 50% 20%"}
-                    label="Couple names"
-                    testId="editor-name-color"
-                    onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
-                  />
-                </Field>
-                <Field label="Body Text Color">
-                  <HexColorInput
-                    value={design.colorForeground || "0 0% 10%"}
-                    label="Paragraph & detail text"
-                    testId="editor-foreground-color"
-                    onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
-                  />
-                </Field>
-                <Field label="Button / Primary Accent">
-                  <HexColorInput
-                    value={design.colorPrimary || "142 45% 35%"}
-                    label="Button & accents"
-                    testId="editor-primary-color"
-                    onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
-                  />
-                </Field>
-                <Field label="Card Color">
-                  <HexColorInput
-                    value={design.colorCard || "0 0% 100%"}
-                    label="Inner panels"
-                    testId="editor-card-color"
-                    onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
-                  />
-                </Field>
-                <Field label="Background Color">
-                  <HexColorInput
-                    value={design.colorBackground || "142 20% 96%"}
-                    label="Page background"
-                    testId="editor-background-color"
-                    onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
-                  />
-                </Field>
+                {/* Colors, fonts, sizes — buyer & business only; admin uses card design settings */}
+                {(mode === "buyer" || mode === "business") && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Name Font">
+                        <select
+                          className={selectCls}
+                          value={normalizeFont(design.nameFontFamily)}
+                          style={{ fontFamily: design.nameFontFamily }}
+                          onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
+                        >
+                          {SCRIPT_FONTS.map((f) => (
+                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Body Font">
+                        <select
+                          className={selectCls}
+                          value={normalizeFont(design.bodyFontFamily)}
+                          style={{ fontFamily: design.bodyFontFamily }}
+                          onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
+                        >
+                          {CLASSIC_FONTS.map((f) => (
+                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                          ))}
+                        </select>
+                      </Field>
+                    </div>
+                    <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
+                      <input
+                        type="range" min={20} max={70}
+                        value={Number(design.nameFontSize) || 38}
+                        onChange={(e) => setDesign((p) => ({ ...p, nameFontSize: e.target.value }))}
+                        className="w-full accent-blue-500"
+                      />
+                    </Field>
+                    <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
+                      <input
+                        type="range" min={12} max={60} step={1}
+                        value={design.badgeFontSize || 24}
+                        onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
+                        className="w-full accent-blue-500"
+                      />
+                    </Field>
+                    <Field label="Name Font Color">
+                      <HexColorInput
+                        value={design.nameColor || "20 50% 20%"}
+                        label="Couple names"
+                        testId="editor-name-color"
+                        onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                      />
+                    </Field>
+                    <Field label="Body Text Color">
+                      <HexColorInput
+                        value={design.colorForeground || "0 0% 10%"}
+                        label="Paragraph & detail text"
+                        testId="editor-foreground-color"
+                        onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
+                      />
+                    </Field>
+                    <Field label="Button / Primary Accent">
+                      <HexColorInput
+                        value={design.colorPrimary || "142 45% 35%"}
+                        label="Button & accents"
+                        testId="editor-primary-color"
+                        onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
+                      />
+                    </Field>
+                    <Field label="Card Color">
+                      <HexColorInput
+                        value={design.colorCard || "0 0% 100%"}
+                        label="Inner panels"
+                        testId="editor-card-color"
+                        onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
+                      />
+                    </Field>
+                    <Field label="Background Color">
+                      <HexColorInput
+                        value={design.colorBackground || "142 20% 96%"}
+                        label="Page background"
+                        testId="editor-background-color"
+                        onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
+                      />
+                    </Field>
+                  </>
+                )}
                 <Field label="Song Link (YouTube)">
                   <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
                 </Field>

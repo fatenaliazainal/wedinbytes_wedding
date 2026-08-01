@@ -397,6 +397,7 @@ const BODY_FONT_OPTIONS = [
 ];
 
 interface DesignFormData {
+  isActive?: boolean;
   name: string;
   designCode: string;
   cardImageUrl: string;
@@ -453,6 +454,7 @@ function DesignForm({
 }) {
   const [form, setForm] = useState<DesignFormData>({ ...initial });
   const [saving, setSaving] = useState(false);
+  const [activating, setActivating] = useState(false);
   const qc = useQueryClient();
   const [rawCards, setRawCards] = useState<RawCard[]>([]);
   const [cardPickerId, setCardPickerId] = useState("");
@@ -474,6 +476,28 @@ function DesignForm({
 
   const set = (key: keyof DesignFormData) => (val: string) =>
     setForm((f) => ({ ...f, [key]: val }));
+
+  const handleActivate = async () => {
+    const id = (initial as DesignFormData & { id?: number }).id;
+    if (!id) return;
+    setActivating(true);
+    try {
+      const res = await fetch(`${BASE}/api/design/${id}/activate`, {
+        method: "POST", credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to activate");
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: getListDesignsQueryKey() }),
+        qc.invalidateQueries({ queryKey: getGetActiveDesignQueryKey() }),
+      ]);
+      setForm((f) => ({ ...f, isActive: true }));
+      toast.success("Design set as active — demo and new invitations now use this design.");
+    } catch {
+      toast.error("Could not activate design.");
+    } finally {
+      setActivating(false);
+    }
+  };
 
   const buildR2Url = (path: string) => {
     return resolveImageUrl(path) ?? "";
@@ -613,9 +637,30 @@ function DesignForm({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-5 sm:px-8">
-          <h2 className="text-base font-semibold">
-            {mode === "add" ? "Add New Design" : "Edit Design"}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-base font-semibold">
+              {mode === "add" ? "Add New Design" : "Edit Design"}
+            </h2>
+            {mode === "edit" && (
+              form.isActive
+                ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Active — demo &amp; new invitations use this design
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleActivate}
+                    disabled={activating}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    {activating ? "Setting…" : "Not active — click to set as default"}
+                  </button>
+                )
+            )}
+          </div>
           <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
@@ -1106,6 +1151,7 @@ function DesignsTab() {
                   type="button"
                   onClick={() => setEditTarget({
                     id: d.id,
+                    isActive: d.isActive,
                     name: d.name ?? "",
                     designCode: d.designCode ?? "",
                     cardImageUrl: d.cardImageUrl ?? "",
