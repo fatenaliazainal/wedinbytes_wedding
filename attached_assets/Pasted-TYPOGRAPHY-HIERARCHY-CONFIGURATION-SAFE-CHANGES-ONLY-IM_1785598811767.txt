@@ -1,0 +1,91 @@
+TYPOGRAPHY HIERARCHY — CONFIGURATION-SAFE CHANGES ONLY.
+
+IMPORTANT:
+Some typography sizes are already configurable by the Admin Design settings and/or Customer Style Editor.
+
+DO NOT hardcode or override any typography property that is already configurable.
+
+Before making ANY changes, inspect the existing typography controls and classify every typography role into:
+
+A. Already configurable by Admin/Customer Editor
+B. Not configurable / currently hardcoded
+C. Inherited from another typography role
+
+Check specifically:
+- Couple Names
+- Walimatul Urus / main heading
+- Section headings
+- Greeting / Assalamualaikum
+- Parents' names
+- Date
+- Time
+- Venue name
+- DATE / TIME / LOCATION labels
+- Address
+- Invitation body/message
+- Event Programme title
+- Programme time
+- Programme description
+- Secondary/supporting text
+
+For each role report:
+
+ROLE
+Current font-size
+Current font-weight
+Current line-height
+Current letter-spacing
+
+AND identify its source:
+
+- Admin Design setting
+- Customer Style Editor
+- CSS variable
+- inherited
+- component default
+- hardcoded CSS
+
+Also identify the exact control/field name if configurable.
+
+Example:
+
+Couple Names
+Size: 38px
+Source: nameFontSize
+Customer configurable: YES
+
+Section Heading
+Size: 26px
+Source: badgeFontSize
+Customer configurable: YES
+
+Venue Name
+Size: 16px
+Source: hardcoded component style
+Customer configurable: NO
+
+IMPORTANT:
+
+DO NOT CHANGE ANYTHING YET.
+
+I do NOT want existing Editor-controlled typography values replaced with hardcoded hierarchy values.
+
+The existing customization system must remain the source of truth.
+
+After the audit, give me a table:
+
+ROLE | CURRENT SIZE | WEIGHT | SOURCE/CONTROL | CUSTOMER CONFIGURABLE? | ADMIN CONFIGURABLE?
+
+Do not implement typography changes.
+
+OBSERVATION ONLY.
+
+STRICT:
+Do not modify code.
+Do not modify CSS.
+Do not modify database/schema.
+Do not add new editor controls.
+Do not change font families.
+Do not change any invitation design.
+
+I only want to understand which typography hierarchy values are already controllable before deciding what should be changed.
