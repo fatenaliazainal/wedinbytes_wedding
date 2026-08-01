@@ -686,17 +686,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   // Each section carries its own sticky background so each is visible only in its group.
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
-    // Each section is `relative`, so `absolute inset-0` fills it fully without
-    // needing the sticky + negative-margin trick (which breaks inside overflow-hidden).
     return (
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
         {imageUrl ? (
           <img
             src={imageUrl}
             aria-hidden
             alt=""
             draggable={false}
-            className="absolute inset-0 w-full h-full object-cover object-top select-none"
+            className="absolute inset-0 w-full h-full object-cover select-none"
           />
         ) : (
           <div className="absolute inset-0 bg-secondary" />

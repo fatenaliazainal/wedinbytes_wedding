@@ -10,6 +10,4 @@ description: WeddingCard uses two separate sticky PageBackground elements — on
 
 **Why:** The curtain panels (EnvelopeDoors) also show `cardImageUrl` split left/right, so Group 1 background matches the curtains for a seamless reveal. Group 2 uses the `envelopeImageUrl` (inner/envelope design) so the content section feels distinctly different.
 
-**How to apply:** Each section in WeddingCard places its own `<PageBackground imageUrl={...} overlay />` as the first child, using `absolute inset-0 z-0`. The section must be `relative` (already is via sectionBase). Use `object-top` on the image so portrait designs anchor from the top edge.
-
-**Warning:** Do NOT use `sticky top-0 -mb-[100dvh]` inside an `overflow-hidden` parent — sticky is silently disabled by overflow-hidden, causing a white gap at the top. The absolute approach is simpler and reliable.
+**How to apply:** Each section in WeddingCard places its own `<PageBackground imageUrl={...} overlay />` as the first child, using `sticky top-0 z-0 -mb-[100dvh] h-[100dvh]`. The `-mb-[100dvh]` makes the background take zero layout space so content flows naturally on top.
