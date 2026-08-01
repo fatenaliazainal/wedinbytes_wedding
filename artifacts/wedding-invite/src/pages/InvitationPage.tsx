@@ -114,9 +114,11 @@ export default function InvitationPage() {
   // Resolve template early so we can pass its colors to useDesign
   const inv = invitation as Record<string, unknown> | undefined;
   const isDemoInvitation = resolvedToken === "demo";
-  // Demo token: always use active card design — demo row stores content only.
+  // Both demo and real invitations use the active card design as the base template.
+  // ?designCode= URL param wins (e.g. catalogue preview). Active design is next.
+  // inv.designCode is kept only as a last resort when no design has been activated yet.
   const designCode = overrideDesignCode
-    ?? (isDemoInvitation ? activeDesign?.designCode : (inv?.designCode as string | undefined))
+    ?? activeDesign?.designCode
     ?? (inv?.designCode as string | undefined)
     ?? "FL001";
   const templateDesign = allDesigns.find((d) => d.designCode === designCode);
