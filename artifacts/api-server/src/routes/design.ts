@@ -119,7 +119,7 @@ router.get("/design/active", async (req, res) => {
 // Admins see all designs; everyone else sees only active (catalog-visible) ones.
 router.get("/design", async (req, res) => {
   try {
-    const isAdmin = (req.session as unknown as { user?: { role?: string } })?.user?.role === "admin";
+    const isAdmin = req.session.role === "admin";
     const rows = isAdmin
       ? await db.select().from(cardDesignTable).orderBy(cardDesignTable.id)
       : await db.select().from(cardDesignTable).where(eq(cardDesignTable.isActive, true)).orderBy(cardDesignTable.id);
