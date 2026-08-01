@@ -260,10 +260,12 @@ export default function InvitationPage() {
   }, [isOpened, openingAnimation]);
 
   // Wax seal: invitation override → design default → none.
+  // For the demo invitation, always use the card design's seal so each catalog
+  // card shows its own wax seal instead of a value stored on the shared demo row.
   // Must be declared before any early returns to satisfy the rules of hooks.
-  const waxSealId = (inv?.waxSealId as number | undefined)
-    ?? (templateDesign?.waxSealId as number | undefined)
-    ?? null;
+  const waxSealId = isDemoInvitation
+    ? ((templateDesign?.waxSealId as number | undefined) ?? null)
+    : ((inv?.waxSealId as number | undefined) ?? (templateDesign?.waxSealId as number | undefined) ?? null);
   const [waxSealImageUrl, setWaxSealImageUrl] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (!waxSealId) { setWaxSealImageUrl(undefined); return; }

@@ -38,7 +38,7 @@ const NAV_ITEMS: {
   { icon: Calendar,      label: "Calendar",   tab: "kalendar" },
   { icon: MapPin,        label: "Location",   tab: "lokasi" },
   { icon: Phone,         label: "Contact",    tab: "hubungi" },
-  { icon: Gift,          label: "Salam Kasih", tab: "gift" },
+  { icon: Gift,          label: "eGift", tab: "gift" },
   { icon: MessageSquare, label: "RSVP",       isRsvp: true },
 ];
 

@@ -340,7 +340,9 @@ router.patch("/invitation/:token", async (req, res) => {
     }
     const giftFields = ["giftDisplay", "giftTitle", "giftRecipient", "giftBankName", "giftAccountNumber", "giftQrCodes"];
     if (giftFields.some((field) => field in body)) {
-      if (!(await invitationHasFeature(effectivePackage, "Money Gift"))) {
+      // Admin editing the demo invitation can set gift fields freely — the demo
+      // has no package and is meant to showcase all premium features.
+      if (token !== "demo" && !(await invitationHasFeature(effectivePackage, "Money Gift"))) {
         res.status(403).json({ error: "Money Gift is available with the Premium package." });
         return;
       }

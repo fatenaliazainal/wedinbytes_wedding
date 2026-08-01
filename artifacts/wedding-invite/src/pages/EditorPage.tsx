@@ -366,7 +366,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       { time: "12:30 TGH", event: "Majlis Makan" },
       { time: "02:00 PTG", event: "Majlis Bersurai" },
     ],
-    giftDisplay: true, giftTitle: "SALAM KASIH", giftRecipient: "Nama Penerima", giftBankName: "Maybank", giftAccountNumber: "1234567890", giftQrCodes: [],
+    giftDisplay: true, giftTitle: "eGift", giftRecipient: "Nama Penerima", giftBankName: "Maybank", giftAccountNumber: "1234567890", giftQrCodes: [],
     designCode: "FL001",
     rsvpEnabled: true, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
@@ -597,7 +597,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
           galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages.slice(0, 4) : [],
           giftDisplay: d.giftDisplay === true,
-          giftTitle: d.giftTitle ?? "SALAM KASIH",
+          giftTitle: d.giftTitle ?? "eGift",
           giftRecipient: d.giftRecipient ?? "",
           giftBankName: d.giftBankName ?? "",
           giftAccountNumber: d.giftAccountNumber ?? "",
@@ -2116,6 +2116,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   </select>
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
+                  {mode !== "demo" && (
                   <Field label="Design Code*">
                     <select
                       className={selectCls}
@@ -2174,6 +2175,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       ))}
                     </select>
                   </Field>
+                  )}
                   <Field label="Opening Style">
                     <select
                       className={selectCls}
@@ -2186,7 +2188,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </select>
                   </Field>
                 </div>
+                {/* Wax seal is per card-design (set in Admin → Edit Design), not per demo invitation */}
                 <div className="space-y-2">
+                  {mode !== "demo" && (
                   <Field label="Wax Seal">
                     <select
                       className={selectCls}
@@ -2199,6 +2203,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       ))}
                     </select>
                   </Field>
+                  )}
                   {design.waxSealId && (() => {
                     const sel = waxSeals.find(s => String(s.id) === design.waxSealId);
                     return sel ? (

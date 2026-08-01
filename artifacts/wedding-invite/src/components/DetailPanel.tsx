@@ -281,7 +281,6 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
     ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
     : [];
   const accountNumber = typeof data.giftAccountNumber === "string" ? data.giftAccountNumber : "";
-  const title = typeof data.giftTitle === "string" && data.giftTitle.trim() ? data.giftTitle : "SALAM KASIH";
   const recipient = typeof data.giftRecipient === "string" ? data.giftRecipient : "";
   const bankName = typeof data.giftBankName === "string" ? data.giftBankName : "";
   const copyAccount = async () => {
@@ -291,8 +290,6 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
 
   return (
     <div className="flex flex-col items-center gap-5 py-2">
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>{title}</p>
-      <div className="h-px w-16 bg-primary/30" />
       {qrCodes.length > 0 && (
         <div className="flex w-full flex-col items-center gap-4">
           {qrCodes.map((url, index) => (
@@ -330,7 +327,7 @@ const PANEL_TITLES: Record<TabKey, string> = {
   kalendar: "Calendar",
   lokasi: "Location",
   hubungi: "Contact",
-  gift: "Salam Kasih",
+  gift: "eGift",
 };
 
 const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
