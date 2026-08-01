@@ -752,7 +752,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               transition: hideFirstPageContent ? "none" : "opacity 0.7s ease",
             }}
           >
-            <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
+            <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
             <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
             {(coverBrideName && coverGroomName) && (
               <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
