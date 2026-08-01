@@ -259,6 +259,20 @@ export default function InvitationPage() {
     return () => clearTimeout(t);
   }, [isOpened, openingAnimation]);
 
+  // Wax seal: load by ID when the invitation specifies one.
+  // Must be declared before any early returns to satisfy the rules of hooks.
+  const waxSealId = (inv?.waxSealId as number | undefined) ?? null;
+  const [waxSealImageUrl, setWaxSealImageUrl] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!waxSealId) { setWaxSealImageUrl(undefined); return; }
+    fetch(`/api/wax-seals/${waxSealId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then((seal: { imageUrl?: string } | null) => {
+        if (seal?.imageUrl) setWaxSealImageUrl(resolveImageUrl(seal.imageUrl) || undefined);
+      })
+      .catch(() => {});
+  }, [waxSealId]);
+
   // designLoading is excluded: useGetActiveDesign returns 404 in production
   // (no "active" design row), so gating on it blocks the page unnecessarily.
   // Design tokens are applied via useEffect inside useDesign without needing to wait.
@@ -282,18 +296,6 @@ export default function InvitationPage() {
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
   const initialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
 
-  // Wax seal: load by ID when the invitation specifies one.
-  const waxSealId = (invitationRecord?.waxSealId as number | undefined) ?? null;
-  const [waxSealImageUrl, setWaxSealImageUrl] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    if (!waxSealId) { setWaxSealImageUrl(undefined); return; }
-    fetch(`/api/wax-seals/${waxSealId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then((seal: { imageUrl?: string } | null) => {
-        if (seal?.imageUrl) setWaxSealImageUrl(resolveImageUrl(seal.imageUrl) || undefined);
-      })
-      .catch(() => {});
-  }, [waxSealId]);
   const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
   const cardFontVars = {
