@@ -238,7 +238,10 @@ export default function InvitationPage() {
     }
   }, [isOpened]);
 
-  if (invitationLoading || designLoading || designsLoading || (isPublicPath && publicToken === null)) {
+  // designLoading is excluded: useGetActiveDesign returns 404 in production
+  // (no "active" design row), so gating on it blocks the page unnecessarily.
+  // Design tokens are applied via useEffect inside useDesign without needing to wait.
+  if (invitationLoading || designsLoading || (isPublicPath && publicToken === null)) {
     return (
       <div className="min-h-dvh w-full bg-background flex items-center justify-center">
         <Skeleton className="w-75 h-100 rounded-2xl" />

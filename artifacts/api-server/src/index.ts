@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { autoSeedIfEmpty } from "./lib/autoSeed";
 import { isR2Configured } from "./services/cloudflare/r2-storage-admin";
+import { pool } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
 
@@ -24,6 +25,14 @@ app.listen(port, async (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Warm up the DB connection pool immediately so the first real request
+  // doesn't pay the ~1s cold-connection cost.
+  pool.query("SELECT 1").then(() => {
+    logger.info("DB connection pool warmed up");
+  }).catch((err) => {
+    logger.warn({ err }, "DB warm-up ping failed — first request may be slow");
+  });
 
   if (!isR2Configured()) {
     logger.warn(

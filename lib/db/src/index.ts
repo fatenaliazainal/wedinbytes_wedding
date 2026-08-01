@@ -17,7 +17,14 @@ if (!process.env.DATABASE_URL) {
   console.log("Loaded DATABASE_URL from .env file [development mode]");
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Keep at least 1 connection open so the first real request doesn't pay the
+// ~1s TCP + TLS + auth handshake cost of a brand-new connection.
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  min: 1,
+  idleTimeoutMillis: 30_000,  // drop idle connections after 30s to avoid stale sockets
+  connectionTimeoutMillis: 5_000,
+});
 export const db = drizzle(pool, { schema });
 
 export * from "./schema";
