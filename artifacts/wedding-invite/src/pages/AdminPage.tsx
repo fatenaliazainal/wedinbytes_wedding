@@ -114,7 +114,9 @@ function ImageUploadField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
-  const displayUrl =  previewUrl || localPreviewUrl || value;
+  // previewUrl / localPreviewUrl are already proper URLs (blob: or https:).
+  // value is a raw R2 object key that must go through the same-origin proxy.
+  const displayUrl = previewUrl || localPreviewUrl || resolveImageUrl(value) || "";
 
   useEffect(() => {
     return () => {
