@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DesignImage } from "@/components/DesignImage";
-import defaultEnvelopeRef from "@assets/Screenshot_2026-05-03-00-19-07-34_40deb401b9ffe8e1df2f1cc5ba48_1777739356642.jpg";
 
 interface EnvelopeAnimationProps {
   isOpened: boolean;
@@ -10,7 +8,7 @@ interface EnvelopeAnimationProps {
   initialsSize?: string;
   initialsImageUrl?: string;
   initialsImageScale?: number;
-  envelopeImageUrl?: string;
+  envelopeImageUrl?: string; // kept in interface; not used for CSS envelope rendering
 }
 
 export function EnvelopeAnimation({
@@ -20,11 +18,10 @@ export function EnvelopeAnimation({
   initialsSize,
   initialsImageUrl,
   initialsImageScale = 100,
-  envelopeImageUrl,
 }: EnvelopeAnimationProps) {
   const [phase, setPhase] = useState<"idle" | "flap" | "done">("idle");
-  const bgImage = envelopeImageUrl || defaultEnvelopeRef;
 
+  // unchanged — same timing as before
   const handleOpen = () => {
     if (phase !== "idle") return;
     setPhase("flap");
@@ -52,31 +49,81 @@ export function EnvelopeAnimation({
               style={{ perspective: 1200 }}
               onClick={handleOpen}
             >
-              {/* ── Body ── */}
-              <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
-                <DesignImage src={bgImage} fallbackSrc={defaultEnvelopeRef} opacity={0.25} />
-                <div className="absolute inset-0 bg-secondary/80" />
-              </div>
 
-              {/* ── Side fold lines (V-shape decorative) ── */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+              {/* ── Body — translucent frosted glass base ── */}
+              <div
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  backdropFilter: "blur(7px)",
+                  border: "1px solid rgba(255,255,255,0.22)",
+                  boxShadow: [
+                    "inset 0 1px 0 rgba(255,255,255,0.38)",   // top rim highlight
+                    "inset 0 -1px 0 rgba(0,0,0,0.04)",         // bottom rim shadow
+                    "0 4px 24px rgba(0,0,0,0.06)",              // outer lift
+                  ].join(", "),
+                }}
+              />
+
+              {/* ── Left fold crease — shadow side (top-left triangle) ── */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to bottom right, rgba(0,0,0,0.055) 50%, transparent 50%)",
+                }}
+              />
+              {/* ── Left fold crease — highlight side ── */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to bottom right, transparent 50%, rgba(255,255,255,0.16) 50%)",
+                }}
+              />
+
+              {/* ── Right fold crease — shadow side (top-right triangle) ── */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to bottom left, rgba(0,0,0,0.055) 50%, transparent 50%)",
+                }}
+              />
+              {/* ── Right fold crease — highlight side ── */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to bottom left, transparent 50%, rgba(255,255,255,0.16) 50%)",
+                }}
+              />
+
+              {/* ── Bottom fold triangle ── */}
+              <div
+                className="absolute bottom-0 left-0 right-0 overflow-hidden rounded-b-2xl pointer-events-none"
+                style={{ height: "45%", zIndex: 3 }}
+              >
+                {/* Fill */}
                 <div
                   className="absolute inset-0"
                   style={{
-                    background:
-                      "linear-gradient(to bottom right, hsl(var(--primary)/0.08) 50%, transparent 50%)",
+                    clipPath: "polygon(0 100%, 50% 0, 100% 100%)",
+                    background: "rgba(255,255,255,0.07)",
                   }}
                 />
+                {/* Emboss highlight along top edge of bottom fold */}
                 <div
                   className="absolute inset-0"
                   style={{
+                    clipPath: "polygon(0 100%, 50% 0, 100% 100%)",
                     background:
-                      "linear-gradient(to bottom left, hsl(var(--primary)/0.08) 50%, transparent 50%)",
+                      "linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, transparent 30%)",
                   }}
                 />
               </div>
 
-              {/* ── Names on face ── */}
+              {/* ── Names / seal on face ── */}
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <motion.div
                   animate={
@@ -114,52 +161,48 @@ export function EnvelopeAnimation({
                 </motion.div>
               </div>
 
-              {/* ── Top flap ── */}
+              {/* ── Top flap — unchanged rotateX animation, CSS visual ── */}
               <motion.div
                 className="absolute top-0 left-0 right-0 z-20 origin-top"
                 style={{ height: "55%", transformStyle: "preserve-3d" }}
                 animate={{ rotateX: phase !== "idle" ? -175 : 0 }}
                 transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
               >
-                {/* Front face of flap */}
+                {/* Front face — frosted triangle */}
                 <div
                   className="absolute inset-0 rounded-t-2xl overflow-hidden"
                   style={{
                     clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                    background: "hsl(var(--secondary))",
-                    borderBottom: "1px solid hsl(var(--primary)/0.15)",
+                    background: "rgba(255,255,255,0.13)",
+                    backdropFilter: "blur(7px)",
                     backfaceVisibility: "hidden",
                   }}
                 >
-                  <DesignImage src={bgImage} fallbackSrc={defaultEnvelopeRef} opacity={0.2} />
+                  {/* Emboss highlights along the two diagonal edges */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: [
+                        "linear-gradient(135deg, rgba(255,255,255,0.30) 0%, transparent 35%)",
+                        "linear-gradient(225deg, rgba(255,255,255,0.30) 0%, transparent 35%)",
+                        "linear-gradient(to bottom, rgba(255,255,255,0.14) 0%, transparent 25%)",
+                      ].join(", "),
+                    }}
+                  />
                 </div>
-                {/* Back face of flap (shown after flip) */}
+                {/* Back face — shown when flap flips open */}
                 <div
                   className="absolute inset-0 rounded-t-2xl"
                   style={{
                     clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                    background: "hsl(var(--card))",
+                    background: "rgba(255,255,255,0.07)",
                     backfaceVisibility: "hidden",
                     transform: "rotateX(180deg)",
                   }}
                 />
               </motion.div>
 
-              {/* ── Bottom triangle fold (decorative) ── */}
-              <div
-                className="absolute bottom-0 left-0 right-0 overflow-hidden rounded-b-2xl"
-                style={{ height: "45%", zIndex: 5 }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    clipPath: "polygon(0 100%, 50% 0, 100% 100%)",
-                    background: "hsl(var(--primary)/0.12)",
-                  }}
-                />
-              </div>
             </div>
-
           </div>
         </motion.div>
       )}

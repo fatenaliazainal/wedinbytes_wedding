@@ -1,0 +1,80 @@
+For the ENVELOPE opening style only, change the envelope visual treatment so it does NOT use any image.
+
+Instead, create the envelope entirely with CSS as a premium translucent embossed envelope.
+
+IMPORTANT:
+Do not change any other opening styles, invitation designs, layouts, animations, backgrounds, or functionality.
+
+ENVELOPE VISUAL STYLE:
+
+* Transparent / semi-transparent envelope material
+* Subtle frosted-glass appearance
+* Elegant embossed edges
+* Soft raised/bevel effect around the envelope folds
+* Very subtle inner and outer shadows to create depth
+* The invitation/background underneath should be slightly visible through the envelope
+* Keep the effect seamless, minimal, elegant, and premium
+* Avoid making it look like a solid white/grey box
+* Avoid strong borders
+* Avoid heavy shadows
+* Avoid excessive blur
+
+Build the envelope shape and folds using CSS layers/pseudo-elements rather than an image.
+
+The envelope should still clearly have:
+
+* left fold
+* right fold
+* bottom fold
+* top flap
+
+Use subtle highlights and shadows along the fold lines to create an embossed/debossed effect.
+
+The fold lines should look pressed into translucent material rather than drawn using obvious solid borders.
+
+Suggested visual direction:
+
+background:
+semi-transparent / glass-like
+
+backdrop-filter:
+subtle blur only
+
+edges:
+soft highlight + soft shadow combination
+
+fold lines:
+very subtle embossed/debossed depth
+
+The final result should feel like a TRANSLUCENT EMBOSSED WEDDING ENVELOPE sitting over the existing invitation.
+
+The existing invitation/background underneath should provide some of the envelope's visual color naturally through the transparency.
+
+OPENING BEHAVIOR:
+
+Preserve the existing envelope opening animation and behavior exactly.
+
+Only replace the envelope's IMAGE-BASED VISUAL with the new CSS translucent embossed treatment.
+
+Do NOT change:
+
+* opening timing
+* opening trigger
+* flap movement
+* invitation reveal behavior
+* scroll behavior
+* inner invitation
+* card background
+* envelopeImageUrl behavior elsewhere
+* door opening
+* window opening
+* other opening styles
+
+This change applies ONLY when the selected opening style is `envelope`.
+
+Do not delete or globally modify image fields because other components may still use them.
+
+STRICT SCOPE:
+Make the minimum code changes necessary to replace the visual appearance of the envelope opening with the CSS translucent embossed envelope.
+
+Do not modify anything unrelated.
