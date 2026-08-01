@@ -57,9 +57,8 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
           maxWidth: cardMaxWidth,
           backgroundColor: "hsl(var(--primary))",
           paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? "translateY(0)" : "translateY(18px)",
-          willChange: "transform, opacity",
+          transform: isVisible ? "translateY(0)" : "translateY(100%)",
+          willChange: "transform",
           pointerEvents: isVisible ? undefined : "none",
         }}
       >
