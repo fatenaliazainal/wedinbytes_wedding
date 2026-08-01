@@ -710,9 +710,12 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const brideParents = invitation.brideParents?.trim() || "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── GROUP 1 / COVER — cardImageUrl background, sticky within this section ── */}
+      {/* ── GROUP 1 BACKGROUND — placed BEFORE the section so it is not clipped by
+          the section's overflow-hidden, which would break position:sticky ── */}
+      <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} overlay />
+
+      {/* ── GROUP 1 / COVER — transparent over the background above ── */}
       <section className={`${sectionBase} z-10`}>
-        <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} overlay />
         {showFrontText && (
           <div className={coverPanelBase}>
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
