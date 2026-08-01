@@ -358,7 +358,10 @@ export default function InvitationPage() {
         )}
 
         {isOpened && (
-          <div className="sticky bottom-0 z-50 w-full">
+          <div
+            className="sticky bottom-0 z-50 w-full mx-auto"
+            style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+          >
             <BottomNav
               activeTab={activeTab}
               isMuted={isMuted}
