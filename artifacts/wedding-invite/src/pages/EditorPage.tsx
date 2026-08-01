@@ -330,8 +330,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
       if (tab.id === "footer") return mode === "admin" || mode === "demo";
-      // Demo shows every tab so all Premium features are visible to attract customers.
-      if (mode === "demo" || mode === "admin") return true;
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
@@ -625,11 +623,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           colorBackground:  tpl.colorBackground,
           colorCard:        tpl.colorCard,
         });
-        // Only admin mode may override styling per invitation record.
-        // Demo always shows the pure Card Design template (live catalogue preview).
-        // Buyer / Business Account always inherit styling from their chosen card
-        // design — they cannot override colours, fonts, or animation per invitation.
-        const invitationOwnsStyle = mode === "admin";
+        // The admin demo is the live catalogue preview. Its invitation record is
+        // only sample content, so stale style values on that record must never
+        // mask the currently saved Card Design template.
+        const invitationOwnsStyle = mode !== "demo";
         setDesign({
           designCode:       resolvedCode,
           openingAnimation: invitationOwnsStyle ? (d.openingAnimation ?? tpl.openingAnimation) : tpl.openingAnimation,
@@ -894,41 +891,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
         rsvpTimeSlots: inv.rsvpTimeSlots || null,
         packageId: activePackageId ?? null,
-        // Admin may override styling per invitation; buyer/business always inherit
-        // styling from the card design template (never save overrides).
+        // Buyer design overrides are stored per invitation, never in the global template.
         designCode: design.designCode || null,
-        ...(mode === "admin" || mode === "demo"
-          ? {
-              openingAnimation: design.openingAnimation || null,
-              openButtonText: design.openButtonText || null,
-              nameFontFamily: design.nameFontFamily || null,
-              nameFontSize: design.nameFontSize || null,
-              badgeFontSize: design.badgeFontSize || null,
-              bodyFontFamily: design.bodyFontFamily || null,
-              nameColor: designCodeChanged || design.nameColor !== inheritedColors.nameColor ? (design.nameColor || null) : null,
-              colorPrimary: designCodeChanged || design.colorPrimary !== inheritedColors.colorPrimary ? (design.colorPrimary || null) : null,
-              colorSecondary: designCodeChanged || design.colorSecondary !== inheritedColors.colorSecondary ? (design.colorSecondary || null) : null,
-              colorAccent: designCodeChanged || design.colorAccent !== inheritedColors.colorAccent ? (design.colorAccent || null) : null,
-              colorBackground: designCodeChanged || design.colorBackground !== inheritedColors.colorBackground ? (design.colorBackground || null) : null,
-              colorCard: designCodeChanged || design.colorCard !== inheritedColors.colorCard ? (design.colorCard || null) : null,
-            }
-          : {
-              // Wipe any previously saved per-invitation style overrides so the
-              // card design template always takes effect.
-              openingAnimation: null,
-              openButtonText: null,
-              nameFontFamily: null,
-              nameFontSize: null,
-              badgeFontSize: null,
-              bodyFontFamily: null,
-              nameColor: null,
-              colorPrimary: null,
-              colorSecondary: null,
-              colorAccent: null,
-              colorBackground: null,
-              colorCard: null,
-            }),
-        // Music stays editable per invitation for all roles.
+        openingAnimation: design.openingAnimation || null,
+        openButtonText: design.openButtonText || null,
+        nameFontFamily: design.nameFontFamily || null,
+        nameFontSize: design.nameFontSize || null,
+        badgeFontSize: design.badgeFontSize || null,
+        bodyFontFamily: design.bodyFontFamily || null,
+        nameColor: designCodeChanged || design.nameColor !== inheritedColors.nameColor ? (design.nameColor || null) : null,
+        colorPrimary: designCodeChanged || design.colorPrimary !== inheritedColors.colorPrimary ? (design.colorPrimary || null) : null,
+        colorSecondary: designCodeChanged || design.colorSecondary !== inheritedColors.colorSecondary ? (design.colorSecondary || null) : null,
+        colorAccent: designCodeChanged || design.colorAccent !== inheritedColors.colorAccent ? (design.colorAccent || null) : null,
+        colorBackground: designCodeChanged || design.colorBackground !== inheritedColors.colorBackground ? (design.colorBackground || null) : null,
+        colorCard: designCodeChanged || design.colorCard !== inheritedColors.colorCard ? (design.colorCard || null) : null,
         musicUrl: design.musicUrl || null,
         musicTitle: design.musicTitle || null,
         musicArtist: design.musicArtist || null,
@@ -2160,103 +2136,95 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       ))}
                     </select>
                   </Field>
-                  {/* Opening Style — admin only; demo and buyer always use card design default */}
-                  {mode === "admin" && (
-                    <Field label="Opening Style">
-                      <select
-                        className={selectCls}
-                        value={design.openingAnimation}
-                        onChange={(e) => setDesign((p) => ({ ...p, openingAnimation: e.target.value }))}
-                      >
-                        {OPENING_ANIMS.map((o) => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                      </select>
-                    </Field>
-                  )}
+                  <Field label="Opening Style">
+                    <select
+                      className={selectCls}
+                      value={design.openingAnimation}
+                      onChange={(e) => setDesign((p) => ({ ...p, openingAnimation: e.target.value }))}
+                    >
+                      {OPENING_ANIMS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </Field>
                 </div>
-                {/* Typography & colour overrides — admin only */}
-                {mode === "admin" && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Field label="Name Font">
-                        <select
-                          className={selectCls}
-                          value={normalizeFont(design.nameFontFamily)}
-                          style={{ fontFamily: design.nameFontFamily }}
-                          onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
-                        >
-                          {SCRIPT_FONTS.map((f) => (
-                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-                          ))}
-                        </select>
-                      </Field>
-                      <Field label="Body Font">
-                        <select
-                          className={selectCls}
-                          value={normalizeFont(design.bodyFontFamily)}
-                          style={{ fontFamily: design.bodyFontFamily }}
-                          onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
-                        >
-                          {CLASSIC_FONTS.map((f) => (
-                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
-                          ))}
-                        </select>
-                      </Field>
-                    </div>
-                    <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
-                      <input
-                        type="range" min={20} max={70}
-                        value={Number(design.nameFontSize) || 38}
-                        onChange={(e) => setDesign((p) => ({ ...p, nameFontSize: e.target.value }))}
-                        className="w-full accent-blue-500"
-                      />
-                    </Field>
-                    <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
-                      <input
-                        type="range"
-                        min={12}
-                        max={60}
-                        step={1}
-                        value={design.badgeFontSize || 24}
-                        onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
-                        className="w-full accent-blue-500"
-                      />
-                    </Field>
-                    <Field label="Name Font Color">
-                      <HexColorInput
-                        value={design.nameColor || "20 50% 20%"}
-                        label="Couple names"
-                        testId="editor-name-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Button / Primary Accent">
-                      <HexColorInput
-                        value={design.colorPrimary || "142 45% 35%"}
-                        label="Button & accents"
-                        testId="editor-primary-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Card Color">
-                      <HexColorInput
-                        value={design.colorCard || "0 0% 100%"}
-                        label="Inner panels"
-                        testId="editor-card-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Background Color">
-                      <HexColorInput
-                        value={design.colorBackground || "142 20% 96%"}
-                        label="Page background"
-                        testId="editor-background-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                  </>
-                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Name Font">
+                    <select
+                      className={selectCls}
+                      value={normalizeFont(design.nameFontFamily)}
+                      style={{ fontFamily: design.nameFontFamily }}
+                      onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
+                    >
+                      {SCRIPT_FONTS.map((f) => (
+                        <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Body Font">
+                    <select
+                      className={selectCls}
+                      value={normalizeFont(design.bodyFontFamily)}
+                      style={{ fontFamily: design.bodyFontFamily }}
+                      onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
+                    >
+                      {CLASSIC_FONTS.map((f) => (
+                        <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+                <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
+                  <input
+                    type="range" min={20} max={70}
+                    value={Number(design.nameFontSize) || 38}
+                    onChange={(e) => setDesign((p) => ({ ...p, nameFontSize: e.target.value }))}
+                    className="w-full accent-blue-500"
+                  />
+                </Field>
+                <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
+                  <input
+                    type="range"
+                    min={12}
+                    max={60}
+                    step={1}
+                    value={design.badgeFontSize || 24}
+                    onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
+                    className="w-full accent-blue-500"
+                  />
+                </Field>
+                <Field label="Name Font Color">
+                  <HexColorInput
+                    value={design.nameColor || "20 50% 20%"}
+                    label="Couple names"
+                    testId="editor-name-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                  />
+                </Field>
+                <Field label="Button / Primary Accent">
+                  <HexColorInput
+                    value={design.colorPrimary || "142 45% 35%"}
+                    label="Button & accents"
+                    testId="editor-primary-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
+                  />
+                </Field>
+                <Field label="Card Color">
+                  <HexColorInput
+                    value={design.colorCard || "0 0% 100%"}
+                    label="Inner panels"
+                    testId="editor-card-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
+                  />
+                </Field>
+                <Field label="Background Color">
+                  <HexColorInput
+                    value={design.colorBackground || "142 20% 96%"}
+                    label="Page background"
+                    testId="editor-background-color"
+                    onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
+                  />
+                </Field>
                 <Field label="Song Link (YouTube)">
                   <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
                 </Field>

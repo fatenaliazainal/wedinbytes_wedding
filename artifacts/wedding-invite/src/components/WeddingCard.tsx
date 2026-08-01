@@ -682,10 +682,30 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  // Cover (group 1) uses cardImageUrl; inner pages (group 2) use envelopeImageUrl.
-  // Older single-image templates fall back to the one available image.
+  // Keep the two background groups explicit: the cover is group 1 and the
+  // scrollable invitation details are group 2. Older templates may only have
+  // one image, so each group falls back to the other image for compatibility.
   const groupOneBackgroundUrl = cardImageUrl || envelopeImageUrl;
   const groupTwoBackgroundUrl = envelopeImageUrl || cardImageUrl;
+
+  function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
+    return (
+      <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            aria-hidden
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover select-none"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-secondary" />
+        )}
+        {overlay && <div className="absolute inset-0 bg-white/70" />}
+      </div>
+    );
+  }
 
   const mapsUrl = (inv.venueMapUrl as string) ||
     `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
@@ -725,29 +745,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         )}
       </section>
 
-      {/* ── INNER PAGES — one sticky background, all sections scroll above it ── */}
-      <div className="relative">
-        {/* Single background layer — sticky so it stays fixed while content scrolls */}
-        <div
-          aria-hidden
-          className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none overflow-hidden"
-        >
-          {groupTwoBackgroundUrl ? (
-            <img
-              src={groupTwoBackgroundUrl}
-              alt=""
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover object-center select-none"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-secondary" />
-          )}
-        </div>
-
-        {/* All inner content — scrolls over the sticky background.
-            pb-28 gives clearance so the sticky BottomNav (~70 px) never
-            covers the last section. */}
-        <div className="relative z-10 flex flex-col items-center gap-14 pt-16 pb-28 px-6">
+      {/* ── BACKGROUND GROUP 2 / ALL REMAINING INVITATION SECTIONS ── */}
+      <section className="relative">
+        <PageBackground imageUrl={groupTwoBackgroundUrl} overlay />
+        <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
           {/* Invitation Text */}
@@ -997,7 +998,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           )}
           </RevealOnScroll>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

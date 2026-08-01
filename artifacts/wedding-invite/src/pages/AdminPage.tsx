@@ -282,10 +282,7 @@ async function uploadFile(file: File, designCode: string, assetType: "card" | "e
     credentials: "include",
     body: fd,
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
-    throw new Error(body.error ?? `Upload failed (${res.status})`);
-  }
+  if (!res.ok) throw new Error("Upload failed");
   const data = await res.json() as { key?: string; url?: string };
   const key = data.key ?? data.url;
   if (!key) throw new Error("Upload response did not include an image key");
@@ -1874,7 +1871,7 @@ function RevenueTab() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold">Revenue Report</h2>
-          <p className="text-xs text-muted-foreground">Payment performance from the first order to this month</p>
+          <p className="text-xs text-muted-foreground">Payment performance for the last 12 months</p>
         </div>
         <button onClick={() => void load()} className="rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted" aria-label="Refresh revenue report">
           <RefreshCw size={13} />

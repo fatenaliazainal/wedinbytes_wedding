@@ -30,14 +30,6 @@ const R2_CONFIG = {
       : process.env.CF_R2_BUCKET_NAME_DEVELOPMENT)
     ?? process.env.CF_R2_BUCKET_NAME
     ?? "",
-  // Production was split into a new bucket after older invitations and
-  // catalogue records had already stored objects in the development bucket.
-  // Keep the legacy bucket read-only as a compatibility fallback so those
-  // existing assets remain visible while new uploads go to production.
-  legacyBucketName:
-    process.env.NODE_ENV === "production"
-      ? process.env.CF_R2_BUCKET_NAME_DEVELOPMENT ?? "wedinbytes"
-      : "",
   region: process.env.CF_R2_REGION ?? "auto",
   /**
    * Optional custom public domain for R2 objects (e.g. "https://assets.example.com").
@@ -101,18 +93,6 @@ const s3Client = new S3Client({
   endpoint: `https://${R2_CONFIG.accountId}.r2.cloudflarestorage.com`,
 });
 
-const legacyS3Client =
-  R2_CONFIG.legacyBucketName && R2_CONFIG.legacyBucketName !== R2_CONFIG.bucketName
-    ? new S3Client({
-        region: R2_CONFIG.region,
-        credentials: {
-          accessKeyId: R2_CONFIG.accessKeyId,
-          secretAccessKey: R2_CONFIG.secretAccessKey,
-        },
-        endpoint: `https://${R2_CONFIG.accountId}.r2.cloudflarestorage.com`,
-      })
-    : null;
-
 export interface ImageUploadOptions {
   fileName: string;
   fileBuffer: Buffer;
@@ -166,39 +146,25 @@ export async function uploadImage(
  */
 export async function downloadImage(fileKey: string): Promise<ImageDownloadResult> {
   assertR2Configured();
-  const downloadFromBucket = async (client: S3Client, bucketName: string) => {
-    const response = await client.send(
-      new GetObjectCommand({
-        Bucket: bucketName,
-        Key: fileKey,
-      }),
-    );
+  try {
+    const command = new GetObjectCommand({
+      Bucket: R2_CONFIG.bucketName,
+      Key: fileKey,
+    });
+
+    const response = await s3Client.send(command);
     const buffer = await collectResponseBody(response.Body);
+
     return {
       buffer,
       contentType: response.ContentType || "application/octet-stream",
       size: buffer.length,
     };
-  };
-
-  try {
-    return await downloadFromBucket(s3Client, R2_CONFIG.bucketName);
-  } catch (primaryError) {
-    if (!legacyS3Client || !R2_CONFIG.legacyBucketName) {
-      console.error("Error downloading image from R2:", primaryError);
-      throw new Error(
-        `Failed to download image: ${primaryError instanceof Error ? primaryError.message : "Unknown error"}`,
-      );
-    }
-
-    try {
-      return await downloadFromBucket(legacyS3Client, R2_CONFIG.legacyBucketName);
-    } catch (legacyError) {
-      console.error("Error downloading image from R2:", legacyError);
-      throw new Error(
-        `Failed to download image: ${legacyError instanceof Error ? legacyError.message : "Unknown error"}`,
-      );
-    }
+  } catch (error) {
+    console.error("Error downloading image from R2:", error);
+    throw new Error(
+      `Failed to download image: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 

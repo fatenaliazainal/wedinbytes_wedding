@@ -151,10 +151,6 @@ router.post("/design", requireAdmin, async (req, res) => {
     res.status(201).json(stripNulls(created));
   } catch (err) {
     req.log.error({ err }, "Failed to create design");
-    if ((err as { code?: string }).code === "23505") {
-      res.status(400).json({ error: "A design with this name already exists. Use a different name." });
-      return;
-    }
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -189,10 +185,6 @@ router.patch("/design/:id", requireAdmin, async (req, res) => {
     auditEvent(req, "design.update", { designId: id, fields: Object.keys(update) });
   } catch (err) {
     req.log.error({ err }, "Failed to update design");
-    if ((err as { code?: string }).code === "23505") {
-      res.status(400).json({ error: "A design with this name already exists. Use a different name." });
-      return;
-    }
     res.status(500).json({ error: "Internal server error" });
   }
 });

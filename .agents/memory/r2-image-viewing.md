@@ -7,6 +7,6 @@ R2 object keys used by the invitation app should be rendered through the same-or
 
 **Why:** A newly uploaded card design was present in R2 and downloadable by the API, but browser rendering failed when the frontend selected the public-domain path.
 
-**How to apply:** Keep local `/...` paths and non-R2 absolute URLs unchanged; resolve bare R2 keys and old R2 public URLs to `/api/r2?key=...`. In production, read from the production bucket first and use the read-only legacy bucket fallback for objects created before the bucket split. Verify the proxy returns the image before debugging upload/database persistence.
+**How to apply:** Keep local `/...` paths and absolute URLs unchanged for legacy/external assets; resolve bare R2 keys to `/api/r2?key=...`, and verify the proxy returns the image before debugging upload/database persistence.
 
 For decorative design assets, also provide a bundled local fallback and handle image-load errors in the shared image component. A missing R2 object should degrade to the fallback rather than leave a broken preview.
