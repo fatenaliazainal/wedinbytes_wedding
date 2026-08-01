@@ -5,6 +5,7 @@
 - [DB schema declarations](db-schema-declarations.md) — after changing Drizzle schema, rebuild the composite DB declarations before API typechecking.
 - [Admin order readiness](admin-order-readiness.md) — keep order/payment records additive and derive website status from purchase state plus an explicit admin status.
 - [Fixed scroll backdrop](fixed-scroll-backdrop.md) — long invitation content needs a viewport-height sticky image layer so its backdrop does not scale with content height.
+- [Two-group invitation backgrounds](two-group-invitation-backgrounds.md) — Group 1 (cover screen) uses cardImageUrl; Group 2 (details) uses envelopeImageUrl; each section owns its sticky PageBackground.
 - [R2 image viewing](r2-image-viewing.md) — browser-facing R2 object keys use the same-origin API proxy so public-domain and CORS configuration cannot hide uploaded designs.
 - [Admin-managed design persistence](admin-managed-design-persistence.md) — startup seed must create catalogue defaults only when empty and never overwrite saved Card Design edits.
 - [Buyer-owned initials artwork](order-owned-initials-artwork.md) — optional initials uploads belong to the buyer invitation in R2, never to shared card designs.

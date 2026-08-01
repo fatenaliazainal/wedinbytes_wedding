@@ -682,10 +682,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };
-  // cardImageUrl drives both the curtain panels (EnvelopeDoors) and the persistent
-  // inner background so the reveal feels seamless — the same design is already behind
-  // the curtains before they slide away. envelopeImageUrl is kept as a fallback only.
-  const persistentBackgroundUrl = cardImageUrl || envelopeImageUrl;
+  // Group 1 (cover screen) uses cardImageUrl; Group 2 (content) uses envelopeImageUrl.
+  // Each section carries its own sticky background so each is visible only in its group.
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
     return (
@@ -712,11 +710,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const brideParents = invitation.brideParents?.trim() || "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
-      {/* ── PERSISTENT INNER BACKGROUND — starts at scroll=0, spans entire card ── */}
-      <PageBackground imageUrl={persistentBackgroundUrl} overlay />
-
-      {/* ── GROUP 1 / COVER — transparent, reveals the persistent background behind it ── */}
+      {/* ── GROUP 1 / COVER — cardImageUrl background, sticky within this section ── */}
       <section className={`${sectionBase} z-10`}>
+        <PageBackground imageUrl={cardImageUrl || envelopeImageUrl} overlay />
         {showFrontText && (
           <div className={coverPanelBase}>
             <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
@@ -736,8 +732,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         )}
       </section>
 
-      {/* ── GROUP 2 / ALL REMAINING INVITATION SECTIONS — transparent over persistent background ── */}
+      {/* ── GROUP 2 / ALL REMAINING INVITATION SECTIONS — envelopeImageUrl background ── */}
       <section className="relative z-10">
+        <PageBackground imageUrl={envelopeImageUrl || cardImageUrl} overlay />
         <div className="relative z-10 flex flex-col items-center gap-14 py-16 px-6">
 
           <RevealOnScroll>
