@@ -2440,6 +2440,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
                     initialsImageScale={inv.initialsImageScale}
                     envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                    waxSealImageUrl={design.waxSealId ? resolveImageUrl(waxSeals.find(s => String(s.id) === design.waxSealId)?.imageUrl || "") || undefined : undefined}
                     cardMaxWidth={design.cardMaxWidth}
                   />
                 )
