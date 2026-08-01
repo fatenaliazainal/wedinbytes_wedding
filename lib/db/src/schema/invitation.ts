@@ -105,6 +105,7 @@ export const invitationTable = pgTable("invitation", {
   nameFontSize: text("name_font_size"),
   badgeFontSize: text("badge_font_size"),
   nameColor: text("name_color"),
+  colorForeground: text("color_foreground"),
   bodyFontFamily: text("body_font_family"),
   // Music override (per-invitation)
   musicUrl: text("music_url"),
