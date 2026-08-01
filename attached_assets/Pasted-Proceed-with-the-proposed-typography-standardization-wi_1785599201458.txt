@@ -1,0 +1,234 @@
+Proceed with the proposed typography standardization, with the following adjustments.
+
+IMPORTANT:
+Keep ALL existing editor-controlled typography properties unchanged.
+
+Do not change:
+- nameFontFamily
+- nameFontSize
+- nameColor
+- fontHeading
+- bodyFontFamily
+- badgeFontSize
+- theme color configuration
+- any Admin/Customer Editor controls
+
+Apply only the previously identified hardcoded consistency fixes.
+
+MODIFICATIONS TO YOUR PROPOSAL:
+
+1. COVER HIERARCHY
+
+Do NOT treat WALIMATUL URUS, event day, and event date as exactly the same eyebrow tier.
+
+Use:
+
+WALIMATUL URUS
+→ eyebrow treatment
+→ text-xs
+→ uppercase
+→ tracked
+
+Couple Names
+→ keep completely editor-controlled
+→ no change
+
+Event Day
+→ small supporting treatment
+
+Event Date
+→ slightly stronger than the event day
+→ do not reduce the main cover date to an insignificant eyebrow.
+
+Maintain clear hierarchy:
+
+EYEBROW
+↓
+HERO NAMES
+↓
+DAY
+↓
+DATE
+
+2. GREETING
+
+Reduce the greeting from its current text-xl so it no longer competes with section headings.
+
+Keep its existing decorative/name font behavior.
+
+Do not automatically force it to look identical to normal body paragraphs.
+
+The goal is:
+decorative but secondary.
+
+3. INVITATION MESSAGE
+
+Change:
+
+text-xs italic
+
+to:
+
+text-sm
+leading-relaxed
+normal font-style
+
+Improve readability while keeping it subordinate to important event information.
+
+4. PARENTS' NAMES
+
+Remove font-semibold.
+
+Use:
+
+text-sm
+font-medium
+
+Parents should have gentle emphasis without looking like labels or headings.
+
+5. EVENT DETAILS
+
+Standardize:
+
+DATE
+TIME
+LOCATION
+
+using the SAME shared detailLabel style.
+
+Structure every block consistently:
+
+LABEL
+↓
+PRIMARY VALUE
+↓
+SECONDARY VALUE if applicable
+
+Add DATE label so all three information blocks follow the same structure.
+
+6. PRIMARY VALUES
+
+Date, time and venue are the same information tier.
+
+Standardize them around the existing text-base level.
+
+Do not make date independently larger than time and venue.
+
+7. VENUE
+
+Remove:
+text-primary
+italic
+
+Use the normal foreground treatment.
+
+Venue is functional primary information, not decorative accent text.
+
+8. PROGRAMME TIMES
+
+Remove text-primary from programme times.
+
+Keep the existing size/weight unless required for consistency.
+
+Use foreground color.
+
+Reserve primary color primarily for:
+- section headings
+- intentional decorative accents
+- existing couple-name treatment where currently intended
+
+Do not overuse primary color throughout informational text.
+
+9. LABELS
+
+Use the existing shared detailLabel consistently for:
+
+DATE
+TIME
+LOCATION
+THEME / DRESS CODE
+and equivalent informational labels.
+
+Remove duplicate/ad-hoc label styling where it serves the same role.
+
+10. SPACING RHYTHM
+
+Proceed with the proposed consistent spacing rhythm:
+
+4px:
+closely related text such as label → value
+
+12px:
+between separate information blocks
+
+16px:
+within larger content groups where already appropriate
+
+56px:
+existing major section spacing — preserve
+
+For the COVER specifically:
+
+Remove conflicting ad-hoc margin combinations such as:
+mb-8
+my-1
+mb-4
+mt-1
+mb-5
+
+Replace them with a structured spacing hierarchy.
+
+Do NOT simply make every element gap-4.
+
+The cover should visually group:
+
+Eyebrow
+
+Hero names
+
+Day + Date
+
+as three intentional groups.
+
+11. BODY COUPLE NAMES
+
+Do not allow the repeated couple names inside the body to compete with the main HERO couple names.
+
+Reduce their hardcoded visual prominence while preserving the configured font family and existing intended primary color.
+
+12. STRICT SCOPE
+
+Modify ONLY:
+
+artifacts/wedding-invite/src/components/WeddingCard.tsx
+
+Do not modify any other file.
+
+Do NOT change:
+- font families
+- editor controls
+- database
+- schema
+- backgrounds
+- images
+- colors/configuration
+- invitation dimensions
+- section heights
+- opening behavior
+- envelope
+- animations
+- RevealOnScroll
+- footer
+- footer popup
+- RSVP
+- music
+- navigation
+- content wording
+- unrelated spacing
+- any other functionality
+
+This is TYPOGRAPHY HIERARCHY + TYPOGRAPHY SPACING RHYTHM ONLY.
+
+Do not redesign the invitation.
+
+After implementation, report every class/value changed and confirm that no editor-controlled property was overridden.

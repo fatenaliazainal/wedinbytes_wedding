@@ -746,25 +746,34 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         </div>
         {showFrontText && (
           <div
-            className={coverPanelBase}
+            className="relative z-10 flex flex-col items-center text-center px-7 py-10 w-full"
             style={{
               opacity: hideFirstPageContent ? 0 : 1,
               transition: hideFirstPageContent ? "none" : "opacity 0.7s ease",
             }}
           >
-            <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase mb-8" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
-            {(coverBrideName && coverGroomName) && (
-              <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary my-1 drop-shadow-sm">
-                &amp;
-              </span>
-            )}
-            <h1 style={nameStyle} className="leading-tight drop-shadow-sm mb-4">{coverBrideName}</h1>
-            <p className="text-xs font-semibold tracking-[0.3em] text-foreground/70 uppercase">{invitation.eventDay}</p>
-            <p className="text-sm text-foreground/80 mt-1 mb-5 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
-            {hashtag && (
-              <p className="text-xs italic text-primary/80" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
-            )}
+            {/* Eyebrow — event type; subordinate to hero names */}
+            <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
+
+            {/* Hero names — fully editor-controlled: nameFontFamily / nameFontSize / nameColor */}
+            <div className="mt-8 flex flex-col items-center">
+              <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
+              {(coverBrideName && coverGroomName) && (
+                <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary drop-shadow-sm">
+                  &amp;
+                </span>
+              )}
+              <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverBrideName}</h1>
+            </div>
+
+            {/* Day + Date — grouped; date slightly stronger than day */}
+            <div className="mt-6 flex flex-col items-center space-y-1">
+              <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase">{invitation.eventDay}</p>
+              <p className="text-sm text-foreground/80 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
+              {hashtag && (
+                <p className="text-xs italic text-primary/80 mt-2" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
+              )}
+            </div>
           </div>
         )}
       </section>
@@ -777,26 +786,29 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Invitation Text */}
           <div className={detailBlock}>
-            <p className="text-xl text-primary leading-snug" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
+            {/* Greeting — decorative but secondary; name font kept, reduced from text-xl */}
+            <p className="text-base text-primary leading-relaxed" style={{ fontFamily: nameStyle.fontFamily }} dangerouslySetInnerHTML={{ __html: greetingText }} />
             <OrnamentDivider />
             {(brideParents || groomParents) && (
-              <div className="space-y-1">
+              <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
                 {groomParents && (
-                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: groomParents }} />
+                  <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: groomParents }} />
                 )}
                 {brideParents && groomParents && (
-                  <p className="text-primary text-sm font-semibold">&amp;</p>
+                  <p className="text-primary text-sm font-medium">&amp;</p>
                 )}
                 {brideParents && (
-                  <p className="text-sm font-semibold text-foreground" dangerouslySetInnerHTML={{ __html: brideParents }} />
+                  <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: brideParents }} />
                 )}
               </div>
             )}
-            <p className="text-xs text-foreground/70 italic leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
+            {/* Invitation message — readable size, not italic */}
+            <p className="text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
+            {/* Couple names (secondary mention) — name font + primary kept; size reduced so they don't compete with the cover hero */}
             <div className="space-y-0.5">
-               <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{groomName}</p>
+              <p className="text-base text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{groomName}</p>
               <p className="text-sm text-foreground/60">&amp;</p>
-               <p className="text-xl text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{brideName}</p>
+              <p className="text-base text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{brideName}</p>
             </div>
           </div>
           </RevealOnScroll>
@@ -806,21 +818,24 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <div className={detailBlock}>
              <p className={sectionTitleCls} style={sectionTitleStyle}>{t.eventDetailsLabel}</p>
             <OrnamentDivider />
+            {/* DATE block — now uses same detailLabel structure as TIME and LOCATION */}
             <div className="space-y-1">
-              <p className="text-lg text-foreground whitespace-pre-line" style={{ fontFamily: bodyFontFamily }}>
+              <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.dateLabel}</p>
+              <p className="text-base text-foreground whitespace-pre-line" style={{ fontFamily: bodyFontFamily }}>
                 {formatDateBlock(invitation.eventDate ?? "", invitation.eventDay ?? "", lang)}
               </p>
               {(inv.venueHijriDate as string) && (
-                <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{inv.venueHijriDate as string}</p>
+                <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{inv.venueHijriDate as string}</p>
               )}
             </div>
             <div className="space-y-1">
               <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.timeLabel}</p>
               <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.eventTime}</p>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.locationLabel}</p>
-              <p className="text-base italic text-primary" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
+              {/* Venue name — functional primary value, not decorative accent */}
+              <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
               {invitation.venueAddress && (
                 <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
               )}
@@ -849,7 +864,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 <div className="space-y-4" style={{ fontFamily: bodyFontFamily }}>
                   {(inv.itinerary as { time?: string; event?: string }[]).map((item, idx) => (
                     <div key={idx} className="space-y-0.5">
-                      <p className="text-sm font-semibold text-primary">{item.time || "—"}</p>
+                      {/* Programme time — foreground; reserve primary for section headings */}
+                      <p className="text-sm font-semibold text-foreground">{item.time || "—"}</p>
                       <p className="text-sm text-foreground/80">{item.event || "—"}</p>
                     </div>
                   ))}
@@ -893,7 +909,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <OrnamentDivider />
               {Boolean(inv.dresscodeTheme || invitation.dresscode) && (
                 <div className="space-y-1" style={{ fontFamily: bodyFontFamily }}>
-                  <p className="text-xs uppercase tracking-wider text-foreground/60">Theme</p>
+                  {/* Dress code label — aligned to shared detailLabel role */}
+                  <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>Theme</p>
                   <p className="text-base font-medium text-primary">
                     {String(inv.dresscodeTheme || invitation.dresscode)}
                   </p>
