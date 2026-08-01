@@ -29,7 +29,7 @@ export function EnvelopeDoors({
   // Shared embossed-glass surface — fully determined by synchronous CSS,
   // no image load required, so no async grey-rectangle flash.
   const glassSurface: React.CSSProperties = {
-    background: "rgba(255,255,255,0.19)",
+    background: "rgba(255,255,255,0.23)",
     backdropFilter: "blur(2px)",
     boxShadow: [
       "inset 0 0 0 1px rgba(255,255,255,0.55)",   // strong rim highlight
