@@ -112,6 +112,8 @@ export const invitationTable = pgTable("invitation", {
   musicUrl: text("music_url"),
   musicTitle: text("music_title"),
   musicArtist: text("music_artist"),
+  // Content overlay toggle (per-invitation override — false hides both flat wash and cloud layer)
+  overlayEnabled: boolean("overlay_enabled").notNull().default(true),
   // Footer / branding section
   showFooter: boolean("show_footer").notNull().default(true),
   footerText: text("footer_text"),

@@ -182,6 +182,7 @@ interface InvData {
   rsvpMaxOverallGuests: number;
   rsvpMaxGuestsPerInvitation: number;
   rsvpTimeSlots: string;
+  overlayEnabled: boolean;
   showFooter: boolean;
   footerText: string;
   footerUrl: string;
@@ -371,6 +372,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     rsvpEnabled: true, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
     rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
+    overlayEnabled: true,
     showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinbytes.com",
     socialLinks: [
       { platform: "website", url: "https://wedinbytes.com" },
@@ -612,6 +614,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
           rsvpTimeSlots: d.rsvpTimeSlots ?? "",
           // Buyer editors always inherit the current Admin footer defaults.
+          overlayEnabled: d.overlayEnabled ?? true,
           showFooter: (mode === "buyer" || mode === "business")
             ? (adminDefaults?.showFooter as boolean ?? true)
             : (d.showFooter ?? false),
@@ -945,6 +948,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         musicUrl: design.musicUrl || null,
         musicTitle: design.musicTitle || null,
         musicArtist: design.musicArtist || null,
+        overlayEnabled: inv.overlayEnabled,
       };
 
       // Standard invitations do not have the Money Gift feature. Do not send
@@ -2188,6 +2192,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </select>
                   </Field>
                 </div>
+                {/* Overlay toggle — available in all modes */}
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-border accent-primary"
+                    checked={inv.overlayEnabled}
+                    onChange={(e) => setInv((p) => ({ ...p, overlayEnabled: e.target.checked }))}
+                  />
+                  <span className="text-sm font-medium text-foreground">Show background overlay</span>
+                  <span className="text-xs text-muted-foreground">(translucent layer + cloud effect behind content)</span>
+                </label>
+
                 {/* Wax seal is per card-design (set in Admin → Edit Design), not per demo invitation */}
                 <div className="space-y-2">
                   {mode !== "demo" && (
@@ -2421,6 +2437,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   cardMaxWidth={design.cardMaxWidth}
                   rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
                   onRsvpClick={() => toast.info("RSVP form is functional in the public card preview only.")}
+                  overlayEnabled={inv.overlayEnabled}
                 />
               </div>
 

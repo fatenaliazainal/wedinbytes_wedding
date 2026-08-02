@@ -15,6 +15,8 @@ interface WeddingCardProps {
   onRsvpClick?: () => void;
   /** When true, hides the first-page cover text until the door animation completes. */
   hideFirstPageContent?: boolean;
+  /** When false, the content overlay (flat wash + cloud layer) is hidden entirely. Defaults to true. */
+  overlayEnabled?: boolean;
   /** Hex colour for the content overlay (defaults to #FFFFFF). */
   contentOverlayColor?: string;
   /** Opacity 0–100 for the content overlay (defaults to 55). */
@@ -638,7 +640,7 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity, overlayEnabled = true }: WeddingCardProps) {
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -703,6 +705,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   })();
 
   function PageBackground({ imageUrl, overlay = false }: { imageUrl?: string; overlay?: boolean }) {
+    const showOverlay = overlay && overlayEnabled;
     return (
       <div className="sticky top-0 z-0 -mb-[100dvh] h-[100dvh] w-full pointer-events-none">
         {imageUrl ? (
@@ -716,7 +719,25 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         ) : (
           <div className="absolute inset-0 bg-secondary" />
         )}
-        {overlay && <div className="absolute inset-0" style={{ background: overlayBg }} />}
+        {showOverlay && (
+          <>
+            {/* Subtle base wash so centre text stays readable */}
+            <div className="absolute inset-0" style={{ background: overlayBg, opacity: 0.35 }} />
+            {/* Light-cloud (awan) frame — dark edges inverted to white mist, transparent centre */}
+            <img
+              src="/cloud-overlay.png"
+              aria-hidden
+              alt=""
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+              style={{
+                filter: "invert(1)",
+                opacity: Math.min(1, Math.max(0, Number(contentOverlayOpacity ?? 55) / 100) * 1.2),
+                mixBlendMode: "screen",
+              }}
+            />
+          </>
+        )}
       </div>
     );
   }

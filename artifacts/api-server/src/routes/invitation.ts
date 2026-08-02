@@ -67,6 +67,8 @@ const ALLOWED_FIELDS = [
   "bodyFontFamily",
   // Music
   "musicUrl","musicTitle","musicArtist",
+  // Overlay toggle
+  "overlayEnabled",
   // Footer / branding
   "showFooter","footerText","footerUrl","socialLinks",
   // Pricing package
