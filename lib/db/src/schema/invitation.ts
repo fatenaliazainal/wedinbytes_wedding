@@ -179,6 +179,7 @@ export const cardDesignTable = pgTable("card_design", {
   // Content overlay — translucent color layer over the Group 2 background behind content sections
   contentOverlayColor: text("content_overlay_color"),   // hex e.g. "#FFFFFF"
   contentOverlayOpacity: text("content_overlay_opacity"), // 0–100 e.g. "55"
+  overlayEnabled: boolean("overlay_enabled").notNull().default(true),
   // Default wax seal for invitations using this design (buyers can override in their editor)
   waxSealId: integer("wax_seal_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

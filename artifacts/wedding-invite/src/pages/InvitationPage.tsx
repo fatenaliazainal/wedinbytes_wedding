@@ -391,7 +391,10 @@ export default function InvitationPage() {
           hideFirstPageContent={openingAnimation !== "envelope" && openingAnimation !== "none" && !doorsComplete}
           contentOverlayColor={templateDesign?.contentOverlayColor ?? undefined}
           contentOverlayOpacity={templateDesign?.contentOverlayOpacity ?? undefined}
-          overlayEnabled={(invitation as Record<string, unknown>).overlayEnabled !== false}
+          overlayEnabled={
+            (templateDesign as Record<string, unknown> | null)?.overlayEnabled !== false &&
+            (invitation as Record<string, unknown>).overlayEnabled !== false
+          }
         />
 
         {/* Hidden YouTube player for background music */}

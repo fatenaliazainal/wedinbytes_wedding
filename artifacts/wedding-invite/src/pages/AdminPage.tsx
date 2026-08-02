@@ -428,6 +428,7 @@ interface DesignFormData {
   openButtonText: string;
   contentOverlayColor: string;
   contentOverlayOpacity: string;
+  overlayEnabled: boolean;
   waxSealId: string;
 }
 
@@ -440,6 +441,7 @@ const EMPTY_FORM: DesignFormData = {
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
   contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
+  overlayEnabled: true,
   waxSealId: "",
 };
 
@@ -601,6 +603,7 @@ function DesignForm({
         openButtonText: form.openButtonText,
         contentOverlayColor: form.contentOverlayColor || "#FFFFFF",
         contentOverlayOpacity: form.contentOverlayOpacity || "55",
+        overlayEnabled: form.overlayEnabled,
         waxSealId: form.waxSealId ? parseInt(form.waxSealId, 10) : null,
       };
       const url = mode === "add"
@@ -947,6 +950,15 @@ function DesignForm({
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Content Overlay</p>
             <p className="text-[11px] text-muted-foreground -mt-1">Translucent colour layer shown over the background behind content sections (Event Details, etc.).</p>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-border accent-primary"
+                checked={form.overlayEnabled}
+                onChange={(e) => set("overlayEnabled")(e.target.checked as unknown as string)}
+              />
+              <span className="text-xs font-medium text-foreground">Show overlay</span>
+            </label>
             <ColorRow label="Overlay Colour" value={form.contentOverlayColor} onChange={set("contentOverlayColor")} />
             <label className="block">
               <span className="text-xs font-medium text-muted-foreground">
@@ -1179,6 +1191,7 @@ function DesignsTab() {
                     openButtonText: d.openButtonText ?? "OPEN",
                     contentOverlayColor: d.contentOverlayColor ?? "#FFFFFF",
                     contentOverlayOpacity: d.contentOverlayOpacity ?? "55",
+                    overlayEnabled: d.overlayEnabled ?? true,
                     waxSealId: d.waxSealId ? String(d.waxSealId) : "",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
