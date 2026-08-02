@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -275,13 +275,18 @@ function Countdown({ targetDate, labels, bodyFontFamily }: { targetDate: string;
   );
 }
 
+// Luxury easing curve — ease-out-quart, smooth deceleration
+const LUXURY_EASE = [0.22, 0.61, 0.36, 1] as const;
+
 function RevealOnScroll({ children, className }: { children: React.ReactNode; className?: string }) {
+  const shouldReduceMotion = useReducedMotion();
+  if (shouldReduceMotion) return <div className={className}>{children}</div>;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.85, ease: LUXURY_EASE }}
       className={className}
     >
       {children}
@@ -641,6 +646,12 @@ const CARD_TEXT = {
 };
 
 export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity, overlayEnabled = true }: WeddingCardProps) {
+  // Animation hooks — must be called before any conditional returns
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  // Subtle parallax: cover background drifts 8px upward over first 600px of scroll
+  const coverBgY = useTransform(scrollY, [0, 600], [0, shouldReduceMotion ? 0 : -8]);
+
   if (!invitation) return null;
 
   const maxWidth = cardMaxWidth || "420px";
@@ -751,20 +762,26 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       {/* ── GROUP 1 / COVER — background is INSIDE the section so both move as one unit.
           overflow-hidden on the section clips it correctly; no sticky needed here. ── */}
       <section className={`${sectionBase} z-10`}>
-        {/* Non-sticky cover background — travels with the section content on scroll */}
-        <div className="absolute inset-0 pointer-events-none">
+        {/* Non-sticky cover background — extended by 12px on all sides so parallax drift never exposes an edge */}
+        <motion.div
+          className="absolute -inset-[12px] pointer-events-none"
+          style={{ y: coverBgY }}
+        >
           {(cardImageUrl || envelopeImageUrl) ? (
-            <img
+            <motion.img
               src={cardImageUrl || envelopeImageUrl}
               aria-hidden
               alt=""
               draggable={false}
+              initial={shouldReduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.1, ease: LUXURY_EASE }}
               className="absolute inset-0 w-full h-full object-cover select-none"
             />
           ) : (
             <div className="absolute inset-0 bg-secondary" />
           )}
-        </div>
+        </motion.div>
         {showFrontText && (
           <div
             className="relative z-10 flex flex-col items-center text-center px-7 py-10 w-full"
@@ -864,15 +881,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               )}
               <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
             </div>
-            <a
+            <motion.a
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block py-2.5 px-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold tracking-wide shadow"
               style={{ fontFamily: bodyFontFamily }}
+              whileHover={shouldReduceMotion ? undefined : { y: -1 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
             >
               {t.viewOnMap}
-            </a>
+            </motion.a>
           </div>
           </RevealOnScroll>
 
@@ -977,13 +997,16 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             )}
             <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.rsvpPrompt}</p>
             {onRsvpClick && (
-              <button
+              <motion.button
                 onClick={onRsvpClick}
                 className="mt-2 px-6 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 style={{ fontFamily: bodyFontFamily }}
+                whileHover={shouldReduceMotion ? undefined : { y: -1 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
               >
                 {inv.rsvpEnabled === false ? "RSVP Ditutup" : "Sahkan Kehadiran"}
-              </button>
+              </motion.button>
             )}
           </div>
           </RevealOnScroll>

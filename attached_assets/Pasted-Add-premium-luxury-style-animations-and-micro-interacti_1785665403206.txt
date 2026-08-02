@@ -1,0 +1,288 @@
+Add premium, luxury-style animations and micro-interactions to the existing invitation website.
+
+## CRITICAL — DO NOT CHANGE THE EXISTING DESIGN
+
+This is an ANIMATION-ONLY enhancement.
+
+The invitation design is DYNAMIC and can change depending on the template selected by the user.
+
+DO NOT:
+
+* Redesign any section.
+* Change the existing layout.
+* Change element positions.
+* Change spacing, padding, or margins.
+* Change fonts or typography.
+* Change font sizes.
+* Change colors.
+* Change backgrounds.
+* Change images.
+* Change floral decorations.
+* Change frames or decorative elements.
+* Change button designs.
+* Change border radius.
+* Change shadows unless required temporarily for an interaction.
+* Change section heights.
+* Change navigation structure.
+* Change existing content.
+* Change responsive behavior.
+* Change desktop/mobile layouts.
+* Hardcode animations based on the currently displayed invitation design.
+* Hardcode specific element names, images, colors, flowers, or template content.
+* Modify the template/design data.
+* Modify existing business logic.
+* Modify existing functionality.
+
+The website MUST look exactly the same as it does now when animations are at rest.
+
+All enhancements must work generically with the existing dynamic invitation/template architecture.
+
+If an animation cannot be implemented without changing the design or layout, DO NOT implement that animation.
+
+---
+
+## 1. PREMIUM SCROLL REVEAL
+
+Add subtle scroll reveal animations to appropriate invitation content.
+
+Use:
+
+* opacity: 0 → 1
+* translateY: approximately 15–20px → 0
+* duration: approximately 700–900ms
+* smooth luxury easing
+
+Avoid:
+
+* bouncing
+* spinning
+* dramatic zoom
+* large movements
+* slide-from-left/right effects
+
+Animations should trigger naturally as elements enter the viewport.
+
+Do NOT alter their final position.
+
+---
+
+## 2. STAGGERED CONTENT REVEAL
+
+When several content elements exist inside the same section, reveal them sequentially with a very small delay.
+
+Example:
+
+Heading
+↓
+Names/content
+↓
+Details
+↓
+Button
+
+Use approximately 80–120ms stagger.
+
+Do not hardcode specific invitation text.
+
+Detect appropriate elements generically.
+
+---
+
+## 3. SUBTLE IMAGE REVEAL
+
+For suitable invitation images:
+
+opacity: 0 → 1
+
+and optionally:
+
+scale: 0.98 → 1
+
+Keep this extremely subtle.
+
+The image's final dimensions and position MUST remain exactly unchanged.
+
+---
+
+## 4. PREMIUM BUTTON MICRO-INTERACTIONS
+
+Keep all existing button designs exactly as they are.
+
+Only add interaction feedback.
+
+Desktop hover:
+
+* very subtle translateY(-1px or -2px)
+
+Tap/click:
+
+* scale approximately 0.97
+* smoothly return to 1
+
+Do not permanently modify button styling.
+
+---
+
+## 5. SUBTLE PARALLAX / DEPTH
+
+Where technically safe, add extremely subtle parallax movement to decorative/background elements.
+
+IMPORTANT:
+
+Do NOT assume the current flowers, curtains, frames, or images exist in every template.
+
+This system contains multiple dynamic designs.
+
+Only apply parallax to elements that can safely move without affecting layout.
+
+Maximum movement should be very small.
+
+Approximately 3–8px.
+
+Do NOT cause:
+
+* layout shifts
+* clipping
+* horizontal overflow
+* element overlap
+* mobile responsiveness issues
+
+If an element is unsafe to animate, leave it unchanged.
+
+---
+
+## 6. NAVIGATION MICRO-INTERACTION
+
+Do not redesign the existing navigation.
+
+If the navigation already supports active sections, add only a subtle transition when the active state changes.
+
+For example:
+
+scale: 1 → 1.04
+
+then return naturally.
+
+Do NOT introduce new navigation styling.
+
+Do NOT change icons or labels.
+
+---
+
+## 7. GALLERY / SLIDER TRANSITIONS
+
+If the existing invitation contains a gallery or slider, preserve its current functionality completely.
+
+Only improve the transition between images.
+
+Use:
+
+crossfade + extremely subtle scale transition.
+
+Do NOT:
+
+* replace the gallery library
+* restructure the gallery
+* change image dimensions
+* change controls
+* change autoplay behavior unless necessary
+
+---
+
+## 8. PERFORMANCE
+
+Animations must remain smooth on mobile devices.
+
+Prefer:
+
+* transform
+* opacity
+
+Avoid animations that trigger expensive layout recalculation.
+
+Use IntersectionObserver where appropriate instead of continuously listening to scroll events.
+
+Respect:
+
+prefers-reduced-motion
+
+If reduced motion is enabled, disable or greatly simplify non-essential animations.
+
+---
+
+## 9. DYNAMIC TEMPLATE SAFETY
+
+This requirement is extremely important.
+
+The invitation system supports DYNAMIC DESIGNS.
+
+Animations must enhance whatever design is currently rendered rather than being tied to one specific invitation.
+
+Do not write logic such as:
+
+"If template is olive..."
+"If flower exists..."
+"If curtain exists..."
+"If this particular design is selected..."
+
+Instead, build reusable animation behavior that can safely work across different invitation templates.
+
+The animation system must not interfere with template-specific styling.
+
+---
+
+## 10. NO LAYOUT SHIFT
+
+Before and after every animation:
+
+The element must occupy exactly the same layout space.
+
+Animations must use visual properties such as:
+
+transform
+opacity
+
+Do NOT animate:
+
+width
+height
+margin
+padding
+top/left positioning
+
+unless the existing component already intentionally uses those properties for animation.
+
+---
+
+## FINAL REQUIREMENT
+
+Before making changes, inspect the existing architecture and identify the safest place to introduce reusable animation behavior.
+
+Reuse the current components and architecture.
+
+DO NOT rewrite working components unnecessarily.
+
+DO NOT refactor unrelated code.
+
+DO NOT change the UI.
+
+DO NOT change the design.
+
+DO NOT change any existing feature or functionality.
+
+DO NOT modify the dynamic template system.
+
+Only introduce subtle, premium animation and interaction enhancements.
+
+After implementation, verify:
+
+1. Existing design remains pixel-identical at rest.
+2. Dynamic templates still render correctly.
+3. Mobile layout is unchanged.
+4. Desktop layout is unchanged.
+5. Existing navigation still works.
+6. Existing RSVP/buttons/links still work.
+7. Gallery functionality still works.
+8. No horizontal overflow is introduced.
+9. No visible layout shift occurs.
+10. Animations do not replay excessively while scrolling.

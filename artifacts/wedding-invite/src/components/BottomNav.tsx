@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Music, Calendar, MapPin, Phone, MessageSquare, VolumeX, Gift } from "lucide-react";
 import { type TabKey } from "@/components/DetailPanel";
 
@@ -82,7 +83,11 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
                 className="flex flex-col items-center gap-0.5 px-1 py-1 active:scale-90 transition-transform"
                 style={{ minWidth: 44 }}
               >
-                <div
+                <motion.div
+                  key={`nav-icon-${item.tab}-${String(isActive || playing)}`}
+                  initial={{ scale: (isActive || playing) ? 1.15 : 1 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
                   className="flex items-center justify-center w-7.5 h-7.5 rounded-full transition-colors"
                   style={{
                     backgroundColor: isActive || playing ? "rgba(255,255,255,0.25)" : "transparent",
@@ -99,7 +104,7 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
                   ) : (
                     <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.8} color="white" />
                   )}
-                </div>
+                </motion.div>
                 <span
                   className="text-[9px] font-medium leading-tight text-white"
                   style={{ opacity: isActive || playing ? 1 : 0.85 }}
