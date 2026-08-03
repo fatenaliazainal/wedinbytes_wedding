@@ -327,7 +327,11 @@ router.post("/auth/logout", (req, res) => {
       res.status(500).json({ error: "Unable to log out." });
       return;
     }
-    res.clearCookie("connect.sid");
+    res.clearCookie("connect.sid", {
+      httpOnly: true,
+      sameSite: process.env.REPLIT_DEV_DOMAIN ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production" || Boolean(process.env.REPLIT_DEV_DOMAIN),
+    });
     res.json({ ok: true });
   });
 });

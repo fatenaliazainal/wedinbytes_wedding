@@ -13,7 +13,6 @@ type Rsvp = {
   name: string;
   attending: boolean;
   numberOfGuests: number;
-  timeSlot?: string;
   message?: string;
   createdAt: string;
 };
@@ -64,13 +63,12 @@ export default function RsvpDashboardPage() {
     if (!selectedCard) return;
     const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const rows = [
-      ["Card", "Guest", "Attending", "Guests", "Time slot", "Message", "Submitted"],
+      ["Card", "Guest", "Attending", "Guests", "Message", "Submitted"],
       ...selectedCard.rsvps.map((rsvp) => [
         `${selectedCard.groomName} & ${selectedCard.brideName}`,
         rsvp.name,
         rsvp.attending ? "Yes" : "No",
         rsvp.numberOfGuests,
-        rsvp.timeSlot ?? "",
         rsvp.message ?? "",
         new Date(rsvp.createdAt).toLocaleString("en-GB"),
       ]),
@@ -134,7 +132,7 @@ export default function RsvpDashboardPage() {
                 <Users size={20} className="text-gray-400" />
               </div>
               <div className="grid grid-cols-3 gap-2 py-5 text-center text-sm"><div><b>{totals.attending}</b><p className="text-xs text-gray-500">Attending</p></div><div><b>{totals.notAttending}</b><p className="text-xs text-gray-500">Not attending</p></div><div><b>{totals.guests}</b><p className="text-xs text-gray-500">Total guests</p></div></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b text-xs text-gray-500"><th className="py-2">Guest</th><th>Status</th><th>Guests</th><th>Time slot</th><th>Message</th></tr></thead><tbody>{selectedCard?.rsvps.map((rsvp) => <tr key={rsvp.id} className="border-b border-gray-50"><td className="py-3 font-medium">{rsvp.name}</td><td>{rsvp.attending ? "Attending" : "Not attending"}</td><td>{rsvp.numberOfGuests}</td><td>{rsvp.timeSlot || "—"}</td><td className="max-w-[220px] truncate">{rsvp.message || "—"}</td></tr>)}</tbody></table>{selectedCard?.rsvps.length === 0 && <p className="py-8 text-center text-sm text-gray-400">No RSVP responses yet.</p>}</div>
+              <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b text-xs text-gray-500"><th className="py-2">Guest</th><th>Status</th><th>Guests</th><th>Message</th></tr></thead><tbody>{selectedCard?.rsvps.map((rsvp) => <tr key={rsvp.id} className="border-b border-gray-50"><td className="py-3 font-medium">{rsvp.name}</td><td>{rsvp.attending ? "Attending" : "Not attending"}</td><td>{rsvp.numberOfGuests}</td><td className="max-w-[220px] truncate">{rsvp.message || "—"}</td></tr>)}</tbody></table>{selectedCard?.rsvps.length === 0 && <p className="py-8 text-center text-sm text-gray-400">No RSVP responses yet.</p>}</div>
             </section>
           </div>
         )}

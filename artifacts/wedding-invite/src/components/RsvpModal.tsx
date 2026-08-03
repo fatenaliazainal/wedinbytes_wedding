@@ -106,7 +106,6 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
     name: z.string().min(2, "Sila masukkan nama"),
     attending: z.string(),
     numberOfGuests: z.coerce.number().min(1),
-    timeSlot: z.string().optional(),
     message: z.string().optional(),
   });
   type FormValues = z.infer<typeof formSchema>;
@@ -121,7 +120,6 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
       name: "",
       attending: "yes",
       numberOfGuests: 1,
-      timeSlot: "",
       message: "",
     },
   });
@@ -132,7 +130,6 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         name: "",
         attending: "yes",
         numberOfGuests: 1,
-        timeSlot: "",
         message: "",
       });
     }
@@ -150,7 +147,6 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
           name: values.name,
           attending: values.attending === "yes",
           numberOfGuests: values.numberOfGuests,
-           timeSlot: undefined,
           message: values.message,
         },
       },

@@ -12,7 +12,7 @@ type Rsvp = {
   name: string;
   attending: boolean;
   numberOfGuests: number;
-  timeSlot?: string;
+
   message?: string;
   createdAt: string;
 };
@@ -128,7 +128,6 @@ export default function RsvpPublicPage() {
                     <th className="px-4 py-3">Guest</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Guests</th>
-                    <th className="px-4 py-3">Time slot</th>
                     <th className="px-4 py-3">Message</th>
                     <th className="px-4 py-3">Submitted</th>
                   </tr>
@@ -147,7 +146,6 @@ export default function RsvpPublicPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-600">{rsvp.numberOfGuests}</td>
-                      <td className="px-4 py-3 text-gray-500">{rsvp.timeSlot || "—"}</td>
                       <td className="max-w-[200px] px-4 py-3 text-gray-500 truncate">{rsvp.message || "—"}</td>
                       <td className="px-4 py-3 text-xs text-gray-400">
                         {new Date(rsvp.createdAt).toLocaleDateString("en-MY", {
