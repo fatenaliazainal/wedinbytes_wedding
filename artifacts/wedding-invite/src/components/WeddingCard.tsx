@@ -808,8 +808,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
             {/* Day + Date — own group, tightly spaced internally */}
             <div className="mt-9 flex flex-col items-center space-y-1">
-              <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase">{invitation.eventDay}</p>
-              <p className="text-sm text-foreground/80 tracking-widest">{formatDatePipes(invitation.eventDate ?? "")}</p>
+              <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase" style={{ fontFamily: bodyFontFamily }}>{invitation.eventDay}</p>
+              <p className="text-sm text-foreground/80 tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
             </div>
 
             {/* Hashtag — own group, moderate breathing room from Day+Date */}
@@ -834,13 +834,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {(brideParents || groomParents) && (
               <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
                 {groomParents && (
-                  <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: groomParents }} />
+                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: groomParents }} />
                 )}
                 {brideParents && groomParents && (
-                  <p className="text-primary text-sm font-medium">&amp;</p>
+                  <p className="text-primary text-sm font-medium" style={{ fontFamily: bodyFontFamily }}>&amp;</p>
                 )}
                 {brideParents && (
-                  <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: brideParents }} />
+                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: brideParents }} />
                 )}
               </div>
             )}

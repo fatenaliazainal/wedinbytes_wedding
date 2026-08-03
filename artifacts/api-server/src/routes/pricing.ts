@@ -36,13 +36,24 @@ router.get("/pricing", async (req, res) => {
       featuresByPackage.get(f.packageId)!.push(f);
     }
 
-    const result = packages.map((pkg) => ({
-      ...pkg,
-      formConfig: normalizeBusinessFormConfig(pkg.formConfig, {
-        allowGallery: (featuresByPackage.get(pkg.id) ?? []).some((feature) => feature.name === "Photo Gallery"),
-      }),
-      features: featuresByPackage.get(pkg.id) ?? [],
-    }));
+    const now = new Date();
+    const result = packages.map((pkg) => {
+      const start = pkg.promoStartDate ? new Date(pkg.promoStartDate) : null;
+      const end = pkg.promoEndDate ? new Date(pkg.promoEndDate + "T23:59:59") : null;
+      const isPromoActive = Boolean(
+        pkg.promoPrice &&
+        (!start || now >= start) &&
+        (!end || now <= end),
+      );
+      return {
+        ...pkg,
+        isPromoActive,
+        formConfig: normalizeBusinessFormConfig(pkg.formConfig, {
+          allowGallery: (featuresByPackage.get(pkg.id) ?? []).some((feature) => feature.name === "Photo Gallery"),
+        }),
+        features: featuresByPackage.get(pkg.id) ?? [],
+      };
+    });
 
     res.json(result);
   } catch (err) {
@@ -133,7 +144,7 @@ router.patch("/admin/pricing/:id", async (req, res) => {
     }
     const body = req.body as Record<string, unknown>;
     const update: Record<string, unknown> = {};
-    const fields = ["name", "price", "description", "badgeText", "showBadge", "isFeatured", "isActive", "sortOrder"];
+    const fields = ["name", "price", "description", "badgeText", "showBadge", "isFeatured", "isActive", "sortOrder", "promoPrice", "promoStartDate", "promoEndDate"];
     for (const field of fields) {
       if (field in body) update[field] = body[field];
     }

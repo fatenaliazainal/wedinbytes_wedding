@@ -317,6 +317,10 @@ export interface PricingPackage {
   sortOrder: number;
   formConfig: PricingPackageFormConfig;
   features: PricingFeature[];
+  promoPrice?: string | null;
+  promoStartDate?: string | null;
+  promoEndDate?: string | null;
+  isPromoActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }

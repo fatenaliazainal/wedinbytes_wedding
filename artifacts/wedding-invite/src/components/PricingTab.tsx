@@ -71,6 +71,9 @@ interface PackageFormData {
   isFeatured: boolean;
   isActive: boolean;
   formConfigJson: string;
+  promoPrice: string;
+  promoStartDate: string;
+  promoEndDate: string;
 }
 
 interface FeatureFormData {
@@ -126,6 +129,25 @@ function PackageModal({
             <Toggle label="Show Badge" checked={form.showBadge} onChange={(v) => set("showBadge")(v)} />
             <Toggle label="Featured" checked={form.isFeatured} onChange={(v) => set("isFeatured")(v)} />
             <Toggle label="Active" checked={form.isActive} onChange={(v) => set("isActive")(v)} />
+          </div>
+          {/* Promotion */}
+          <div className="rounded-xl border border-border p-4 space-y-3 bg-muted/30">
+            <p className="text-xs font-semibold text-foreground">Promosi (optional)</p>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Harga Promosi (RM)</label>
+              <input className={inputCls} type="number" min="0" step="1" value={form.promoPrice} onChange={(e) => set("promoPrice")(e.target.value)} placeholder="e.g. 49" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Tarikh Mula</label>
+                <input className={inputCls} type="date" value={form.promoStartDate} onChange={(e) => set("promoStartDate")(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Tarikh Tamat</label>
+                <input className={inputCls} type="date" value={form.promoEndDate} onChange={(e) => set("promoEndDate")(e.target.value)} />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Kosongkan Harga Promosi untuk remove promosi. Jika tiada tarikh, promosi aktif selama mana Harga Promosi diisi.</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Business customer form configuration</label>
@@ -244,6 +266,9 @@ export default function PricingTab() {
         showBadge: form.showBadge,
         isFeatured: form.isFeatured,
         isActive: form.isActive,
+        promoPrice: form.promoPrice.trim() || null,
+        promoStartDate: form.promoStartDate || null,
+        promoEndDate: form.promoEndDate || null,
         formConfig: (() => {
         try {
           return JSON.parse(form.formConfigJson);
@@ -364,6 +389,7 @@ export default function PricingTab() {
           onClick={() => setPackageModal({
             name: "", price: "", description: "", badgeText: "", showBadge: false,
             isFeatured: false, isActive: true, formConfigJson: '{"fields":[],"hiddenFields":{}}',
+            promoPrice: "", promoStartDate: "", promoEndDate: "",
           })}
           disabled={anyLoading}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
@@ -394,7 +420,13 @@ export default function PricingTab() {
                   {pkg.isFeatured && <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Featured</span>}
                   {!pkg.isActive && <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Inactive</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">RM{pkg.price} · {pkg.description || "No description"}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(pkg as any).promoPrice
+                    ? <><s>RM{pkg.price}</s> → <span className="text-rose-600 font-medium">RM{(pkg as any).promoPrice}</span>{(pkg as any).promoStartDate || (pkg as any).promoEndDate ? ` (${(pkg as any).promoStartDate ?? "?"} – ${(pkg as any).promoEndDate ?? "?"})` : " (aktif)"}</>
+                    : <>RM{pkg.price}</>
+                  }
+                  {" · "}{pkg.description || "No description"}
+                </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button
@@ -424,6 +456,9 @@ export default function PricingTab() {
                     isFeatured: pkg.isFeatured,
                     isActive: pkg.isActive,
                     formConfigJson: JSON.stringify(pkg.formConfig ?? { fields: [], hiddenFields: {} }, null, 2),
+                    promoPrice: (pkg as any).promoPrice ?? "",
+                    promoStartDate: (pkg as any).promoStartDate ?? "",
+                    promoEndDate: (pkg as any).promoEndDate ?? "",
                   })}
                   className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
                   title="Edit package"
