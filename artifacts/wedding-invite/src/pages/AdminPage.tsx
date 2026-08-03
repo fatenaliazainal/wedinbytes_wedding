@@ -331,15 +331,21 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
 
 // ── Colour Picker Row ─────────────────────────────────────────────────────────
 
+type PreviewKind =
+  | { type: "text"; sample: string; font?: "script" | "sans" }
+  | { type: "button"; sample: string }
+  | { type: "surface"; sample: string };
+
 function ColorRow({
-  label, value, onChange, helperText,
-}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; helperText?: string }) {
+  label, value, onChange, helperText, preview,
+}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; helperText?: string; preview?: PreviewKind }) {
   return (
     <div className="flex items-center gap-3">
       <HexColorInput
         value={value}
         label={label}
         helperText={helperText}
+        preview={preview}
         testId={`admin-color-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
         onChange={(hex) => onChange(hexToHsl(hex))}
       />
@@ -941,19 +947,19 @@ function DesignForm({
 
             {/* Typography */}
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Typography</p>
-            <ColorRow label="Primary Text" helperText="Headings, couple names & prominent text" value={form.nameColor} onChange={set("nameColor")} />
-            <ColorRow label="Secondary Text" helperText="Paragraphs, dates & supporting text" value={form.colorForeground ?? ""} onChange={set("colorForeground")} />
+            <ColorRow label="Primary Text" helperText="Couple names & headings" value={form.nameColor} onChange={set("nameColor")} preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }} />
+            <ColorRow label="Secondary Text" helperText="Dates, venue & body paragraphs" value={form.colorForeground ?? ""} onChange={set("colorForeground")} preview={{ type: "text", sample: "1 Jan 2025" }} />
 
             {/* Brand Colours */}
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Brand Colours</p>
-            <ColorRow label="Primary" helperText="Main buttons, active states & primary accents" value={form.colorPrimary} onChange={set("colorPrimary")} />
-            <ColorRow label="Secondary" helperText="Supporting controls & secondary elements" value={form.colorSecondary} onChange={set("colorSecondary")} />
-            <ColorRow label="Accent" helperText="Soft highlights & decorative elements" value={form.colorAccent} onChange={set("colorAccent")} />
+            <ColorRow label="Primary" helperText="Butang utama & RSVP" value={form.colorPrimary} onChange={set("colorPrimary")} preview={{ type: "button", sample: "RSVP" }} />
+            <ColorRow label="Secondary" helperText="Butang & elemen sokongan" value={form.colorSecondary} onChange={set("colorSecondary")} preview={{ type: "button", sample: "Maps" }} />
+            <ColorRow label="Accent" helperText="Garisan hiasan & highlights" value={form.colorAccent} onChange={set("colorAccent")} preview={{ type: "surface", sample: "Accent" }} />
 
             {/* Background & Surfaces */}
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Background &amp; Surfaces</p>
-            <ColorRow label="Page Background" helperText="Main page background" value={form.colorBackground} onChange={set("colorBackground")} />
-            <ColorRow label="Card / Modal Background" helperText="Cards, popup/modal & inner panels" value={form.colorCard} onChange={set("colorCard")} />
+            <ColorRow label="Page Background" helperText="Latar belakang halaman" value={form.colorBackground} onChange={set("colorBackground")} preview={{ type: "surface", sample: "Page" }} />
+            <ColorRow label="Card / Modal Background" helperText="Kad, popup & panel dalam" value={form.colorCard} onChange={set("colorCard")} preview={{ type: "surface", sample: "Card" }} />
           </div>
 
           {/* Content Overlay */}

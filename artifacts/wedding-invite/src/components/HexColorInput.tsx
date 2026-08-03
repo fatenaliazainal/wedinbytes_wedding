@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { colorToHex, isHexColor } from "@/lib/color-format";
 
+type PreviewKind =
+  | { type: "text"; sample: string; font?: "script" | "sans" }
+  | { type: "button"; sample: string }
+  | { type: "surface"; sample: string };
+
 type HexColorInputProps = {
   value: string;
   onChange: (hex: string) => void;
   label?: string;
   helperText?: string;
+  preview?: PreviewKind;
   compact?: boolean;
   testId?: string;
 };
 
-export function HexColorInput({ value, onChange, label, helperText, compact = false, testId }: HexColorInputProps) {
+export function HexColorInput({ value, onChange, label, helperText, preview, compact = false, testId }: HexColorInputProps) {
   const safeValue = value ?? "";
   const [draft, setDraft] = useState(() => colorToHex(safeValue));
   const hexValue = colorToHex(safeValue);
@@ -41,6 +47,7 @@ export function HexColorInput({ value, onChange, label, helperText, compact = fa
           data-testid={testId ? `${testId}-picker` : undefined}
         />
       </label>
+
       <div className="min-w-0 flex-1">
         {label && <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">{label}</p>}
         {helperText && <p className="mb-0.5 text-[10px] text-muted-foreground/70 italic">{helperText}</p>}
@@ -62,6 +69,40 @@ export function HexColorInput({ value, onChange, label, helperText, compact = fa
           data-testid={testId ? `${testId}-hex` : undefined}
         />
       </div>
+
+      {/* Live mini-preview */}
+      {preview && (
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          {preview.type === "text" && (
+            <span
+              style={{
+                color: hexValue,
+                fontFamily: preview.font === "script" ? "Georgia, serif" : undefined,
+                fontStyle: preview.font === "script" ? "italic" : undefined,
+              }}
+              className="text-[11px] font-semibold whitespace-nowrap"
+            >
+              {preview.sample}
+            </span>
+          )}
+          {preview.type === "button" && (
+            <span
+              style={{ backgroundColor: hexValue }}
+              className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white whitespace-nowrap"
+            >
+              {preview.sample}
+            </span>
+          )}
+          {preview.type === "surface" && (
+            <span
+              style={{ backgroundColor: hexValue }}
+              className="h-6 w-10 rounded-md border border-border/60 block"
+              title={preview.sample}
+            />
+          )}
+          <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap">{preview.sample}</span>
+        </div>
+      )}
     </div>
   );
 }
