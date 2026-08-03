@@ -864,6 +864,19 @@ export default function BusinessDashboardPage() {
                               )}
                               <button
                                 onClick={async () => {
+                                  const rsvpUrl = `${window.location.origin}${BASE}/rsvp-share/${encodeURIComponent(item.token)}`;
+                                  await navigator.clipboard.writeText(rsvpUrl);
+                                  toast.success("RSVP link copied");
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                                title="Copy shareable RSVP response link"
+                                data-testid={`button-copy-rsvp-link-${item.id}`}
+                              >
+                                <Users size={13} />
+                                RSVP Link
+                              </button>
+                              <button
+                                onClick={async () => {
                                   if (!inviteUrl) {
                                     toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
                                     return;

@@ -149,6 +149,40 @@ router.get("/rsvp/buyer", async (req, res) => {
   }
 });
 
+// Public shareable RSVP summary — no auth required.
+// Business accounts share this link with their customers so they can see responses.
+router.get("/rsvp/public/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const [invitation] = await db
+      .select({
+        groomName: invitationTable.groomName,
+        brideName: invitationTable.brideName,
+        eventType: invitationTable.eventType,
+        eventDate: invitationTable.eventDate,
+      })
+      .from(invitationTable)
+      .where(eq(invitationTable.token, token))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found" });
+      return;
+    }
+    const rows = await db
+      .select()
+      .from(rsvpTable)
+      .where(eq(rsvpTable.invitationToken, token))
+      .orderBy(rsvpTable.createdAt);
+    res.json({
+      invitation,
+      rsvps: rows.map(normalizeRsvpForApi),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to load public RSVP summary");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
   try {
     const body = CreateRsvpBody.safeParse(req.body);

@@ -19,6 +19,7 @@ import EditorPage from "@/pages/EditorPage";
 import AdminEditorPage from "@/pages/AdminEditorPage";
 import DashboardPage from "@/pages/DashboardPage";
 import RsvpDashboardPage from "@/pages/RsvpDashboardPage";
+import RsvpPublicPage from "@/pages/RsvpPublicPage";
 import MarketingHomePage from "@/pages/MarketingHomePage";
 import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/rsvp" component={RsvpDashboardPage} />
+      <Route path="/rsvp-share/:token" component={RsvpPublicPage} />
       <Route path="/business/dashboard" component={BusinessDashboardPage} />
       <Route path="/business/profile" component={BusinessProfilePage} />
       <Route path="/business/editor" component={BusinessEditorRoute} />
