@@ -118,6 +118,17 @@ const SCRIPT_FONTS = [
   { value: "Lily Script One", label: "Lily Script One" },
   { value: "Playwrite South Africa", label: "Playwrite South Africa" },
   { value: "Playwrite España", label: "Playwrite España" },
+  // — 10 new popular script/display fonts —
+  { value: "Sacramento", label: "Sacramento" },
+  { value: "Parisienne", label: "Parisienne" },
+  { value: "Tangerine", label: "Tangerine" },
+  { value: "Satisfy", label: "Satisfy" },
+  { value: "Italianno", label: "Italianno" },
+  { value: "Carattere", label: "Carattere" },
+  { value: "Comforter Brush", label: "Comforter Brush" },
+  { value: "Birthstone", label: "Birthstone" },
+  { value: "Cinzel Decorative", label: "Cinzel Decorative" },
+  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
 ];
 
 const CLASSIC_FONTS = [
@@ -130,6 +141,17 @@ const CLASSIC_FONTS = [
   { value: "PT Serif", label: "PT Serif" },
   { value: "Inria Serif", label: "Inria Serif" },
   { value: "Google Sans Flex", label: "Google Sans Flex" },
+  // — 10 new popular body fonts —
+  { value: "Montserrat", label: "Montserrat" },
+  { value: "Raleway", label: "Raleway" },
+  { value: "Nunito", label: "Nunito" },
+  { value: "EB Garamond", label: "EB Garamond" },
+  { value: "Josefin Sans", label: "Josefin Sans" },
+  { value: "Cinzel", label: "Cinzel" },
+  { value: "Libre Baskerville", label: "Libre Baskerville" },
+  { value: "Source Serif 4", label: "Source Serif 4" },
+  { value: "DM Serif Display", label: "DM Serif Display" },
+  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
 ];
 
 type Contact = { name: string; phone: string };
