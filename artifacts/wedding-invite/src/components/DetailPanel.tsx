@@ -341,6 +341,17 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
             🔗 Shop Link
           </a>
         )}
+        <button
+          type="button"
+          onClick={() => {
+            setTempahSet(prev => new Set(prev).add(selectedItem.id));
+            setSelectedItem(null);
+          }}
+          className="w-full rounded-full border border-primary/30 py-2.5 text-sm font-medium text-primary/70 hover:bg-primary/5 transition-colors"
+          style={{ fontFamily: bodyFont }}
+        >
+          ✓ I've Purchased This
+        </button>
         {selectedItem.notes && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nota Tambahan</p>
