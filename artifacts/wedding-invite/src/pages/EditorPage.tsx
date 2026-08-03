@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -10,9 +16,30 @@ import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Calendar, Heart, MapPin, Phone, MessageSquare, Menu, X, User, LogOut, Loader2, Plus, Trash2, Gift } from "lucide-react";
-import { useListDesigns, useGetActiveDesign } from "@workspace/api-client-react";
-import type { BusinessInvitationSummary, PricingPackage } from "@workspace/api-client-react";
+import {
+  Music,
+  Calendar,
+  Heart,
+  MapPin,
+  Phone,
+  MessageSquare,
+  Menu,
+  X,
+  User,
+  LogOut,
+  Loader2,
+  Plus,
+  Trash2,
+  Gift,
+} from "lucide-react";
+import {
+  useListDesigns,
+  useGetActiveDesign,
+} from "@workspace/api-client-react";
+import type {
+  BusinessInvitationSummary,
+  PricingPackage,
+} from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const PACKAGE_SUPPORT_WHATSAPP = "https://wa.me/601128134211";
@@ -89,6 +116,8 @@ const SCRIPT_FONTS = [
   { value: "Meow Script", label: "Meow Script" },
   { value: "Rouge Script", label: "Rouge Script" },
   { value: "Lily Script One", label: "Lily Script One" },
+  { value: "Playwrite South Africa", label: "Playwrite South Africa" },
+  { value: "Playwrite España", label: "Playwrite España" },
 ];
 
 const CLASSIC_FONTS = [
@@ -97,6 +126,10 @@ const CLASSIC_FONTS = [
   { value: "Lato", label: "Lato" },
   { value: "Georgia, serif", label: "Georgia" },
   { value: "Arial, sans-serif", label: "Arial" },
+  { value: "Noto Serif", label: "Noto Serif" },
+  { value: "PT Serif", label: "PT Serif" },
+  { value: "Inria Serif", label: "Inria Serif" },
+  { value: "Google Sans Flex", label: "Google Sans Flex" },
 ];
 
 type Contact = { name: string; phone: string };
@@ -104,8 +137,14 @@ type Contact = { name: string; phone: string };
 function normalizeContacts(raw: unknown, fallbackPhone: string): Contact[] {
   if (Array.isArray(raw)) {
     return raw
-      .filter((c): c is { name?: unknown; phone?: unknown } => c && typeof c === "object")
-      .map((c) => ({ name: String(c.name ?? ""), phone: String(c.phone ?? "") }))
+      .filter(
+        (c): c is { name?: unknown; phone?: unknown } =>
+          c && typeof c === "object",
+      )
+      .map((c) => ({
+        name: String(c.name ?? ""),
+        phone: String(c.phone ?? ""),
+      }))
       .filter((c) => c.name || c.phone);
   }
   if (fallbackPhone) return [{ name: "Contact", phone: fallbackPhone }];
@@ -226,7 +265,15 @@ function getDayName(dateStr: string, lang: "ms" | "en"): string {
   const d = new Date(year, month - 1, day);
   if (isNaN(d.getTime())) return "";
   const ms = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
-  const en = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const en = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
   return lang === "ms" ? ms[d.getDay()] : en[d.getDay()];
 }
 
@@ -240,14 +287,33 @@ function formatTime12h(time24: string): string {
 }
 
 const eventDateMonths: Record<string, number> = {
-  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
-  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
-  januari: 1, februari: 2, mac: 3, mei: 5, jun: 6,
-  julai: 7, ogos: 8, oktober: 10, disember: 12,
+  january: 1,
+  february: 2,
+  march: 3,
+  april: 4,
+  may: 5,
+  june: 6,
+  july: 7,
+  august: 8,
+  september: 9,
+  october: 10,
+  november: 11,
+  december: 12,
+  januari: 1,
+  februari: 2,
+  mac: 3,
+  mei: 5,
+  jun: 6,
+  julai: 7,
+  ogos: 8,
+  oktober: 10,
+  disember: 12,
 };
 
 function isEventDatePassed(eventDate: string | null | undefined): boolean {
-  const normalized = String(eventDate ?? "").trim().toLowerCase();
+  const normalized = String(eventDate ?? "")
+    .trim()
+    .toLowerCase();
   if (!normalized) return false;
 
   let year = 0;
@@ -275,33 +341,52 @@ function isEventDatePassed(eventDate: string | null | undefined): boolean {
 
   const event = new Date(year, month - 1, day);
   if (
-    month < 1 || month > 12 || day < 1
-    || event.getFullYear() !== year
-    || event.getMonth() !== month - 1
-    || event.getDate() !== day
-  ) return false;
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    event.getFullYear() !== year ||
+    event.getMonth() !== month - 1 ||
+    event.getDate() !== day
+  )
+    return false;
   const today = new Date();
   event.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
   return today.getTime() > event.getTime();
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium text-gray-700">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+        {label}
+        {required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
     </div>
   );
 }
 
-const inputCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
-const selectCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
-const textareaCls = "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white resize-none";
+const inputCls =
+  "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
+const selectCls =
+  "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
+const textareaCls =
+  "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white resize-none";
 
-export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "business" | "demo" | "admin" }) {
+export default function EditorPage({
+  mode = "buyer",
+}: {
+  mode?: "buyer" | "business" | "demo" | "admin";
+}) {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -316,7 +401,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     const requestedTab = params.get("tab") || "reka-bentuk";
     // Footer branding is admin-controlled, so customer editors (Buyer and
     // Business Account) should open the same tab set and landing tab.
-    return (mode === "buyer" || mode === "business") && requestedTab === "footer"
+    return (mode === "buyer" || mode === "business") &&
+      requestedTab === "footer"
       ? "reka-bentuk"
       : requestedTab;
   });
@@ -335,7 +421,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
 
   const activePackage = packages.find((p) => p.id === activePackageId);
-  const activeFeatureNames = useMemo(() => new Set((activePackage?.features ?? []).map((f) => f.name)), [activePackage]);
+  const activeFeatureNames = useMemo(
+    () => new Set((activePackage?.features ?? []).map((f) => f.name)),
+    [activePackage],
+  );
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
       if (tab.id === "footer") return mode === "admin" || mode === "demo";
@@ -353,34 +442,85 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     token: "",
     isPurchased: false,
     isCustomerOrder: false,
-    groomName: "", brideName: "", eventType: "Walimatul Urus",
-    eventDate: "", eventDay: "", eventTime: "11:00 pagi – 4:00 petang",
-    eventStartTime: "11:00", eventEndTime: "16:00",
-    venueName: "", venueAddress: "", venueCity: "", venueState: "",
-    venueMapUrl: "", groomParents: "", brideParents: "", contactPhone: "", contacts: [],
-    dresscode: "", dresscodeTheme: "", dresscodeColors: [], message: "",
-    shortCoupleName: "", groomShortName: "", brideShortName: "", coupleCount: 1,
-    groomInitial: "", brideInitial: "", coverGroomName: "", coverBrideName: "", envelopeInitials: "", envelopeInitialsSize: "", initialsImageUrl: "", initialsImageScale: 100, page2Initials: "",
-    eventStartDateTime: "", eventEndDateTime: "", coverDateText: "",
-    additionalInfo: "", coverTitle: "", hashtag: "", language: "ms", showFrontText: true,
+    groomName: "",
+    brideName: "",
+    eventType: "Walimatul Urus",
+    eventDate: "",
+    eventDay: "",
+    eventTime: "11:00 pagi – 4:00 petang",
+    eventStartTime: "11:00",
+    eventEndTime: "16:00",
+    venueName: "",
+    venueAddress: "",
+    venueCity: "",
+    venueState: "",
+    venueMapUrl: "",
+    groomParents: "",
+    brideParents: "",
+    contactPhone: "",
+    contacts: [],
+    dresscode: "",
+    dresscodeTheme: "",
+    dresscodeColors: [],
+    message: "",
+    shortCoupleName: "",
+    groomShortName: "",
+    brideShortName: "",
+    coupleCount: 1,
+    groomInitial: "",
+    brideInitial: "",
+    coverGroomName: "",
+    coverBrideName: "",
+    envelopeInitials: "",
+    envelopeInitialsSize: "",
+    initialsImageUrl: "",
+    initialsImageScale: 100,
+    page2Initials: "",
+    eventStartDateTime: "",
+    eventEndDateTime: "",
+    coverDateText: "",
+    additionalInfo: "",
+    coverTitle: "",
+    hashtag: "",
+    language: "ms",
+    showFrontText: true,
     greetingText: "Assalamualaikum wbt & salam sejahtera",
-    doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
-    invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
-    hostName: "", hostCount: 1, venueHijriDate: "", schedule: "", galleryImages: [],
+    doaText:
+      "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
+    invitationText:
+      "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
+    hostName: "",
+    hostCount: 1,
+    venueHijriDate: "",
+    schedule: "",
+    galleryImages: [],
     itinerary: [
       { time: "10:00 PG", event: "Ketibaan Tetamu" },
       { time: "11:00 PG", event: "Majlis Akad Nikah" },
       { time: "12:30 TGH", event: "Majlis Makan" },
       { time: "02:00 PTG", event: "Majlis Bersurai" },
     ],
-    giftDisplay: true, giftTitle: "eGift", giftRecipient: "Nama Penerima", giftBankName: "Maybank", giftAccountNumber: "1234567890", giftQrCodes: [],
-    registryRecipientName: "", registryRecipientAddress: "",
+    giftDisplay: true,
+    giftTitle: "eGift",
+    giftRecipient: "Nama Penerima",
+    giftBankName: "Maybank",
+    giftAccountNumber: "1234567890",
+    giftQrCodes: [],
+    registryRecipientName: "",
+    registryRecipientAddress: "",
     designCode: "FL001",
-    rsvpEnabled: true, rsvpAdditionalInfo: "", rsvpDeadline: "",
-    rsvpIntroText: "", rsvpFormNote: "",
-    rsvpMaxOverallGuests: 1000, rsvpMaxGuestsPerInvitation: 10, rsvpTimeSlots: "",
+    rsvpEnabled: true,
+    rsvpAdditionalInfo: "",
+    rsvpDeadline: "",
+    rsvpIntroText: "",
+    rsvpFormNote: "",
+    rsvpMaxOverallGuests: 1000,
+    rsvpMaxGuestsPerInvitation: 10,
+    rsvpTimeSlots: "",
     overlayEnabled: true,
-    showFooter: true, footerText: "Dapatkan kad digital anda di:", footerUrl: "wedinbytes.com",
+    showFooter: true,
+    footerText: "Dapatkan kad digital anda di:",
+    footerUrl: "wedinbytes.com",
     socialLinks: [
       { platform: "website", url: "https://wedinbytes.com" },
       { platform: "tiktok", url: "https://tiktok.com/@wedinbytes" },
@@ -390,29 +530,53 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   });
 
   const [design, setDesign] = useState<DesignData>({
-    designCode: "FL001", openingAnimation: "doors", openButtonText: "BUKA",
-    nameFontFamily: "Dancing Script", nameFontSize: "38", badgeFontSize: "24",
-    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorHeading: "", colorMuted: "", bodyFontFamily: "Poppins",
-    colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
+    designCode: "FL001",
+    openingAnimation: "doors",
+    openButtonText: "BUKA",
+    nameFontFamily: "Dancing Script",
+    nameFontSize: "38",
+    badgeFontSize: "24",
+    nameColor: "0 0% 20%",
+    colorForeground: "0 0% 10%",
+    colorHeading: "",
+    colorMuted: "",
+    bodyFontFamily: "Poppins",
+    colorPrimary: "142 45% 35%",
+    colorSecondary: "142 30% 92%",
     colorAccent: "142 30% 92%",
-    colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
-    musicUrl: "", musicTitle: "", musicArtist: "",
-    cardImageUrl: "wed_card_design/20260531-041903-27796.jpg", envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
+    colorBackground: "142 20% 96%",
+    colorCard: "0 0% 100%",
+    musicUrl: "",
+    musicTitle: "",
+    musicArtist: "",
+    cardImageUrl: "wed_card_design/20260531-041903-27796.jpg",
+    envelopeImageUrl: "wed_card_design/20260531-041903-27796.jpg",
     cardMaxWidth: "420px",
     waxSealId: "",
   });
   // Wax seals — loaded once for the envelope-style picker.
-  const [waxSeals, setWaxSeals] = useState<{ id: number; name: string; imageUrl: string; isActive: boolean }[]>([]);
+  const [waxSeals, setWaxSeals] = useState<
+    { id: number; name: string; imageUrl: string; isActive: boolean }[]
+  >([]);
   useEffect(() => {
     fetch("/api/wax-seals")
-      .then(r => r.ok ? r.json() : [])
-      .then(seals => { if (Array.isArray(seals)) setWaxSeals(seals); })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((seals) => {
+        if (Array.isArray(seals)) setWaxSeals(seals);
+      })
       .catch(() => {});
   }, []);
   const t = createTranslator(inv.language);
 
   // Gift Registry state — managed via direct API calls, not part of the invitation save payload.
-  type RegistryItem = { id: number; name: string; url: string | null; thumbnailUrl: string | null; notes?: string | null; sortOrder: number };
+  type RegistryItem = {
+    id: number;
+    name: string;
+    url: string | null;
+    thumbnailUrl: string | null;
+    notes?: string | null;
+    sortOrder: number;
+  };
   const [registryItems, setRegistryItems] = useState<RegistryItem[]>([]);
   const [registryLoading, setRegistryLoading] = useState(false);
   const [newRegName, setNewRegName] = useState("");
@@ -422,22 +586,53 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [editRegUrl, setEditRegUrl] = useState("");
   const [newRegNotes, setNewRegNotes] = useState("");
   const [editRegNotes, setEditRegNotes] = useState("");
-  const [uploadingRegThumb, setUploadingRegThumb] = useState<number | null>(null);
+  const [uploadingRegThumb, setUploadingRegThumb] = useState<number | null>(
+    null,
+  );
   useEffect(() => {
-    if (!inv.token || (mode !== "demo" && !activeFeatureNames.has("Gift Registry"))) { setRegistryItems([]); return; }
+    if (
+      !inv.token ||
+      (mode !== "demo" && !activeFeatureNames.has("Gift Registry"))
+    ) {
+      setRegistryItems([]);
+      return;
+    }
     setRegistryLoading(true);
     fetch(`${BASE}/api/registry/${inv.token}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : [])
-      .then((items: RegistryItem[]) => setRegistryItems(Array.isArray(items) ? items : []))
+      .then((r) => (r.ok ? r.json() : []))
+      .then((items: RegistryItem[]) =>
+        setRegistryItems(Array.isArray(items) ? items : []),
+      )
       .catch(() => {})
       .finally(() => setRegistryLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inv.token, mode]);
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
-  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorForeground" | "colorHeading" | "colorMuted" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
-    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorHeading: "", colorMuted: "", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
+  const [inheritedColors, setInheritedColors] = useState<
+    Pick<
+      DesignData,
+      | "nameColor"
+      | "colorForeground"
+      | "colorHeading"
+      | "colorMuted"
+      | "colorPrimary"
+      | "colorSecondary"
+      | "colorAccent"
+      | "colorBackground"
+      | "colorCard"
+    >
+  >({
+    nameColor: "0 0% 20%",
+    colorForeground: "0 0% 10%",
+    colorHeading: "",
+    colorMuted: "",
+    colorPrimary: "142 45% 35%",
+    colorSecondary: "142 30% 92%",
+    colorAccent: "142 30% 92%",
+    colorBackground: "142 20% 96%",
+    colorCard: "0 0% 100%",
   });
 
   // Redirect if not logged in (buyer mode → /login; demo mode → /admin/login)
@@ -445,7 +640,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     if (authLoading) return;
     if (!user) {
       const loginPath = mode === "demo" ? "/admin/login" : "/login";
-      navigate(`${loginPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      navigate(
+        `${loginPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
       return;
     }
     if (mode === "demo" && user.role !== "admin") {
@@ -464,366 +661,625 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   }, [user, authLoading, navigate, mode]);
 
   // Load invitation + global design (for images/music only)
-  const loadData = useCallback(async (silent = false) => {
-    if ((mode === "buyer" || mode === "business") && !user) return;
-    if (!silent) setDataLoading(true);
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const isCustomerEditor = mode === "buyer" || mode === "business";
-      const isNewCard = isCustomerEditor && params.get("new") === "1";
-      const requestedToken = isCustomerEditor ? params.get("token") : null;
-      const [invRes, designRes, allDesRes, pricingRes, adminFooterRes] = await Promise.all([
-        isNewCard
-          ? Promise.resolve(new Response(null, { status: 404 }))
-          : mode === "demo"
-          ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
-          : requestedToken
-            ? fetch(`${BASE}/api/invitation/${encodeURIComponent(requestedToken)}`, { credentials: "include", cache: "no-store" })
-            : mode === "business"
-              ? fetch(`${BASE}/api/business/invitations`, { credentials: "include", cache: "no-store" })
-              : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, { credentials: "include", cache: "no-store" }),
-        fetch(`${BASE}/api/design/active`, { credentials: "include", cache: "no-store" }),
-        fetch(`${BASE}/api/design`, { credentials: "include", cache: "no-store" }),
-          (mode === "buyer" || mode === "business") ? fetch(`${BASE}/api/pricing`, { credentials: "include", cache: "no-store" }) : Promise.resolve(new Response("[]")),
-        (mode === "buyer" || mode === "business")
-          ? fetch(`${BASE}/api/invitation/demo`, { credentials: "include", cache: "no-store" })
-          : Promise.resolve(new Response("{}")),
-      ]);
-      let loadedPackages: PricingPackage[] = pricingRes.ok ? await pricingRes.json() : [];
-      setPackages(loadedPackages);
-      const adminDefaults = adminFooterRes.ok
-        ? await adminFooterRes.json() as Record<string, unknown>
-        : null;
-      // Global (active) design — fallback for colours and images
-      let gd: Record<string, string> = {};
-      if (designRes.ok) gd = await designRes.json();
-      // All available design templates — used to resolve images by designCode
-      const allDesigns: Record<string, string>[] = allDesRes.ok ? await allDesRes.json() : [];
-
-      // If the user arrived via "Personalise" from the card gallery, honour the ?designCode= param.
-      const urlDesignCode = new URLSearchParams(window.location.search).get("designCode") ?? null;
-
-      // Resolve ALL design properties from the matched template by designCode.
-      // gd (active global) is used only as a last-resort fallback when the
-      // template itself has no value set.
-      const resolveTemplate = (code: string) => {
-        const tpl = allDesigns.find((des) => des.designCode === code) ?? gd;
-        const primary = tpl.colorPrimary ?? gd.colorPrimary ?? "142 45% 35%";
-        return {
-          colorPrimary:     primary,
-          colorSecondary:   tpl.colorSecondary   ?? primary,
-          colorAccent:      tpl.colorAccent      ?? tpl.colorSecondary ?? primary,
-          colorBackground:  tpl.colorBackground  ?? primary,
-          colorCard:        tpl.colorCard        ?? "0 0% 100%",
-          openingAnimation: tpl.openingAnimation ?? "doors",
-          nameFontFamily:   tpl.nameFontFamily   ?? tpl.fontHeading ?? "Dancing Script",
-          nameFontSize:     tpl.nameFontSize     ?? "38",
-          badgeFontSize:    tpl.badgeFontSize    ?? "24",
-          nameColor:        tpl.nameColor        ?? "0 0% 20%",
-          colorForeground:  tpl.colorForeground  ?? "0 0% 10%",
-          colorHeading:     tpl.colorHeading     ?? "",
-          colorMuted:       tpl.colorMuted       ?? "",
-          bodyFontFamily:   tpl.fontBody         ?? "Poppins",
-          cardMaxWidth:     tpl.cardMaxWidth     ?? gd.cardMaxWidth    ?? "420px",
-          cardImageUrl:     tpl.cardImageUrl     ?? gd.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
-          envelopeImageUrl: tpl.envelopeImageUrl ?? gd.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
-          musicUrl:         tpl.musicUrl         ?? gd.musicUrl         ?? "",
-          musicTitle:       tpl.musicTitle       ?? gd.musicTitle       ?? "",
-          musicArtist:      tpl.musicArtist      ?? gd.musicArtist      ?? "",
-          waxSealId:        tpl.waxSealId        ?? null,
-        };
-      };
-
-      let loadedInv: any = null;
-      if (invRes.ok) {
-        const responseData = await invRes.json();
-        loadedInv = mode === "business" && Array.isArray(responseData)
-          ? (requestedToken
-            ? responseData.find((item: { token?: string }) => item.token === requestedToken)
-            : responseData[0])
-          : responseData;
-        if (!loadedInv && mode === "business" && !requestedToken && !isNewCard) {
-          setDataLoading(false);
-          return;
-        }
-        const d = loadedInv;
-        let isCustomerOrder = false;
-        if (mode === "business" && d?.id) {
-          const clientsRes = await fetch(`${BASE}/api/business/clients`, {
-            credentials: "include",
-            cache: "no-store",
-          });
-          if (clientsRes.ok) {
-            const clients = await clientsRes.json() as Array<{
-              invitationId?: number | null;
-              invitationToken?: string | null;
-            }>;
-            isCustomerOrder = clients.some((client) =>
-              client.invitationId === d.id || client.invitationToken === d.token,
-            );
-          }
-        }
-        // Keep a previously purchased package available even if an admin has
-        // since deactivated it from the public pricing list.
-        if (
-          (mode === "buyer" || mode === "business")
-          && (d?.isPurchased === true || isCustomerOrder)
-          && Number.isInteger(d.packageId)
-          && !loadedPackages.some((pkg) => pkg.id === d.packageId)
-        ) {
-          const purchasedPackageRes = await fetch(
-            `${BASE}/api/pricing?includePackageId=${encodeURIComponent(String(d.packageId))}`,
-            { credentials: "include", cache: "no-store" },
-          );
-          if (purchasedPackageRes.ok) {
-            loadedPackages = await purchasedPackageRes.json() as PricingPackage[];
-          }
-        }
-        // Keep an assigned paid/customer-order package visible in the locked
-        // selector even when it is no longer active in the public price list.
+  const loadData = useCallback(
+    async (silent = false) => {
+      if ((mode === "buyer" || mode === "business") && !user) return;
+      if (!silent) setDataLoading(true);
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const isCustomerEditor = mode === "buyer" || mode === "business";
+        const isNewCard = isCustomerEditor && params.get("new") === "1";
+        const requestedToken = isCustomerEditor ? params.get("token") : null;
+        const [invRes, designRes, allDesRes, pricingRes, adminFooterRes] =
+          await Promise.all([
+            isNewCard
+              ? Promise.resolve(new Response(null, { status: 404 }))
+              : mode === "demo"
+                ? fetch(`${BASE}/api/invitation/demo`, {
+                    credentials: "include",
+                    cache: "no-store",
+                  })
+                : requestedToken
+                  ? fetch(
+                      `${BASE}/api/invitation/${encodeURIComponent(requestedToken)}`,
+                      { credentials: "include", cache: "no-store" },
+                    )
+                  : mode === "business"
+                    ? fetch(`${BASE}/api/business/invitations`, {
+                        credentials: "include",
+                        cache: "no-store",
+                      })
+                    : fetch(`${BASE}/api/invitation-by-user/${user!.id}`, {
+                        credentials: "include",
+                        cache: "no-store",
+                      }),
+            fetch(`${BASE}/api/design/active`, {
+              credentials: "include",
+              cache: "no-store",
+            }),
+            fetch(`${BASE}/api/design`, {
+              credentials: "include",
+              cache: "no-store",
+            }),
+            mode === "buyer" || mode === "business"
+              ? fetch(`${BASE}/api/pricing`, {
+                  credentials: "include",
+                  cache: "no-store",
+                })
+              : Promise.resolve(new Response("[]")),
+            mode === "buyer" || mode === "business"
+              ? fetch(`${BASE}/api/invitation/demo`, {
+                  credentials: "include",
+                  cache: "no-store",
+                })
+              : Promise.resolve(new Response("{}")),
+          ]);
+        let loadedPackages: PricingPackage[] = pricingRes.ok
+          ? await pricingRes.json()
+          : [];
         setPackages(loadedPackages);
-        setInv({
-          id: d.id ?? 0,
-          token: d.token ?? "",
-          isPurchased: d.isPurchased === true,
-          isCustomerOrder,
-          groomName: d.groomName ?? "", brideName: d.brideName ?? "",
-          eventType: d.eventType ?? "Walimatul Urus",
-          eventDate: d.eventDate ?? "", eventDay: d.eventDay ?? "",
-          eventTime: d.eventTime ?? "11:00 am – 4:00 pm",
-          venueName: d.venueName ?? "", venueAddress: d.venueAddress ?? "",
-          venueCity: d.venueCity ?? "", venueState: d.venueState ?? "",
-          venueMapUrl: d.venueMapUrl ?? "", groomParents: d.groomParents ?? "",
-          brideParents: d.brideParents ?? "", contactPhone: d.contactPhone ?? "",
-          contacts: normalizeContacts(d.contacts, d.contactPhone ?? ""),
-          dresscode: d.dresscode ?? "",
-          dresscodeTheme: d.dresscodeTheme ?? d.dresscode ?? "",
-          dresscodeColors: Array.isArray(d.dresscodeColors)
-            ? d.dresscodeColors.filter((color: unknown): color is string => typeof color === "string").slice(0, 4)
-            : [],
-          message: d.message ?? "",
-          shortCoupleName: d.shortCoupleName ?? "",
-          groomShortName: d.groomShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[1]?.trim() ?? "",
-          brideShortName: d.brideShortName ?? (d.shortCoupleName as string | undefined)?.split(" & ")[0]?.trim() ?? "",
-          coupleCount: d.coupleCount ?? 1,
-          groomInitial: d.groomInitial ?? "", brideInitial: d.brideInitial ?? "",
-          coverGroomName: d.coverGroomName ?? "", coverBrideName: d.coverBrideName ?? "",
-          envelopeInitials: d.envelopeInitials ?? "",
-          envelopeInitialsSize: d.envelopeInitialsSize ? String(d.envelopeInitialsSize) : "24",
-          initialsImageUrl: d.initialsImageUrl ?? "",
-          initialsImageScale: Number(d.initialsImageScale) || 100,
-          page2Initials: d.page2Initials ?? "",
-          eventStartDateTime: d.eventStartDateTime ?? "",
-          eventEndDateTime: d.eventEndDateTime ?? "",
-          eventStartTime: d.eventStartTime ?? "11:00",
-          eventEndTime: d.eventEndTime ?? "16:00",
-          coverDateText: d.coverDateText ?? "",
-          additionalInfo: d.additionalInfo ?? "",
-          coverTitle: d.coverTitle ?? "",
-          hashtag: d.hashtag ?? "",
-          language: (d.language as "ms" | "en") ?? "ms",
-          showFrontText: d.showFrontText ?? true,
-          greetingText: d.greetingText ?? "Assalamualaikum wbt & salam sejahtera",
-          doaText: d.doaText ?? "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
-          invitationText: d.invitationText ?? "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
-          hostName: d.hostName ?? "", hostCount: d.hostCount ?? 1,
-          venueHijriDate: d.venueHijriDate ?? "", schedule: d.schedule ?? "",
-          itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
-          galleryImages: Array.isArray(d.galleryImages) ? d.galleryImages.slice(0, 4) : [],
-          giftDisplay: d.giftDisplay === true,
-          giftTitle: d.giftTitle ?? "eGift",
-          giftRecipient: d.giftRecipient ?? "",
-          giftBankName: d.giftBankName ?? "",
-          giftAccountNumber: d.giftAccountNumber ?? "",
-          giftQrCodes: Array.isArray(d.giftQrCodes) ? d.giftQrCodes.slice(0, 2) : [],
-          registryRecipientName: d.registryRecipientName ?? "",
-          registryRecipientAddress: d.registryRecipientAddress ?? "",
-          designCode: d.designCode ?? "FL001",
-          rsvpEnabled: d.rsvpEnabled ?? false,
-          rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
-          rsvpDeadline: d.rsvpDeadline ? new Date(d.rsvpDeadline).toISOString().slice(0, 16) : "",
-          rsvpIntroText: d.rsvpIntroText ?? "",
-          rsvpFormNote: d.rsvpFormNote ?? "",
-          rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
-          rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
-          rsvpTimeSlots: d.rsvpTimeSlots ?? "",
-          // Buyer editors always inherit the current Admin footer defaults.
-          overlayEnabled: d.overlayEnabled ?? true,
-          showFooter: (mode === "buyer" || mode === "business")
-            ? (adminDefaults?.showFooter as boolean ?? true)
-            : (d.showFooter ?? false),
-          footerText: (mode === "buyer" || mode === "business")
-            ? (adminDefaults?.footerText as string ?? "Dapatkan kad digital anda di:")
-            : (d.footerText ?? ""),
-          footerUrl: (mode === "buyer" || mode === "business")
-            ? (adminDefaults?.footerUrl as string ?? "wedinbytes.com")
-            : (d.footerUrl ?? ""),
-          socialLinks: (mode === "buyer" || mode === "business")
-            ? (Array.isArray(adminDefaults?.socialLinks)
-              ? adminDefaults.socialLinks as { platform: string; url: string }[]
-              : [])
-            : (Array.isArray(d.socialLinks) ? d.socialLinks : [
-            { platform: "website", url: "" },
-            { platform: "tiktok", url: "" },
-            { platform: "instagram", url: "" },
-          ]),
-          business: d.business && typeof d.business === "object"
-            ? d.business as BusinessInvitationSummary
-            : null,
-        });
-        // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card).
-        // Both demo and real invitations use the active card design as the base template so that
-        // admin styling changes flow through to all invitations automatically.
-        // Buyer's saved overrides are still applied on top via invitationOwnsStyle below.
-        const resolvedCode = urlDesignCode ?? gd.designCode ?? d.designCode ?? "FL001";
-        const tpl = resolveTemplate(resolvedCode);
-        setInheritedColors({
-          nameColor:        tpl.nameColor,
-          colorForeground:  tpl.colorForeground,
-          colorHeading:     tpl.colorHeading     ?? "",
-          colorMuted:       tpl.colorMuted       ?? "",
-          colorPrimary:     tpl.colorPrimary,
-          colorSecondary:   tpl.colorSecondary,
-          colorAccent:      tpl.colorAccent,
-          colorBackground:  tpl.colorBackground,
-          colorCard:        tpl.colorCard,
-        });
-        // The admin demo is the live catalogue preview. Its invitation record is
-        // only sample content, so stale style values on that record must never
-        // mask the currently saved Card Design template.
-        const invitationOwnsStyle = mode !== "demo";
-        setDesign({
-          designCode:       resolvedCode,
-          openingAnimation: invitationOwnsStyle ? (d.openingAnimation ?? tpl.openingAnimation) : tpl.openingAnimation,
-          waxSealId:        invitationOwnsStyle
-            ? (d.waxSealId ? String(d.waxSealId) : (tpl.waxSealId ? String(tpl.waxSealId) : ""))
-            : (tpl.waxSealId ? String(tpl.waxSealId) : ""),
-          openButtonText:   invitationOwnsStyle ? (d.openButtonText ?? "BUKA") : "BUKA",
-          nameFontFamily:   normalizeFont(invitationOwnsStyle ? (d.nameFontFamily ?? tpl.nameFontFamily) : tpl.nameFontFamily),
-          nameFontSize:     invitationOwnsStyle ? (d.nameFontSize ?? tpl.nameFontSize ?? "38") : (tpl.nameFontSize ?? "38"),
-          badgeFontSize:    invitationOwnsStyle ? (d.badgeFontSize ?? tpl.badgeFontSize ?? "24") : (tpl.badgeFontSize ?? "24"),
-          nameColor:        invitationOwnsStyle ? (d.nameColor ?? tpl.nameColor) : tpl.nameColor,
-          colorForeground:  invitationOwnsStyle ? (d.colorForeground ?? tpl.colorForeground) : tpl.colorForeground,
-          cardMaxWidth:     invitationOwnsStyle ? (d.cardMaxWidth ?? tpl.cardMaxWidth) : tpl.cardMaxWidth,
-          bodyFontFamily:   normalizeFont(invitationOwnsStyle ? (d.bodyFontFamily ?? tpl.bodyFontFamily) : tpl.bodyFontFamily),
-          colorPrimary:     invitationOwnsStyle ? (d.colorPrimary ?? tpl.colorPrimary) : tpl.colorPrimary,
-          colorSecondary:   invitationOwnsStyle ? (d.colorSecondary ?? tpl.colorSecondary) : tpl.colorSecondary,
-          colorAccent:      invitationOwnsStyle ? (d.colorAccent ?? tpl.colorAccent) : tpl.colorAccent,
-          colorBackground:  invitationOwnsStyle ? (d.colorBackground ?? tpl.colorBackground) : tpl.colorBackground,
-          colorCard:        invitationOwnsStyle ? (d.colorCard ?? tpl.colorCard) : tpl.colorCard,
-          colorHeading:     invitationOwnsStyle ? (d.colorHeading ?? tpl.colorHeading ?? "") : (tpl.colorHeading ?? ""),
-          colorMuted:       invitationOwnsStyle ? (d.colorMuted   ?? tpl.colorMuted   ?? "") : (tpl.colorMuted   ?? ""),
-          cardImageUrl:     tpl.cardImageUrl,
-          envelopeImageUrl: tpl.envelopeImageUrl,
-          musicUrl:         d.musicUrl || tpl.musicUrl,
-          musicTitle:       d.musicTitle || tpl.musicTitle,
-          musicArtist:      d.musicArtist || tpl.musicArtist,
-        });
-      } else {
-        // No invitation yet — use URL param design (if any) or global admin design as preview defaults
-        const resolvedCode = urlDesignCode ?? gd.designCode ?? "FL001";
-        const tplFallback = resolveTemplate(resolvedCode);
-        setInheritedColors({
-          nameColor:        tplFallback.nameColor,
-          colorForeground:  tplFallback.colorForeground,
-          colorHeading:     tplFallback.colorHeading ?? "",
-          colorMuted:       tplFallback.colorMuted   ?? "",
-          colorPrimary:     tplFallback.colorPrimary,
-          colorSecondary:   tplFallback.colorSecondary,
-          colorAccent:      tplFallback.colorAccent,
-          colorBackground:  tplFallback.colorBackground,
-          colorCard:        tplFallback.colorCard,
-        });
-        setDesign((prev) => ({
-          ...prev,
-          designCode:       resolvedCode,
-          colorPrimary:     tplFallback.colorPrimary,
-          colorSecondary:   tplFallback.colorSecondary,
-           colorAccent:      tplFallback.colorAccent,
-          colorBackground:  tplFallback.colorBackground,
-          colorCard:        tplFallback.colorCard,
-          openingAnimation: tplFallback.openingAnimation,
-          nameFontFamily:   normalizeFont(tplFallback.nameFontFamily),
-           nameFontSize:     tplFallback.nameFontSize,
-           badgeFontSize:    tplFallback.badgeFontSize,
-          nameColor:        tplFallback.nameColor,
-          colorForeground:  tplFallback.colorForeground,
-          colorHeading:     tplFallback.colorHeading ?? "",
-          colorMuted:       tplFallback.colorMuted   ?? "",
-          cardMaxWidth:     tplFallback.cardMaxWidth,
-           bodyFontFamily:   normalizeFont(tplFallback.bodyFontFamily),
-          cardImageUrl:     tplFallback.cardImageUrl,
-          envelopeImageUrl: tplFallback.envelopeImageUrl,
-          musicUrl:         tplFallback.musicUrl,
-          musicTitle:       tplFallback.musicTitle,
-          musicArtist:      tplFallback.musicArtist,
-        }));
+        const adminDefaults = adminFooterRes.ok
+          ? ((await adminFooterRes.json()) as Record<string, unknown>)
+          : null;
+        // Global (active) design — fallback for colours and images
+        let gd: Record<string, string> = {};
+        if (designRes.ok) gd = await designRes.json();
+        // All available design templates — used to resolve images by designCode
+        const allDesigns: Record<string, string>[] = allDesRes.ok
+          ? await allDesRes.json()
+          : [];
 
-        // New customer cards use the admin demo invitation as their editable
-        // content template. Customer-specific details remain blank. Buyer and
-        // Business Account must start from the same editor defaults.
-        if ((mode === "buyer" || mode === "business") && isNewCard && adminDefaults) {
-          setInv((prev) => ({
+        // If the user arrived via "Personalise" from the card gallery, honour the ?designCode= param.
+        const urlDesignCode =
+          new URLSearchParams(window.location.search).get("designCode") ?? null;
+
+        // Resolve ALL design properties from the matched template by designCode.
+        // gd (active global) is used only as a last-resort fallback when the
+        // template itself has no value set.
+        const resolveTemplate = (code: string) => {
+          const tpl = allDesigns.find((des) => des.designCode === code) ?? gd;
+          const primary = tpl.colorPrimary ?? gd.colorPrimary ?? "142 45% 35%";
+          return {
+            colorPrimary: primary,
+            colorSecondary: tpl.colorSecondary ?? primary,
+            colorAccent: tpl.colorAccent ?? tpl.colorSecondary ?? primary,
+            colorBackground: tpl.colorBackground ?? primary,
+            colorCard: tpl.colorCard ?? "0 0% 100%",
+            openingAnimation: tpl.openingAnimation ?? "doors",
+            nameFontFamily:
+              tpl.nameFontFamily ?? tpl.fontHeading ?? "Dancing Script",
+            nameFontSize: tpl.nameFontSize ?? "38",
+            badgeFontSize: tpl.badgeFontSize ?? "24",
+            nameColor: tpl.nameColor ?? "0 0% 20%",
+            colorForeground: tpl.colorForeground ?? "0 0% 10%",
+            colorHeading: tpl.colorHeading ?? "",
+            colorMuted: tpl.colorMuted ?? "",
+            bodyFontFamily: tpl.fontBody ?? "Poppins",
+            cardMaxWidth: tpl.cardMaxWidth ?? gd.cardMaxWidth ?? "420px",
+            cardImageUrl:
+              tpl.cardImageUrl ??
+              gd.cardImageUrl ??
+              "wed_card_design/20260531-041903-27796.jpg",
+            envelopeImageUrl:
+              tpl.envelopeImageUrl ??
+              gd.envelopeImageUrl ??
+              "wed_card_design/20260531-041903-27796.jpg",
+            musicUrl: tpl.musicUrl ?? gd.musicUrl ?? "",
+            musicTitle: tpl.musicTitle ?? gd.musicTitle ?? "",
+            musicArtist: tpl.musicArtist ?? gd.musicArtist ?? "",
+            waxSealId: tpl.waxSealId ?? null,
+          };
+        };
+
+        let loadedInv: any = null;
+        if (invRes.ok) {
+          const responseData = await invRes.json();
+          loadedInv =
+            mode === "business" && Array.isArray(responseData)
+              ? requestedToken
+                ? responseData.find(
+                    (item: { token?: string }) => item.token === requestedToken,
+                  )
+                : responseData[0]
+              : responseData;
+          if (
+            !loadedInv &&
+            mode === "business" &&
+            !requestedToken &&
+            !isNewCard
+          ) {
+            setDataLoading(false);
+            return;
+          }
+          const d = loadedInv;
+          let isCustomerOrder = false;
+          if (mode === "business" && d?.id) {
+            const clientsRes = await fetch(`${BASE}/api/business/clients`, {
+              credentials: "include",
+              cache: "no-store",
+            });
+            if (clientsRes.ok) {
+              const clients = (await clientsRes.json()) as Array<{
+                invitationId?: number | null;
+                invitationToken?: string | null;
+              }>;
+              isCustomerOrder = clients.some(
+                (client) =>
+                  client.invitationId === d.id ||
+                  client.invitationToken === d.token,
+              );
+            }
+          }
+          // Keep a previously purchased package available even if an admin has
+          // since deactivated it from the public pricing list.
+          if (
+            (mode === "buyer" || mode === "business") &&
+            (d?.isPurchased === true || isCustomerOrder) &&
+            Number.isInteger(d.packageId) &&
+            !loadedPackages.some((pkg) => pkg.id === d.packageId)
+          ) {
+            const purchasedPackageRes = await fetch(
+              `${BASE}/api/pricing?includePackageId=${encodeURIComponent(String(d.packageId))}`,
+              { credentials: "include", cache: "no-store" },
+            );
+            if (purchasedPackageRes.ok) {
+              loadedPackages =
+                (await purchasedPackageRes.json()) as PricingPackage[];
+            }
+          }
+          // Keep an assigned paid/customer-order package visible in the locked
+          // selector even when it is no longer active in the public price list.
+          setPackages(loadedPackages);
+          setInv({
+            id: d.id ?? 0,
+            token: d.token ?? "",
+            isPurchased: d.isPurchased === true,
+            isCustomerOrder,
+            groomName: d.groomName ?? "",
+            brideName: d.brideName ?? "",
+            eventType: d.eventType ?? "Walimatul Urus",
+            eventDate: d.eventDate ?? "",
+            eventDay: d.eventDay ?? "",
+            eventTime: d.eventTime ?? "11:00 am – 4:00 pm",
+            venueName: d.venueName ?? "",
+            venueAddress: d.venueAddress ?? "",
+            venueCity: d.venueCity ?? "",
+            venueState: d.venueState ?? "",
+            venueMapUrl: d.venueMapUrl ?? "",
+            groomParents: d.groomParents ?? "",
+            brideParents: d.brideParents ?? "",
+            contactPhone: d.contactPhone ?? "",
+            contacts: normalizeContacts(d.contacts, d.contactPhone ?? ""),
+            dresscode: d.dresscode ?? "",
+            dresscodeTheme: d.dresscodeTheme ?? d.dresscode ?? "",
+            dresscodeColors: Array.isArray(d.dresscodeColors)
+              ? d.dresscodeColors
+                  .filter(
+                    (color: unknown): color is string =>
+                      typeof color === "string",
+                  )
+                  .slice(0, 4)
+              : [],
+            message: d.message ?? "",
+            shortCoupleName: d.shortCoupleName ?? "",
+            groomShortName:
+              d.groomShortName ??
+              (d.shortCoupleName as string | undefined)
+                ?.split(" & ")[1]
+                ?.trim() ??
+              "",
+            brideShortName:
+              d.brideShortName ??
+              (d.shortCoupleName as string | undefined)
+                ?.split(" & ")[0]
+                ?.trim() ??
+              "",
+            coupleCount: d.coupleCount ?? 1,
+            groomInitial: d.groomInitial ?? "",
+            brideInitial: d.brideInitial ?? "",
+            coverGroomName: d.coverGroomName ?? "",
+            coverBrideName: d.coverBrideName ?? "",
+            envelopeInitials: d.envelopeInitials ?? "",
+            envelopeInitialsSize: d.envelopeInitialsSize
+              ? String(d.envelopeInitialsSize)
+              : "24",
+            initialsImageUrl: d.initialsImageUrl ?? "",
+            initialsImageScale: Number(d.initialsImageScale) || 100,
+            page2Initials: d.page2Initials ?? "",
+            eventStartDateTime: d.eventStartDateTime ?? "",
+            eventEndDateTime: d.eventEndDateTime ?? "",
+            eventStartTime: d.eventStartTime ?? "11:00",
+            eventEndTime: d.eventEndTime ?? "16:00",
+            coverDateText: d.coverDateText ?? "",
+            additionalInfo: d.additionalInfo ?? "",
+            coverTitle: d.coverTitle ?? "",
+            hashtag: d.hashtag ?? "",
+            language: (d.language as "ms" | "en") ?? "ms",
+            showFrontText: d.showFrontText ?? true,
+            greetingText:
+              d.greetingText ?? "Assalamualaikum wbt & salam sejahtera",
+            doaText:
+              d.doaText ??
+              "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
+            invitationText:
+              d.invitationText ??
+              "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
+            hostName: d.hostName ?? "",
+            hostCount: d.hostCount ?? 1,
+            venueHijriDate: d.venueHijriDate ?? "",
+            schedule: d.schedule ?? "",
+            itinerary: Array.isArray(d.itinerary) ? d.itinerary : [],
+            galleryImages: Array.isArray(d.galleryImages)
+              ? d.galleryImages.slice(0, 4)
+              : [],
+            giftDisplay: d.giftDisplay === true,
+            giftTitle: d.giftTitle ?? "eGift",
+            giftRecipient: d.giftRecipient ?? "",
+            giftBankName: d.giftBankName ?? "",
+            giftAccountNumber: d.giftAccountNumber ?? "",
+            giftQrCodes: Array.isArray(d.giftQrCodes)
+              ? d.giftQrCodes.slice(0, 2)
+              : [],
+            registryRecipientName: d.registryRecipientName ?? "",
+            registryRecipientAddress: d.registryRecipientAddress ?? "",
+            designCode: d.designCode ?? "FL001",
+            rsvpEnabled: d.rsvpEnabled ?? false,
+            rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
+            rsvpDeadline: d.rsvpDeadline
+              ? new Date(d.rsvpDeadline).toISOString().slice(0, 16)
+              : "",
+            rsvpIntroText: d.rsvpIntroText ?? "",
+            rsvpFormNote: d.rsvpFormNote ?? "",
+            rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
+            rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
+            rsvpTimeSlots: d.rsvpTimeSlots ?? "",
+            // Buyer editors always inherit the current Admin footer defaults.
+            overlayEnabled: d.overlayEnabled ?? true,
+            showFooter:
+              mode === "buyer" || mode === "business"
+                ? ((adminDefaults?.showFooter as boolean) ?? true)
+                : (d.showFooter ?? false),
+            footerText:
+              mode === "buyer" || mode === "business"
+                ? ((adminDefaults?.footerText as string) ??
+                  "Dapatkan kad digital anda di:")
+                : (d.footerText ?? ""),
+            footerUrl:
+              mode === "buyer" || mode === "business"
+                ? ((adminDefaults?.footerUrl as string) ?? "wedinbytes.com")
+                : (d.footerUrl ?? ""),
+            socialLinks:
+              mode === "buyer" || mode === "business"
+                ? Array.isArray(adminDefaults?.socialLinks)
+                  ? (adminDefaults.socialLinks as {
+                      platform: string;
+                      url: string;
+                    }[])
+                  : []
+                : Array.isArray(d.socialLinks)
+                  ? d.socialLinks
+                  : [
+                      { platform: "website", url: "" },
+                      { platform: "tiktok", url: "" },
+                      { platform: "instagram", url: "" },
+                    ],
+            business:
+              d.business && typeof d.business === "object"
+                ? (d.business as BusinessInvitationSummary)
+                : null,
+          });
+          // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card).
+          // Both demo and real invitations use the active card design as the base template so that
+          // admin styling changes flow through to all invitations automatically.
+          // Buyer's saved overrides are still applied on top via invitationOwnsStyle below.
+          const resolvedCode =
+            urlDesignCode ?? gd.designCode ?? d.designCode ?? "FL001";
+          const tpl = resolveTemplate(resolvedCode);
+          setInheritedColors({
+            nameColor: tpl.nameColor,
+            colorForeground: tpl.colorForeground,
+            colorHeading: tpl.colorHeading ?? "",
+            colorMuted: tpl.colorMuted ?? "",
+            colorPrimary: tpl.colorPrimary,
+            colorSecondary: tpl.colorSecondary,
+            colorAccent: tpl.colorAccent,
+            colorBackground: tpl.colorBackground,
+            colorCard: tpl.colorCard,
+          });
+          // The admin demo is the live catalogue preview. Its invitation record is
+          // only sample content, so stale style values on that record must never
+          // mask the currently saved Card Design template.
+          const invitationOwnsStyle = mode !== "demo";
+          setDesign({
+            designCode: resolvedCode,
+            openingAnimation: invitationOwnsStyle
+              ? (d.openingAnimation ?? tpl.openingAnimation)
+              : tpl.openingAnimation,
+            waxSealId: invitationOwnsStyle
+              ? d.waxSealId
+                ? String(d.waxSealId)
+                : tpl.waxSealId
+                  ? String(tpl.waxSealId)
+                  : ""
+              : tpl.waxSealId
+                ? String(tpl.waxSealId)
+                : "",
+            openButtonText: invitationOwnsStyle
+              ? (d.openButtonText ?? "BUKA")
+              : "BUKA",
+            nameFontFamily: normalizeFont(
+              invitationOwnsStyle
+                ? (d.nameFontFamily ?? tpl.nameFontFamily)
+                : tpl.nameFontFamily,
+            ),
+            nameFontSize: invitationOwnsStyle
+              ? (d.nameFontSize ?? tpl.nameFontSize ?? "38")
+              : (tpl.nameFontSize ?? "38"),
+            badgeFontSize: invitationOwnsStyle
+              ? (d.badgeFontSize ?? tpl.badgeFontSize ?? "24")
+              : (tpl.badgeFontSize ?? "24"),
+            nameColor: invitationOwnsStyle
+              ? (d.nameColor ?? tpl.nameColor)
+              : tpl.nameColor,
+            colorForeground: invitationOwnsStyle
+              ? (d.colorForeground ?? tpl.colorForeground)
+              : tpl.colorForeground,
+            cardMaxWidth: invitationOwnsStyle
+              ? (d.cardMaxWidth ?? tpl.cardMaxWidth)
+              : tpl.cardMaxWidth,
+            bodyFontFamily: normalizeFont(
+              invitationOwnsStyle
+                ? (d.bodyFontFamily ?? tpl.bodyFontFamily)
+                : tpl.bodyFontFamily,
+            ),
+            colorPrimary: invitationOwnsStyle
+              ? (d.colorPrimary ?? tpl.colorPrimary)
+              : tpl.colorPrimary,
+            colorSecondary: invitationOwnsStyle
+              ? (d.colorSecondary ?? tpl.colorSecondary)
+              : tpl.colorSecondary,
+            colorAccent: invitationOwnsStyle
+              ? (d.colorAccent ?? tpl.colorAccent)
+              : tpl.colorAccent,
+            colorBackground: invitationOwnsStyle
+              ? (d.colorBackground ?? tpl.colorBackground)
+              : tpl.colorBackground,
+            colorCard: invitationOwnsStyle
+              ? (d.colorCard ?? tpl.colorCard)
+              : tpl.colorCard,
+            colorHeading: invitationOwnsStyle
+              ? (d.colorHeading ?? tpl.colorHeading ?? "")
+              : (tpl.colorHeading ?? ""),
+            colorMuted: invitationOwnsStyle
+              ? (d.colorMuted ?? tpl.colorMuted ?? "")
+              : (tpl.colorMuted ?? ""),
+            cardImageUrl: tpl.cardImageUrl,
+            envelopeImageUrl: tpl.envelopeImageUrl,
+            musicUrl: d.musicUrl || tpl.musicUrl,
+            musicTitle: d.musicTitle || tpl.musicTitle,
+            musicArtist: d.musicArtist || tpl.musicArtist,
+          });
+        } else {
+          // No invitation yet — use URL param design (if any) or global admin design as preview defaults
+          const resolvedCode = urlDesignCode ?? gd.designCode ?? "FL001";
+          const tplFallback = resolveTemplate(resolvedCode);
+          setInheritedColors({
+            nameColor: tplFallback.nameColor,
+            colorForeground: tplFallback.colorForeground,
+            colorHeading: tplFallback.colorHeading ?? "",
+            colorMuted: tplFallback.colorMuted ?? "",
+            colorPrimary: tplFallback.colorPrimary,
+            colorSecondary: tplFallback.colorSecondary,
+            colorAccent: tplFallback.colorAccent,
+            colorBackground: tplFallback.colorBackground,
+            colorCard: tplFallback.colorCard,
+          });
+          setDesign((prev) => ({
             ...prev,
-            eventType: typeof adminDefaults.eventType === "string" ? adminDefaults.eventType : prev.eventType,
-            eventTime: typeof adminDefaults.eventTime === "string" ? adminDefaults.eventTime : prev.eventTime,
-            eventStartTime: typeof adminDefaults.eventStartTime === "string" ? adminDefaults.eventStartTime : prev.eventStartTime,
-            eventEndTime: typeof adminDefaults.eventEndTime === "string" ? adminDefaults.eventEndTime : prev.eventEndTime,
-            coverTitle: typeof adminDefaults.coverTitle === "string" ? adminDefaults.coverTitle : prev.coverTitle,
-            additionalInfo: typeof adminDefaults.additionalInfo === "string" ? adminDefaults.additionalInfo : prev.additionalInfo,
-            hashtag: typeof adminDefaults.hashtag === "string" ? adminDefaults.hashtag : prev.hashtag,
-            language: adminDefaults.language === "en" || adminDefaults.language === "ms" ? adminDefaults.language : prev.language,
-            showFrontText: typeof adminDefaults.showFrontText === "boolean" ? adminDefaults.showFrontText : prev.showFrontText,
-            greetingText: typeof adminDefaults.greetingText === "string" ? adminDefaults.greetingText : prev.greetingText,
-            doaText: typeof adminDefaults.doaText === "string" ? adminDefaults.doaText : prev.doaText,
-            invitationText: typeof adminDefaults.invitationText === "string" ? adminDefaults.invitationText : prev.invitationText,
-            hostName: typeof adminDefaults.hostName === "string" ? adminDefaults.hostName : prev.hostName,
-            hostCount: typeof adminDefaults.hostCount === "number" ? adminDefaults.hostCount : prev.hostCount,
-            venueHijriDate: typeof adminDefaults.venueHijriDate === "string" ? adminDefaults.venueHijriDate : prev.venueHijriDate,
-            schedule: typeof adminDefaults.schedule === "string" ? adminDefaults.schedule : prev.schedule,
-            itinerary: Array.isArray(adminDefaults.itinerary)
-              ? adminDefaults.itinerary as { time: string; event: string }[]
-              : prev.itinerary,
-            dresscode: typeof adminDefaults.dresscode === "string" ? adminDefaults.dresscode : prev.dresscode,
-            dresscodeTheme: typeof adminDefaults.dresscodeTheme === "string" ? adminDefaults.dresscodeTheme : prev.dresscodeTheme,
-            dresscodeColors: Array.isArray(adminDefaults.dresscodeColors)
-              ? adminDefaults.dresscodeColors.filter((color): color is string => typeof color === "string").slice(0, 4)
-              : prev.dresscodeColors,
-            message: typeof adminDefaults.message === "string" ? adminDefaults.message : prev.message,
-            rsvpEnabled: typeof adminDefaults.rsvpEnabled === "boolean" ? adminDefaults.rsvpEnabled : prev.rsvpEnabled,
-            rsvpAdditionalInfo: typeof adminDefaults.rsvpAdditionalInfo === "string" ? adminDefaults.rsvpAdditionalInfo : prev.rsvpAdditionalInfo,
-            rsvpIntroText: typeof adminDefaults.rsvpIntroText === "string" ? adminDefaults.rsvpIntroText : prev.rsvpIntroText,
-            rsvpFormNote: typeof adminDefaults.rsvpFormNote === "string" ? adminDefaults.rsvpFormNote : prev.rsvpFormNote,
-            rsvpMaxOverallGuests: typeof adminDefaults.rsvpMaxOverallGuests === "number" ? adminDefaults.rsvpMaxOverallGuests : prev.rsvpMaxOverallGuests,
-            rsvpMaxGuestsPerInvitation: typeof adminDefaults.rsvpMaxGuestsPerInvitation === "number" ? adminDefaults.rsvpMaxGuestsPerInvitation : prev.rsvpMaxGuestsPerInvitation,
-            rsvpTimeSlots: typeof adminDefaults.rsvpTimeSlots === "string" ? adminDefaults.rsvpTimeSlots : prev.rsvpTimeSlots,
-            showFooter: typeof adminDefaults.showFooter === "boolean" ? adminDefaults.showFooter : prev.showFooter,
-            footerText: typeof adminDefaults.footerText === "string" ? adminDefaults.footerText : prev.footerText,
-            footerUrl: typeof adminDefaults.footerUrl === "string" ? adminDefaults.footerUrl : prev.footerUrl,
-            socialLinks: Array.isArray(adminDefaults.socialLinks)
-              ? adminDefaults.socialLinks as { platform: string; url: string }[]
-              : prev.socialLinks,
+            designCode: resolvedCode,
+            colorPrimary: tplFallback.colorPrimary,
+            colorSecondary: tplFallback.colorSecondary,
+            colorAccent: tplFallback.colorAccent,
+            colorBackground: tplFallback.colorBackground,
+            colorCard: tplFallback.colorCard,
+            openingAnimation: tplFallback.openingAnimation,
+            nameFontFamily: normalizeFont(tplFallback.nameFontFamily),
+            nameFontSize: tplFallback.nameFontSize,
+            badgeFontSize: tplFallback.badgeFontSize,
+            nameColor: tplFallback.nameColor,
+            colorForeground: tplFallback.colorForeground,
+            colorHeading: tplFallback.colorHeading ?? "",
+            colorMuted: tplFallback.colorMuted ?? "",
+            cardMaxWidth: tplFallback.cardMaxWidth,
+            bodyFontFamily: normalizeFont(tplFallback.bodyFontFamily),
+            cardImageUrl: tplFallback.cardImageUrl,
+            envelopeImageUrl: tplFallback.envelopeImageUrl,
+            musicUrl: tplFallback.musicUrl,
+            musicTitle: tplFallback.musicTitle,
+            musicArtist: tplFallback.musicArtist,
           }));
+
+          // New customer cards use the admin demo invitation as their editable
+          // content template. Customer-specific details remain blank. Buyer and
+          // Business Account must start from the same editor defaults.
+          if (
+            (mode === "buyer" || mode === "business") &&
+            isNewCard &&
+            adminDefaults
+          ) {
+            setInv((prev) => ({
+              ...prev,
+              eventType:
+                typeof adminDefaults.eventType === "string"
+                  ? adminDefaults.eventType
+                  : prev.eventType,
+              eventTime:
+                typeof adminDefaults.eventTime === "string"
+                  ? adminDefaults.eventTime
+                  : prev.eventTime,
+              eventStartTime:
+                typeof adminDefaults.eventStartTime === "string"
+                  ? adminDefaults.eventStartTime
+                  : prev.eventStartTime,
+              eventEndTime:
+                typeof adminDefaults.eventEndTime === "string"
+                  ? adminDefaults.eventEndTime
+                  : prev.eventEndTime,
+              coverTitle:
+                typeof adminDefaults.coverTitle === "string"
+                  ? adminDefaults.coverTitle
+                  : prev.coverTitle,
+              additionalInfo:
+                typeof adminDefaults.additionalInfo === "string"
+                  ? adminDefaults.additionalInfo
+                  : prev.additionalInfo,
+              hashtag:
+                typeof adminDefaults.hashtag === "string"
+                  ? adminDefaults.hashtag
+                  : prev.hashtag,
+              language:
+                adminDefaults.language === "en" ||
+                adminDefaults.language === "ms"
+                  ? adminDefaults.language
+                  : prev.language,
+              showFrontText:
+                typeof adminDefaults.showFrontText === "boolean"
+                  ? adminDefaults.showFrontText
+                  : prev.showFrontText,
+              greetingText:
+                typeof adminDefaults.greetingText === "string"
+                  ? adminDefaults.greetingText
+                  : prev.greetingText,
+              doaText:
+                typeof adminDefaults.doaText === "string"
+                  ? adminDefaults.doaText
+                  : prev.doaText,
+              invitationText:
+                typeof adminDefaults.invitationText === "string"
+                  ? adminDefaults.invitationText
+                  : prev.invitationText,
+              hostName:
+                typeof adminDefaults.hostName === "string"
+                  ? adminDefaults.hostName
+                  : prev.hostName,
+              hostCount:
+                typeof adminDefaults.hostCount === "number"
+                  ? adminDefaults.hostCount
+                  : prev.hostCount,
+              venueHijriDate:
+                typeof adminDefaults.venueHijriDate === "string"
+                  ? adminDefaults.venueHijriDate
+                  : prev.venueHijriDate,
+              schedule:
+                typeof adminDefaults.schedule === "string"
+                  ? adminDefaults.schedule
+                  : prev.schedule,
+              itinerary: Array.isArray(adminDefaults.itinerary)
+                ? (adminDefaults.itinerary as { time: string; event: string }[])
+                : prev.itinerary,
+              dresscode:
+                typeof adminDefaults.dresscode === "string"
+                  ? adminDefaults.dresscode
+                  : prev.dresscode,
+              dresscodeTheme:
+                typeof adminDefaults.dresscodeTheme === "string"
+                  ? adminDefaults.dresscodeTheme
+                  : prev.dresscodeTheme,
+              dresscodeColors: Array.isArray(adminDefaults.dresscodeColors)
+                ? adminDefaults.dresscodeColors
+                    .filter(
+                      (color): color is string => typeof color === "string",
+                    )
+                    .slice(0, 4)
+                : prev.dresscodeColors,
+              message:
+                typeof adminDefaults.message === "string"
+                  ? adminDefaults.message
+                  : prev.message,
+              rsvpEnabled:
+                typeof adminDefaults.rsvpEnabled === "boolean"
+                  ? adminDefaults.rsvpEnabled
+                  : prev.rsvpEnabled,
+              rsvpAdditionalInfo:
+                typeof adminDefaults.rsvpAdditionalInfo === "string"
+                  ? adminDefaults.rsvpAdditionalInfo
+                  : prev.rsvpAdditionalInfo,
+              rsvpIntroText:
+                typeof adminDefaults.rsvpIntroText === "string"
+                  ? adminDefaults.rsvpIntroText
+                  : prev.rsvpIntroText,
+              rsvpFormNote:
+                typeof adminDefaults.rsvpFormNote === "string"
+                  ? adminDefaults.rsvpFormNote
+                  : prev.rsvpFormNote,
+              rsvpMaxOverallGuests:
+                typeof adminDefaults.rsvpMaxOverallGuests === "number"
+                  ? adminDefaults.rsvpMaxOverallGuests
+                  : prev.rsvpMaxOverallGuests,
+              rsvpMaxGuestsPerInvitation:
+                typeof adminDefaults.rsvpMaxGuestsPerInvitation === "number"
+                  ? adminDefaults.rsvpMaxGuestsPerInvitation
+                  : prev.rsvpMaxGuestsPerInvitation,
+              rsvpTimeSlots:
+                typeof adminDefaults.rsvpTimeSlots === "string"
+                  ? adminDefaults.rsvpTimeSlots
+                  : prev.rsvpTimeSlots,
+              showFooter:
+                typeof adminDefaults.showFooter === "boolean"
+                  ? adminDefaults.showFooter
+                  : prev.showFooter,
+              footerText:
+                typeof adminDefaults.footerText === "string"
+                  ? adminDefaults.footerText
+                  : prev.footerText,
+              footerUrl:
+                typeof adminDefaults.footerUrl === "string"
+                  ? adminDefaults.footerUrl
+                  : prev.footerUrl,
+              socialLinks: Array.isArray(adminDefaults.socialLinks)
+                ? (adminDefaults.socialLinks as {
+                    platform: string;
+                    url: string;
+                  }[])
+                : prev.socialLinks,
+            }));
+          }
         }
-      }
 
-      // Business order-form invitations and paid invitations keep their
-      // assigned package.
-      if ((mode === "buyer" || mode === "business") && loadedPackages.length > 0) {
-        const urlPackage = new URLSearchParams(window.location.search).get("package");
-        const pkgId = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
-          ? (loadedInv.packageId ?? null)
-          : (urlPackage ? parseInt(urlPackage, 10) : (loadedInv?.packageId ?? null));
-        const resolvedPkg = loadedInv?.isCustomerOrder || loadedInv?.isPurchased
-          ? loadedPackages.find((p) => p.id === pkgId)
-          : loadedPackages.find((p) => p.id === pkgId && p.isActive) || loadedPackages.find((p) => p.isActive);
-        setActivePackageId(resolvedPkg?.id ?? null);
+        // Business order-form invitations and paid invitations keep their
+        // assigned package.
+        if (
+          (mode === "buyer" || mode === "business") &&
+          loadedPackages.length > 0
+        ) {
+          const urlPackage = new URLSearchParams(window.location.search).get(
+            "package",
+          );
+          const pkgId =
+            loadedInv?.isCustomerOrder || loadedInv?.isPurchased
+              ? (loadedInv.packageId ?? null)
+              : urlPackage
+                ? parseInt(urlPackage, 10)
+                : (loadedInv?.packageId ?? null);
+          const resolvedPkg =
+            loadedInv?.isCustomerOrder || loadedInv?.isPurchased
+              ? loadedPackages.find((p) => p.id === pkgId)
+              : loadedPackages.find((p) => p.id === pkgId && p.isActive) ||
+                loadedPackages.find((p) => p.isActive);
+          setActivePackageId(resolvedPkg?.id ?? null);
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        setDataLoading(false);
       }
-    } catch { /* ignore */ }
-    finally { setDataLoading(false); }
-  }, [user]);
+    },
+    [user],
+  );
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Auto-generate day label and readable time range from date/time pickers.
   useEffect(() => {
@@ -849,18 +1305,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const setI = (field: keyof InvData) => (v: string) =>
     setInv((p) => ({ ...p, [field]: v }));
 
-  const packageLocked = mode !== "admin" && (inv.isCustomerOrder || inv.isPurchased);
+  const packageLocked =
+    mode !== "admin" && (inv.isCustomerOrder || inv.isPurchased);
   const customerEditLocked =
-    mode !== "admin"
-    && mode !== "demo"
-    && inv.isPurchased
-    && isEventDatePassed(inv.eventDate);
+    mode !== "admin" &&
+    mode !== "demo" &&
+    inv.isPurchased &&
+    isEventDatePassed(inv.eventDate);
   const publicPath = publicInvitePathOrToken(inv);
   const previewReady = Boolean(inv.token);
 
   async function handleSave() {
     if (customerEditLocked) {
-      toast.info("This paid invitation is locked because its event date has passed.");
+      toast.info(
+        "This paid invitation is locked because its event date has passed.",
+      );
       return;
     }
     setSaving(true);
@@ -878,10 +1337,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             groomName: inv.groomName || "Groom",
             brideName: inv.brideName || "Bride",
             eventType: inv.eventType || "Walimatul Urus",
-            eventDate: inv.eventDate || "", eventDay: inv.eventDay || "",
+            eventDate: inv.eventDate || "",
+            eventDay: inv.eventDay || "",
             eventTime: inv.eventTime || "11:00 am – 4:00 pm",
-            venueName: inv.venueName || "", venueAddress: inv.venueAddress || "",
-            venueCity: inv.venueCity || "", venueState: inv.venueState || "",
+            venueName: inv.venueName || "",
+            venueAddress: inv.venueAddress || "",
+            venueCity: inv.venueCity || "",
+            venueState: inv.venueState || "",
             contactPhone: inv.contactPhone || "",
             contacts: inv.contacts.length > 0 ? inv.contacts : undefined,
             packageId: activePackageId ?? undefined,
@@ -913,13 +1375,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       const designCodeChanged = inv.designCode !== design.designCode;
       const savePayload: Record<string, unknown> = {
         // Invitation content — explicit nulls clear previously saved optional values.
-        groomName: inv.groomName, brideName: inv.brideName,
-        eventType: inv.eventType, eventDate: inv.eventDate,
-        eventDay: inv.eventDay, eventTime: inv.eventTime,
+        groomName: inv.groomName,
+        brideName: inv.brideName,
+        eventType: inv.eventType,
+        eventDate: inv.eventDate,
+        eventDay: inv.eventDay,
+        eventTime: inv.eventTime,
         eventStartTime: inv.eventStartTime || null,
         eventEndTime: inv.eventEndTime || null,
-        venueName: inv.venueName, venueAddress: inv.venueAddress,
-        venueCity: inv.venueCity, venueState: inv.venueState,
+        venueName: inv.venueName,
+        venueAddress: inv.venueAddress,
+        venueCity: inv.venueCity,
+        venueState: inv.venueState,
         venueMapUrl: inv.venueMapUrl || null,
         groomParents: inv.groomParents || null,
         brideParents: inv.brideParents || null,
@@ -941,7 +1408,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         envelopeInitialsSize: String(Number(inv.envelopeInitialsSize) || 24),
         initialsImageUrl: inv.initialsImageUrl || null,
         page2Initials: inv.page2Initials || null,
-        initialsImageScale: Math.min(140, Math.max(50, Number(inv.initialsImageScale) || 100)),
+        initialsImageScale: Math.min(
+          140,
+          Math.max(50, Number(inv.initialsImageScale) || 100),
+        ),
         eventStartDateTime: inv.eventStartDateTime || null,
         eventEndDateTime: inv.eventEndDateTime || null,
         coverDateText: inv.coverDateText || null,
@@ -998,7 +1468,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       // Standard invitations do not have the Money Gift feature. Do not send
       // those fields during an otherwise unrelated save, because the API
       // correctly rejects Money Gift fields for packages without the feature.
-      if (mode === "admin" || mode === "demo" || activeFeatureNames.has("Money Gift")) {
+      if (
+        mode === "admin" ||
+        mode === "demo" ||
+        activeFeatureNames.has("Money Gift")
+      ) {
         Object.assign(savePayload, {
           giftDisplay: inv.giftDisplay,
           giftTitle: inv.giftTitle || null,
@@ -1008,7 +1482,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           giftQrCodes: inv.giftQrCodes,
         });
       }
-      if (mode === "admin" || mode === "demo" || activeFeatureNames.has("Gift Registry")) {
+      if (
+        mode === "admin" ||
+        mode === "demo" ||
+        activeFeatureNames.has("Gift Registry")
+      ) {
         Object.assign(savePayload, {
           registryRecipientName: inv.registryRecipientName || null,
           registryRecipientAddress: inv.registryRecipientAddress || null,
@@ -1034,7 +1512,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         await loadData(true);
       } else {
         const errorData = await r.json().catch(() => ({}));
-        toast.error(typeof errorData.error === "string" ? errorData.error : "Save failed. Please try again.");
+        toast.error(
+          typeof errorData.error === "string"
+            ? errorData.error
+            : "Save failed. Please try again.",
+        );
       }
     } catch {
       toast.error("Network error. Please try again.");
@@ -1044,7 +1526,13 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   }
 
   function handleBack() {
-    navigate(mode === "demo" ? "/admin" : mode === "business" ? "/business/dashboard" : "/dashboard");
+    navigate(
+      mode === "demo"
+        ? "/admin"
+        : mode === "business"
+          ? "/business/dashboard"
+          : "/dashboard",
+    );
   }
 
   async function handleLogout() {
@@ -1061,7 +1549,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     }
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
     if (files.length > remainingSlots) {
-      toast.info(`Gallery hanya boleh 4 gambar. ${remainingSlots} gambar pertama sahaja akan dimuat naik.`);
+      toast.info(
+        `Gallery hanya boleh 4 gambar. ${remainingSlots} gambar pertama sahaja akan dimuat naik.`,
+      );
     }
     setUploadingGallery(true);
     try {
@@ -1069,11 +1559,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       for (const file of filesToUpload) {
         const formData = new FormData();
         formData.append("file", file);
-        const res = await fetch(`${BASE}/api/gallery-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`, {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        });
+        const res = await fetch(
+          `${BASE}/api/gallery-upload?invitationToken=${encodeURIComponent(inv.token || mode || "demo")}`,
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          },
+        );
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           toast.error(data.error || `Failed to upload ${file.name}`);
@@ -1083,7 +1576,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         if (data.key) uploadedKeys.push(data.key);
       }
       if (uploadedKeys.length > 0) {
-        setInv((p) => ({ ...p, galleryImages: [...p.galleryImages, ...uploadedKeys].slice(0, 4) }));
+        setInv((p) => ({
+          ...p,
+          galleryImages: [...p.galleryImages, ...uploadedKeys].slice(0, 4),
+        }));
         toast.success(`${uploadedKeys.length} image(s) uploaded`);
       }
     } catch {
@@ -1159,7 +1655,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         if (data.key) uploadedKeys.push(data.key);
       }
       if (uploadedKeys.length > 0) {
-        setInv((current) => ({ ...current, giftQrCodes: [...current.giftQrCodes, ...uploadedKeys].slice(0, 2) }));
+        setInv((current) => ({
+          ...current,
+          giftQrCodes: [...current.giftQrCodes, ...uploadedKeys].slice(0, 2),
+        }));
         toast.success(`${uploadedKeys.length} gift QR uploaded`);
       }
     } catch {
@@ -1174,40 +1673,70 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     if (!newRegName.trim() || !inv.token) return;
     try {
       const res = await fetch(`${BASE}/api/registry/${inv.token}`, {
-        method: "POST", credentials: "include",
+        method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newRegName.trim(), url: newRegUrl.trim() || null, notes: newRegNotes.trim() || null }),
+        body: JSON.stringify({
+          name: newRegName.trim(),
+          url: newRegUrl.trim() || null,
+          notes: newRegNotes.trim() || null,
+        }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { toast.error(data.error || "Failed to add item."); return; }
-      setRegistryItems(prev => [...prev, data]);
-      setNewRegName(""); setNewRegUrl(""); setNewRegNotes("");
-    } catch { toast.error("Network error."); }
+      if (!res.ok) {
+        toast.error(data.error || "Failed to add item.");
+        return;
+      }
+      setRegistryItems((prev) => [...prev, data]);
+      setNewRegName("");
+      setNewRegUrl("");
+      setNewRegNotes("");
+    } catch {
+      toast.error("Network error.");
+    }
   }
 
   async function saveRegistryItem(id: number) {
     if (!editRegName.trim() || !inv.token) return;
     try {
       const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, {
-        method: "PATCH", credentials: "include",
+        method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editRegName.trim(), url: editRegUrl.trim() || null, notes: editRegNotes.trim() || null }),
+        body: JSON.stringify({
+          name: editRegName.trim(),
+          url: editRegUrl.trim() || null,
+          notes: editRegNotes.trim() || null,
+        }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { toast.error(data.error || "Failed to save."); return; }
-      setRegistryItems(prev => prev.map(i => i.id === id ? data : i));
+      if (!res.ok) {
+        toast.error(data.error || "Failed to save.");
+        return;
+      }
+      setRegistryItems((prev) => prev.map((i) => (i.id === id ? data : i)));
       setEditingRegId(null);
-    } catch { toast.error("Network error."); }
+    } catch {
+      toast.error("Network error.");
+    }
   }
 
   async function deleteRegistryItem(id: number) {
     if (!inv.token) return;
     try {
-      const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, { method: "DELETE", credentials: "include" });
-      if (!res.ok) { toast.error("Failed to delete."); return; }
-      setRegistryItems(prev => prev.filter(i => i.id !== id));
+      const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        toast.error("Failed to delete.");
+        return;
+      }
+      setRegistryItems((prev) => prev.filter((i) => i.id !== id));
       if (editingRegId === id) setEditingRegId(null);
-    } catch { toast.error("Network error."); }
+    } catch {
+      toast.error("Network error.");
+    }
   }
 
   async function uploadRegistryThumb(id: number, file: File) {
@@ -1218,48 +1747,104 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       formData.append("file", file);
       formData.append("invitationToken", inv.token);
       formData.append("itemId", String(id));
-      const res = await fetch(`${BASE}/api/registry-thumbnail-upload`, { method: "POST", credentials: "include", body: formData });
+      const res = await fetch(`${BASE}/api/registry-thumbnail-upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { toast.error(data.error || "Upload failed."); return; }
-      setRegistryItems(prev => prev.map(i => i.id === id ? { ...i, thumbnailUrl: data.key } : i));
-    } catch { toast.error("Network error."); } finally { setUploadingRegThumb(null); }
+      if (!res.ok) {
+        toast.error(data.error || "Upload failed.");
+        return;
+      }
+      setRegistryItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, thumbnailUrl: data.key } : i)),
+      );
+    } catch {
+      toast.error("Network error.");
+    } finally {
+      setUploadingRegThumb(null);
+    }
   }
 
   async function moveRegistryItem(id: number, direction: "up" | "down") {
     if (!inv.token) return;
-    const idx = registryItems.findIndex(i => i.id === id);
+    const idx = registryItems.findIndex((i) => i.id === id);
     if (idx < 0) return;
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= registryItems.length) return;
     const reordered = [...registryItems];
-    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx]!, reordered[idx]!];
-    const updated = reordered.map((item, order) => ({ ...item, sortOrder: order }));
+    [reordered[idx], reordered[swapIdx]] = [
+      reordered[swapIdx]!,
+      reordered[idx]!,
+    ];
+    const updated = reordered.map((item, order) => ({
+      ...item,
+      sortOrder: order,
+    }));
     setRegistryItems(updated);
     // Persist new order in background
-    await Promise.all(updated.map(item =>
-      fetch(`${BASE}/api/registry/${inv.token}/${item.id}`, {
-        method: "PATCH", credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sortOrder: item.sortOrder }),
-      })
-    )).catch(() => {});
+    await Promise.all(
+      updated.map((item) =>
+        fetch(`${BASE}/api/registry/${inv.token}/${item.id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: item.sortOrder }),
+        }),
+      ),
+    ).catch(() => {});
   }
 
   const navItems = [
-    { label: "HOME",       onClick: () => { navigate(dashboardPathForUser(user)); setNavOpen(false); } },
-    { label: "CATALOG",    onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
-    { label: "PRICE LIST", onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
-    { label: "FAQs",       onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
-    { label: "REVIEWS",    onClick: () => { navigate("/reviews"); setNavOpen(false); } },
+    {
+      label: "HOME",
+      onClick: () => {
+        navigate(dashboardPathForUser(user));
+        setNavOpen(false);
+      },
+    },
+    {
+      label: "CATALOG",
+      onClick: () => {
+        toast.info("Coming soon!");
+        setNavOpen(false);
+      },
+    },
+    {
+      label: "PRICE LIST",
+      onClick: () => {
+        toast.info("Coming soon!");
+        setNavOpen(false);
+      },
+    },
+    {
+      label: "FAQs",
+      onClick: () => {
+        toast.info("Coming soon!");
+        setNavOpen(false);
+      },
+    },
+    {
+      label: "REVIEWS",
+      onClick: () => {
+        navigate("/reviews");
+        setNavOpen(false);
+      },
+    },
   ];
 
   const displayName =
-    (inv.groomShortName && inv.brideShortName)
+    inv.groomShortName && inv.brideShortName
       ? `${inv.groomShortName} & ${inv.brideShortName}`
-      : inv.shortCoupleName || `${inv.brideName} & ${inv.groomName}` || "Ain & Hidayat";
+      : inv.shortCoupleName ||
+        `${inv.brideName} & ${inv.groomName}` ||
+        "Ain & Hidayat";
   const fontSize = Number(design.nameFontSize) || 38;
   const fontFamily = fontFamilyStack(design.nameFontFamily);
-  const nameColorStyle = design.nameColor ? `hsl(${design.nameColor})` : "#6b4c2a";
+  const nameColorStyle = design.nameColor
+    ? `hsl(${design.nameColor})`
+    : "#6b4c2a";
 
   if (authLoading || dataLoading) {
     return (
@@ -1277,7 +1862,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       {/* ── Header ── */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-
           {/* Mobile hamburger */}
           <button
             className="sm:hidden text-gray-500 hover:text-gray-800 transition-colors"
@@ -1371,17 +1955,23 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             >
               <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
                 <button
-                  onClick={() => { navigate("/"); setNavOpen(false); }}
+                  onClick={() => {
+                    navigate("/");
+                    setNavOpen(false);
+                  }}
                   className="hover:opacity-70 transition-opacity"
                   aria-label="Wedinbytes logo"
                 >
                   <img
                     src={logo}
-                alt="Wedinbytes logo"
+                    alt="Wedinbytes logo"
                     className="h-9 w-9 object-contain"
                   />
                 </button>
-                <button onClick={() => setNavOpen(false)} className="text-gray-400 hover:text-gray-700 transition-colors">
+                <button
+                  onClick={() => setNavOpen(false)}
+                  className="text-gray-400 hover:text-gray-700 transition-colors"
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -1404,10 +1994,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   <User size={14} className="text-gray-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 truncate">{user?.name}</p>
-                  <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
+                  <p className="text-xs font-semibold text-gray-800 truncate">
+                    {user?.name}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    {user?.email}
+                  </p>
                 </div>
-                <button onClick={handleLogout} className="text-gray-400 hover:text-gray-700 transition-colors">
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-gray-700 transition-colors"
+                >
                   <LogOut size={15} />
                 </button>
               </div>
@@ -1437,11 +2034,18 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-0 max-w-7xl mx-auto w-full">
         {/* Left: Editor — hidden on mobile when preview is active */}
-        <div className={`flex-1 min-w-0 px-4 lg:px-8 py-6 ${mobileView === "preview" ? "hidden lg:block" : ""}`}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-5">Digital Card Details</h2>
+        <div
+          className={`flex-1 min-w-0 px-4 lg:px-8 py-6 ${mobileView === "preview" ? "hidden lg:block" : ""}`}
+        >
+          <h2 className="text-lg font-semibold text-gray-800 mb-5">
+            Digital Card Details
+          </h2>
 
           {/* Tabs */}
-          <div ref={tabsRef} className="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-hide">
+          <div
+            ref={tabsRef}
+            className="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-hide"
+          >
             {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
@@ -1449,8 +2053,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors border"
                 style={
                   activeTab === tab.id
-                    ? { backgroundColor: primaryCss, color: "#fff", borderColor: primaryCss }
-                    : { backgroundColor: "#fff", color: "#4b5563", borderColor: "#e5e7eb" }
+                    ? {
+                        backgroundColor: primaryCss,
+                        color: "#fff",
+                        borderColor: primaryCss,
+                      }
+                    : {
+                        backgroundColor: "#fff",
+                        color: "#4b5563",
+                        borderColor: "#e5e7eb",
+                      }
                 }
               >
                 {tab.label}
@@ -1459,13 +2071,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           </div>
 
           <p className="text-xs text-gray-400 italic mb-5">
-            *Make sure your browser is not in <strong>dark mode</strong><br />
+            *Make sure your browser is not in <strong>dark mode</strong>
+            <br />
             *This preview may not be an exact match of the final product
           </p>
 
           {customerEditLocked && (
             <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              This paid invitation is locked because its event date has passed. You can still view the invitation and preview, but editing is no longer available.
+              This paid invitation is locked because its event date has passed.
+              You can still view the invitation and preview, but editing is no
+              longer available.
             </div>
           )}
 
@@ -1474,26 +2089,53 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {activeTab === "muka-depan" && (
               <>
                 <Field label="Event Title">
-                  <input className={inputCls} value={inv.coverTitle} onChange={(e) => setI("coverTitle")(e.target.value)} placeholder={t("placeholders.eventTitle")} />
+                  <input
+                    className={inputCls}
+                    value={inv.coverTitle}
+                    onChange={(e) => setI("coverTitle")(e.target.value)}
+                    placeholder={t("placeholders.eventTitle")}
+                  />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Full Name">
-                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder={t("placeholders.groomFullName")} />
+                    <input
+                      className={inputCls}
+                      value={inv.groomName}
+                      onChange={(e) => setI("groomName")(e.target.value)}
+                      placeholder={t("placeholders.groomFullName")}
+                    />
                   </Field>
                   <Field label="Bride's Full Name">
-                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder={t("placeholders.brideFullName")} />
+                    <input
+                      className={inputCls}
+                      value={inv.brideName}
+                      onChange={(e) => setI("brideName")(e.target.value)}
+                      placeholder={t("placeholders.brideFullName")}
+                    />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Cover Groom Name">
-                    <input className={inputCls} value={inv.coverGroomName} onChange={(e) => setI("coverGroomName")(e.target.value)} placeholder="Contoh: M" />
+                    <input
+                      className={inputCls}
+                      value={inv.coverGroomName}
+                      onChange={(e) => setI("coverGroomName")(e.target.value)}
+                      placeholder="Contoh: M"
+                    />
                   </Field>
                   <Field label="Cover Bride Name">
-                    <input className={inputCls} value={inv.coverBrideName} onChange={(e) => setI("coverBrideName")(e.target.value)} placeholder="Contoh: F" />
+                    <input
+                      className={inputCls}
+                      value={inv.coverBrideName}
+                      onChange={(e) => setI("coverBrideName")(e.target.value)}
+                      placeholder="Contoh: F"
+                    />
                   </Field>
                 </div>
                 <p className="-mt-2 text-xs leading-relaxed text-gray-500">
-                  Your invitation URL is generated from the Cover Groom Name and Cover Bride Name above. Please ensure both names are entered accurately before sharing your link.
+                  Your invitation URL is generated from the Cover Groom Name and
+                  Cover Bride Name above. Please ensure both names are entered
+                  accurately before sharing your link.
                 </p>
                 <Field label="Cover Initials (Optional)">
                   <input
@@ -1503,24 +2145,37 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     placeholder="Contoh: S & H"
                   />
                   <p className="text-xs text-gray-400">
-                    Teks ini dipaparkan dalam bulatan jika tiada artwork initials.
+                    Teks ini dipaparkan dalam bulatan jika tiada artwork
+                    initials.
                   </p>
                   <label className="mt-3 block text-xs text-gray-500">
-                    Initial cover size: {Number(inv.envelopeInitialsSize) || 24}px
+                    Initial cover size: {Number(inv.envelopeInitialsSize) || 24}
+                    px
                     <input
                       type="range"
                       min="12"
                       max="48"
                       step="1"
                       value={Number(inv.envelopeInitialsSize) || 24}
-                      onChange={(e) => setInv((p) => ({ ...p, envelopeInitialsSize: e.target.value }))}
+                      onChange={(e) =>
+                        setInv((p) => ({
+                          ...p,
+                          envelopeInitialsSize: e.target.value,
+                        }))
+                      }
                       className="mt-1 w-full accent-gray-700"
                     />
                   </label>
                 </Field>
                 <Field label="Upload your logo (Optional)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    <span>{uploadingInitials ? "Uploading..." : inv.initialsImageUrl ? "Replace your logo" : "Upload your logo"}</span>
+                    <span>
+                      {uploadingInitials
+                        ? "Uploading..."
+                        : inv.initialsImageUrl
+                          ? "Replace your logo"
+                          : "Upload your logo"}
+                    </span>
                     <input
                       type="file"
                       accept="image/png"
@@ -1533,7 +2188,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     />
                   </label>
                   <p className="text-xs text-gray-400">
-                    Optional. Sila gunakan PNG dengan transparent background. Maksimum 2 MB.
+                    Optional. Sila gunakan PNG dengan transparent background.
+                    Maksimum 2 MB.
                   </p>
                   {inv.initialsImageUrl && (
                     <>
@@ -1541,7 +2197,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         src={resolveImageUrl(inv.initialsImageUrl)}
                         alt="Uploaded logo preview"
                         className="mt-2 h-24 w-24 object-contain"
-                        style={{ transform: `scale(${inv.initialsImageScale / 100})` }}
+                        style={{
+                          transform: `scale(${inv.initialsImageScale / 100})`,
+                        }}
                       />
                       <label className="mt-3 block text-xs text-gray-500">
                         Logo size: {inv.initialsImageScale}%
@@ -1551,14 +2209,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           max="140"
                           step="5"
                           value={inv.initialsImageScale}
-                          onChange={(e) => setInv((p) => ({ ...p, initialsImageScale: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setInv((p) => ({
+                              ...p,
+                              initialsImageScale: Number(e.target.value),
+                            }))
+                          }
                           className="mt-1 w-full accent-gray-700"
                         />
                       </label>
                       <button
                         type="button"
                         className="mt-3 rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                        onClick={() => setInv((p) => ({ ...p, initialsImageUrl: "" }))}
+                        onClick={() =>
+                          setInv((p) => ({ ...p, initialsImageUrl: "" }))
+                        }
                       >
                         Remove logo
                       </button>
@@ -1566,16 +2231,27 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   )}
                 </Field>
                 <Field label="Hashtag">
-                  <input className={inputCls} value={inv.hashtag} onChange={(e) => setI("hashtag")(e.target.value)} placeholder={t("placeholders.hashtag")} />
+                  <input
+                    className={inputCls}
+                    value={inv.hashtag}
+                    onChange={(e) => setI("hashtag")(e.target.value)}
+                    placeholder={t("placeholders.hashtag")}
+                  />
                 </Field>
                 <div className="flex items-center gap-3">
                   <input
-                    type="checkbox" id="showFrontText"
+                    type="checkbox"
+                    id="showFrontText"
                     checked={inv.showFrontText}
-                    onChange={(e) => setInv((p) => ({ ...p, showFrontText: e.target.checked }))}
+                    onChange={(e) =>
+                      setInv((p) => ({ ...p, showFrontText: e.target.checked }))
+                    }
                     className="w-4 h-4 accent-gray-700 rounded"
                   />
-                  <label htmlFor="showFrontText" className="text-sm text-gray-700 font-medium cursor-pointer">
+                  <label
+                    htmlFor="showFrontText"
+                    className="text-sm text-gray-700 font-medium cursor-pointer"
+                  >
                     Show front page
                   </label>
                 </div>
@@ -1625,14 +2301,29 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Groom's Full Name">
-                    <input className={inputCls} value={inv.groomName} onChange={(e) => setI("groomName")(e.target.value)} placeholder={t("placeholders.groomFullName")} />
+                    <input
+                      className={inputCls}
+                      value={inv.groomName}
+                      onChange={(e) => setI("groomName")(e.target.value)}
+                      placeholder={t("placeholders.groomFullName")}
+                    />
                   </Field>
                   <Field label="Bride's Full Name">
-                    <input className={inputCls} value={inv.brideName} onChange={(e) => setI("brideName")(e.target.value)} placeholder={t("placeholders.brideFullName")} />
+                    <input
+                      className={inputCls}
+                      value={inv.brideName}
+                      onChange={(e) => setI("brideName")(e.target.value)}
+                      placeholder={t("placeholders.brideFullName")}
+                    />
                   </Field>
                 </div>
                 <Field label="Page 2 Initials">
-                  <input className={inputCls} value={inv.page2Initials} onChange={(e) => setI("page2Initials")(e.target.value)} placeholder="Contoh: M & F" />
+                  <input
+                    className={inputCls}
+                    value={inv.page2Initials}
+                    onChange={(e) => setI("page2Initials")(e.target.value)}
+                    placeholder="Contoh: M & F"
+                  />
                 </Field>
               </>
             )}
@@ -1642,25 +2333,55 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Date">
-                    <input type="date" className={inputCls} value={inv.eventDate} onChange={(e) => setI("eventDate")(e.target.value)} />
+                    <input
+                      type="date"
+                      className={inputCls}
+                      value={inv.eventDate}
+                      onChange={(e) => setI("eventDate")(e.target.value)}
+                    />
                   </Field>
                   <Field label="Day (auto)">
-                    <input className={inputCls} value={inv.eventDay} readOnly placeholder={t("placeholders.dayFromDate")} />
+                    <input
+                      className={inputCls}
+                      value={inv.eventDay}
+                      readOnly
+                      placeholder={t("placeholders.dayFromDate")}
+                    />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Start Time">
-                    <input type="time" className={inputCls} value={inv.eventStartTime} onChange={(e) => setI("eventStartTime")(e.target.value)} />
+                    <input
+                      type="time"
+                      className={inputCls}
+                      value={inv.eventStartTime}
+                      onChange={(e) => setI("eventStartTime")(e.target.value)}
+                    />
                   </Field>
                   <Field label="End Time">
-                    <input type="time" className={inputCls} value={inv.eventEndTime} onChange={(e) => setI("eventEndTime")(e.target.value)} />
+                    <input
+                      type="time"
+                      className={inputCls}
+                      value={inv.eventEndTime}
+                      onChange={(e) => setI("eventEndTime")(e.target.value)}
+                    />
                   </Field>
                 </div>
                 <Field label="Readable Time">
-                  <input className={inputCls} value={inv.eventTime} readOnly placeholder={t("placeholders.timeFromStartEnd")} />
+                  <input
+                    className={inputCls}
+                    value={inv.eventTime}
+                    readOnly
+                    placeholder={t("placeholders.timeFromStartEnd")}
+                  />
                 </Field>
                 <Field label="Venue Name">
-                  <input className={inputCls} value={inv.venueName} onChange={(e) => setI("venueName")(e.target.value)} placeholder={t("placeholders.venueName")} />
+                  <input
+                    className={inputCls}
+                    value={inv.venueName}
+                    onChange={(e) => setI("venueName")(e.target.value)}
+                    placeholder={t("placeholders.venueName")}
+                  />
                 </Field>
                 <Field label="Venue Address">
                   <RichTextEditor
@@ -1669,14 +2390,28 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     placeholder={t("placeholders.venueAddress")}
                     multiLine
                     showFontSize
-                    inputStyle={{ fontFamily: "Poppins, sans-serif", fontSize: 16, textAlign: "center" }}
+                    inputStyle={{
+                      fontFamily: "Poppins, sans-serif",
+                      fontSize: 16,
+                      textAlign: "center",
+                    }}
                   />
                 </Field>
                 <Field label="Islamic Date">
-                  <input className={inputCls} value={inv.venueHijriDate} onChange={(e) => setI("venueHijriDate")(e.target.value)} placeholder={t("placeholders.islamicDate")} />
+                  <input
+                    className={inputCls}
+                    value={inv.venueHijriDate}
+                    onChange={(e) => setI("venueHijriDate")(e.target.value)}
+                    placeholder={t("placeholders.islamicDate")}
+                  />
                 </Field>
                 <Field label="GPS / Google Maps Link">
-                  <input className={inputCls} value={inv.venueMapUrl} onChange={(e) => setI("venueMapUrl")(e.target.value)} placeholder={t("placeholders.mapsUrl")} />
+                  <input
+                    className={inputCls}
+                    value={inv.venueMapUrl}
+                    onChange={(e) => setI("venueMapUrl")(e.target.value)}
+                    placeholder={t("placeholders.mapsUrl")}
+                  />
                 </Field>
               </>
             )}
@@ -1686,7 +2421,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               <>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">Event Programme</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Event Programme
+                    </label>
                     <button
                       type="button"
                       onClick={() =>
@@ -1701,11 +2438,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </button>
                   </div>
                   {inv.itinerary.length === 0 && (
-                    <p className="text-xs text-gray-400">No programme items yet. Click “Add item” to start.</p>
+                    <p className="text-xs text-gray-400">
+                      No programme items yet. Click “Add item” to start.
+                    </p>
                   )}
                   <div className="space-y-2">
                     {inv.itinerary.map((item, idx) => (
-                      <div key={idx} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                      <div
+                        key={idx}
+                        className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start"
+                      >
                         <input
                           type="time"
                           className={inputCls}
@@ -1713,7 +2455,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           onChange={(e) =>
                             setInv((p) => {
                               const next = [...p.itinerary];
-                              next[idx] = { ...next[idx], time: e.target.value };
+                              next[idx] = {
+                                ...next[idx],
+                                time: e.target.value,
+                              };
                               return { ...p, itinerary: next };
                             })
                           }
@@ -1724,7 +2469,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           onChange={(e) =>
                             setInv((p) => {
                               const next = [...p.itinerary];
-                              next[idx] = { ...next[idx], event: e.target.value };
+                              next[idx] = {
+                                ...next[idx],
+                                event: e.target.value,
+                              };
                               return { ...p, itinerary: next };
                             })
                           }
@@ -1735,7 +2483,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           onClick={() =>
                             setInv((p) => ({
                               ...p,
-                              itinerary: p.itinerary.filter((_, i) => i !== idx),
+                              itinerary: p.itinerary.filter(
+                                (_, i) => i !== idx,
+                              ),
                             }))
                           }
                           className="p-2 text-gray-400 hover:text-red-500 transition-colors"
@@ -1750,83 +2500,98 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               </>
             )}
 
-             {/* ── DRESS CODE ── */}
-             {activeTab === "dresscode" && (
-               <div className="space-y-5">
-                 <Field label="Theme">
-                   <input
-                     className={inputCls}
-                     value={inv.dresscodeTheme}
-                     onChange={(e) => setI("dresscodeTheme")(e.target.value)}
-                     placeholder="Contoh: Melayu Klasik, Corporate"
-                     maxLength={120}
-                     data-testid="input-dresscode-theme"
-                   />
-                   <input
-                     type="hidden"
-                     value={inv.dresscode}
-                     readOnly
-                     aria-hidden="true"
-                   />
-                   <p className="text-xs text-gray-500">
-                     Tema pakaian yang akan dipaparkan kepada tetamu.
-                   </p>
-                 </Field>
+            {/* ── DRESS CODE ── */}
+            {activeTab === "dresscode" && (
+              <div className="space-y-5">
+                <Field label="Theme">
+                  <input
+                    className={inputCls}
+                    value={inv.dresscodeTheme}
+                    onChange={(e) => setI("dresscodeTheme")(e.target.value)}
+                    placeholder="Contoh: Melayu Klasik, Corporate"
+                    maxLength={120}
+                    data-testid="input-dresscode-theme"
+                  />
+                  <input
+                    type="hidden"
+                    value={inv.dresscode}
+                    readOnly
+                    aria-hidden="true"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Tema pakaian yang akan dipaparkan kepada tetamu.
+                  </p>
+                </Field>
 
-                 <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
-                   <div className="flex items-center justify-between gap-3">
-                     <span className="text-xs text-gray-400">{inv.dresscodeColors.length}/4</span>
-                   </div>
-                   <p className="mt-1 text-xs text-gray-500">
-                     Pilih sehingga empat warna untuk dipaparkan dalam invitation.
-                   </p>
-                   <div className="mt-4 flex flex-wrap items-center gap-3">
-                     {inv.dresscodeColors.map((color, index) => (
-                       <div key={`${color}-${index}`} className="relative">
-                         <HexColorInput
-                           value={color}
-                           compact
-                           label={`Colour ${index + 1}`}
-                           testId={`input-dresscode-color-${index}`}
-                           onChange={(hex) => setInv((current) => ({
-                             ...current,
-                             dresscodeColors: current.dresscodeColors.map((item, itemIndex) =>
-                               itemIndex === index ? hex : item,
-                             ),
-                           }))}
-                         />
-                         <button
-                           type="button"
-                           onClick={() => setInv((current) => ({
-                             ...current,
-                             dresscodeColors: current.dresscodeColors.filter((_, itemIndex) => itemIndex !== index),
-                           }))}
-                           className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-xs leading-none text-white shadow"
-                           aria-label={`Remove dress code colour ${index + 1}`}
-                           data-testid={`button-remove-dresscode-color-${index}`}
-                         >
-                           ×
-                         </button>
-                       </div>
-                     ))}
-                     {inv.dresscodeColors.length < 4 && (
-                       <button
-                         type="button"
-                         onClick={() => setInv((current) => ({
-                           ...current,
-                           dresscodeColors: [...current.dresscodeColors, "#d8c7a1"].slice(0, 4),
-                         }))}
-                         className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-xl text-gray-400 transition hover:border-gray-500 hover:text-gray-700"
-                         aria-label="Add dress code colour"
-                         data-testid="button-add-dresscode-color"
-                       >
-                         +
-                       </button>
-                     )}
-                   </div>
-                 </div>
-               </div>
-             )}
+                <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-gray-400">
+                      {inv.dresscodeColors.length}/4
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Pilih sehingga empat warna untuk dipaparkan dalam
+                    invitation.
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {inv.dresscodeColors.map((color, index) => (
+                      <div key={`${color}-${index}`} className="relative">
+                        <HexColorInput
+                          value={color}
+                          compact
+                          label={`Colour ${index + 1}`}
+                          testId={`input-dresscode-color-${index}`}
+                          onChange={(hex) =>
+                            setInv((current) => ({
+                              ...current,
+                              dresscodeColors: current.dresscodeColors.map(
+                                (item, itemIndex) =>
+                                  itemIndex === index ? hex : item,
+                              ),
+                            }))
+                          }
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInv((current) => ({
+                              ...current,
+                              dresscodeColors: current.dresscodeColors.filter(
+                                (_, itemIndex) => itemIndex !== index,
+                              ),
+                            }))
+                          }
+                          className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-xs leading-none text-white shadow"
+                          aria-label={`Remove dress code colour ${index + 1}`}
+                          data-testid={`button-remove-dresscode-color-${index}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {inv.dresscodeColors.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setInv((current) => ({
+                            ...current,
+                            dresscodeColors: [
+                              ...current.dresscodeColors,
+                              "#d8c7a1",
+                            ].slice(0, 4),
+                          }))
+                        }
+                        className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-xl text-gray-400 transition hover:border-gray-500 hover:text-gray-700"
+                        aria-label="Add dress code colour"
+                        data-testid="button-add-dresscode-color"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ── DOA ── */}
             {activeTab === "doa" && (
@@ -1844,9 +2609,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {/* ── GALERI ── */}
             {activeTab === "galeri" && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-500">
-                  Upload up to 4 images.
-                </p>
+                <p className="text-sm text-gray-500">Upload up to 4 images.</p>
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
                     <input
@@ -1857,9 +2620,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       onChange={(e) => uploadGalleryFiles(e.target.files)}
                       disabled={uploadingGallery}
                     />
-                    {uploadingGallery ? "Uploading..." : inv.galleryImages.length >= 4 ? "Gallery Full" : "Upload Images"}
+                    {uploadingGallery
+                      ? "Uploading..."
+                      : inv.galleryImages.length >= 4
+                        ? "Gallery Full"
+                        : "Upload Images"}
                   </label>
-                  <span className="text-xs text-gray-400">{inv.galleryImages.length}/4 images · Max 10 MB each</span>
+                  <span className="text-xs text-gray-400">
+                    {inv.galleryImages.length}/4 images · Max 10 MB each
+                  </span>
                 </div>
                 {inv.galleryImages.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
@@ -1878,7 +2647,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           onClick={() =>
                             setInv((p) => ({
                               ...p,
-                              galleryImages: p.galleryImages.filter((_, i) => i !== idx),
+                              galleryImages: p.galleryImages.filter(
+                                (_, i) => i !== idx,
+                              ),
                             }))
                           }
                           className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1902,7 +2673,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     role="switch"
                     aria-checked={inv.giftDisplay}
                     aria-label="Display Gift"
-                    onClick={() => setInv((current) => ({ ...current, giftDisplay: !current.giftDisplay }))}
+                    onClick={() =>
+                      setInv((current) => ({
+                        ...current,
+                        giftDisplay: !current.giftDisplay,
+                      }))
+                    }
                     className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 ${
                       inv.giftDisplay ? "bg-[#2f8f5b]" : "bg-gray-300"
                     }`}
@@ -1915,32 +2691,78 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   </button>
                 </Field>
                 <Field label="Recipient Name">
-                  <input className={inputCls} value={inv.giftRecipient} onChange={(event) => setInv((current) => ({ ...current, giftRecipient: event.target.value }))} placeholder="SH AHRUDIN BIN AHMAD" />
+                  <input
+                    className={inputCls}
+                    value={inv.giftRecipient}
+                    onChange={(event) =>
+                      setInv((current) => ({
+                        ...current,
+                        giftRecipient: event.target.value,
+                      }))
+                    }
+                    placeholder="SH AHRUDIN BIN AHMAD"
+                  />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Bank">
-                    <input className={inputCls} value={inv.giftBankName} onChange={(event) => setInv((current) => ({ ...current, giftBankName: event.target.value }))} placeholder="Maybank" />
+                    <input
+                      className={inputCls}
+                      value={inv.giftBankName}
+                      onChange={(event) =>
+                        setInv((current) => ({
+                          ...current,
+                          giftBankName: event.target.value,
+                        }))
+                      }
+                      placeholder="Maybank"
+                    />
                   </Field>
                   <Field label="Account Number">
-                    <input className={inputCls} value={inv.giftAccountNumber} onChange={(event) => setInv((current) => ({ ...current, giftAccountNumber: event.target.value }))} placeholder="562375471612" />
+                    <input
+                      className={inputCls}
+                      value={inv.giftAccountNumber}
+                      onChange={(event) =>
+                        setInv((current) => ({
+                          ...current,
+                          giftAccountNumber: event.target.value,
+                        }))
+                      }
+                      placeholder="562375471612"
+                    />
                   </Field>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">QR Code</p>
-                      <p className="text-xs text-gray-500">Upload up to 2 QR images, max 5 MB each.</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        QR Code
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Upload up to 2 QR images, max 5 MB each.
+                      </p>
                     </div>
-                    <label className={`inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-xs font-medium ${inv.giftQrCodes.length >= 2 || !inv.token ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-gray-50"}`}>
+                    <label
+                      className={`inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-xs font-medium ${inv.giftQrCodes.length >= 2 || !inv.token ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-gray-50"}`}
+                    >
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
                         multiple
                         className="hidden"
-                        disabled={inv.giftQrCodes.length >= 2 || !inv.token || uploadingGallery}
-                        onChange={(event) => uploadGiftQrFiles(event.target.files)}
+                        disabled={
+                          inv.giftQrCodes.length >= 2 ||
+                          !inv.token ||
+                          uploadingGallery
+                        }
+                        onChange={(event) =>
+                          uploadGiftQrFiles(event.target.files)
+                        }
                       />
-                      {inv.giftQrCodes.length >= 2 ? "QR Full" : !inv.token ? "Save card first" : "Upload QR"}
+                      {inv.giftQrCodes.length >= 2
+                        ? "QR Full"
+                        : !inv.token
+                          ? "Save card first"
+                          : "Upload QR"}
                     </label>
                   </div>
                   {inv.giftQrCodes.length > 0 && (
@@ -1955,7 +2777,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           />
                           <button
                             type="button"
-                            onClick={() => setInv((current) => ({ ...current, giftQrCodes: current.giftQrCodes.filter((_, itemIndex) => itemIndex !== index) }))}
+                            onClick={() =>
+                              setInv((current) => ({
+                                ...current,
+                                giftQrCodes: current.giftQrCodes.filter(
+                                  (_, itemIndex) => itemIndex !== index,
+                                ),
+                              }))
+                            }
                             className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
                             title="Remove"
                           >
@@ -1973,62 +2802,102 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {activeTab === "registry" && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Gift Registry</p>
-                  <p className="text-xs text-gray-500">Add products your guests can gift you. Max 20 items.</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    Gift Registry
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Add products your guests can gift you. Max 20 items.
+                  </p>
                 </div>
 
                 {/* Delivery address — shown to guests in Tempah Hadiah */}
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-                  <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Delivery Info (shown to guests)</p>
+                  <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    Delivery Info (shown to guests)
+                  </p>
                   <input
                     className={inputCls}
                     value={inv.registryRecipientName}
-                    onChange={e => setInv(c => ({ ...c, registryRecipientName: e.target.value }))}
+                    onChange={(e) =>
+                      setInv((c) => ({
+                        ...c,
+                        registryRecipientName: e.target.value,
+                      }))
+                    }
                     placeholder="Nama penerima (e.g. Ahmad Bin Zakaria)"
                   />
                   <textarea
                     className={textareaCls}
                     rows={3}
                     value={inv.registryRecipientAddress}
-                    onChange={e => setInv(c => ({ ...c, registryRecipientAddress: e.target.value }))}
-                    placeholder={"Alamat Penerima\nNo 56, Taman Melur Cempaka\n86200 Simpang Renggam, Johor"}
+                    onChange={(e) =>
+                      setInv((c) => ({
+                        ...c,
+                        registryRecipientAddress: e.target.value,
+                      }))
+                    }
+                    placeholder={
+                      "Alamat Penerima\nNo 56, Taman Melur Cempaka\n86200 Simpang Renggam, Johor"
+                    }
                   />
-                  <p className="text-xs text-gray-400">Guests see this address when tapping "Tempah" on a product.</p>
+                  <p className="text-xs text-gray-400">
+                    Guests see this address when tapping "Tempah" on a product.
+                  </p>
                 </div>
 
                 {/* Item list */}
                 {registryLoading ? (
                   <p className="text-xs text-muted-foreground">Loading…</p>
                 ) : registryItems.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No items yet. Add your first product below.</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    No items yet. Add your first product below.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {registryItems.map((item, idx) => (
-                      <div key={item.id} className="rounded-lg border border-gray-200 bg-white p-3 space-y-2">
+                      <div
+                        key={item.id}
+                        className="rounded-lg border border-gray-200 bg-white p-3 space-y-2"
+                      >
                         {editingRegId === item.id ? (
                           <div className="space-y-2">
                             <input
                               className={inputCls}
                               value={editRegName}
-                              onChange={e => setEditRegName(e.target.value)}
+                              onChange={(e) => setEditRegName(e.target.value)}
                               placeholder="Product name *"
-                              onKeyDown={e => { if (e.key === "Enter") void saveRegistryItem(item.id); }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter")
+                                  void saveRegistryItem(item.id);
+                              }}
                             />
                             <input
                               className={inputCls}
                               value={editRegUrl}
-                              onChange={e => setEditRegUrl(e.target.value)}
+                              onChange={(e) => setEditRegUrl(e.target.value)}
                               placeholder="Purchase link (optional)"
                             />
                             <input
                               className={inputCls}
                               value={editRegNotes}
-                              onChange={e => setEditRegNotes(e.target.value)}
+                              onChange={(e) => setEditRegNotes(e.target.value)}
                               placeholder="Nota Tambahan (e.g. Nak yg warna aesthetic)"
                             />
                             <div className="flex gap-2">
-                              <button type="button" onClick={() => void saveRegistryItem(item.id)} className="flex-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">Save</button>
-                              <button type="button" onClick={() => setEditingRegId(null)} className="flex-1 rounded border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+                              <button
+                                type="button"
+                                onClick={() => void saveRegistryItem(item.id)}
+                                className="flex-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingRegId(null)}
+                                className="flex-1 rounded border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                              >
+                                Cancel
+                              </button>
                             </div>
                           </div>
                         ) : (
@@ -2036,30 +2905,104 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                             {/* Thumbnail */}
                             <div className="relative shrink-0">
                               {item.thumbnailUrl ? (
-                                <img src={resolveImageUrl(item.thumbnailUrl)} alt={item.name} className="h-12 w-12 rounded-lg border border-gray-200 bg-gray-50 object-cover" />
+                                <img
+                                  src={resolveImageUrl(item.thumbnailUrl)}
+                                  alt={item.name}
+                                  className="h-12 w-12 rounded-lg border border-gray-200 bg-gray-50 object-cover"
+                                />
                               ) : (
-                                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xl">🎁</div>
+                                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xl">
+                                  🎁
+                                </div>
                               )}
-                              <label className="absolute -bottom-1 -right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900" title="Upload thumbnail">
-                                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={uploadingRegThumb === item.id || !inv.token} onChange={e => { if (e.target.files?.[0]) void uploadRegistryThumb(item.id, e.target.files[0]); }} />
+                              <label
+                                className="absolute -bottom-1 -right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900"
+                                title="Upload thumbnail"
+                              >
+                                <input
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp"
+                                  className="hidden"
+                                  disabled={
+                                    uploadingRegThumb === item.id || !inv.token
+                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files?.[0])
+                                      void uploadRegistryThumb(
+                                        item.id,
+                                        e.target.files[0],
+                                      );
+                                  }}
+                                />
                                 {uploadingRegThumb === item.id ? "…" : "+"}
                               </label>
                             </div>
                             {/* Info */}
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-gray-800">{item.name}</p>
-                              {item.url && <p className="truncate text-xs text-gray-400">{item.url}</p>}
-                              {item.notes && <p className="truncate text-xs text-gray-500 italic">"{item.notes}"</p>}
+                              <p className="truncate text-sm font-medium text-gray-800">
+                                {item.name}
+                              </p>
+                              {item.url && (
+                                <p className="truncate text-xs text-gray-400">
+                                  {item.url}
+                                </p>
+                              )}
+                              {item.notes && (
+                                <p className="truncate text-xs text-gray-500 italic">
+                                  "{item.notes}"
+                                </p>
+                              )}
                             </div>
                             {/* Actions */}
                             <div className="flex shrink-0 flex-col gap-1">
                               <div className="flex gap-1">
-                                <button type="button" disabled={idx === 0} onClick={() => void moveRegistryItem(item.id, "up")} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move up">▲</button>
-                                <button type="button" disabled={idx === registryItems.length - 1} onClick={() => void moveRegistryItem(item.id, "down")} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">▼</button>
+                                <button
+                                  type="button"
+                                  disabled={idx === 0}
+                                  onClick={() =>
+                                    void moveRegistryItem(item.id, "up")
+                                  }
+                                  className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                                  title="Move up"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={idx === registryItems.length - 1}
+                                  onClick={() =>
+                                    void moveRegistryItem(item.id, "down")
+                                  }
+                                  className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                                  title="Move down"
+                                >
+                                  ▼
+                                </button>
                               </div>
                               <div className="flex gap-1">
-                                <button type="button" onClick={() => { setEditingRegId(item.id); setEditRegName(item.name); setEditRegUrl(item.url ?? ""); setEditRegNotes(item.notes ?? ""); }} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-blue-600" title="Edit">✎</button>
-                                <button type="button" onClick={() => void deleteRegistryItem(item.id)} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-red-600" title="Delete">×</button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingRegId(item.id);
+                                    setEditRegName(item.name);
+                                    setEditRegUrl(item.url ?? "");
+                                    setEditRegNotes(item.notes ?? "");
+                                  }}
+                                  className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-blue-600"
+                                  title="Edit"
+                                >
+                                  ✎
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void deleteRegistryItem(item.id)
+                                  }
+                                  className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-red-600"
+                                  title="Delete"
+                                >
+                                  ×
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -2072,24 +3015,29 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 {/* Add new item */}
                 {registryItems.length < 20 && (
                   <div className="rounded-lg border border-dashed border-gray-300 p-3 space-y-2">
-                    <p className="text-xs font-medium text-gray-600">Add Product</p>
+                    <p className="text-xs font-medium text-gray-600">
+                      Add Product
+                    </p>
                     <input
                       className={inputCls}
                       value={newRegName}
-                      onChange={e => setNewRegName(e.target.value)}
+                      onChange={(e) => setNewRegName(e.target.value)}
                       placeholder="Product name *"
-                      onKeyDown={e => { if (e.key === "Enter" && newRegName.trim()) void addRegistryItem(); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newRegName.trim())
+                          void addRegistryItem();
+                      }}
                     />
                     <input
                       className={inputCls}
                       value={newRegUrl}
-                      onChange={e => setNewRegUrl(e.target.value)}
+                      onChange={(e) => setNewRegUrl(e.target.value)}
                       placeholder="Purchase link (optional)"
                     />
                     <input
                       className={inputCls}
                       value={newRegNotes}
-                      onChange={e => setNewRegNotes(e.target.value)}
+                      onChange={(e) => setNewRegNotes(e.target.value)}
                       placeholder="Nota Tambahan (e.g. Nak yg warna aesthetic)"
                     />
                     <button
@@ -2100,7 +3048,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     >
                       + Add to Registry
                     </button>
-                    {!inv.token && <p className="text-xs text-amber-600">Save your invitation first to enable Gift Registry.</p>}
+                    {!inv.token && (
+                      <p className="text-xs text-amber-600">
+                        Save your invitation first to enable Gift Registry.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -2113,7 +3065,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   <select
                     className={inputCls}
                     value={inv.rsvpEnabled ? "yes" : "no"}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpEnabled: e.target.value === "yes" }))}
+                    onChange={(e) =>
+                      setInv((p) => ({
+                        ...p,
+                        rsvpEnabled: e.target.value === "yes",
+                      }))
+                    }
                   >
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
@@ -2122,7 +3079,9 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 <Field label="Ayat RSVP">
                   <RichTextEditor
                     value={inv.rsvpIntroText}
-                    onChange={(v) => setInv((p) => ({ ...p, rsvpIntroText: v }))}
+                    onChange={(v) =>
+                      setInv((p) => ({ ...p, rsvpIntroText: v }))
+                    }
                     placeholder={t("placeholders.rsvpMessage")}
                     multiLine
                     showFontSize
@@ -2130,7 +3089,14 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   />
                 </Field>
                 <Field label="Tarikh Akhir RSVP">
-                  <input type="datetime-local" className={inputCls} value={inv.rsvpDeadline} onChange={(e) => setInv((p) => ({ ...p, rsvpDeadline: e.target.value }))} />
+                  <input
+                    type="datetime-local"
+                    className={inputCls}
+                    value={inv.rsvpDeadline}
+                    onChange={(e) =>
+                      setInv((p) => ({ ...p, rsvpDeadline: e.target.value }))
+                    }
+                  />
                 </Field>
                 <Field label="Had Keseluruhan Tetamu*">
                   <input
@@ -2138,7 +3104,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     min={1}
                     className={inputCls}
                     value={inv.rsvpMaxOverallGuests}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxOverallGuests: Math.max(1, Number(e.target.value) || 1) }))}
+                    onChange={(e) =>
+                      setInv((p) => ({
+                        ...p,
+                        rsvpMaxOverallGuests: Math.max(
+                          1,
+                          Number(e.target.value) || 1,
+                        ),
+                      }))
+                    }
                   />
                 </Field>
                 <Field label="Had Tetamu Setiap Jemputan*">
@@ -2147,7 +3121,15 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     min={1}
                     className={inputCls}
                     value={inv.rsvpMaxGuestsPerInvitation}
-                    onChange={(e) => setInv((p) => ({ ...p, rsvpMaxGuestsPerInvitation: Math.max(1, Number(e.target.value) || 1) }))}
+                    onChange={(e) =>
+                      setInv((p) => ({
+                        ...p,
+                        rsvpMaxGuestsPerInvitation: Math.max(
+                          1,
+                          Number(e.target.value) || 1,
+                        ),
+                      }))
+                    }
                   />
                 </Field>
               </div>
@@ -2158,15 +3140,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Contact persons</p>
-                    <p className="text-xs text-gray-500">Add the people guests can contact for this invitation.</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      Contact persons
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Add the people guests can contact for this invitation.
+                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setInv((p) => ({
-                      ...p,
-                      contacts: [...p.contacts, { name: "", phone: "" }],
-                    }))}
+                    onClick={() =>
+                      setInv((p) => ({
+                        ...p,
+                        contacts: [...p.contacts, { name: "", phone: "" }],
+                      }))
+                    }
                     className="inline-flex items-center gap-1 rounded border border-gray-300 px-3 py-2 text-xs font-medium hover:bg-gray-50"
                   >
                     <Plus size={14} /> Add contact
@@ -2187,15 +3175,24 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
                 <div className="space-y-3">
                   {inv.contacts.map((contact, index) => (
-                    <div key={`contact-${index}`} className="rounded border border-gray-200 p-3 space-y-3">
+                    <div
+                      key={`contact-${index}`}
+                      className="rounded border border-gray-200 p-3 space-y-3"
+                    >
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-gray-600">Contact {index + 1}</p>
+                        <p className="text-xs font-medium text-gray-600">
+                          Contact {index + 1}
+                        </p>
                         <button
                           type="button"
-                          onClick={() => setInv((p) => ({
-                            ...p,
-                            contacts: p.contacts.filter((_, i) => i !== index),
-                          }))}
+                          onClick={() =>
+                            setInv((p) => ({
+                              ...p,
+                              contacts: p.contacts.filter(
+                                (_, i) => i !== index,
+                              ),
+                            }))
+                          }
                           className="text-xs text-red-600 hover:text-red-700"
                         >
                           Remove
@@ -2205,10 +3202,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         <input
                           className={inputCls}
                           value={contact.name}
-                          onChange={(e) => setInv((p) => ({
-                            ...p,
-                            contacts: p.contacts.map((item, i) => i === index ? { ...item, name: e.target.value } : item),
-                          }))}
+                          onChange={(e) =>
+                            setInv((p) => ({
+                              ...p,
+                              contacts: p.contacts.map((item, i) =>
+                                i === index
+                                  ? { ...item, name: e.target.value }
+                                  : item,
+                              ),
+                            }))
+                          }
                           placeholder="Contact name"
                         />
                       </Field>
@@ -2216,10 +3219,16 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         <input
                           className={inputCls}
                           value={contact.phone}
-                          onChange={(e) => setInv((p) => ({
-                            ...p,
-                            contacts: p.contacts.map((item, i) => i === index ? { ...item, phone: e.target.value } : item),
-                          }))}
+                          onChange={(e) =>
+                            setInv((p) => ({
+                              ...p,
+                              contacts: p.contacts.map((item, i) =>
+                                i === index
+                                  ? { ...item, phone: e.target.value }
+                                  : item,
+                              ),
+                            }))
+                          }
                           placeholder="0123456789"
                           type="tel"
                         />
@@ -2227,7 +3236,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     </div>
                   ))}
                 </div>
-
               </div>
             )}
 
@@ -2239,30 +3247,55 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     id="showFooter"
                     type="checkbox"
                     checked={inv.showFooter}
-                    onChange={(e) => setInv((p) => ({ ...p, showFooter: e.target.checked }))}
+                    onChange={(e) =>
+                      setInv((p) => ({ ...p, showFooter: e.target.checked }))
+                    }
                     className="rounded border-gray-300"
                   />
-                  <label htmlFor="showFooter" className="text-sm font-medium text-gray-700">Show footer branding</label>
+                  <label
+                    htmlFor="showFooter"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Show footer branding
+                  </label>
                 </div>
                 <Field label="Footer Text">
-                  <input className={inputCls} value={inv.footerText} onChange={(e) => setI("footerText")(e.target.value)} placeholder={t("placeholders.footerText")} />
+                  <input
+                    className={inputCls}
+                    value={inv.footerText}
+                    onChange={(e) => setI("footerText")(e.target.value)}
+                    placeholder={t("placeholders.footerText")}
+                  />
                 </Field>
                 <Field label="Footer URL">
-                    <input className={inputCls} value={inv.footerUrl} onChange={(e) => setI("footerUrl")(e.target.value)} placeholder={t("placeholders.footerUrl")} />
+                  <input
+                    className={inputCls}
+                    value={inv.footerUrl}
+                    onChange={(e) => setI("footerUrl")(e.target.value)}
+                    placeholder={t("placeholders.footerUrl")}
+                  />
                 </Field>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Social Links</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Social Links
+                  </label>
                   {(inv.socialLinks || []).map((link, idx) => (
-                    <div key={idx} className="grid grid-cols-2 gap-2 items-center">
+                    <div
+                      key={idx}
+                      className="grid grid-cols-2 gap-2 items-center"
+                    >
                       <input
                         className={inputCls}
                         value={link.platform}
                         onChange={(e) => {
                           const next = [...inv.socialLinks];
-                          next[idx] = { ...next[idx], platform: e.target.value };
+                          next[idx] = {
+                            ...next[idx],
+                            platform: e.target.value,
+                          };
                           setInv((p) => ({ ...p, socialLinks: next }));
                         }}
-                         placeholder={t("placeholders.socialPlatform")}
+                        placeholder={t("placeholders.socialPlatform")}
                       />
                       <input
                         className={inputCls}
@@ -2272,13 +3305,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           next[idx] = { ...next[idx], url: e.target.value };
                           setInv((p) => ({ ...p, socialLinks: next }));
                         }}
-                         placeholder={t("placeholders.url")}
+                        placeholder={t("placeholders.url")}
                       />
                     </div>
                   ))}
                   <button
                     type="button"
-                    onClick={() => setInv((p) => ({ ...p, socialLinks: [...(p.socialLinks || []), { platform: "", url: "" }] }))}
+                    onClick={() =>
+                      setInv((p) => ({
+                        ...p,
+                        socialLinks: [
+                          ...(p.socialLinks || []),
+                          { platform: "", url: "" },
+                        ],
+                      }))
+                    }
                     className="text-xs px-3 py-1 rounded border border-gray-200 hover:bg-gray-50"
                   >
                     + Add social link
@@ -2300,13 +3341,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       }`}
                       value={activePackageId ?? ""}
                       disabled={packageLocked}
-                      title={packageLocked
-                        ? (inv.isCustomerOrder && !inv.isPurchased
-                          ? "The package assigned to a customer order cannot be changed."
-                          : "Package changes are not available for paid invitations. For further assistance, please contact us on WhatsApp.")
-                        : undefined}
+                      title={
+                        packageLocked
+                          ? inv.isCustomerOrder && !inv.isPurchased
+                            ? "The package assigned to a customer order cannot be changed."
+                            : "Package changes are not available for paid invitations. For further assistance, please contact us on WhatsApp."
+                          : undefined
+                      }
                       onChange={(e) => {
-                        const id = e.target.value ? parseInt(e.target.value, 10) : null;
+                        const id = e.target.value
+                          ? parseInt(e.target.value, 10)
+                          : null;
                         setActivePackageId(id);
                       }}
                     >
@@ -2321,8 +3366,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
                         <p>
                           {inv.isCustomerOrder && !inv.isPurchased
-                          ? "Package assigned by customer order cannot be changed."
-                           : "Package changes are not available for paid invitations."}
+                            ? "Package assigned by customer order cannot be changed."
+                            : "Package changes are not available for paid invitations."}
                         </p>
                         <p className="mt-1">
                           For further assistance, please contact us on WhatsApp.
@@ -2349,8 +3394,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       const msDefaults: Record<string, string> = {
                         coverTitle: "RAIKAN CINTA",
                         greetingText: "Assalamualaikum wbt & salam sejahtera",
-                        invitationText: "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami.",
-                        doaText: "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
+                        invitationText:
+                          "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami.",
+                        doaText:
+                          "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
                         rsvpIntroText: "Sila sahkan kehadiran anda...",
                         rsvpFormNote: "Nota untuk tetamu...",
                         message: "Ucapan atau nota tambahan untuk tetamu...",
@@ -2358,19 +3405,26 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       const enDefaults: Record<string, string> = {
                         coverTitle: "Wedding Reception",
                         greetingText: "Assalamualaikum & warm greetings",
-                        invitationText: "With heartfelt gratitude, we joyfully invite\nDato' | Datin | Tuan | Puan | Mr. | Ms.\nto the wedding of our beloved children.",
-                        doaText: "O Allah, bless our wedding.\nUnite our hearts as You united the hearts of Adam & Hawa.",
+                        invitationText:
+                          "With heartfelt gratitude, we joyfully invite\nDato' | Datin | Tuan | Puan | Mr. | Ms.\nto the wedding of our beloved children.",
+                        doaText:
+                          "O Allah, bless our wedding.\nUnite our hearts as You united the hearts of Adam & Hawa.",
                         rsvpIntroText: "Please confirm your attendance...",
                         rsvpFormNote: "Note for guests...",
                         message: "Wishes or additional note for guests...",
                       };
-                      const oldDefaults = oldLang === "en" ? enDefaults : msDefaults;
-                      const newDefaults = newLang === "en" ? enDefaults : msDefaults;
+                      const oldDefaults =
+                        oldLang === "en" ? enDefaults : msDefaults;
+                      const newDefaults =
+                        newLang === "en" ? enDefaults : msDefaults;
                       setInv((p) => {
                         const next: InvData = { ...p, language: newLang };
                         Object.keys(newDefaults).forEach((key) => {
                           const k = key as keyof InvData;
-                          if (p[k] === oldDefaults[key] || (p[k] as string) === "") {
+                          if (
+                            p[k] === oldDefaults[key] ||
+                            (p[k] as string) === ""
+                          ) {
                             (next[k] as string) = newDefaults[key];
                           }
                         });
@@ -2384,73 +3438,132 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   {mode !== "demo" && (
-                  <Field label="Design Code*">
-                    <select
-                      className={selectCls}
-                      value={design.designCode}
-                      onChange={(e) => {
-                        const picked = availableDesigns.find((d) => d.designCode === e.target.value);
-                        if (picked) {
-                          const gd = activeDesign as Record<string, string> | undefined;
-                          const primary = picked.colorPrimary ?? gd?.colorPrimary ?? "142 45% 35%";
-                          const nextInherited = {
-                            nameColor:        picked.nameColor        ?? gd?.nameColor        ?? "0 0% 20%",
-                            colorForeground:  picked.colorForeground  ?? gd?.colorForeground  ?? "0 0% 10%",
-                            colorPrimary:     primary,
-                            colorSecondary:   picked.colorSecondary   ?? gd?.colorSecondary   ?? primary,
-                            colorAccent:      picked.colorAccent      ?? gd?.colorAccent      ?? picked.colorSecondary ?? gd?.colorSecondary ?? primary,
-                            colorBackground:  picked.colorBackground  ?? gd?.colorBackground  ?? primary,
-                            colorCard:        picked.colorCard        ?? gd?.colorCard        ?? "0 0% 100%",
-                          };
-                          setInheritedColors(nextInherited);
-                          setDesign((p) => ({
-                            ...p,
-                            ...nextInherited,
-                            designCode:       picked.designCode       ?? p.designCode,
-                            openingAnimation: picked.openingAnimation ?? "doors",
-                            openButtonText:   picked.openButtonText   ?? "BUKA",
-                            nameFontFamily:   normalizeFont(picked.nameFontFamily ?? picked.fontHeading ?? p.nameFontFamily),
-                            nameFontSize:     picked.nameFontSize ?? p.nameFontSize,
-                            badgeFontSize:    picked.badgeFontSize ?? p.badgeFontSize,
-                            bodyFontFamily:   normalizeFont(picked.fontBody ?? p.bodyFontFamily),
-                            cardImageUrl:     picked.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
-                            envelopeImageUrl: picked.envelopeImageUrl ?? "wed_card_design/20260531-041903-27796.jpg",
-                            musicUrl:         picked.musicUrl         ?? "",
-                            musicTitle:       picked.musicTitle       ?? "",
-                            musicArtist:      picked.musicArtist      ?? "",
-                          }));
-                          setPreviewOpened(true);
-                          setPreviewWasOpened(false);
-                        } else {
-                          setDesign((p) => ({ ...p, designCode: e.target.value }));
-                        }
-                        const params = new URLSearchParams(window.location.search);
-                        if (params.has("designCode")) {
-                          params.delete("designCode");
-                          const qs = params.toString();
-                          navigate(window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash, { replace: true });
-                        }
-                      }}
-                    >
-                      {availableDesigns.length === 0 && (
-                        <option value={design.designCode}>{design.designCode}</option>
-                      )}
-                      {availableDesigns.map((d) => (
-                        <option key={d.id} value={d.designCode ?? ""}>
-                          {d.designCode ? `${d.designCode} – ${d.name}` : d.name}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                    <Field label="Design Code*">
+                      <select
+                        className={selectCls}
+                        value={design.designCode}
+                        onChange={(e) => {
+                          const picked = availableDesigns.find(
+                            (d) => d.designCode === e.target.value,
+                          );
+                          if (picked) {
+                            const gd = activeDesign as
+                              | Record<string, string>
+                              | undefined;
+                            const primary =
+                              picked.colorPrimary ??
+                              gd?.colorPrimary ??
+                              "142 45% 35%";
+                            const nextInherited = {
+                              nameColor:
+                                picked.nameColor ?? gd?.nameColor ?? "0 0% 20%",
+                              colorForeground:
+                                picked.colorForeground ??
+                                gd?.colorForeground ??
+                                "0 0% 10%",
+                              colorPrimary: primary,
+                              colorSecondary:
+                                picked.colorSecondary ??
+                                gd?.colorSecondary ??
+                                primary,
+                              colorAccent:
+                                picked.colorAccent ??
+                                gd?.colorAccent ??
+                                picked.colorSecondary ??
+                                gd?.colorSecondary ??
+                                primary,
+                              colorBackground:
+                                picked.colorBackground ??
+                                gd?.colorBackground ??
+                                primary,
+                              colorCard:
+                                picked.colorCard ??
+                                gd?.colorCard ??
+                                "0 0% 100%",
+                            };
+                            setInheritedColors(nextInherited);
+                            setDesign((p) => ({
+                              ...p,
+                              ...nextInherited,
+                              designCode: picked.designCode ?? p.designCode,
+                              openingAnimation:
+                                picked.openingAnimation ?? "doors",
+                              openButtonText: picked.openButtonText ?? "BUKA",
+                              nameFontFamily: normalizeFont(
+                                picked.nameFontFamily ??
+                                  picked.fontHeading ??
+                                  p.nameFontFamily,
+                              ),
+                              nameFontSize:
+                                picked.nameFontSize ?? p.nameFontSize,
+                              badgeFontSize:
+                                picked.badgeFontSize ?? p.badgeFontSize,
+                              bodyFontFamily: normalizeFont(
+                                picked.fontBody ?? p.bodyFontFamily,
+                              ),
+                              cardImageUrl:
+                                picked.cardImageUrl ??
+                                "wed_card_design/20260531-041903-27796.jpg",
+                              envelopeImageUrl:
+                                picked.envelopeImageUrl ??
+                                "wed_card_design/20260531-041903-27796.jpg",
+                              musicUrl: picked.musicUrl ?? "",
+                              musicTitle: picked.musicTitle ?? "",
+                              musicArtist: picked.musicArtist ?? "",
+                            }));
+                            setPreviewOpened(true);
+                            setPreviewWasOpened(false);
+                          } else {
+                            setDesign((p) => ({
+                              ...p,
+                              designCode: e.target.value,
+                            }));
+                          }
+                          const params = new URLSearchParams(
+                            window.location.search,
+                          );
+                          if (params.has("designCode")) {
+                            params.delete("designCode");
+                            const qs = params.toString();
+                            navigate(
+                              window.location.pathname +
+                                (qs ? `?${qs}` : "") +
+                                window.location.hash,
+                              { replace: true },
+                            );
+                          }
+                        }}
+                      >
+                        {availableDesigns.length === 0 && (
+                          <option value={design.designCode}>
+                            {design.designCode}
+                          </option>
+                        )}
+                        {availableDesigns.map((d) => (
+                          <option key={d.id} value={d.designCode ?? ""}>
+                            {d.designCode
+                              ? `${d.designCode} – ${d.name}`
+                              : d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
                   )}
                   <Field label="Opening Style">
                     <select
                       className={selectCls}
                       value={design.openingAnimation}
-                      onChange={(e) => setDesign((p) => ({ ...p, openingAnimation: e.target.value }))}
+                      onChange={(e) =>
+                        setDesign((p) => ({
+                          ...p,
+                          openingAnimation: e.target.value,
+                        }))
+                      }
                     >
                       {OPENING_ANIMS.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                   </Field>
@@ -2461,41 +3574,62 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                     type="checkbox"
                     className="h-4 w-4 rounded border-border accent-primary"
                     checked={inv.overlayEnabled}
-                    onChange={(e) => setInv((p) => ({ ...p, overlayEnabled: e.target.checked }))}
+                    onChange={(e) =>
+                      setInv((p) => ({
+                        ...p,
+                        overlayEnabled: e.target.checked,
+                      }))
+                    }
                   />
-                  <span className="text-sm font-medium text-foreground">Show background overlay</span>
-                  <span className="text-xs text-muted-foreground">(translucent layer + cloud effect behind content)</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Show background overlay
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    (translucent layer + cloud effect behind content)
+                  </span>
                 </label>
 
                 {/* Wax seal is per card-design (set in Admin → Edit Design), not per demo invitation */}
                 <div className="space-y-2">
                   {mode !== "demo" && (
-                  <Field label="Wax Seal">
-                    <select
-                      className={selectCls}
-                      value={design.waxSealId}
-                      onChange={(e) => setDesign((p) => ({ ...p, waxSealId: e.target.value }))}
-                    >
-                      <option value="">Default (initials circle)</option>
-                      {waxSeals.map((s) => (
-                        <option key={s.id} value={String(s.id)}>{s.name}</option>
-                      ))}
-                    </select>
-                  </Field>
+                    <Field label="Wax Seal">
+                      <select
+                        className={selectCls}
+                        value={design.waxSealId}
+                        onChange={(e) =>
+                          setDesign((p) => ({
+                            ...p,
+                            waxSealId: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Default (initials circle)</option>
+                        {waxSeals.map((s) => (
+                          <option key={s.id} value={String(s.id)}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
                   )}
-                  {design.waxSealId && (() => {
-                    const sel = waxSeals.find(s => String(s.id) === design.waxSealId);
-                    return sel ? (
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={resolveImageUrl(sel.imageUrl)}
-                          alt={sel.name}
-                          className="h-14 w-14 rounded-full border border-border object-contain bg-muted"
-                        />
-                        <span className="text-xs text-muted-foreground">{sel.name}</span>
-                      </div>
-                    ) : null;
-                  })()}
+                  {design.waxSealId &&
+                    (() => {
+                      const sel = waxSeals.find(
+                        (s) => String(s.id) === design.waxSealId,
+                      );
+                      return sel ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={resolveImageUrl(sel.imageUrl)}
+                            alt={sel.name}
+                            className="h-14 w-14 rounded-full border border-border object-contain bg-muted"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {sel.name}
+                          </span>
+                        </div>
+                      ) : null;
+                    })()}
                 </div>
                 {/* Colors, fonts, sizes — buyer & business only; admin uses card design settings */}
                 {(mode === "buyer" || mode === "business") && (
@@ -2506,10 +3640,21 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           className={selectCls}
                           value={normalizeFont(design.nameFontFamily)}
                           style={{ fontFamily: design.nameFontFamily }}
-                          onChange={(e) => setDesign((p) => ({ ...p, nameFontFamily: e.target.value }))}
+                          onChange={(e) =>
+                            setDesign((p) => ({
+                              ...p,
+                              nameFontFamily: e.target.value,
+                            }))
+                          }
                         >
                           {SCRIPT_FONTS.map((f) => (
-                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                            <option
+                              key={f.value}
+                              value={f.value}
+                              style={{ fontFamily: f.value }}
+                            >
+                              {f.label}
+                            </option>
                           ))}
                         </select>
                       </Field>
@@ -2518,75 +3663,157 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                           className={selectCls}
                           value={normalizeFont(design.bodyFontFamily)}
                           style={{ fontFamily: design.bodyFontFamily }}
-                          onChange={(e) => setDesign((p) => ({ ...p, bodyFontFamily: e.target.value }))}
+                          onChange={(e) =>
+                            setDesign((p) => ({
+                              ...p,
+                              bodyFontFamily: e.target.value,
+                            }))
+                          }
                         >
                           {CLASSIC_FONTS.map((f) => (
-                            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.label}</option>
+                            <option
+                              key={f.value}
+                              value={f.value}
+                              style={{ fontFamily: f.value }}
+                            >
+                              {f.label}
+                            </option>
                           ))}
                         </select>
                       </Field>
                     </div>
-                    <Field label={`Saiz Name Font — ${design.nameFontSize || 38}px`}>
+                    <Field
+                      label={`Saiz Name Font — ${design.nameFontSize || 38}px`}
+                    >
                       <input
-                        type="range" min={20} max={70}
+                        type="range"
+                        min={20}
+                        max={70}
                         value={Number(design.nameFontSize) || 38}
-                        onChange={(e) => setDesign((p) => ({ ...p, nameFontSize: e.target.value }))}
+                        onChange={(e) =>
+                          setDesign((p) => ({
+                            ...p,
+                            nameFontSize: e.target.value,
+                          }))
+                        }
                         className="w-full accent-blue-500"
                       />
                     </Field>
-                    <Field label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}>
+                    <Field
+                      label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}
+                    >
                       <input
-                        type="range" min={12} max={60} step={1}
+                        type="range"
+                        min={12}
+                        max={60}
+                        step={1}
                         value={design.badgeFontSize || 24}
-                        onChange={(e) => setDesign((p) => ({ ...p, badgeFontSize: e.target.value }))}
+                        onChange={(e) =>
+                          setDesign((p) => ({
+                            ...p,
+                            badgeFontSize: e.target.value,
+                          }))
+                        }
                         className="w-full accent-blue-500"
                       />
                     </Field>
                     {/* Theme Colours — grouped to match Admin design editor */}
-                    <p className="text-xs font-semibold text-foreground pt-1">Warna Tema</p>
+                    <p className="text-xs font-semibold text-foreground pt-1">
+                      Warna Tema
+                    </p>
 
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">1 · Teks</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      1 · Teks
+                    </p>
                     <HexColorInput
                       value={design.nameColor || "20 50% 20%"}
                       label="Nama Utama"
                       helperText="Nama pasangan & teks script"
-                      preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }}
+                      preview={{
+                        type: "text",
+                        sample: "Ahmad & Siti",
+                        font: "script",
+                      }}
                       testId="editor-name-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          nameColor: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
-                      value={design.colorHeading || inheritedColors.colorHeading || ""}
+                      value={
+                        design.colorHeading ||
+                        inheritedColors.colorHeading ||
+                        ""
+                      }
                       label="Tajuk Section"
                       helperText="Tajuk setiap bahagian jemputan"
-                      preview={{ type: "text", sample: "ATUR CARA", font: "heading" }}
+                      preview={{
+                        type: "text",
+                        sample: "ATUR CARA",
+                        font: "heading",
+                      }}
                       testId="editor-heading-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorHeading: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorHeading: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
                       value={design.colorForeground || "0 0% 10%"}
                       label="Teks Kandungan"
                       helperText="Butiran, tarikh & kandungan utama"
-                      preview={{ type: "text", sample: "11:00 AM  Ketibaan Tetamu" }}
+                      preview={{
+                        type: "text",
+                        sample: "11:00 AM  Ketibaan Tetamu",
+                      }}
                       testId="editor-foreground-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorForeground: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
-                      value={design.colorMuted || inheritedColors.colorMuted || ""}
+                      value={
+                        design.colorMuted || inheritedColors.colorMuted || ""
+                      }
                       label="Teks Kecil"
                       helperText="Nota, kapsyen & teks sampingan"
-                      preview={{ type: "text", sample: "Sila tiba 15 min awal", font: "muted" }}
+                      preview={{
+                        type: "text",
+                        sample: "Sila tiba 15 min awal",
+                        font: "muted",
+                      }}
                       testId="editor-muted-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorMuted: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorMuted: hexToHslColor(hex),
+                        }))
+                      }
                     />
 
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">2 · Butang &amp; Hiasan</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">
+                      2 · Butang &amp; Hiasan
+                    </p>
                     <HexColorInput
                       value={design.colorPrimary || "142 45% 35%"}
                       label="Butang Utama"
                       helperText="RSVP, Buka Jemputan & tindakan utama"
                       preview={{ type: "button", sample: "RSVP" }}
                       testId="editor-primary-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorPrimary: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
                       value={design.colorSecondary || "142 30% 92%"}
@@ -2594,7 +3821,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       helperText="Maps & tindakan sokongan"
                       preview={{ type: "button", sample: "Maps" }}
                       testId="editor-secondary-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorSecondary: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorSecondary: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
                       value={design.colorAccent || "142 30% 92%"}
@@ -2602,17 +3834,29 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       helperText="Garisan, ikon & ornamen"
                       preview={{ type: "ornament", sample: "— ✦ —" }}
                       testId="editor-accent-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorAccent: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorAccent: hexToHslColor(hex),
+                        }))
+                      }
                     />
 
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">3 · Latar Belakang</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">
+                      3 · Latar Belakang
+                    </p>
                     <HexColorInput
                       value={design.colorBackground || "142 20% 96%"}
                       label="Latar Halaman"
                       helperText="Latar belakang utama jemputan"
                       preview={{ type: "surface", sample: "Page" }}
                       testId="editor-background-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorBackground: hexToHslColor(hex),
+                        }))
+                      }
                     />
                     <HexColorInput
                       value={design.colorCard || "0 0% 100%"}
@@ -2620,12 +3864,24 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       helperText="Kad, popup & panel dalam"
                       preview={{ type: "surface", sample: "Card" }}
                       testId="editor-card-color"
-                      onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          colorCard: hexToHslColor(hex),
+                        }))
+                      }
                     />
                   </>
                 )}
                 <Field label="Song Link (YouTube)">
-                  <input className={inputCls} value={design.musicUrl} onChange={(e) => setDesign((p) => ({ ...p, musicUrl: e.target.value }))} placeholder={t("placeholders.musicUrl")} />
+                  <input
+                    className={inputCls}
+                    value={design.musicUrl}
+                    onChange={(e) =>
+                      setDesign((p) => ({ ...p, musicUrl: e.target.value }))
+                    }
+                    placeholder={t("placeholders.musicUrl")}
+                  />
                 </Field>
                 {extractYouTubeId(design.musicUrl) && (
                   <div className="rounded overflow-hidden border border-gray-200">
@@ -2640,12 +3896,17 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 )}
                 <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-700 space-y-1">
                   <p>Autoplay support depends on device & browser.</p>
-                  <p><strong>Supported:</strong> Chrome, Safari, Firefox, Opera, Brave, Edge & latest UC Browser.</p>
-                  <p><strong>Tidak Supported:</strong> Facebook/Instagram/Telegram Browser & less popular browsers.</p>
+                  <p>
+                    <strong>Supported:</strong> Chrome, Safari, Firefox, Opera,
+                    Brave, Edge & latest UC Browser.
+                  </p>
+                  <p>
+                    <strong>Tidak Supported:</strong>{" "}
+                    Facebook/Instagram/Telegram Browser & less popular browsers.
+                  </p>
                 </div>
               </>
             )}
-
           </fieldset>
 
           {/* Action buttons */}
@@ -2668,9 +3929,10 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         </div>
 
         {/* Right: Card Preview — always shown on mobile when preview tab active */}
-        <div className={`${mobileView === "preview" ? "flex" : "hidden"} lg:flex lg:w-[380px] xl:w-[420px] shrink-0 items-start justify-center py-4 px-4 lg:py-6 lg:pr-6`}>
+        <div
+          className={`${mobileView === "preview" ? "flex" : "hidden"} lg:flex lg:w-[380px] xl:w-[420px] shrink-0 items-start justify-center py-4 px-4 lg:py-6 lg:pr-6`}
+        >
           <div className="sticky top-6 w-full space-y-2">
-
             {/* Full preview + reset row */}
             <div className="flex items-center justify-between px-1">
               <button
@@ -2685,7 +3947,11 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 disabled={saving || !previewReady}
                 title={undefined}
               >
-                {saving ? "Saving…" : customerEditLocked ? "↗ View Preview" : "↗ Full Preview"}
+                {saving
+                  ? "Saving…"
+                  : customerEditLocked
+                    ? "↗ View Preview"
+                    : "↗ Full Preview"}
               </button>
               {previewOpened && (
                 <button
@@ -2702,84 +3968,130 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             <div
               key={design.designCode}
               className={`relative w-full rounded-xl shadow-2xl bg-background ${previewActiveTab ? "overflow-visible" : "overflow-hidden"}`}
-              style={{
-                aspectRatio: "9/16",
-                maxHeight: "80vh",
-                "--card-viewport-height": "100%",
-                "--primary":            design.colorPrimary     || "142 45% 35%",
-                "--primary-foreground": "0 0% 100%",
-                "--secondary":          design.colorSecondary   || "142 30% 92%",
-                "--accent":             design.colorAccent      || "142 30% 92%",
-                "--background":         design.colorBackground  || "142 20% 96%",
-                "--card":               design.colorCard        || "0 0% 100%",
-                "--popover":            design.colorCard        || "0 0% 100%",
-                "--foreground":         design.colorForeground  || "0 0% 10%",
-                "--border":             "142 20% 80%",
-                "--muted":              "142 15% 94%",
-                "--muted-foreground":   "142 10% 45%",
-                // Name styling — picked up by WeddingCard via CSS custom properties
-                "--name-font-family":   fontFamilyStack(design.nameFontFamily),
-                "--name-font-size":     `${Number(design.nameFontSize) || 38}px`,
-                "--badge-font-size":    `${Number(design.badgeFontSize) || 24}px`,
-                "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
-                "--name-color":         design.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
-                "--color-heading":      design.colorHeading ? `hsl(${design.colorHeading})` : undefined,
-                "--color-muted":        design.colorMuted   ? `hsl(${design.colorMuted})`   : undefined,
-                // Body text styling
-                "--body-font-family":   fontFamilyStack(design.bodyFontFamily),
-              } as React.CSSProperties}
+              style={
+                {
+                  aspectRatio: "9/16",
+                  maxHeight: "80vh",
+                  "--card-viewport-height": "100%",
+                  "--primary": design.colorPrimary || "142 45% 35%",
+                  "--primary-foreground": "0 0% 100%",
+                  "--secondary": design.colorSecondary || "142 30% 92%",
+                  "--accent": design.colorAccent || "142 30% 92%",
+                  "--background": design.colorBackground || "142 20% 96%",
+                  "--card": design.colorCard || "0 0% 100%",
+                  "--popover": design.colorCard || "0 0% 100%",
+                  "--foreground": design.colorForeground || "0 0% 10%",
+                  "--border": "142 20% 80%",
+                  "--muted": "142 15% 94%",
+                  "--muted-foreground": "142 10% 45%",
+                  // Name styling — picked up by WeddingCard via CSS custom properties
+                  "--name-font-family": fontFamilyStack(design.nameFontFamily),
+                  "--name-font-size": `${Number(design.nameFontSize) || 38}px`,
+                  "--badge-font-size": `${Number(design.badgeFontSize) || 24}px`,
+                  "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
+                  "--name-color": design.nameColor
+                    ? `hsl(${design.nameColor})`
+                    : "hsl(20 50% 25%)",
+                  "--color-heading": design.colorHeading
+                    ? `hsl(${design.colorHeading})`
+                    : undefined,
+                  "--color-muted": design.colorMuted
+                    ? `hsl(${design.colorMuted})`
+                    : undefined,
+                  // Body text styling
+                  "--body-font-family": fontFamilyStack(design.bodyFontFamily),
+                } as React.CSSProperties
+              }
             >
               <div
                 className={`absolute inset-0 z-10 transition-all duration-700 ${
-                  previewOpened ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden pointer-events-none"
+                  previewOpened
+                    ? "overflow-y-auto overflow-x-hidden"
+                    : "overflow-hidden pointer-events-none"
                 }`}
-                style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+                style={
+                  { WebkitOverflowScrolling: "touch" } as React.CSSProperties
+                }
               >
                 <WeddingCard
                   invitation={inv}
-                  cardImageUrl={resolveImageUrl(design.cardImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
-                  envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
+                  cardImageUrl={resolveImageUrl(
+                    design.cardImageUrl ||
+                      "wed_card_design/20260531-041903-27796.jpg",
+                  )}
+                  envelopeImageUrl={resolveImageUrl(
+                    design.envelopeImageUrl ||
+                      "wed_card_design/20260531-041903-27796.jpg",
+                  )}
                   cardMaxWidth={design.cardMaxWidth}
                   rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
-                  onRsvpClick={() => toast.info("RSVP form is functional in the public card preview only.")}
+                  onRsvpClick={() =>
+                    toast.info(
+                      "RSVP form is functional in the public card preview only.",
+                    )
+                  }
                   overlayEnabled={inv.overlayEnabled}
                 />
               </div>
 
               {/* Opening animation mirrors InvitationPage, scaled to this preview frame. */}
-              {(
-                design.openingAnimation === "envelope" ? (
-                  <EnvelopeAnimation
-                    key={`env-${activeTab}-${design.designCode}`}
-                    isOpened={previewOpened}
-                    onOpen={() => {
-                      setPreviewWasOpened(true);
-                      setPreviewOpened(true);
-                    }}
-                    names={inv.envelopeInitials}
-                    initialsSize={inv.envelopeInitialsSize}
-                    initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
-                    initialsImageScale={inv.initialsImageScale}
-                    envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
-                    waxSealImageUrl={design.waxSealId ? resolveImageUrl(waxSeals.find(s => String(s.id) === design.waxSealId)?.imageUrl || "") || undefined : undefined}
-                  />
-                ) : (
-                  <EnvelopeDoors
-                    key={`doors-${activeTab}-${design.designCode}`}
-                    isOpened={previewOpened}
-                    onOpen={() => {
-                      setPreviewWasOpened(true);
-                      setPreviewOpened(true);
-                    }}
-                    names={inv.envelopeInitials}
-                    initialsSize={inv.envelopeInitialsSize}
-                    initialsImageUrl={resolveImageUrl(inv.initialsImageUrl) || undefined}
-                    initialsImageScale={inv.initialsImageScale}
-                    envelopeImageUrl={resolveImageUrl(design.envelopeImageUrl || "wed_card_design/20260531-041903-27796.jpg")}
-                    waxSealImageUrl={design.waxSealId ? resolveImageUrl(waxSeals.find(s => String(s.id) === design.waxSealId)?.imageUrl || "") || undefined : undefined}
-                    cardMaxWidth={design.cardMaxWidth}
-                  />
-                )
+              {design.openingAnimation === "envelope" ? (
+                <EnvelopeAnimation
+                  key={`env-${activeTab}-${design.designCode}`}
+                  isOpened={previewOpened}
+                  onOpen={() => {
+                    setPreviewWasOpened(true);
+                    setPreviewOpened(true);
+                  }}
+                  names={inv.envelopeInitials}
+                  initialsSize={inv.envelopeInitialsSize}
+                  initialsImageUrl={
+                    resolveImageUrl(inv.initialsImageUrl) || undefined
+                  }
+                  initialsImageScale={inv.initialsImageScale}
+                  envelopeImageUrl={resolveImageUrl(
+                    design.envelopeImageUrl ||
+                      "wed_card_design/20260531-041903-27796.jpg",
+                  )}
+                  waxSealImageUrl={
+                    design.waxSealId
+                      ? resolveImageUrl(
+                          waxSeals.find(
+                            (s) => String(s.id) === design.waxSealId,
+                          )?.imageUrl || "",
+                        ) || undefined
+                      : undefined
+                  }
+                />
+              ) : (
+                <EnvelopeDoors
+                  key={`doors-${activeTab}-${design.designCode}`}
+                  isOpened={previewOpened}
+                  onOpen={() => {
+                    setPreviewWasOpened(true);
+                    setPreviewOpened(true);
+                  }}
+                  names={inv.envelopeInitials}
+                  initialsSize={inv.envelopeInitialsSize}
+                  initialsImageUrl={
+                    resolveImageUrl(inv.initialsImageUrl) || undefined
+                  }
+                  initialsImageScale={inv.initialsImageScale}
+                  envelopeImageUrl={resolveImageUrl(
+                    design.envelopeImageUrl ||
+                      "wed_card_design/20260531-041903-27796.jpg",
+                  )}
+                  waxSealImageUrl={
+                    design.waxSealId
+                      ? resolveImageUrl(
+                          waxSeals.find(
+                            (s) => String(s.id) === design.waxSealId,
+                          )?.imageUrl || "",
+                        ) || undefined
+                      : undefined
+                  }
+                  cardMaxWidth={design.cardMaxWidth}
+                />
               )}
 
               {/* Unpaid cards are clearly marked as previews. The editor remains
@@ -2789,9 +4101,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   className="absolute inset-x-0 top-1/2 z-40 flex -translate-y-1/2 items-center justify-center pointer-events-none"
                   style={{ background: "rgba(80, 80, 80, 0.28)", height: 26 }}
                 >
-                  <span
-                    className="select-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/75"
-                  >
+                  <span className="select-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/75">
                     PREVIEW
                   </span>
                 </div>
@@ -2801,17 +4111,26 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               {previewOpened && (
                 <div
                   className="absolute bottom-0 left-0 right-0 z-50 flex justify-center"
-                  style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)" }}
+                  style={{
+                    paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
+                  }}
                 >
-                  <div className="w-full mx-auto" style={{ maxWidth: design.cardMaxWidth || "420px" }}>
+                  <div
+                    className="w-full mx-auto"
+                    style={{ maxWidth: design.cardMaxWidth || "420px" }}
+                  >
                     <BottomNav
                       activeTab={previewActiveTab as TabKey | null}
                       isMuted={false}
-                      onTabClick={(tab) => setPreviewActiveTab((prev) => prev === tab ? null : tab)}
+                      onTabClick={(tab) =>
+                        setPreviewActiveTab((prev) =>
+                          prev === tab ? null : tab,
+                        )
+                      }
                       onRsvpClick={() => toast.info("RSVP preview only")}
                       isVisible={true}
                       cardMaxWidth="100%"
-                       showGift={inv.giftDisplay}
+                      showGift={inv.giftDisplay}
                     />
                   </div>
                 </div>
