@@ -199,6 +199,8 @@ interface DesignData {
   badgeFontSize: string;
   nameColor: string;
   colorForeground: string;
+  colorHeading: string;
+  colorMuted: string;
   bodyFontFamily: string;
   colorPrimary: string;
   colorSecondary: string;
@@ -385,7 +387,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [design, setDesign] = useState<DesignData>({
     designCode: "FL001", openingAnimation: "doors", openButtonText: "BUKA",
     nameFontFamily: "Dancing Script", nameFontSize: "38", badgeFontSize: "24",
-    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", bodyFontFamily: "Poppins",
+    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorHeading: "", colorMuted: "", bodyFontFamily: "Poppins",
     colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%",
     colorAccent: "142 30% 92%",
     colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
@@ -406,8 +408,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
-  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorForeground" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
-    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
+  const [inheritedColors, setInheritedColors] = useState<Pick<DesignData, "nameColor" | "colorForeground" | "colorHeading" | "colorMuted" | "colorPrimary" | "colorSecondary" | "colorAccent" | "colorBackground" | "colorCard">>({
+    nameColor: "0 0% 20%", colorForeground: "0 0% 10%", colorHeading: "", colorMuted: "", colorPrimary: "142 45% 35%", colorSecondary: "142 30% 92%", colorAccent: "142 30% 92%", colorBackground: "142 20% 96%", colorCard: "0 0% 100%",
   });
 
   // Redirect if not logged in (buyer mode → /login; demo mode → /admin/login)
@@ -491,6 +493,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           badgeFontSize:    tpl.badgeFontSize    ?? "24",
           nameColor:        tpl.nameColor        ?? "0 0% 20%",
           colorForeground:  tpl.colorForeground  ?? "0 0% 10%",
+          colorHeading:     tpl.colorHeading     ?? "",
+          colorMuted:       tpl.colorMuted       ?? "",
           bodyFontFamily:   tpl.fontBody         ?? "Poppins",
           cardMaxWidth:     tpl.cardMaxWidth     ?? gd.cardMaxWidth    ?? "420px",
           cardImageUrl:     tpl.cardImageUrl     ?? gd.cardImageUrl     ?? "wed_card_design/20260531-041903-27796.jpg",
@@ -646,6 +650,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         setInheritedColors({
           nameColor:        tpl.nameColor,
           colorForeground:  tpl.colorForeground,
+          colorHeading:     tpl.colorHeading     ?? "",
+          colorMuted:       tpl.colorMuted       ?? "",
           colorPrimary:     tpl.colorPrimary,
           colorSecondary:   tpl.colorSecondary,
           colorAccent:      tpl.colorAccent,
@@ -675,6 +681,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           colorAccent:      invitationOwnsStyle ? (d.colorAccent ?? tpl.colorAccent) : tpl.colorAccent,
           colorBackground:  invitationOwnsStyle ? (d.colorBackground ?? tpl.colorBackground) : tpl.colorBackground,
           colorCard:        invitationOwnsStyle ? (d.colorCard ?? tpl.colorCard) : tpl.colorCard,
+          colorHeading:     invitationOwnsStyle ? (d.colorHeading ?? tpl.colorHeading ?? "") : (tpl.colorHeading ?? ""),
+          colorMuted:       invitationOwnsStyle ? (d.colorMuted   ?? tpl.colorMuted   ?? "") : (tpl.colorMuted   ?? ""),
           cardImageUrl:     tpl.cardImageUrl,
           envelopeImageUrl: tpl.envelopeImageUrl,
           musicUrl:         d.musicUrl || tpl.musicUrl,
@@ -688,6 +696,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         setInheritedColors({
           nameColor:        tplFallback.nameColor,
           colorForeground:  tplFallback.colorForeground,
+          colorHeading:     tplFallback.colorHeading ?? "",
+          colorMuted:       tplFallback.colorMuted   ?? "",
           colorPrimary:     tplFallback.colorPrimary,
           colorSecondary:   tplFallback.colorSecondary,
           colorAccent:      tplFallback.colorAccent,
@@ -708,6 +718,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
            badgeFontSize:    tplFallback.badgeFontSize,
           nameColor:        tplFallback.nameColor,
           colorForeground:  tplFallback.colorForeground,
+          colorHeading:     tplFallback.colorHeading ?? "",
+          colorMuted:       tplFallback.colorMuted   ?? "",
           cardMaxWidth:     tplFallback.cardMaxWidth,
            bodyFontFamily:   normalizeFont(tplFallback.bodyFontFamily),
           cardImageUrl:     tplFallback.cardImageUrl,
@@ -945,6 +957,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
         colorAccent: design.colorAccent || null,
         colorBackground: design.colorBackground || null,
         colorCard: design.colorCard || null,
+        colorHeading: design.colorHeading || null,
+        colorMuted: design.colorMuted || null,
         musicUrl: design.musicUrl || null,
         musicTitle: design.musicTitle || null,
         musicArtist: design.musicArtist || null,
@@ -2279,46 +2293,86 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                         className="w-full accent-blue-500"
                       />
                     </Field>
-                    <Field label="Name Font Color">
-                      <HexColorInput
-                        value={design.nameColor || "20 50% 20%"}
-                        label="Couple names"
-                        testId="editor-name-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Body Text Color">
-                      <HexColorInput
-                        value={design.colorForeground || "0 0% 10%"}
-                        label="Paragraph & detail text"
-                        testId="editor-foreground-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Button / Primary Accent">
-                      <HexColorInput
-                        value={design.colorPrimary || "142 45% 35%"}
-                        label="Button & accents"
-                        testId="editor-primary-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Card Color">
-                      <HexColorInput
-                        value={design.colorCard || "0 0% 100%"}
-                        label="Inner panels"
-                        testId="editor-card-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
-                      />
-                    </Field>
-                    <Field label="Background Color">
-                      <HexColorInput
-                        value={design.colorBackground || "142 20% 96%"}
-                        label="Page background"
-                        testId="editor-background-color"
-                        onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
-                      />
-                    </Field>
+                    {/* Theme Colours — grouped to match Admin design editor */}
+                    <p className="text-xs font-semibold text-foreground pt-1">Warna Tema</p>
+
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">1 · Teks</p>
+                    <HexColorInput
+                      value={design.nameColor || "20 50% 20%"}
+                      label="Nama Utama"
+                      helperText="Nama pasangan & teks script"
+                      preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }}
+                      testId="editor-name-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, nameColor: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorHeading || inheritedColors.colorHeading || ""}
+                      label="Tajuk Section"
+                      helperText="Tajuk setiap bahagian jemputan"
+                      preview={{ type: "text", sample: "ATUR CARA", font: "heading" }}
+                      testId="editor-heading-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorHeading: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorForeground || "0 0% 10%"}
+                      label="Teks Kandungan"
+                      helperText="Butiran, tarikh & kandungan utama"
+                      preview={{ type: "text", sample: "11:00 AM  Ketibaan Tetamu" }}
+                      testId="editor-foreground-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorForeground: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorMuted || inheritedColors.colorMuted || ""}
+                      label="Teks Kecil"
+                      helperText="Nota, kapsyen & teks sampingan"
+                      preview={{ type: "text", sample: "Sila tiba 15 min awal", font: "muted" }}
+                      testId="editor-muted-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorMuted: hexToHslColor(hex) }))}
+                    />
+
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">2 · Butang &amp; Hiasan</p>
+                    <HexColorInput
+                      value={design.colorPrimary || "142 45% 35%"}
+                      label="Butang Utama"
+                      helperText="RSVP, Buka Jemputan & tindakan utama"
+                      preview={{ type: "button", sample: "RSVP" }}
+                      testId="editor-primary-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorPrimary: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorSecondary || "142 30% 92%"}
+                      label="Butang Kedua"
+                      helperText="Maps & tindakan sokongan"
+                      preview={{ type: "button", sample: "Maps" }}
+                      testId="editor-secondary-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorSecondary: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorAccent || "142 30% 92%"}
+                      label="Hiasan / Accent"
+                      helperText="Garisan, ikon & ornamen"
+                      preview={{ type: "ornament", sample: "— ✦ —" }}
+                      testId="editor-accent-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorAccent: hexToHslColor(hex) }))}
+                    />
+
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">3 · Latar Belakang</p>
+                    <HexColorInput
+                      value={design.colorBackground || "142 20% 96%"}
+                      label="Latar Halaman"
+                      helperText="Latar belakang utama jemputan"
+                      preview={{ type: "surface", sample: "Page" }}
+                      testId="editor-background-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorBackground: hexToHslColor(hex) }))}
+                    />
+                    <HexColorInput
+                      value={design.colorCard || "0 0% 100%"}
+                      label="Latar Kad / Popup"
+                      helperText="Kad, popup & panel dalam"
+                      preview={{ type: "surface", sample: "Card" }}
+                      testId="editor-card-color"
+                      onChange={(hex) => setDesign((p) => ({ ...p, colorCard: hexToHslColor(hex) }))}
+                    />
                   </>
                 )}
                 <Field label="Song Link (YouTube)">

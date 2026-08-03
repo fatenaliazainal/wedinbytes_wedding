@@ -221,7 +221,7 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 
 function OrnamentDivider() {
   return (
-    <div className="flex items-center justify-center w-full my-1">
+    <div className="flex items-center justify-center w-full my-1 text-accent">
       <svg width="120" height="18" viewBox="0 0 120 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <line x1="0" y1="9" x2="50" y2="9" stroke="currentColor" strokeOpacity="0.35" strokeWidth="0.8"/>
         <path d="M55 9 L60 4 L65 9 L60 14 Z" fill="currentColor" fillOpacity="0.4"/>
