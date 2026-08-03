@@ -2104,7 +2104,7 @@ export default function EditorPage({
             {/* ── MUKA DEPAN ── */}
             {activeTab === "muka-depan" && (
               <>
-                <Field label="Event Title">
+                <Field label="Tajuk Majlis">
                   <input
                     className={inputCls}
                     value={inv.coverTitle}
@@ -2113,7 +2113,7 @@ export default function EditorPage({
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Groom's Full Name">
+                  <Field label="Nama Penuh Pengantin Lelaki">
                     <input
                       className={inputCls}
                       value={inv.groomName}
@@ -2121,7 +2121,7 @@ export default function EditorPage({
                       placeholder={t("placeholders.groomFullName")}
                     />
                   </Field>
-                  <Field label="Bride's Full Name">
+                  <Field label="Nama Penuh Pengantin Perempuan">
                     <input
                       className={inputCls}
                       value={inv.brideName}
@@ -2131,7 +2131,7 @@ export default function EditorPage({
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Cover Groom Name">
+                  <Field label="Nama Cover Pengantin Lelaki">
                     <input
                       className={inputCls}
                       value={inv.coverGroomName}
@@ -2139,7 +2139,7 @@ export default function EditorPage({
                       placeholder="Contoh: M"
                     />
                   </Field>
-                  <Field label="Cover Bride Name">
+                  <Field label="Nama Cover Pengantin Perempuan">
                     <input
                       className={inputCls}
                       value={inv.coverBrideName}
@@ -2149,11 +2149,11 @@ export default function EditorPage({
                   </Field>
                 </div>
                 <p className="-mt-2 text-xs leading-relaxed text-gray-500">
-                  Your invitation URL is generated from the Cover Groom Name and
-                  Cover Bride Name above. Please ensure both names are entered
-                  accurately before sharing your link.
+                  URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
+                  Nama Cover Pengantin Perempuan di atas. Pastikan kedua-dua nama
+                  diisi dengan betul sebelum berkongsi link.
                 </p>
-                <Field label="Cover Initials (Optional)">
+                <Field label="Inisial Cover (Pilihan)">
                   <input
                     className={inputCls}
                     value={inv.envelopeInitials}
@@ -2165,7 +2165,7 @@ export default function EditorPage({
                     initials.
                   </p>
                   <label className="mt-3 block text-xs text-gray-500">
-                    Initial cover size: {Number(inv.envelopeInitialsSize) || 24}
+                    Saiz inisial cover: {Number(inv.envelopeInitialsSize) || 24}
                     px
                     <input
                       type="range"
@@ -2183,14 +2183,14 @@ export default function EditorPage({
                     />
                   </label>
                 </Field>
-                <Field label="Upload your logo (Optional)">
+                <Field label="Upload Logo (Pilihan)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <span>
                       {uploadingInitials
-                        ? "Uploading..."
+                        ? "Memuat naik..."
                         : inv.initialsImageUrl
-                          ? "Replace your logo"
-                          : "Upload your logo"}
+                          ? "Tukar logo"
+                          : "Muat naik logo"}
                     </span>
                     <input
                       type="file"
@@ -2218,7 +2218,7 @@ export default function EditorPage({
                         }}
                       />
                       <label className="mt-3 block text-xs text-gray-500">
-                        Logo size: {inv.initialsImageScale}%
+                        Saiz logo: {inv.initialsImageScale}%
                         <input
                           type="range"
                           min="50"
@@ -2241,7 +2241,7 @@ export default function EditorPage({
                           setInv((p) => ({ ...p, initialsImageUrl: "" }))
                         }
                       >
-                        Remove logo
+                        Buang logo
                       </button>
                     </>
                   )}
@@ -2277,7 +2277,7 @@ export default function EditorPage({
             {/* ── AYAT JEMPUTAN ── */}
             {activeTab === "ayat-undangan" && (
               <>
-                <Field label="Greeting">
+                <Field label="Teks Greeting">
                   <RichTextEditor
                     value={inv.greetingText}
                     onChange={(v) => setI("greetingText")(v)}
@@ -2286,7 +2286,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Groom's Parents' Names">
+                <Field label="Nama Ibu Bapa Pengantin Lelaki" helperText="Dipaparkan di bahagian detail kad">
                   <RichTextEditor
                     value={inv.groomParents}
                     onChange={(v) => setI("groomParents")(v)}
@@ -2296,7 +2296,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Bride's Parents' Names">
+                <Field label="Nama Ibu Bapa Pengantin Perempuan" helperText="Dipaparkan di bahagian detail kad">
                   <RichTextEditor
                     value={inv.brideParents}
                     onChange={(v) => setI("brideParents")(v)}
@@ -2306,7 +2306,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Invitation Text">
+                <Field label="Teks Jemputan">
                   <RichTextEditor
                     value={inv.invitationText}
                     onChange={(v) => setI("invitationText")(v)}
@@ -2316,7 +2316,7 @@ export default function EditorPage({
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Groom's Full Name">
+                  <Field label="Nama Penuh Pengantin Lelaki">
                     <input
                       className={inputCls}
                       value={inv.groomName}
@@ -2324,7 +2324,7 @@ export default function EditorPage({
                       placeholder={t("placeholders.groomFullName")}
                     />
                   </Field>
-                  <Field label="Bride's Full Name">
+                  <Field label="Nama Penuh Pengantin Perempuan">
                     <input
                       className={inputCls}
                       value={inv.brideName}
@@ -2333,7 +2333,7 @@ export default function EditorPage({
                     />
                   </Field>
                 </div>
-                <Field label="Page 2 Initials">
+                <Field label="Inisial Halaman 2">
                   <input
                     className={inputCls}
                     value={inv.page2Initials}
@@ -2348,7 +2348,7 @@ export default function EditorPage({
             {activeTab === "tarikh-lokasi" && (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Date">
+                  <Field label="Tarikh">
                     <input
                       type="date"
                       className={inputCls}
@@ -2356,7 +2356,7 @@ export default function EditorPage({
                       onChange={(e) => setI("eventDate")(e.target.value)}
                     />
                   </Field>
-                  <Field label="Day (auto)">
+                  <Field label="Hari (auto)">
                     <input
                       className={inputCls}
                       value={inv.eventDay}
@@ -2366,7 +2366,7 @@ export default function EditorPage({
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Start Time">
+                  <Field label="Masa Mula">
                     <input
                       type="time"
                       className={inputCls}
@@ -2374,7 +2374,7 @@ export default function EditorPage({
                       onChange={(e) => setI("eventStartTime")(e.target.value)}
                     />
                   </Field>
-                  <Field label="End Time">
+                  <Field label="Masa Tamat">
                     <input
                       type="time"
                       className={inputCls}
@@ -2383,7 +2383,7 @@ export default function EditorPage({
                     />
                   </Field>
                 </div>
-                <Field label="Readable Time">
+                <Field label="Masa (Teks)">
                   <input
                     className={inputCls}
                     value={inv.eventTime}
@@ -2391,7 +2391,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.timeFromStartEnd")}
                   />
                 </Field>
-                <Field label="Venue Name">
+                <Field label="Nama Tempat Majlis">
                   <input
                     className={inputCls}
                     value={inv.venueName}
@@ -2399,7 +2399,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.venueName")}
                   />
                 </Field>
-                <Field label="Venue Address">
+                <Field label="Alamat Majlis">
                   <RichTextEditor
                     value={inv.venueAddress}
                     onChange={(v) => setI("venueAddress")(v)}
@@ -2413,7 +2413,7 @@ export default function EditorPage({
                     }}
                   />
                 </Field>
-                <Field label="Islamic Date">
+                <Field label="Tarikh Hijri">
                   <input
                     className={inputCls}
                     value={inv.venueHijriDate}
@@ -2421,7 +2421,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.islamicDate")}
                   />
                 </Field>
-                <Field label="GPS / Google Maps Link">
+                <Field label="Link GPS / Google Maps">
                   <input
                     className={inputCls}
                     value={inv.venueMapUrl}
@@ -3178,7 +3178,7 @@ export default function EditorPage({
                 </div>
 
                 {inv.contacts.length === 0 && (
-                  <Field label="Contact phone">
+                  <Field label="Nombor Telefon">
                     <input
                       className={inputCls}
                       value={inv.contactPhone}
@@ -3275,7 +3275,7 @@ export default function EditorPage({
                     Show footer branding
                   </label>
                 </div>
-                <Field label="Footer Text">
+                <Field label="Teks Footer">
                   <input
                     className={inputCls}
                     value={inv.footerText}
@@ -3283,7 +3283,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.footerText")}
                   />
                 </Field>
-                <Field label="Footer URL">
+                <Field label="URL Footer">
                   <input
                     className={inputCls}
                     value={inv.footerUrl}
@@ -3655,7 +3655,7 @@ export default function EditorPage({
                 {(mode === "buyer" || mode === "business") && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <Field label="Name Font">
+                      <Field label="Font Nama">
                         <select
                           className={selectCls}
                           value={normalizeFont(design.nameFontFamily)}
@@ -3678,7 +3678,7 @@ export default function EditorPage({
                           ))}
                         </select>
                       </Field>
-                      <Field label="Body Font">
+                      <Field label="Font Kandungan">
                         <select
                           className={selectCls}
                           value={normalizeFont(design.bodyFontFamily)}
@@ -3927,7 +3927,7 @@ export default function EditorPage({
                     />
                   </>
                 )}
-                <Field label="Song Link (YouTube)">
+                <Field label="Link Lagu (YouTube)">
                   <input
                     className={inputCls}
                     value={design.musicUrl}
@@ -4163,13 +4163,12 @@ export default function EditorPage({
                 </div>
               )}
 
-              {/* Bottom nav — actual component, positioned inside the preview frame */}
+              {/* Bottom nav — actual component, positioned inside the preview frame.
+                  overflow-hidden + rounded-b-xl clips the nav bar corners to match
+                  the card frame even when the parent is overflow-visible. */}
               {previewOpened && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 z-50 flex justify-center"
-                  style={{
-                    paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
-                  }}
+                  className="absolute bottom-0 left-0 right-0 z-50 overflow-hidden rounded-b-xl"
                 >
                   <div
                     className="w-full mx-auto"
