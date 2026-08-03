@@ -679,6 +679,7 @@ router.post("/business/clients", async (req, res) => {
       venueCity: String(mappedInvitation.venueCity ?? "").trim(),
       venueState: String(mappedInvitation.venueState ?? "").trim(),
       venueMapUrl: mappedInvitation.venueMapUrl ? String(mappedInvitation.venueMapUrl).trim() : null,
+     venueWazeUrl: mappedInvitation.venueWazeUrl ? String(mappedInvitation.venueWazeUrl).trim() : null,
       groomParents: mappedInvitation.groomParents ? String(mappedInvitation.groomParents).trim() : null,
       brideParents: mappedInvitation.brideParents ? String(mappedInvitation.brideParents).trim() : null,
       contactPhone: String(mappedInvitation.contactPhone ?? "").trim(),

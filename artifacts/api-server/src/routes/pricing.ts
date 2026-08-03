@@ -112,11 +112,13 @@ router.post("/admin/pricing", async (req, res) => {
       .select({ max: sql<number>`COALESCE(MAX(${pricingPackageTable.sortOrder}), 0)` })
       .from(pricingPackageTable);
     const sortOrder = (maxOrder[0]?.max ?? 0) + 1;
+    const businessPriceVal = String(body.businessPrice ?? "").trim() || null;
     const [created] = await db
       .insert(pricingPackageTable)
       .values({
         name,
         price,
+        businessPrice: businessPriceVal,
         description: String(body.description ?? ""),
         badgeText: String(body.badgeText ?? ""),
         showBadge: Boolean(body.showBadge ?? false),
@@ -144,7 +146,7 @@ router.patch("/admin/pricing/:id", async (req, res) => {
     }
     const body = req.body as Record<string, unknown>;
     const update: Record<string, unknown> = {};
-    const fields = ["name", "price", "description", "badgeText", "showBadge", "isFeatured", "isActive", "sortOrder", "promoPrice", "promoStartDate", "promoEndDate"];
+    const fields = ["name", "price", "businessPrice", "description", "badgeText", "showBadge", "isFeatured", "isActive", "sortOrder", "promoPrice", "promoStartDate", "promoEndDate"];
     for (const field of fields) {
       if (field in body) update[field] = body[field];
     }

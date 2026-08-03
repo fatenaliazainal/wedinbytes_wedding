@@ -757,6 +757,8 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
   const mapsUrl = (inv.venueMapUrl as string) ||
     `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
+  const wazeUrl = (inv as Record<string, unknown>).venueWazeUrl as string | undefined ||
+    `https://waze.com/ul?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
   const groomParents = invitation.groomParents?.trim() || "";
   const brideParents = invitation.brideParents?.trim() || "";
   return (
@@ -883,18 +885,35 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               )}
               <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
             </div>
-            <motion.a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block py-2.5 px-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold tracking-wide shadow"
-              style={{ fontFamily: bodyFontFamily }}
-              whileHover={shouldReduceMotion ? undefined : { y: -1 }}
-              whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            >
-              {t.viewOnMap}
-            </motion.a>
+            {/* Maps icon links — Google Maps + Waze */}
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 py-2 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+                style={{ fontFamily: bodyFontFamily }}
+              >
+                {/* Google Maps pin SVG */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#EA4335"/>
+                </svg>
+                Google Maps
+              </a>
+              <a
+                href={wazeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 py-2 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+                style={{ fontFamily: bodyFontFamily }}
+              >
+                {/* Waze SVG */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20.54 7.28C19.76 3.13 16.1 0 11.72 0 6.95 0 3.06 3.89 3.06 8.67c0 1.81.57 3.49 1.54 4.87L3 18.36l5.82-1.6c1.37.96 3.04 1.52 4.85 1.52.22 0 .44-.01.65-.03.48 2.19 2.43 3.83 4.77 3.83 2.7 0 4.89-2.19 4.89-4.89 0-1.51-.68-2.86-1.75-3.77.19-.67.29-1.37.29-2.1 0-.69-.08-1.36-.22-2.04h.24z" fill="#33CCFF"/>
+                </svg>
+                Waze
+              </a>
+            </div>
           </div>
           </RevealOnScroll>
 

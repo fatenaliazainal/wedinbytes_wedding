@@ -28,6 +28,7 @@ export const invitationTable = pgTable("invitation", {
   venueCity: text("venue_city").notNull(),
   venueState: text("venue_state").notNull(),
   venueMapUrl: text("venue_map_url"),
+  venueWazeUrl: text("venue_waze_url"),
   groomParents: text("groom_parents"),
   brideParents: text("bride_parents"),
   contactPhone: text("contact_phone").notNull().default(""),

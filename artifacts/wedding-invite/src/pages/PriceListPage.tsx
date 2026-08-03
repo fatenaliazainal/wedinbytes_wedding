@@ -60,6 +60,8 @@ function resolveIcon(name?: string | null): LucideIcon {
 function PricingCard({
   name,
   price,
+  businessPrice,
+  isBusinessAccount,
   promoPrice,
   isPromoActive,
   description,
@@ -70,6 +72,8 @@ function PricingCard({
 }: {
   name: string;
   price: string;
+  businessPrice?: string | null;
+  isBusinessAccount?: boolean;
   promoPrice?: string | null;
   isPromoActive?: boolean;
   description: string;
@@ -78,7 +82,9 @@ function PricingCard({
   highlighted?: boolean;
   onChoose: () => void;
 }) {
-  const showPromo = isPromoActive && promoPrice;
+  // Business accounts see their dedicated price (if set); fall back to buyer price
+  const effectivePrice = (isBusinessAccount && businessPrice) ? businessPrice : price;
+  const showPromo = !isBusinessAccount && isPromoActive && promoPrice;
   const discountPct = showPromo
     ? Math.round((1 - Number(promoPrice) / Number(price)) * 100)
     : 0;
@@ -102,7 +108,17 @@ function PricingCard({
 
        <div className="mb-3">
         <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase">{name}</h3>
-        {showPromo ? (
+        {isBusinessAccount && businessPrice ? (
+          <div className="mt-1.5 space-y-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-semibold text-gray-900">RM</span>
+              <span className="text-3xl font-bold text-gray-900 tracking-tight">{businessPrice}</span>
+            </div>
+            <span className="inline-block rounded-full border border-emerald-400 px-3 py-0.5 text-[10px] font-bold tracking-widest text-emerald-700 uppercase">
+              Harga Business Account
+            </span>
+          </div>
+        ) : showPromo ? (
           <div className="mt-1.5 space-y-1">
             <div className="flex items-baseline gap-2">
               <span className="text-sm text-gray-400 line-through">RM {price}</span>
@@ -120,7 +136,7 @@ function PricingCard({
         ) : (
           <div className="mt-1.5 flex items-baseline gap-1">
             <span className="text-sm font-semibold text-gray-900">RM</span>
-            <span className="text-3xl font-bold text-gray-900 tracking-tight">{price}</span>
+            <span className="text-3xl font-bold text-gray-900 tracking-tight">{effectivePrice}</span>
           </div>
         )}
          <p className="mt-1.5 text-[11px] text-gray-500 leading-relaxed">{description}</p>
@@ -279,6 +295,8 @@ export default function PriceListPage() {
                     key={pkg.id}
                     name={pkg.name}
                     price={pkg.price}
+                    businessPrice={(pkg as any).businessPrice}
+                    isBusinessAccount={user?.role === "business_account"}
                     promoPrice={pkg.promoPrice}
                     isPromoActive={pkg.isPromoActive}
                     description={pkg.description || "Everything you need for a beautiful and memorable digital wedding invitation."}

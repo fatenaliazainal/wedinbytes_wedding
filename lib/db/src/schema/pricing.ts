@@ -35,6 +35,7 @@ export const pricingPackageTable = pgTable("pricing_package", {
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   formConfig: jsonb("form_config").$type<PricingFormConfig>(),
+  businessPrice: text("business_price"),
   promoPrice: text("promo_price"),
   promoStartDate: text("promo_start_date"),
   promoEndDate: text("promo_end_date"),

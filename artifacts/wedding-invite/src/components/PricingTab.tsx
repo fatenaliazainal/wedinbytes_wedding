@@ -65,6 +65,7 @@ interface PackageFormData {
   id?: number;
   name: string;
   price: string;
+  businessPrice: string;
   description: string;
   badgeText: string;
   showBadge: boolean;
@@ -113,9 +114,16 @@ function PackageModal({
             <label className="block text-xs font-medium text-muted-foreground mb-1">Package Name *</label>
             <input className={inputCls} value={form.name} onChange={(e) => set("name")(e.target.value)} placeholder="e.g. Standard" />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Price *</label>
-            <input className={inputCls} value={form.price} onChange={(e) => set("price")(e.target.value)} placeholder="e.g. 55" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Harga Buyer (RM) *</label>
+              <input className={inputCls} value={form.price} onChange={(e) => set("price")(e.target.value)} placeholder="e.g. 55" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Harga Business (RM)</label>
+              <input className={inputCls} value={form.businessPrice} onChange={(e) => set("businessPrice")(e.target.value)} placeholder="e.g. 45" />
+              <p className="text-[10px] text-muted-foreground mt-1">Dipaparkan kepada Business Account</p>
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
@@ -261,6 +269,7 @@ export default function PricingTab() {
       const payload = {
         name: form.name.trim(),
         price: form.price.trim(),
+        businessPrice: form.businessPrice.trim() || null,
         description: form.description.trim(),
         badgeText: form.badgeText.trim(),
         showBadge: form.showBadge,
@@ -387,7 +396,7 @@ export default function PricingTab() {
         </div>
         <button
           onClick={() => setPackageModal({
-            name: "", price: "", description: "", badgeText: "", showBadge: false,
+            name: "", price: "", businessPrice: "", description: "", badgeText: "", showBadge: false,
             isFeatured: false, isActive: true, formConfigJson: '{"fields":[],"hiddenFields":{}}',
             promoPrice: "", promoStartDate: "", promoEndDate: "",
           })}
@@ -421,10 +430,14 @@ export default function PricingTab() {
                   {!pkg.isActive && <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Inactive</span>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
+                  <span className="font-medium text-foreground">Buyer:</span>{" "}
                   {(pkg as any).promoPrice
                     ? <><s>RM{pkg.price}</s> → <span className="text-rose-600 font-medium">RM{(pkg as any).promoPrice}</span>{(pkg as any).promoStartDate || (pkg as any).promoEndDate ? ` (${(pkg as any).promoStartDate ?? "?"} – ${(pkg as any).promoEndDate ?? "?"})` : " (aktif)"}</>
                     : <>RM{pkg.price}</>
                   }
+                  {(pkg as any).businessPrice && (
+                    <> · <span className="font-medium text-foreground">Business:</span> RM{(pkg as any).businessPrice}</>
+                  )}
                   {" · "}{pkg.description || "No description"}
                 </p>
               </div>
@@ -450,6 +463,7 @@ export default function PricingTab() {
                     id: pkg.id,
                     name: pkg.name,
                     price: pkg.price,
+                    businessPrice: (pkg as any).businessPrice ?? "",
                     description: pkg.description ?? "",
                     badgeText: pkg.badgeText ?? "",
                     showBadge: pkg.showBadge,

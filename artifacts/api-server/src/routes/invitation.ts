@@ -13,6 +13,9 @@ import { isEventDatePassed, isInvitationExpired } from "../lib/invitation-expira
 
 const router: IRouter = Router();
 
+/** Both "demo" and "demo-en" are admin-owned demo invitations with elevated privileges. */
+const isDemoToken = (t: string) => t === "demo" || t === "demo-en";
+
 function slugPart(value: string | null | undefined) {
   return (value ?? "")
     .normalize("NFKD")
@@ -46,7 +49,7 @@ function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect): string
 
 const ALLOWED_FIELDS = [
   "groomName","brideName","eventType","eventDate","eventDay","eventTime",
-  "venueName","venueAddress","venueCity","venueState","venueMapUrl",
+  "venueName","venueAddress","venueCity","venueState","venueMapUrl","venueWazeUrl",
   "groomParents","brideParents","contactPhone","contacts","dresscode","dresscodeTheme","dresscodeColors","message","galleryImages",
   "giftDisplay","giftTitle","giftRecipient","giftBankName","giftAccountNumber","giftQrCodes",
   "shortCoupleName","groomShortName","brideShortName","coupleCount","groomInitial","brideInitial","coverGroomName","coverBrideName","envelopeInitials","envelopeInitialsSize","page2Initials","logoInitialsUrl","initialsImageUrl","initialsImageScale",
@@ -99,7 +102,7 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
   // Footer branding is controlled centrally by the admin demo invitation.
   // Apply it to every invitation (buyer and business) so old per-invitation
   // branding values cannot override the current admin default.
-  if (row.token !== "demo") {
+  if (!isDemoToken(row.token)) {
     const [adminDefaults] = await db
       .select({
         showFooter: invitationTable.showFooter,
@@ -228,13 +231,22 @@ router.get("/invitations-by-user/:userId", async (req, res) => {
 router.get("/invitation/:token", async (req, res) => {
   try {
     const token = String(req.params.token);
-    const rows = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
+    let rows = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
+    // Auto-create the demo-en record on first access — copy from demo with language "en".
+    if (!rows.length && token === "demo-en") {
+      const [demoRow] = await db.select().from(invitationTable).where(eq(invitationTable.token, "demo")).limit(1);
+      if (demoRow) {
+        const { id: _id, token: _token, createdAt: _c, updatedAt: _u, ...rest } = demoRow;
+        await db.insert(invitationTable).values({ ...rest, token: "demo-en", language: "en" });
+        rows = await db.select().from(invitationTable).where(eq(invitationTable.token, "demo-en")).limit(1);
+      }
+    }
     if (!rows.length) {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
     const row = rows[0];
-    if (row.token !== "demo" && isInvitationExpired(row.eventDate)) {
+    if (!isDemoToken(row.token) && isInvitationExpired(row.eventDate)) {
       res.status(410).json({ error: "Invitation expired" });
       return;
     }
@@ -346,7 +358,7 @@ router.patch("/invitation/:token", async (req, res) => {
     if (giftFields.some((field) => field in body)) {
       // Admin editing the demo invitation can set gift fields freely — the demo
       // has no package and is meant to showcase all premium features.
-      if (token !== "demo" && !(await invitationHasFeature(effectivePackage, "Money Gift"))) {
+      if (!isDemoToken(token) && !(await invitationHasFeature(effectivePackage, "Money Gift"))) {
         res.status(403).json({ error: "Money Gift is available with the Premium package." });
         return;
       }

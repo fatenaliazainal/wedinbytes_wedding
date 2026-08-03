@@ -167,6 +167,7 @@ interface InvData {
   venueCity: string;
   venueState: string;
   venueMapUrl: string;
+  venueWazeUrl: string;
   groomParents: string;
   brideParents: string;
   contactPhone: string;
@@ -398,6 +399,7 @@ export default function EditorPage({
     }
   }, [user, authLoading, navigate, mode]);
   const [navOpen, setNavOpen] = useState(false);
+  const [demoLang, setDemoLang] = useState<"ms" | "en">("ms");
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedTab = params.get("tab") || "reka-bentuk";
@@ -457,6 +459,7 @@ export default function EditorPage({
     venueCity: "",
     venueState: "",
     venueMapUrl: "",
+    venueWazeUrl: "",
     groomParents: "",
     brideParents: "",
     contactPhone: "",
@@ -679,7 +682,7 @@ export default function EditorPage({
             isNewCard
               ? Promise.resolve(new Response(null, { status: 404 }))
               : mode === "demo"
-                ? fetch(`${BASE}/api/invitation/demo`, {
+                ? fetch(`${BASE}/api/invitation/${demoLang === "en" ? "demo-en" : "demo"}`, {
                     credentials: "include",
                     cache: "no-store",
                   })
@@ -852,6 +855,7 @@ export default function EditorPage({
             venueCity: d.venueCity ?? "",
             venueState: d.venueState ?? "",
             venueMapUrl: d.venueMapUrl ?? "",
+            venueWazeUrl: (d as any).venueWazeUrl ?? "",
             groomParents: d.groomParents ?? "",
             brideParents: d.brideParents ?? "",
             contactPhone: d.contactPhone ?? "",
@@ -1288,7 +1292,7 @@ export default function EditorPage({
         setDataLoading(false);
       }
     },
-    [user],
+    [user, demoLang, mode],
   );
 
   useEffect(() => {
@@ -1338,7 +1342,7 @@ export default function EditorPage({
     }
     setSaving(true);
     try {
-      const token = mode === "demo" ? "demo" : inv.token;
+      const token = mode === "demo" ? (demoLang === "en" ? "demo-en" : "demo") : inv.token;
       let saveToken = token;
 
       // Buyers and Business Accounts can create their own invitation records.
@@ -1402,6 +1406,7 @@ export default function EditorPage({
         venueCity: inv.venueCity,
         venueState: inv.venueState,
         venueMapUrl: inv.venueMapUrl || null,
+        venueWazeUrl: (inv as any).venueWazeUrl || null,
         groomParents: inv.groomParents || null,
         brideParents: inv.brideParents || null,
         contactPhone: inv.contactPhone,
@@ -1948,6 +1953,38 @@ export default function EditorPage({
         </div>
       </header>
 
+      {/* ── Demo language toggle banner ── */}
+      {mode === "demo" && (
+        <div className="bg-rose-50 border-b border-rose-100 flex items-center justify-center gap-3 py-1.5 px-4">
+          <span className="text-[11px] text-rose-600 font-semibold tracking-wide uppercase">Demo Language:</span>
+          <div className="flex rounded-full bg-white border border-rose-200 overflow-hidden shadow-sm">
+            <button
+              onClick={() => setDemoLang("ms")}
+              className={`px-4 py-1 text-[11px] font-bold tracking-wider transition-colors ${
+                demoLang === "ms"
+                  ? "bg-rose-700 text-white"
+                  : "text-rose-600 hover:bg-rose-50"
+              }`}
+            >
+              BM
+            </button>
+            <button
+              onClick={() => setDemoLang("en")}
+              className={`px-4 py-1 text-[11px] font-bold tracking-wider transition-colors ${
+                demoLang === "en"
+                  ? "bg-rose-700 text-white"
+                  : "text-rose-600 hover:bg-rose-50"
+              }`}
+            >
+              EN
+            </button>
+          </div>
+          <span className="text-[10px] text-rose-400">
+            {demoLang === "ms" ? "Kandungan Bahasa Melayu" : "English Content"}
+          </span>
+        </div>
+      )}
+
       {/* ── Mobile drawer ── */}
       <AnimatePresence>
         {navOpen && (
@@ -2421,12 +2458,20 @@ export default function EditorPage({
                     placeholder={t("placeholders.islamicDate")}
                   />
                 </Field>
-                <Field label="Link GPS / Google Maps">
+                <Field label="Link Google Maps">
                   <input
                     className={inputCls}
                     value={inv.venueMapUrl}
                     onChange={(e) => setI("venueMapUrl")(e.target.value)}
-                    placeholder={t("placeholders.mapsUrl")}
+                    placeholder="https://maps.google.com/..."
+                  />
+                </Field>
+                <Field label="Link Waze">
+                  <input
+                    className={inputCls}
+                    value={(inv as any).venueWazeUrl}
+                    onChange={(e) => setI("venueWazeUrl" as any)(e.target.value)}
+                    placeholder="https://waze.com/ul?ll=..."
                   />
                 </Field>
               </>

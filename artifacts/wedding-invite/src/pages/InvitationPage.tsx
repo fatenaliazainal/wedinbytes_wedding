@@ -412,7 +412,9 @@ export default function InvitationPage() {
           contentOverlayColor={templateDesign?.contentOverlayColor ?? undefined}
           contentOverlayOpacity={templateDesign?.contentOverlayOpacity ?? undefined}
           overlayEnabled={
-            (templateDesign as Record<string, unknown> | null)?.overlayEnabled !== false &&
+            !designsLoading &&
+            templateDesign !== undefined &&
+            (templateDesign as Record<string, unknown>).overlayEnabled !== false &&
             (invitation as Record<string, unknown>).overlayEnabled !== false
           }
         />
