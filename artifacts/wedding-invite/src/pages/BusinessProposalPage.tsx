@@ -174,7 +174,7 @@ export default function BusinessProposalPage() {
           ) : (
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
-                onClick={() => { navigate("/register"); setNavOpen(false); }}
+                onClick={() => { navigate("/register/business"); setNavOpen(false); }}
                 className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GET STARTED FREE
@@ -206,7 +206,7 @@ export default function BusinessProposalPage() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/register/business")}
               className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-7 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
             >
               START FOR FREE
@@ -294,7 +294,7 @@ export default function BusinessProposalPage() {
                 A Business Account unlocks a dedicated dashboard designed around managing multiple client invitations. You handle the relationship; Wedinbytes handles the technology.
               </p>
               <button
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/register/business")}
                 className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
               >
                 REGISTER AS BUSINESS
@@ -341,7 +341,7 @@ export default function BusinessProposalPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/register/business")}
               className="inline-flex items-center gap-2 rounded-lg bg-white text-gray-900 px-7 py-3.5 text-xs font-bold tracking-widest transition-colors hover:bg-gray-100"
             >
               CREATE BUSINESS ACCOUNT
