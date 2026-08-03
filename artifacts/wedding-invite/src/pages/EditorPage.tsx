@@ -129,6 +129,17 @@ const SCRIPT_FONTS = [
   { value: "Birthstone", label: "Birthstone" },
   { value: "Cinzel Decorative", label: "Cinzel Decorative" },
   { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+  // — 10 more script/calligraphy fonts —
+  { value: "Ephesis", label: "Ephesis" },
+  { value: "Herr Von Muellerhoff", label: "Herr Von Muellerhoff" },
+  { value: "Monsieur La Doulaise", label: "Monsieur La Doulaise" },
+  { value: "Waterfall", label: "Waterfall" },
+  { value: "Lavishly Yours", label: "Lavishly Yours" },
+  { value: "Yellowtail", label: "Yellowtail" },
+  { value: "Mr Dafoe", label: "Mr Dafoe" },
+  { value: "Romanesco", label: "Romanesco" },
+  { value: "Miss Fajardose", label: "Miss Fajardose" },
+  { value: "Qwitcher Grypen", label: "Qwitcher Grypen" },
 ];
 
 const CLASSIC_FONTS = [
@@ -152,6 +163,17 @@ const CLASSIC_FONTS = [
   { value: "Source Serif 4", label: "Source Serif 4" },
   { value: "DM Serif Display", label: "DM Serif Display" },
   { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+  // — 10 more body fonts —
+  { value: "Jost", label: "Jost" },
+  { value: "Outfit", label: "Outfit" },
+  { value: "Plus Jakarta Sans", label: "Plus Jakarta Sans" },
+  { value: "Urbanist", label: "Urbanist" },
+  { value: "Spectral", label: "Spectral" },
+  { value: "Crimson Pro", label: "Crimson Pro" },
+  { value: "Cantata One", label: "Cantata One" },
+  { value: "Quattrocento", label: "Quattrocento" },
+  { value: "Cormorant", label: "Cormorant" },
+  { value: "Sorts Mill Goudy", label: "Sorts Mill Goudy" },
 ];
 
 type Contact = { name: string; phone: string };
