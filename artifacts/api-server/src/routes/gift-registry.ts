@@ -146,8 +146,14 @@ router.post("/registry-thumbnail-upload", thumbUpload.single("file"), async (req
     }
     const ext = req.file.mimetype === "image/png" ? "png" : req.file.mimetype === "image/webp" ? "webp" : "jpg";
     const ts = Date.now();
-    const key = `registry-thumb/${invitationToken}/${itemId}-${ts}.${ext}`;
-    await uploadImage(key, req.file.buffer, req.file.mimetype as "image/jpeg" | "image/png" | "image/webp");
+    const fileName = `${itemId}-${ts}.${ext}`;
+    const key = await uploadImage({
+      fileName,
+      fileBuffer: req.file.buffer,
+      contentType: req.file.mimetype as "image/jpeg" | "image/png" | "image/webp",
+      folder: `registry-thumb/${invitationToken}`,
+      objectKey: fileName,
+    });
     await db
       .update(giftRegistryItemTable)
       .set({ thumbnailUrl: key })
