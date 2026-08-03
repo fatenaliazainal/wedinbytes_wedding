@@ -1105,7 +1105,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               </div>
             </div>
           )}
-          </RevealOnScroll>
         </div>
       </section>
     </div>
