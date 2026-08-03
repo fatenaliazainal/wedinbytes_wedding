@@ -46,7 +46,7 @@ const giftQrUpload = multer({
 // This keeps uploaded gallery images visible without exposing storage credentials.
 router.get("/r2", async (req, res) => {
   const key = typeof req.query.key === "string" ? req.query.key : "";
-  const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/", "business-logos/", "gift-qr/", "wax_seals/"];
+  const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/", "business-logos/", "gift-qr/", "wax_seals/", "registry-thumb/"];
   if (!key || key.includes("..") || key.startsWith("/")
     || !allowedPrefixes.some((prefix) => key.startsWith(prefix))) {
     res.status(400).json({ error: "A valid R2 object key is required" });

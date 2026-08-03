@@ -10,3 +10,9 @@ R2 object keys used by the invitation app should be rendered through the same-or
 **How to apply:** Keep local `/...` paths and absolute URLs unchanged for legacy/external assets; resolve bare R2 keys to `/api/r2?key=...`, and verify the proxy returns the image before debugging upload/database persistence.
 
 For decorative design assets, also provide a bundled local fallback and handle image-load errors in the shared image component. A missing R2 object should degrade to the fallback rather than leave a broken preview.
+
+**R2 proxy allowed prefixes (cards.ts `/api/r2` route):**
+Every new upload path must be explicitly listed in the `allowedPrefixes` array in `artifacts/api-server/src/routes/cards.ts`. Current list includes `wed_card_design/`, `gallery/`, `initials/`, `logos/`, `business-logos/`, `gift-qr/`, `wax_seals/`, `registry-thumb/`. Omitting a new prefix causes the proxy to return 400 and images show as broken even though the upload and DB key are correct.
+
+**`uploadImage` call signature:**
+`uploadImage` in `r2-storage-admin.ts` takes a single options object `{ fileName, fileBuffer, contentType, folder?, objectKey? }` — NOT positional parameters. The function returns the resolved key string (folder + objectKey or generated key).
