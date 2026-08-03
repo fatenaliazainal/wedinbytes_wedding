@@ -1036,37 +1036,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           </div>
           </RevealOnScroll>
 
-          {(mapsUrl || wazeUrl) && (
-          <div className={detailBlock}>
-            <div className="flex items-center justify-center gap-3">
-              {mapsUrl && (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
-                style={{ fontFamily: bodyFontFamily }}
-              >
-                <img src="/icons/google-maps.png" alt="Google Maps" className="w-5 h-5 object-contain" />
-                Google Maps
-              </a>
-              )}
-              {wazeUrl && (
-              <a
-                href={wazeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
-                style={{ fontFamily: bodyFontFamily }}
-              >
-                <img src="/icons/waze.png" alt="Waze" className="w-5 h-5 object-contain" />
-                Waze
-              </a>
-              )}
-            </div>
-          </div>
-          )}
-
           {/* Footer / Branding */}
           {inv.showFooter !== false && (
             <div className={detailBlock}>

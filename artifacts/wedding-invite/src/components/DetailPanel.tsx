@@ -190,6 +190,32 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
       </div>
+      {(mapsUrl || wazeUrl) && (
+        <div className="flex items-center justify-center gap-3 pt-1">
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={INVITATION_PANEL_CTA_CLASS}
+            >
+              <img src="/icons/google-maps.png" alt="" className="w-4 h-4 object-contain" />
+              Google Maps
+            </a>
+          )}
+          {wazeUrl && (
+            <a
+              href={wazeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={INVITATION_PANEL_CTA_CLASS}
+            >
+              <img src="/icons/waze.png" alt="" className="w-4 h-4 object-contain" />
+              Waze
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
