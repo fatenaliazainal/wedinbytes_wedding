@@ -332,13 +332,14 @@ async function scaleImageFile(file: File, scale: number): Promise<File> {
 // ── Colour Picker Row ─────────────────────────────────────────────────────────
 
 function ColorRow({
-  label, value, onChange,
-}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  label, value, onChange, helperText,
+}: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; helperText?: string }) {
   return (
     <div className="flex items-center gap-3">
       <HexColorInput
         value={value}
         label={label}
+        helperText={helperText}
         testId={`admin-color-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
         onChange={(hex) => onChange(hexToHsl(hex))}
       />
@@ -937,13 +938,22 @@ function DesignForm({
           {/* Colours */}
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
-            <ColorRow label="Script Font Color — Couple names" value={form.nameColor} onChange={set("nameColor")} />
-            <ColorRow label="Body Text — Paragraphs, dates & detail text" value={form.colorForeground ?? ""} onChange={set("colorForeground")} />
-            <ColorRow label="Button / Open Button — Primary button & accents" value={form.colorPrimary} onChange={set("colorPrimary")} />
-            <ColorRow label="Secondary — Supporting controls and highlights" value={form.colorSecondary} onChange={set("colorSecondary")} />
-            <ColorRow label="Card Panel — Inner panels" value={form.colorCard} onChange={set("colorCard")} />
-            <ColorRow label="Background — Page background" value={form.colorBackground} onChange={set("colorBackground")} />
-            <ColorRow label="Accent — Soft highlights" value={form.colorAccent} onChange={set("colorAccent")} />
+
+            {/* Typography */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Typography</p>
+            <ColorRow label="Primary Text" helperText="Headings, couple names & prominent text" value={form.nameColor} onChange={set("nameColor")} />
+            <ColorRow label="Secondary Text" helperText="Paragraphs, dates & supporting text" value={form.colorForeground ?? ""} onChange={set("colorForeground")} />
+
+            {/* Brand Colours */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Brand Colours</p>
+            <ColorRow label="Primary" helperText="Main buttons, active states & primary accents" value={form.colorPrimary} onChange={set("colorPrimary")} />
+            <ColorRow label="Secondary" helperText="Supporting controls & secondary elements" value={form.colorSecondary} onChange={set("colorSecondary")} />
+            <ColorRow label="Accent" helperText="Soft highlights & decorative elements" value={form.colorAccent} onChange={set("colorAccent")} />
+
+            {/* Background & Surfaces */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Background &amp; Surfaces</p>
+            <ColorRow label="Page Background" helperText="Main page background" value={form.colorBackground} onChange={set("colorBackground")} />
+            <ColorRow label="Card / Modal Background" helperText="Cards, popup/modal & inner panels" value={form.colorCard} onChange={set("colorCard")} />
           </div>
 
           {/* Content Overlay */}

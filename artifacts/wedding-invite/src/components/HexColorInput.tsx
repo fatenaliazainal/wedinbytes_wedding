@@ -5,11 +5,12 @@ type HexColorInputProps = {
   value: string;
   onChange: (hex: string) => void;
   label?: string;
+  helperText?: string;
   compact?: boolean;
   testId?: string;
 };
 
-export function HexColorInput({ value, onChange, label, compact = false, testId }: HexColorInputProps) {
+export function HexColorInput({ value, onChange, label, helperText, compact = false, testId }: HexColorInputProps) {
   const safeValue = value ?? "";
   const [draft, setDraft] = useState(() => colorToHex(safeValue));
   const hexValue = colorToHex(safeValue);
@@ -42,6 +43,7 @@ export function HexColorInput({ value, onChange, label, compact = false, testId 
       </label>
       <div className="min-w-0 flex-1">
         {label && <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">{label}</p>}
+        {helperText && <p className="mb-0.5 text-[10px] text-muted-foreground/70 italic">{helperText}</p>}
         <input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}

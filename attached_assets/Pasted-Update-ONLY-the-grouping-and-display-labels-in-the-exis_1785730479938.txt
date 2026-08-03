@@ -1,0 +1,122 @@
+Update ONLY the grouping and display labels in the existing "Theme Colours" section of the Admin theme editor.
+
+IMPORTANT:
+This is strictly a UI organization / labeling change.
+
+DO NOT change:
+- Any existing color values
+- Any default colors
+- Any database fields or schema
+- Any existing variable names / keys
+- Any color mappings
+- Any CSS variables
+- How colors are applied to the invitation
+- Any theme functionality
+- Any save/update logic
+- Any frontend invitation design
+- Any popup styling or behavior
+- Any footer styling or behavior
+- Any navigation styling or behavior
+- Any existing color picker functionality
+- The order or behavior of existing inputs unless required purely for visual grouping
+- Any other Admin section
+
+Keep every existing color control exactly as it currently works.
+
+Only reorganize the existing color fields visually into clearer groups and update their user-facing labels/helper text.
+
+Use this grouping:
+
+1. TYPOGRAPHY
+
+Primary Text
+Helper text:
+"Headings, couple names & prominent text"
+
+Use the EXISTING color field currently labelled:
+"Script Font Color — Couple names"
+
+Secondary Text
+Helper text:
+"Paragraphs, dates & supporting text"
+
+Use the EXISTING color field currently labelled:
+"Body Text — Paragraphs, dates & detail text"
+
+
+2. BRAND COLOURS
+
+Primary
+Helper text:
+"Main buttons, active states & primary accents"
+
+Use the EXISTING color field currently labelled:
+"Button / Open Button — Primary button & accents"
+
+Secondary
+Helper text:
+"Supporting controls & secondary elements"
+
+Use the EXISTING color field currently labelled:
+"Secondary — Supporting controls and highlights"
+
+Accent
+Helper text:
+"Soft highlights & decorative elements"
+
+Use the EXISTING color field currently labelled:
+"Accent — Soft highlights"
+
+
+3. BACKGROUND & SURFACES
+
+Page Background
+Helper text:
+"Main page background"
+
+Use the EXISTING color field currently labelled:
+"Background — Page background"
+
+Card / Modal Background
+Helper text:
+"Cards, popup/modal & inner panels"
+
+Use the EXISTING color field currently labelled:
+"Card Panel — Inner panels"
+
+
+IMPORTANT:
+If there are already additional existing color controls further down the Theme Colours section for footer, navigation, popup, overlay, or other components:
+
+DO NOT create new color fields.
+DO NOT remove them.
+DO NOT remap them.
+
+Simply place those EXISTING controls into appropriate visual groups such as:
+
+NAVIGATION & FOOTER
+- Existing navigation/footer related color controls
+
+POPUP & OVERLAY
+- Existing popup/overlay related color controls
+
+Keep their existing underlying keys, values, mappings and functionality unchanged.
+
+The goal is ONLY to make the Admin Theme Colours section easier to understand and more professionally organized.
+
+Do not redesign the color picker/input components.
+
+Keep:
+- Current color circle preview
+- Current HEX input
+- Current spacing style
+- Current input styling
+- Current functionality
+
+You may add simple group headings/dividers to visually separate the categories.
+
+Before making changes, inspect the existing implementation and reuse all current fields and bindings.
+
+Do NOT create a new theme color system.
+
+This is a presentation/grouping change only.
