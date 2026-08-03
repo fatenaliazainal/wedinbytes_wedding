@@ -2474,6 +2474,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                 "--badge-font-size":    `${Number(design.badgeFontSize) || 24}px`,
                 "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
                 "--name-color":         design.nameColor ? `hsl(${design.nameColor})` : "hsl(20 50% 25%)",
+                "--color-heading":      design.colorHeading ? `hsl(${design.colorHeading})` : undefined,
+                "--color-muted":        design.colorMuted   ? `hsl(${design.colorMuted})`   : undefined,
                 // Body text styling
                 "--body-font-family":   fontFamilyStack(design.bodyFontFamily),
               } as React.CSSProperties}
