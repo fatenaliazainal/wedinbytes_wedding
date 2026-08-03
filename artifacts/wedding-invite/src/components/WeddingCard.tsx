@@ -829,7 +829,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           {/* Invitation Text */}
           <div className={detailBlock}>
             {/* Greeting — decorative but secondary; name font kept, reduced from text-xl */}
-            <p className="text-primary leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)" }} dangerouslySetInnerHTML={{ __html: greetingText }} />
+            <p className="leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: greetingText }} />
             <OrnamentDivider />
             {(brideParents || groomParents) && (
               <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
@@ -848,9 +848,9 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className="text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
             {/* Couple names (secondary mention) — name font + primary kept; size reduced so they don't compete with the cover hero */}
             <div className="space-y-0.5">
-              <p className="text-primary" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)" }}>{groomName}</p>
+              <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{groomName}</p>
               <p className="text-sm text-foreground/60">&amp;</p>
-              <p className="text-primary" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)" }}>{brideName}</p>
+              <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{brideName}</p>
             </div>
           </div>
           </RevealOnScroll>

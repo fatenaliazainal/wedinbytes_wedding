@@ -423,6 +423,7 @@ interface DesignFormData {
   nameFontSize: string;
   badgeFontSize: string;
   greetingFontSize: string;
+  greetingColor: string;
   colorPrimary: string;
   colorSecondary: string;
   colorAccent: string;
@@ -447,7 +448,7 @@ const EMPTY_FORM: DesignFormData = {
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
   colorAccent: "", colorBackground: "", colorCard: "", colorForeground: "", colorHeading: "", colorMuted: "", nameColor: "",
   nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
-  nameFontSize: "38", badgeFontSize: "24", greetingFontSize: "16",
+  nameFontSize: "38", badgeFontSize: "24", greetingFontSize: "16", greetingColor: "",
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
   contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
@@ -601,6 +602,7 @@ function DesignForm({
         nameFontSize: form.nameFontSize,
         badgeFontSize: form.badgeFontSize,
         greetingFontSize: form.greetingFontSize,
+        greetingColor: form.greetingColor || null,
         colorPrimary: form.colorPrimary,
         colorSecondary: form.colorSecondary,
         colorAccent: form.colorAccent,
@@ -972,6 +974,13 @@ function DesignForm({
               preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }}
             />
             <ColorRow
+              label="Greeting & Detail Names"
+              helperText="Assalamualaikum & couple names in detail section"
+              value={form.greetingColor}
+              onChange={set("greetingColor")}
+              preview={{ type: "text", sample: "Assalamualaikum", font: "script" }}
+            />
+            <ColorRow
               label="Section Titles"
               helperText="Titles for each invitation section"
               value={form.colorHeading}
@@ -1268,6 +1277,7 @@ function DesignsTab() {
                     nameFontSize: d.nameFontSize ?? "38",
                     badgeFontSize: d.badgeFontSize ?? "24",
                     greetingFontSize: (d as any).greetingFontSize ?? "16",
+                    greetingColor: (d as any).greetingColor ?? "",
                     colorPrimary: d.colorPrimary ?? "",
                     colorSecondary: d.colorSecondary ?? "",
                     colorAccent: d.colorAccent ?? "",

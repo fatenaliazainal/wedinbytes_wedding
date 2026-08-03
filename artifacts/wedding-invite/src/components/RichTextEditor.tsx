@@ -133,6 +133,7 @@ export function RichTextEditor({
         onKeyDown={handleKeyDown}
         style={{
           ...inputStyle,
+          color: "#111",
           minHeight: multiLine ? "5rem" : "2.5rem",
           whiteSpace: multiLine ? "pre-wrap" : "nowrap",
           overflow: multiLine ? "auto" : "hidden",

@@ -321,6 +321,7 @@ export default function InvitationPage() {
     "--name-font-size":    ((invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize) ? `${(invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize}px` : undefined,
     "--badge-font-size":   ((invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize) ? `${(invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize}px` : undefined,
     "--greeting-font-size": ((invitationStyle?.greetingFontSize as string | undefined) ?? (templateDesign as any)?.greetingFontSize) ? `${(invitationStyle?.greetingFontSize as string | undefined) ?? (templateDesign as any)?.greetingFontSize}px` : undefined,
+    "--greeting-color": ((invitationStyle?.greetingColor as string | undefined) ?? (templateDesign as any)?.greetingColor) ? `hsl(${(invitationStyle?.greetingColor as string | undefined) ?? (templateDesign as any)?.greetingColor})` : undefined,
     "--name-color":        ((invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor) ? `hsl(${(invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor})` : undefined,
     "--body-font-family":  fontFamilyStack((invitationStyle?.bodyFontFamily as string | undefined) ?? templateDesign?.fontBody),
     // Section title color — falls back to --primary so existing designs are unchanged

@@ -109,6 +109,7 @@ function invitationValuesFromCustomer(formConfig: ReturnType<typeof normalizeBus
     nameFontSize: mappedInvitation.nameFontSize ? String(mappedInvitation.nameFontSize).trim() : null,
     badgeFontSize: mappedInvitation.badgeFontSize ? String(mappedInvitation.badgeFontSize).trim() : null,
     greetingFontSize: mappedInvitation.greetingFontSize ? String(mappedInvitation.greetingFontSize).trim() : null,
+    greetingColor: mappedInvitation.greetingColor ? String(mappedInvitation.greetingColor).trim() : null,
     nameColor: mappedInvitation.nameColor ? String(mappedInvitation.nameColor).trim() : null,
     bodyFontFamily: mappedInvitation.bodyFontFamily ? String(mappedInvitation.bodyFontFamily).trim() : null,
     musicUrl: mappedInvitation.musicUrl ? String(mappedInvitation.musicUrl).trim() : null,

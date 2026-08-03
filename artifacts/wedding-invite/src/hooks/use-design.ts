@@ -51,6 +51,7 @@ export type DesignOverrides = {
   nameFontSize?: string | null;
   badgeFontSize?: string | null;
   greetingFontSize?: string | null;
+  greetingColor?: string | null;
 };
 
 function applyOverrides(overrides: DesignOverrides) {
@@ -77,6 +78,7 @@ function applyOverrides(overrides: DesignOverrides) {
     root.style.setProperty("--section-title-font-size", `${overrides.badgeFontSize}px`);
   }
   if (overrides.greetingFontSize) root.style.setProperty("--greeting-font-size", `${overrides.greetingFontSize}px`);
+  if (overrides.greetingColor) root.style.setProperty("--greeting-color", `hsl(${overrides.greetingColor})`);
 }
 
 export function useDesign(overrides?: DesignOverrides) {

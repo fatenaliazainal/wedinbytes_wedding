@@ -242,6 +242,7 @@ interface DesignData {
   badgeFontSize: string;
   greetingFontSize: string;
   nameColor: string;
+  greetingColor: string;
   colorForeground: string;
   colorHeading: string;
   colorMuted: string;
@@ -539,6 +540,7 @@ export default function EditorPage({
     badgeFontSize: "24",
     greetingFontSize: "16",
     nameColor: "0 0% 20%",
+    greetingColor: "",
     colorForeground: "0 0% 10%",
     colorHeading: "",
     colorMuted: "",
@@ -754,6 +756,7 @@ export default function EditorPage({
             badgeFontSize: tpl.badgeFontSize ?? "24",
             greetingFontSize: (tpl as any).greetingFontSize ?? "16",
             nameColor: tpl.nameColor ?? "0 0% 20%",
+            greetingColor: (tpl as any).greetingColor ?? "",
             colorForeground: tpl.colorForeground ?? "0 0% 10%",
             colorHeading: tpl.colorHeading ?? "",
             colorMuted: tpl.colorMuted ?? "",
@@ -1024,6 +1027,9 @@ export default function EditorPage({
             greetingFontSize: invitationOwnsStyle
               ? (d.greetingFontSize ?? (tpl as any).greetingFontSize ?? "16")
               : ((tpl as any).greetingFontSize ?? "16"),
+            greetingColor: invitationOwnsStyle
+              ? (d.greetingColor ?? (tpl as any).greetingColor ?? "")
+              : ((tpl as any).greetingColor ?? ""),
             nameColor: invitationOwnsStyle
               ? (d.nameColor ?? tpl.nameColor)
               : tpl.nameColor,
@@ -1093,6 +1099,7 @@ export default function EditorPage({
             nameFontSize: tplFallback.nameFontSize,
             badgeFontSize: tplFallback.badgeFontSize,
             greetingFontSize: (tplFallback as any).greetingFontSize ?? "16",
+            greetingColor: (tplFallback as any).greetingColor ?? "",
             nameColor: tplFallback.nameColor,
             colorForeground: tplFallback.colorForeground,
             colorHeading: tplFallback.colorHeading ?? "",
@@ -1454,6 +1461,7 @@ export default function EditorPage({
         nameFontSize: design.nameFontSize || null,
         badgeFontSize: design.badgeFontSize || null,
         greetingFontSize: design.greetingFontSize || null,
+        greetingColor: design.greetingColor || null,
         bodyFontFamily: design.bodyFontFamily || null,
         // Always persist the exact resolved colour so the public invitation page
         // and the editor always show the same values, regardless of which card
@@ -3508,6 +3516,8 @@ export default function EditorPage({
                                 picked.badgeFontSize ?? p.badgeFontSize,
                               greetingFontSize:
                                 (picked as any).greetingFontSize ?? p.greetingFontSize,
+                              greetingColor:
+                                (picked as any).greetingColor ?? p.greetingColor,
                               bodyFontFamily: normalizeFont(
                                 picked.fontBody ?? p.bodyFontFamily,
                               ),
@@ -3771,6 +3781,22 @@ export default function EditorPage({
                       }
                     />
                     <HexColorInput
+                      value={design.greetingColor || ""}
+                      label="Greeting & Nama Detail"
+                      helperText="Assalamualaikum & nama pasangan dalam bahagian detail"
+                      preview={{
+                        type: "text",
+                        sample: "Assalamualaikum",
+                        font: "script",
+                      }}
+                      onChange={(hex) =>
+                        setDesign((p) => ({
+                          ...p,
+                          greetingColor: hexToHslColor(hex),
+                        }))
+                      }
+                    />
+                    <HexColorInput
                       value={
                         design.colorHeading ||
                         inheritedColors.colorHeading ||
@@ -4018,6 +4044,7 @@ export default function EditorPage({
                   "--badge-font-size": `${Number(design.badgeFontSize) || 24}px`,
                   "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
                   "--greeting-font-size": `${Number(design.greetingFontSize) || 16}px`,
+                  "--greeting-color": design.greetingColor ? `hsl(${design.greetingColor})` : undefined,
                   "--name-color": design.nameColor
                     ? `hsl(${design.nameColor})`
                     : "hsl(20 50% 25%)",
