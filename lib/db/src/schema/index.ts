@@ -6,3 +6,4 @@ export * from "./pricing";
 export * from "./order";
 export * from "./business";
 export * from "./wax-seal";
+export * from "./gift-registry";

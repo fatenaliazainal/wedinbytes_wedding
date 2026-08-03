@@ -1,0 +1,131 @@
+EDITOR BEHAVIOR / PACKAGE-BASED VISIBILITY:
+
+Gift Registry must also follow the selected package inside the invitation Editor.
+
+The Editor must use the SAME existing package/feature entitlement system.
+
+SIGNATURE PACKAGE:
+If the invitation/customer has the Signature package:
+
+→ Show the Gift Registry feature in the Editor.
+→ Buyer/business user can access and manage Gift Registry.
+→ They can:
+   - Enable / disable Gift Registry if applicable
+   - Add products/gifts
+   - Edit products/gifts
+   - Delete products/gifts
+   - Enter product name
+   - Enter product purchase URL
+   - Add/display product thumbnail
+   - Reorder products if the existing editor supports ordering
+   - Preview the Gift Registry in the invitation
+
+STANDARD / PREMIUM:
+
+If the invitation does NOT have the Signature package:
+
+→ DO NOT show Gift Registry in the Editor at all.
+
+Do NOT show:
+- Gift Registry menu
+- Gift Registry tab
+- Gift Registry section
+- Gift Registry toggle
+- Gift Registry fields
+- Gift Registry product management
+- Gift Registry preview controls
+
+It should be completely hidden, not merely disabled or greyed out.
+
+Do NOT show an upgrade prompt inside the Editor unless the existing package architecture already uses that behavior for other package-specific features.
+
+The intended behavior is:
+
+STANDARD
+Editor
+→ Standard features only
+→ No Gift Registry
+
+PREMIUM
+Editor
+→ Premium features only
+→ No Gift Registry
+
+SIGNATURE
+Editor
+→ All Premium features
+→ Gift Registry appears automatically
+
+IMPORTANT:
+
+Package entitlement must be the source of truth.
+
+Do NOT determine Gift Registry visibility using frontend-only state or a manually selected Editor toggle.
+
+Conceptually:
+
+hasFeature("giftRegistry")
+→ render Gift Registry Editor controls
+
+Otherwise:
+→ do not render them.
+
+Use the project's EXISTING feature entitlement/checking mechanism if one already exists.
+
+PUBLIC INVITATION BEHAVIOR:
+
+The same restriction must apply to the actual published invitation.
+
+Gift Registry should render ONLY when:
+
+1. The invitation/package has Gift Registry entitlement
+AND
+2. Gift Registry has valid content / is enabled according to the existing feature behavior.
+
+A Standard or Premium invitation must NEVER render Gift Registry even if stale Gift Registry data somehow exists in the database.
+
+This prevents package access from being bypassed by old/stale data.
+
+PREVIEW BEHAVIOR:
+
+The Editor preview must follow the same rule.
+
+Signature:
+→ Gift Registry can appear in preview.
+
+Standard/Premium:
+→ Gift Registry must not appear in preview.
+
+PACKAGE CHANGE BEHAVIOR:
+
+If the existing system allows an invitation's package to change, the Editor must react to the CURRENT package entitlement.
+
+Example:
+
+Premium → Signature
+→ Gift Registry controls become available.
+
+Signature → Premium
+→ Gift Registry controls become hidden.
+
+Do NOT automatically delete existing Gift Registry data when downgrading unless the existing package system already follows that deletion behavior.
+
+Prefer preserving the data but restricting access/rendering, so it can become available again if the invitation returns to Signature.
+
+SECURITY:
+
+Do not rely only on hiding the Editor UI.
+
+Gift Registry create/update/delete API operations must also verify that the invitation has the required Signature/Gift Registry entitlement.
+
+A Standard or Premium user must not be able to access Gift Registry simply by manually calling the API.
+
+STRICT SCOPE:
+
+Integrate this using the existing package feature-gating architecture.
+
+Do NOT create a second independent package-checking system.
+
+Do NOT change how existing Standard/Premium feature gating currently works.
+
+Only add Gift Registry as a Signature-exclusive feature following the SAME pattern already used by the existing system.

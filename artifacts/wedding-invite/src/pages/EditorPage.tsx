@@ -34,6 +34,7 @@ const TABS = [
   { id: "doa", label: "DOA" },
   { id: "galeri", label: "GALLERY" },
   { id: "gift", label: "GIFT" },
+  { id: "registry", label: "GIFT REGISTRY" },
   { id: "kehadiran", label: "RSVP" },
   { id: "hubungi", label: "CONTACT" },
   { id: "footer", label: "FOOTER" },
@@ -47,6 +48,7 @@ const TAB_FEATURE_MAP: Record<string, string[]> = {
   hubungi: ["Contact"],
   galeri: ["Photo Gallery", "Money Gift"],
   gift: ["Money Gift"],
+  registry: ["Gift Registry"],
 };
 
 const OPENING_ANIMS = [
@@ -405,6 +407,27 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       .catch(() => {});
   }, []);
   const t = createTranslator(inv.language);
+
+  // Gift Registry state — managed via direct API calls, not part of the invitation save payload.
+  type RegistryItem = { id: number; name: string; url: string | null; thumbnailUrl: string | null; sortOrder: number };
+  const [registryItems, setRegistryItems] = useState<RegistryItem[]>([]);
+  const [registryLoading, setRegistryLoading] = useState(false);
+  const [newRegName, setNewRegName] = useState("");
+  const [newRegUrl, setNewRegUrl] = useState("");
+  const [editingRegId, setEditingRegId] = useState<number | null>(null);
+  const [editRegName, setEditRegName] = useState("");
+  const [editRegUrl, setEditRegUrl] = useState("");
+  const [uploadingRegThumb, setUploadingRegThumb] = useState<number | null>(null);
+  useEffect(() => {
+    if (!inv.token || (mode !== "demo" && !activeFeatureNames.has("Gift Registry"))) { setRegistryItems([]); return; }
+    setRegistryLoading(true);
+    fetch(`${BASE}/api/registry/${inv.token}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then((items: RegistryItem[]) => setRegistryItems(Array.isArray(items) ? items : []))
+      .catch(() => {})
+      .finally(() => setRegistryLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inv.token, mode]);
 
   // Inherited colours from the selected catalog design (or the global demo design as fallback).
   // Buyer overrides are only saved when they differ from these inherited values.
@@ -1133,6 +1156,82 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
     }
   }
 
+  // ── Gift Registry CRUD ──────────────────────────────────────────────────────
+  async function addRegistryItem() {
+    if (!newRegName.trim() || !inv.token) return;
+    try {
+      const res = await fetch(`${BASE}/api/registry/${inv.token}`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newRegName.trim(), url: newRegUrl.trim() || null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(data.error || "Failed to add item."); return; }
+      setRegistryItems(prev => [...prev, data]);
+      setNewRegName(""); setNewRegUrl("");
+    } catch { toast.error("Network error."); }
+  }
+
+  async function saveRegistryItem(id: number) {
+    if (!editRegName.trim() || !inv.token) return;
+    try {
+      const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, {
+        method: "PATCH", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editRegName.trim(), url: editRegUrl.trim() || null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(data.error || "Failed to save."); return; }
+      setRegistryItems(prev => prev.map(i => i.id === id ? data : i));
+      setEditingRegId(null);
+    } catch { toast.error("Network error."); }
+  }
+
+  async function deleteRegistryItem(id: number) {
+    if (!inv.token) return;
+    try {
+      const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) { toast.error("Failed to delete."); return; }
+      setRegistryItems(prev => prev.filter(i => i.id !== id));
+      if (editingRegId === id) setEditingRegId(null);
+    } catch { toast.error("Network error."); }
+  }
+
+  async function uploadRegistryThumb(id: number, file: File) {
+    if (!inv.token) return;
+    setUploadingRegThumb(id);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("invitationToken", inv.token);
+      formData.append("itemId", String(id));
+      const res = await fetch(`${BASE}/api/registry-thumbnail-upload`, { method: "POST", credentials: "include", body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(data.error || "Upload failed."); return; }
+      setRegistryItems(prev => prev.map(i => i.id === id ? { ...i, thumbnailUrl: data.key } : i));
+    } catch { toast.error("Network error."); } finally { setUploadingRegThumb(null); }
+  }
+
+  async function moveRegistryItem(id: number, direction: "up" | "down") {
+    if (!inv.token) return;
+    const idx = registryItems.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= registryItems.length) return;
+    const reordered = [...registryItems];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx]!, reordered[idx]!];
+    const updated = reordered.map((item, order) => ({ ...item, sortOrder: order }));
+    setRegistryItems(updated);
+    // Persist new order in background
+    await Promise.all(updated.map(item =>
+      fetch(`${BASE}/api/registry/${inv.token}/${item.id}`, {
+        method: "PATCH", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sortOrder: item.sortOrder }),
+      })
+    )).catch(() => {});
+  }
+
   const navItems = [
     { label: "HOME",       onClick: () => { navigate(dashboardPathForUser(user)); setNavOpen(false); } },
     { label: "CATALOG",    onClick: () => { toast.info("Coming soon!"); setNavOpen(false); } },
@@ -1857,6 +1956,113 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
               </div>
             )}
 
+            {/* ── GIFT REGISTRY ── */}
+            {activeTab === "registry" && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">Gift Registry</p>
+                    <p className="text-xs text-gray-500">Add products your guests can gift you. Max 20 items.</p>
+                  </div>
+                </div>
+
+                {/* Item list */}
+                {registryLoading ? (
+                  <p className="text-xs text-muted-foreground">Loading…</p>
+                ) : registryItems.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No items yet. Add your first product below.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {registryItems.map((item, idx) => (
+                      <div key={item.id} className="rounded-lg border border-gray-200 bg-white p-3 space-y-2">
+                        {editingRegId === item.id ? (
+                          <div className="space-y-2">
+                            <input
+                              className={inputCls}
+                              value={editRegName}
+                              onChange={e => setEditRegName(e.target.value)}
+                              placeholder="Product name"
+                              onKeyDown={e => { if (e.key === "Enter") void saveRegistryItem(item.id); }}
+                            />
+                            <input
+                              className={inputCls}
+                              value={editRegUrl}
+                              onChange={e => setEditRegUrl(e.target.value)}
+                              placeholder="https://shopee.com/... (optional)"
+                            />
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => void saveRegistryItem(item.id)} className="flex-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">Save</button>
+                              <button type="button" onClick={() => setEditingRegId(null)} className="flex-1 rounded border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            {/* Thumbnail */}
+                            <div className="relative shrink-0">
+                              {item.thumbnailUrl ? (
+                                <img src={resolveImageUrl(item.thumbnailUrl)} alt={item.name} className="h-12 w-12 rounded-lg border border-gray-200 bg-gray-50 object-cover" />
+                              ) : (
+                                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xl">🎁</div>
+                              )}
+                              <label className="absolute -bottom-1 -right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900" title="Upload thumbnail">
+                                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={uploadingRegThumb === item.id || !inv.token} onChange={e => { if (e.target.files?.[0]) void uploadRegistryThumb(item.id, e.target.files[0]); }} />
+                                {uploadingRegThumb === item.id ? "…" : "+"}
+                              </label>
+                            </div>
+                            {/* Info */}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-gray-800">{item.name}</p>
+                              {item.url && <p className="truncate text-xs text-gray-400">{item.url}</p>}
+                            </div>
+                            {/* Actions */}
+                            <div className="flex shrink-0 flex-col gap-1">
+                              <div className="flex gap-1">
+                                <button type="button" disabled={idx === 0} onClick={() => void moveRegistryItem(item.id, "up")} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move up">▲</button>
+                                <button type="button" disabled={idx === registryItems.length - 1} onClick={() => void moveRegistryItem(item.id, "down")} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">▼</button>
+                              </div>
+                              <div className="flex gap-1">
+                                <button type="button" onClick={() => { setEditingRegId(item.id); setEditRegName(item.name); setEditRegUrl(item.url ?? ""); }} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-blue-600" title="Edit">✎</button>
+                                <button type="button" onClick={() => void deleteRegistryItem(item.id)} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-red-600" title="Delete">×</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new item */}
+                {registryItems.length < 20 && (
+                  <div className="rounded-lg border border-dashed border-gray-300 p-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-600">Add Product</p>
+                    <input
+                      className={inputCls}
+                      value={newRegName}
+                      onChange={e => setNewRegName(e.target.value)}
+                      placeholder="Product name *"
+                      onKeyDown={e => { if (e.key === "Enter" && newRegName.trim()) void addRegistryItem(); }}
+                    />
+                    <input
+                      className={inputCls}
+                      value={newRegUrl}
+                      onChange={e => setNewRegUrl(e.target.value)}
+                      placeholder="Purchase link (optional)"
+                    />
+                    <button
+                      type="button"
+                      disabled={!newRegName.trim() || !inv.token}
+                      onClick={() => void addRegistryItem()}
+                      className="w-full rounded bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      + Add to Registry
+                    </button>
+                    {!inv.token && <p className="text-xs text-amber-600">Save your invitation first to enable Gift Registry.</p>}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ── KEHADIRAN ── */}
             {activeTab === "kehadiran" && (
               <div className="space-y-4">
@@ -2563,6 +2769,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       isVisible={true}
                       cardMaxWidth="100%"
                        showGift={inv.giftDisplay}
+                       showRegistry={(mode === "demo" || activeFeatureNames.has("Gift Registry")) && registryItems.length > 0}
                     />
                   </div>
                 </div>
@@ -2578,6 +2785,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                   onToggleMute={() => {}}
                   musicTitle={design.musicTitle}
                   musicArtist={design.musicArtist}
+                  registryItems={registryItems}
                   previewMode
                 />
               )}

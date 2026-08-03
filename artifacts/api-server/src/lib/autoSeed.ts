@@ -279,6 +279,47 @@ export async function autoSeedIfEmpty() {
       }
     }
 
+    // ── Ensure Signature package exists (idempotent — runs on every startup) ──
+    const [sigPkg] = await db
+      .select({ id: pricingPackageTable.id })
+      .from(pricingPackageTable)
+      .where(eq(pricingPackageTable.name, "Signature"))
+      .limit(1);
+    if (!sigPkg) {
+      logger.info("Auto-seed: creating Signature package...");
+      const [sig] = await db
+        .insert(pricingPackageTable)
+        .values({
+          name: "Signature",
+          price: "85",
+          description: "The ultimate digital wedding invitation experience with every premium feature, including an exclusive Gift Registry for your guests.",
+          badgeText: "Best Value",
+          showBadge: true,
+          isFeatured: false,
+          isActive: true,
+          sortOrder: 3,
+          formConfig: {
+            fields: [
+              { key: "galleryImages", label: "Photo gallery", type: "textarea" as const, invitationField: "galleryImages" },
+            ],
+          },
+        })
+        .returning();
+      await db.insert(pricingFeatureTable).values([
+        { packageId: sig.id, name: "RSVP / Wishes",         icon: "MessageSquareHeart", sortOrder: 1 },
+        { packageId: sig.id, name: "Contact",               icon: "Phone",             sortOrder: 2 },
+        { packageId: sig.id, name: "Location & Navigation", icon: "MapPin",            sortOrder: 3 },
+        { packageId: sig.id, name: "Calendar",              icon: "CalendarDays",      sortOrder: 4 },
+        { packageId: sig.id, name: "Countdown",             icon: "Timer",             sortOrder: 5 },
+        { packageId: sig.id, name: "Background Music",      icon: "Music",             sortOrder: 6 },
+        { packageId: sig.id, name: "Photo Gallery",         icon: "Images",            sortOrder: 7 },
+        { packageId: sig.id, name: "Money Gift",            icon: "Gift",              sortOrder: 8 },
+        { packageId: sig.id, name: "Dress Code",            icon: "Shirt",             sortOrder: 9 },
+        { packageId: sig.id, name: "Gift Registry",         icon: "ShoppingBag",       sortOrder: 10 },
+      ]);
+      logger.info({ id: sig.id }, "Auto-seed: Signature package created.");
+    }
+
   } catch (err) {
     logger.error({ err }, "Auto-seed: failed.");
   }

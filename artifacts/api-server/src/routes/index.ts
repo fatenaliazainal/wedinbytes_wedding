@@ -11,6 +11,7 @@ import orderRouter from "./orders";
 import businessRouter from "./business";
 import toyyibPayRouter from "./toyyibpay";
 import waxSealsRouter from "./wax-seals";
+import giftRegistryRouter from "./gift-registry";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(orderRouter);
 router.use(businessRouter);
 router.use(toyyibPayRouter);
 router.use(waxSealsRouter);
+router.use(giftRegistryRouter);
 
 export default router;

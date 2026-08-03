@@ -14,7 +14,15 @@ import {
   INVITATION_PANEL_TITLE_CLASS,
 } from "@/components/PanelStyles";
 
-export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift";
+export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift" | "registry";
+
+export interface RegistryItem {
+  id: number;
+  name: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  sortOrder: number;
+}
 
 interface DetailPanelProps {
   activeTab: TabKey | null;
@@ -25,6 +33,7 @@ interface DetailPanelProps {
   musicTitle?: string;
   musicArtist?: string;
   previewMode?: boolean;
+  registryItems?: RegistryItem[];
   /** When true the parent container (InvitationPage) handles width + positioning.
    *  The panel renders as a full-width block that slides up from within a flex column
    *  sitting directly above the footer. The backdrop is still fixed/full-screen. */
@@ -322,12 +331,56 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
   );
 }
 
+function RegistryPanel({ items = [] }: { items?: RegistryItem[] }) {
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-6 text-center">
+        <p className="text-sm text-muted-foreground">Gift Registry will appear here once products are added.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-4 py-2">
+      {items.map((item) => (
+        <div key={item.id} className="flex items-center gap-3">
+          {item.thumbnailUrl ? (
+            <img
+              src={resolveImageUrl(item.thumbnailUrl)}
+              alt={item.name}
+              onError={(e) => fallbackToR2Proxy(e, item.thumbnailUrl!)}
+              className="h-14 w-14 shrink-0 rounded-lg border border-primary/10 bg-muted object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-muted">
+              <span className="text-xl">🎁</span>
+            </div>
+          )}
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <p className="truncate text-sm font-semibold text-foreground" style={{ fontFamily: bodyFont }}>{item.name}</p>
+            {item.url && (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate text-xs text-primary underline underline-offset-2"
+              >
+                View →
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const PANEL_TITLES: Record<TabKey, string> = {
   muzik: "Music",
   kalendar: "Calendar",
   lokasi: "Location",
   hubungi: "Contact",
   gift: "eGift",
+  registry: "Gift Registry",
 };
 
 const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
@@ -343,6 +396,7 @@ export function DetailPanel({
   musicArtist,
   previewMode,
   inset,
+  registryItems = [],
 }: DetailPanelProps) {
   const isCompactPanel = activeTab === "kalendar" || activeTab === "lokasi" || activeTab === "hubungi";
   // In inset mode the parent container already constrains width to the invitation width,
@@ -384,6 +438,7 @@ export function DetailPanel({
         <HubungiPanel invitation={invitation} />
       )}
       {activeTab === "gift" && <GiftPanel invitation={invitation} />}
+      {activeTab === "registry" && <RegistryPanel items={registryItems} />}
     </div>
   );
 

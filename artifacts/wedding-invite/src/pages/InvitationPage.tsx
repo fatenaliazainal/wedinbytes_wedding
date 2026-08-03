@@ -6,7 +6,7 @@ import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
 import { BottomNav } from "@/components/BottomNav";
 import { RsvpModal } from "@/components/RsvpModal";
-import { DetailPanel, type TabKey } from "@/components/DetailPanel";
+import { DetailPanel, type TabKey, type RegistryItem } from "@/components/DetailPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesign } from "@/hooks/use-design";
@@ -163,6 +163,14 @@ export default function InvitationPage() {
   const [activeTab, setActiveTab] = useState<TabKey | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(false);
+  const [registryItems, setRegistryItems] = useState<RegistryItem[]>([]);
+  useEffect(() => {
+    if (!resolvedToken) return;
+    fetch(`/api/registry/${resolvedToken}`)
+      .then(r => r.ok ? r.json() : [])
+      .then((items: RegistryItem[]) => setRegistryItems(Array.isArray(items) ? items : []))
+      .catch(() => {});
+  }, [resolvedToken]);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [unlockPin, setUnlockPin] = useState("");
   const [unlocking, setUnlocking] = useState(false);
@@ -437,6 +445,7 @@ export default function InvitationPage() {
                 onToggleMute={() => setIsMuted((prev) => !prev)}
                 musicTitle={(invitationStyle?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
                 musicArtist={(invitationStyle?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
+                registryItems={registryItems}
                 inset
               />
               <BottomNav
@@ -448,6 +457,7 @@ export default function InvitationPage() {
                 cardMaxWidth="100%"
                 showRsvp={isDemoInvitation || inv?.rsvpEnabled === true}
                 showGift={isDemoInvitation || inv?.giftDisplay === true}
+                showRegistry={registryItems.length > 0}
               />
             </div>
           </div>
