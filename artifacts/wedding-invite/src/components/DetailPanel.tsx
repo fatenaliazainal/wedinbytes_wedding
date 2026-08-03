@@ -287,6 +287,7 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
 
 function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation; registryItems?: RegistryItem[] }) {
   const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
+  const [tempahSet, setTempahSet] = useState<Set<number>>(new Set());
   const data = (invitation ?? {}) as Invitation & Record<string, unknown>;
   const qrCodes = Array.isArray(data.giftQrCodes)
     ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
@@ -433,11 +434,20 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
                 </p>
                 <button
                   type="button"
-                  onClick={() => setSelectedItem(item)}
-                  className="shrink-0 flex items-center gap-0.5 rounded-full border border-primary/30 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
-                  style={{ fontFamily: bodyFont }}
+                  onClick={() => {
+                    setTempahSet(prev => new Set(prev).add(item.id));
+                    setSelectedItem(item);
+                  }}
+                  disabled={tempahSet.has(item.id)}
+                  className="shrink-0 flex items-center gap-0.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap disabled:cursor-not-allowed"
+                  style={{
+                    fontFamily: bodyFont,
+                    borderColor: tempahSet.has(item.id) ? "hsl(var(--primary) / 0.2)" : "hsl(var(--primary) / 0.3)",
+                    color: tempahSet.has(item.id) ? "hsl(var(--primary) / 0.45)" : "hsl(var(--primary))",
+                    backgroundColor: tempahSet.has(item.id) ? "hsl(var(--primary) / 0.05)" : "transparent",
+                  }}
                 >
-                  Tempah <span className="ml-0.5 text-primary/60">›</span>
+                  {tempahSet.has(item.id) ? "Ditempah ✓" : <>Tempah <span className="ml-0.5 text-primary/60">›</span></>}
                 </button>
               </div>
             </div>
