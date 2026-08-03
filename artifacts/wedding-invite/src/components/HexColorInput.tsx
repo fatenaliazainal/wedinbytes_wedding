@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { colorToHex, isHexColor } from "@/lib/color-format";
 
-type PreviewKind =
-  | { type: "text"; sample: string; font?: "script" | "sans" }
-  | { type: "button"; sample: string }
-  | { type: "surface"; sample: string };
+export type PreviewKind =
+  | { type: "text";     sample: string; font?: "script" | "heading" | "muted" | "sans" }
+  | { type: "button";   sample: string }
+  | { type: "surface";  sample: string }
+  | { type: "ornament"; sample: string };
 
 type HexColorInputProps = {
   value: string;
@@ -29,6 +30,60 @@ export function HexColorInput({ value, onChange, label, helperText, preview, com
     const nextHex = nextValue.trim().toLowerCase();
     setDraft(nextHex);
     if (isHexColor(nextHex)) onChange(nextHex);
+  }
+
+  function renderPreview() {
+    if (!preview) return null;
+
+    if (preview.type === "text") {
+      const isScript  = preview.font === "script";
+      const isHeading = preview.font === "heading";
+      const isMuted   = preview.font === "muted";
+      return (
+        <span
+          style={{ color: hexValue }}
+          className={[
+            isScript  ? "font-semibold italic text-[11px]" : "",
+            isHeading ? "font-semibold tracking-widest uppercase text-[9px]" : "",
+            isMuted   ? "text-[9px] opacity-80" : "",
+            !isScript && !isHeading && !isMuted ? "text-[11px] font-medium" : "",
+          ].join(" ")}
+        >
+          {preview.sample}
+        </span>
+      );
+    }
+
+    if (preview.type === "button") {
+      return (
+        <span
+          style={{ backgroundColor: hexValue }}
+          className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white whitespace-nowrap"
+        >
+          {preview.sample}
+        </span>
+      );
+    }
+
+    if (preview.type === "ornament") {
+      return (
+        <span style={{ color: hexValue }} className="text-[11px] tracking-widest">
+          {preview.sample}
+        </span>
+      );
+    }
+
+    if (preview.type === "surface") {
+      return (
+        <span
+          style={{ backgroundColor: hexValue }}
+          className="h-6 w-10 rounded-md border border-border/60 block"
+          title={preview.sample}
+        />
+      );
+    }
+
+    return null;
   }
 
   return (
@@ -72,35 +127,9 @@ export function HexColorInput({ value, onChange, label, helperText, preview, com
 
       {/* Live mini-preview */}
       {preview && (
-        <div className="shrink-0 flex flex-col items-center gap-0.5">
-          {preview.type === "text" && (
-            <span
-              style={{
-                color: hexValue,
-                fontFamily: preview.font === "script" ? "Georgia, serif" : undefined,
-                fontStyle: preview.font === "script" ? "italic" : undefined,
-              }}
-              className="text-[11px] font-semibold whitespace-nowrap"
-            >
-              {preview.sample}
-            </span>
-          )}
-          {preview.type === "button" && (
-            <span
-              style={{ backgroundColor: hexValue }}
-              className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white whitespace-nowrap"
-            >
-              {preview.sample}
-            </span>
-          )}
-          {preview.type === "surface" && (
-            <span
-              style={{ backgroundColor: hexValue }}
-              className="h-6 w-10 rounded-md border border-border/60 block"
-              title={preview.sample}
-            />
-          )}
-          <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap">{preview.sample}</span>
+        <div className="shrink-0 flex flex-col items-center justify-center gap-0.5 min-w-[52px]">
+          {renderPreview()}
+          <span className="text-[9px] text-muted-foreground/40 whitespace-nowrap">{preview.sample}</span>
         </div>
       )}
     </div>

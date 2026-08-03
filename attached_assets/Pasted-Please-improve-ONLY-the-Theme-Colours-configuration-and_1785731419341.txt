@@ -1,0 +1,330 @@
+Please improve ONLY the Theme Colours configuration and color mapping.
+
+IMPORTANT:
+Do NOT redesign the invitation.
+Do NOT change layouts, spacing, typography, fonts, animations, components, content, or existing visual structure.
+
+The purpose of this change is to make the Theme Colours editor easier for Admin to understand and to allow SECTION TITLES to have a different color from BODY/DETAIL TEXT.
+
+Before changing anything:
+1. Inspect the existing theme color architecture.
+2. Reuse existing color variables/fields wherever possible.
+3. Preserve all existing saved theme colors.
+4. Only add a new color field if the required color role does not currently exist.
+
+--------------------------------------------------
+NEW ADMIN ORGANIZATION
+--------------------------------------------------
+
+THEME COLOURS
+
+
+1. TYPOGRAPHY
+
+A. Main Names
+Helper:
+"Couple names & featured script text"
+
+Example preview:
+Ahmad & Siti
+
+Controls:
+- Couple names
+- Main featured/script names only
+
+IMPORTANT:
+Do not automatically apply this to section headings.
+
+
+B. Section Titles
+Helper:
+"Titles for each invitation section"
+
+Example preview:
+EVENT PROGRAMME
+
+This must control section headings such as:
+- Event Programme
+- Our Story
+- Gallery
+- RSVP
+- Gift Registry
+- Wishes
+- Contact
+- Location
+- Accommodation
+- and equivalent section headings used by the invitation
+
+IMPORTANT:
+Section Titles MUST have its own independent color.
+
+Changing Section Titles must NOT change:
+- body text
+- programme details
+- dates/descriptions
+- couple names
+- buttons
+
+
+C. Content Text
+Helper:
+"Main details, dates & body content"
+
+Example preview:
+
+11:00 AM
+Guest Arrival
+
+This should control normal content/details inside sections.
+
+Examples:
+- Event programme time
+- Event programme event name
+- Wedding details
+- Dates
+- Venue details
+- Paragraphs
+- Main descriptions
+- Other normal body content
+
+IMPORTANT:
+This must be independent from Section Titles.
+
+
+D. Muted / Small Text
+Helper:
+"Captions, notes & secondary information"
+
+Example preview:
+Kindly arrive 15 minutes early
+
+Use for existing secondary/subtle text where appropriate, such as:
+- captions
+- small supporting labels
+- secondary descriptions
+- notes
+
+Do NOT arbitrarily change text that currently has a deliberate special style.
+Reuse the existing secondary/muted text mapping if one already exists.
+
+
+--------------------------------------------------
+2. BUTTONS & ACCENTS
+--------------------------------------------------
+
+A. Primary Button
+Helper:
+"RSVP, Open Invitation & main actions"
+
+Example preview:
+[ RSVP ]
+
+Use the existing primary/button color mapping.
+
+Do not change button design.
+
+
+B. Secondary Button
+Helper:
+"Maps & supporting actions"
+
+Example preview:
+[ Maps ]
+
+Use the existing secondary button/control mapping.
+
+
+C. Decorative Accent
+Helper:
+"Lines, icons, ornaments & highlights"
+
+Example preview:
+— ✦ —
+
+Use the existing Accent color mapping.
+
+This is for decorative/supporting elements, NOT normal text.
+
+
+--------------------------------------------------
+3. BACKGROUNDS
+--------------------------------------------------
+
+A. Page Background
+Helper:
+"Main invitation background"
+
+Use the existing page background color.
+
+
+B. Card / Popup Background
+Helper:
+"Cards, popup & inner panels"
+
+Use the existing card/panel background color.
+
+
+--------------------------------------------------
+ADMIN UI PREVIEWS
+--------------------------------------------------
+
+Keep the existing color picker + HEX input UI.
+
+Next to each color field, show a SMALL LIVE EXAMPLE so Admin immediately understands what the color controls.
+
+Examples:
+
+Main Names:
+Ahmad & Siti
+
+Section Titles:
+EVENT PROGRAMME
+
+Content Text:
+11:00 AM
+Guest Arrival
+
+Muted / Small Text:
+Kindly arrive 15 minutes early
+
+Primary Button:
+[ RSVP ]
+
+Secondary Button:
+[ Maps ]
+
+Decorative Accent:
+— ✦ —
+
+Page Background:
+small background swatch
+
+Card / Popup Background:
+small card swatch
+
+
+The example preview should use the currently selected color and update live when Admin changes the HEX/color picker.
+
+These examples are ADMIN PREVIEWS ONLY.
+Do not add these examples to the actual invitation.
+
+
+--------------------------------------------------
+CRITICAL COLOR BEHAVIOUR
+--------------------------------------------------
+
+The hierarchy must be:
+
+Main Names
+    ↓ own color
+
+EVENT PROGRAMME
+    ↓ Section Titles color
+
+11:00 AM
+Guest Arrival
+    ↓ Content Text color
+
+Kindly arrive 15 minutes early
+    ↓ Muted / Small Text color
+
+
+For example, Admin should be able to configure:
+
+Main Names = #EBD0A8
+Section Titles = #EBD0A8
+Content Text = #555555
+Muted Text = #AAAAAA
+
+without one setting overriding another.
+
+
+--------------------------------------------------
+BACKWARD COMPATIBILITY
+--------------------------------------------------
+
+VERY IMPORTANT:
+
+Existing themes and saved invitations must NOT visually break.
+
+If "Section Titles" is a NEW theme color field:
+
+- Add it safely to the existing theme configuration/schema.
+- Existing invitations without this value must fall back to the most appropriate CURRENT heading/text color.
+- Do not make existing saved invitations suddenly change appearance.
+- Do not require old invitations to be manually updated.
+
+Use a fallback such as:
+
+sectionTitleColor =
+savedSectionTitleColor
+?? existingHeadingColor
+?? existingPrimaryTextColor
+
+Adapt this to the actual existing architecture instead of blindly using these variable names.
+
+
+If "Muted / Small Text" requires a new field, follow the same backward-compatible fallback principle.
+
+
+--------------------------------------------------
+DO NOT CHANGE
+--------------------------------------------------
+
+Do NOT change:
+
+- Invitation layout
+- Existing component positions
+- Fonts
+- Font sizes
+- Font weights
+- Spacing
+- Responsive behaviour
+- Animations
+- Transitions
+- Popup structure
+- Footer structure
+- Navigation structure
+- RSVP functionality
+- Gift Registry functionality
+- Wishes functionality
+- Existing content
+- Existing Admin functionality
+- Existing saved theme values
+- Existing package functionality
+
+Do not refactor unrelated code.
+
+Do not create an entirely new theme system.
+
+Extend the CURRENT theme system only where necessary.
+
+
+--------------------------------------------------
+FINAL CHECK
+--------------------------------------------------
+
+After implementation, verify this specific scenario:
+
+Set:
+
+Section Titles = GOLD
+Content Text = DARK GREY
+
+Then confirm:
+
+"EVENT PROGRAMME" → GOLD
+
+while:
+
+"11:00 AM"
+"Guest Arrival"
+and its details → DARK GREY
+
+Also confirm changing Content Text does NOT change EVENT PROGRAMME.
+
+Check the same behavior across all invitation sections.
+
+The goal is simple:
+
+Admin should understand exactly what every color setting changes by looking at its name and preview, and section headings must be independently colorable from their content.

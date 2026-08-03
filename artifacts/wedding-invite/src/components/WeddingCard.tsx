@@ -693,11 +693,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
   const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
   const detailBlock = "w-full max-w-sm text-center space-y-4";
-  const detailLabel = "text-xs font-semibold tracking-[0.28em] text-foreground/50 uppercase";
-  const sectionTitleCls = "text-primary";
+  const detailLabel = "text-xs font-semibold tracking-[0.28em] uppercase" +
+    " [color:var(--color-muted,hsl(var(--foreground)/0.5))]";
+  const sectionTitleCls = "";
   const sectionTitleStyle: React.CSSProperties = {
     fontFamily: nameStyle.fontFamily,
     fontSize: "var(--section-title-font-size, 1.25rem)",
+    color: "var(--color-heading, hsl(var(--primary)))",
   };
 
   const countdownLabels = { days: t.days, hours: t.hours, minutes: t.minutes, seconds: t.seconds, started: t.eventStarted };

@@ -22,7 +22,7 @@ const upload = multer({
 
 const ALLOWED_DESIGN_FIELDS = [
   "envelopeImageUrl","cardImageUrl","thumbnailImageUrl","musicUrl","musicTitle","musicArtist",
-  "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard","colorForeground",
+  "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard","colorForeground","colorHeading","colorMuted",
   "fontHeading","fontBody","nameFontFamily","nameFontSize","badgeFontSize","nameColor",
   "cardMaxWidth","openingAnimation","designCode","openButtonText","name",
   "contentOverlayColor","contentOverlayOpacity","overlayEnabled","waxSealId",

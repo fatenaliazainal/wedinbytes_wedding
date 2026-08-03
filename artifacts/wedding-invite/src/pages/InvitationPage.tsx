@@ -136,6 +136,8 @@ export default function InvitationPage() {
           colorBackground: (invitationStyle?.colorBackground as string | undefined) ?? templateDesign?.colorBackground ?? undefined,
           colorCard:       (invitationStyle?.colorCard       as string | undefined) ?? templateDesign?.colorCard       ?? undefined,
           colorForeground: (invitationStyle?.colorForeground as string | undefined) ?? templateDesign?.colorForeground ?? undefined,
+          colorHeading:    (invitationStyle?.colorHeading    as string | undefined) ?? templateDesign?.colorHeading    ?? undefined,
+          colorMuted:      (invitationStyle?.colorMuted      as string | undefined) ?? templateDesign?.colorMuted      ?? undefined,
           nameColor:       (invitationStyle?.nameColor       as string | undefined) ?? templateDesign?.nameColor       ?? undefined,
           nameFontFamily:  (invitationStyle?.nameFontFamily  as string | undefined) ?? templateDesign?.nameFontFamily ?? templateDesign?.fontHeading ?? undefined,
           bodyFontFamily:  (invitationStyle?.bodyFontFamily  as string | undefined) ?? templateDesign?.fontBody ?? undefined,
@@ -302,12 +304,19 @@ export default function InvitationPage() {
 
   const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
+  const resolvedColorHeading = (invitationStyle?.colorHeading as string | undefined) ?? templateDesign?.colorHeading ?? undefined;
+  const resolvedColorMuted   = (invitationStyle?.colorMuted   as string | undefined) ?? templateDesign?.colorMuted   ?? undefined;
+
   const cardFontVars = {
-    "--name-font-family": fontFamilyStack((invitationStyle?.nameFontFamily as string | undefined) ?? templateDesign?.nameFontFamily ?? templateDesign?.fontHeading),
-    "--name-font-size":   ((invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize) ? `${(invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize}px` : undefined,
-    "--badge-font-size":  ((invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize) ? `${(invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize}px` : undefined,
-    "--name-color":       ((invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor) ? `hsl(${(invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor})` : undefined,
-    "--body-font-family": fontFamilyStack((invitationStyle?.bodyFontFamily as string | undefined) ?? templateDesign?.fontBody),
+    "--name-font-family":  fontFamilyStack((invitationStyle?.nameFontFamily as string | undefined) ?? templateDesign?.nameFontFamily ?? templateDesign?.fontHeading),
+    "--name-font-size":    ((invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize) ? `${(invitationStyle?.nameFontSize as string | undefined) ?? templateDesign?.nameFontSize}px` : undefined,
+    "--badge-font-size":   ((invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize) ? `${(invitationStyle?.badgeFontSize as string | undefined) ?? templateDesign?.badgeFontSize}px` : undefined,
+    "--name-color":        ((invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor) ? `hsl(${(invitationStyle?.nameColor as string | undefined) ?? templateDesign?.nameColor})` : undefined,
+    "--body-font-family":  fontFamilyStack((invitationStyle?.bodyFontFamily as string | undefined) ?? templateDesign?.fontBody),
+    // Section title color — falls back to --primary so existing designs are unchanged
+    "--color-heading":     resolvedColorHeading ? `hsl(${resolvedColorHeading})` : undefined,
+    // Muted text color — falls back to foreground/60 so existing designs are unchanged
+    "--color-muted":       resolvedColorMuted   ? `hsl(${resolvedColorMuted})`   : undefined,
   } as React.CSSProperties;
 
   if (isLocked && !isUnlocked) {

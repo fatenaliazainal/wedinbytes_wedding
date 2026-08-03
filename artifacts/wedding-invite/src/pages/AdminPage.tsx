@@ -428,6 +428,8 @@ interface DesignFormData {
   colorBackground: string;
   colorCard: string;
   colorForeground: string;
+  colorHeading: string;
+  colorMuted: string;
   nameColor: string;
   musicUrl: string;
   musicTitle: string;
@@ -442,7 +444,7 @@ interface DesignFormData {
 const EMPTY_FORM: DesignFormData = {
   name: "", designCode: "", cardImageUrl: "", thumbnailImageUrl: "", envelopeImageUrl: "",
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
-  colorAccent: "", colorBackground: "", colorCard: "", colorForeground: "", nameColor: "",
+  colorAccent: "", colorBackground: "", colorCard: "", colorForeground: "", colorHeading: "", colorMuted: "", nameColor: "",
   nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
   nameFontSize: "38", badgeFontSize: "24",
   musicUrl: "", musicTitle: "",
@@ -603,6 +605,8 @@ function DesignForm({
         colorBackground: form.colorBackground,
         colorCard: form.colorCard,
         colorForeground: form.colorForeground,
+        colorHeading: form.colorHeading || null,
+        colorMuted: form.colorMuted || null,
         nameColor: form.nameColor,
         musicUrl: form.musicUrl,
         musicTitle: form.musicTitle,
@@ -945,21 +949,77 @@ function DesignForm({
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-foreground">Theme Colours</p>
 
-            {/* Typography */}
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Typography</p>
-            <ColorRow label="Primary Text" helperText="Couple names & headings" value={form.nameColor} onChange={set("nameColor")} preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }} />
-            <ColorRow label="Secondary Text" helperText="Dates, venue & body paragraphs" value={form.colorForeground ?? ""} onChange={set("colorForeground")} preview={{ type: "text", sample: "1 Jan 2025" }} />
+            {/* 1. Typography */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">1 · Typography</p>
+            <ColorRow
+              label="Main Names"
+              helperText="Couple names & featured script text"
+              value={form.nameColor}
+              onChange={set("nameColor")}
+              preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }}
+            />
+            <ColorRow
+              label="Section Titles"
+              helperText="Titles for each invitation section"
+              value={form.colorHeading}
+              onChange={set("colorHeading")}
+              preview={{ type: "text", sample: "EVENT PROGRAMME", font: "heading" }}
+            />
+            <ColorRow
+              label="Content Text"
+              helperText="Main details, dates & body content"
+              value={form.colorForeground ?? ""}
+              onChange={set("colorForeground")}
+              preview={{ type: "text", sample: "11:00 AM  Guest Arrival" }}
+            />
+            <ColorRow
+              label="Muted / Small Text"
+              helperText="Captions, notes & secondary information"
+              value={form.colorMuted}
+              onChange={set("colorMuted")}
+              preview={{ type: "text", sample: "Kindly arrive 15 min early", font: "muted" }}
+            />
 
-            {/* Brand Colours */}
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Brand Colours</p>
-            <ColorRow label="Primary" helperText="Butang utama & RSVP" value={form.colorPrimary} onChange={set("colorPrimary")} preview={{ type: "button", sample: "RSVP" }} />
-            <ColorRow label="Secondary" helperText="Butang & elemen sokongan" value={form.colorSecondary} onChange={set("colorSecondary")} preview={{ type: "button", sample: "Maps" }} />
-            <ColorRow label="Accent" helperText="Garisan hiasan & highlights" value={form.colorAccent} onChange={set("colorAccent")} preview={{ type: "surface", sample: "Accent" }} />
+            {/* 2. Buttons & Accents */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">2 · Buttons &amp; Accents</p>
+            <ColorRow
+              label="Primary Button"
+              helperText="RSVP, Open Invitation & main actions"
+              value={form.colorPrimary}
+              onChange={set("colorPrimary")}
+              preview={{ type: "button", sample: "RSVP" }}
+            />
+            <ColorRow
+              label="Secondary Button"
+              helperText="Maps & supporting actions"
+              value={form.colorSecondary}
+              onChange={set("colorSecondary")}
+              preview={{ type: "button", sample: "Maps" }}
+            />
+            <ColorRow
+              label="Decorative Accent"
+              helperText="Lines, icons, ornaments & highlights"
+              value={form.colorAccent}
+              onChange={set("colorAccent")}
+              preview={{ type: "ornament", sample: "— ✦ —" }}
+            />
 
-            {/* Background & Surfaces */}
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">Background &amp; Surfaces</p>
-            <ColorRow label="Page Background" helperText="Latar belakang halaman" value={form.colorBackground} onChange={set("colorBackground")} preview={{ type: "surface", sample: "Page" }} />
-            <ColorRow label="Card / Modal Background" helperText="Kad, popup & panel dalam" value={form.colorCard} onChange={set("colorCard")} preview={{ type: "surface", sample: "Card" }} />
+            {/* 3. Backgrounds */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">3 · Backgrounds</p>
+            <ColorRow
+              label="Page Background"
+              helperText="Main invitation background"
+              value={form.colorBackground}
+              onChange={set("colorBackground")}
+              preview={{ type: "surface", sample: "Page" }}
+            />
+            <ColorRow
+              label="Card / Popup Background"
+              helperText="Cards, popup & inner panels"
+              value={form.colorCard}
+              onChange={set("colorCard")}
+              preview={{ type: "surface", sample: "Card" }}
+            />
           </div>
 
           {/* Content Overlay */}
@@ -1200,6 +1260,8 @@ function DesignsTab() {
                     colorBackground: d.colorBackground ?? "",
                     colorCard: d.colorCard ?? "",
                     colorForeground: d.colorForeground ?? "",
+                    colorHeading: (d as Record<string,unknown>).colorHeading as string ?? "",
+                    colorMuted: (d as Record<string,unknown>).colorMuted as string ?? "",
                     nameColor: d.nameColor ?? "",
                     musicUrl: d.musicUrl ?? "",
                     musicTitle: d.musicTitle ?? "",
