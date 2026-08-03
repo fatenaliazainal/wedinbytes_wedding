@@ -32,7 +32,8 @@ router.get("/registry/:token", async (req, res) => {
       .where(eq(invitationTable.token, token))
       .limit(1);
     if (!invitation) { res.status(404).json({ error: "Invitation not found" }); return; }
-    if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
+    const isDemo = token === "demo" || token === "demo-en";
+    if (!isDemo && !(await invitationHasFeature(invitation, FEATURE))) {
       res.json([]); return;
     }
     const items = await db
@@ -51,7 +52,8 @@ router.post("/registry/:token", async (req, res) => {
     const [invitation] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!invitation) { res.status(404).json({ error: "Invitation not found" }); return; }
     if (!(await canManageInvitation(req, invitation))) { res.status(403).json({ error: "Forbidden" }); return; }
-    if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
+    const isDemoCreate = token === "demo" || token === "demo-en";
+    if (!isDemoCreate && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
     const { name, url, notes } = req.body as Record<string, unknown>;
@@ -88,7 +90,8 @@ router.patch("/registry/:token/:id", async (req, res) => {
     const [invitation] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!invitation) { res.status(404).json({ error: "Invitation not found" }); return; }
     if (!(await canManageInvitation(req, invitation))) { res.status(403).json({ error: "Forbidden" }); return; }
-    if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
+    const isDemoUpdate = token === "demo" || token === "demo-en";
+    if (!isDemoUpdate && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
     const { name, url, notes, sortOrder } = req.body as Record<string, unknown>;
@@ -119,7 +122,8 @@ router.delete("/registry/:token/:id", async (req, res) => {
     const [invitation] = await db.select().from(invitationTable).where(eq(invitationTable.token, token)).limit(1);
     if (!invitation) { res.status(404).json({ error: "Invitation not found" }); return; }
     if (!(await canManageInvitation(req, invitation))) { res.status(403).json({ error: "Forbidden" }); return; }
-    if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
+    const isDemoDelete = token === "demo" || token === "demo-en";
+    if (!isDemoDelete && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
     await db
@@ -141,7 +145,8 @@ router.post("/registry-thumbnail-upload", thumbUpload.single("file"), async (req
     const [invitation] = await db.select().from(invitationTable).where(eq(invitationTable.token, invitationToken)).limit(1);
     if (!invitation) { res.status(404).json({ error: "Invitation not found" }); return; }
     if (!(await canManageInvitation(req, invitation))) { res.status(403).json({ error: "Forbidden" }); return; }
-    if (invitationToken !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
+    const isDemoThumb = invitationToken === "demo" || invitationToken === "demo-en";
+    if (!isDemoThumb && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
     const ext = req.file.mimetype === "image/png" ? "png" : req.file.mimetype === "image/webp" ? "webp" : "jpg";
