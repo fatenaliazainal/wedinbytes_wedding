@@ -174,6 +174,8 @@ interface InvData {
   giftBankName: string;
   giftAccountNumber: string;
   giftQrCodes: string[];
+  registryRecipientName: string;
+  registryRecipientAddress: string;
   designCode: string;
   // RSVP settings
   rsvpEnabled: boolean;
@@ -372,6 +374,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       { time: "02:00 PTG", event: "Majlis Bersurai" },
     ],
     giftDisplay: true, giftTitle: "eGift", giftRecipient: "Nama Penerima", giftBankName: "Maybank", giftAccountNumber: "1234567890", giftQrCodes: [],
+    registryRecipientName: "", registryRecipientAddress: "",
     designCode: "FL001",
     rsvpEnabled: true, rsvpAdditionalInfo: "", rsvpDeadline: "",
     rsvpIntroText: "", rsvpFormNote: "",
@@ -409,7 +412,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const t = createTranslator(inv.language);
 
   // Gift Registry state — managed via direct API calls, not part of the invitation save payload.
-  type RegistryItem = { id: number; name: string; url: string | null; thumbnailUrl: string | null; sortOrder: number };
+  type RegistryItem = { id: number; name: string; url: string | null; thumbnailUrl: string | null; notes?: string | null; sortOrder: number };
   const [registryItems, setRegistryItems] = useState<RegistryItem[]>([]);
   const [registryLoading, setRegistryLoading] = useState(false);
   const [newRegName, setNewRegName] = useState("");
@@ -417,6 +420,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
   const [editingRegId, setEditingRegId] = useState<number | null>(null);
   const [editRegName, setEditRegName] = useState("");
   const [editRegUrl, setEditRegUrl] = useState("");
+  const [newRegNotes, setNewRegNotes] = useState("");
+  const [editRegNotes, setEditRegNotes] = useState("");
   const [uploadingRegThumb, setUploadingRegThumb] = useState<number | null>(null);
   useEffect(() => {
     if (!inv.token || (mode !== "demo" && !activeFeatureNames.has("Gift Registry"))) { setRegistryItems([]); return; }
@@ -631,6 +636,8 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           giftBankName: d.giftBankName ?? "",
           giftAccountNumber: d.giftAccountNumber ?? "",
           giftQrCodes: Array.isArray(d.giftQrCodes) ? d.giftQrCodes.slice(0, 2) : [],
+          registryRecipientName: d.registryRecipientName ?? "",
+          registryRecipientAddress: d.registryRecipientAddress ?? "",
           designCode: d.designCode ?? "FL001",
           rsvpEnabled: d.rsvpEnabled ?? false,
           rsvpAdditionalInfo: d.rsvpAdditionalInfo ?? "",
@@ -1001,6 +1008,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
           giftQrCodes: inv.giftQrCodes,
         });
       }
+      if (mode === "admin" || mode === "demo" || activeFeatureNames.has("Gift Registry")) {
+        Object.assign(savePayload, {
+          registryRecipientName: inv.registryRecipientName || null,
+          registryRecipientAddress: inv.registryRecipientAddress || null,
+        });
+      }
 
       // Footer branding is admin-owned and must not be included in buyer saves.
       if (mode === "admin" || mode === "demo") {
@@ -1163,12 +1176,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       const res = await fetch(`${BASE}/api/registry/${inv.token}`, {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newRegName.trim(), url: newRegUrl.trim() || null }),
+        body: JSON.stringify({ name: newRegName.trim(), url: newRegUrl.trim() || null, notes: newRegNotes.trim() || null }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { toast.error(data.error || "Failed to add item."); return; }
       setRegistryItems(prev => [...prev, data]);
-      setNewRegName(""); setNewRegUrl("");
+      setNewRegName(""); setNewRegUrl(""); setNewRegNotes("");
     } catch { toast.error("Network error."); }
   }
 
@@ -1178,7 +1191,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
       const res = await fetch(`${BASE}/api/registry/${inv.token}/${id}`, {
         method: "PATCH", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editRegName.trim(), url: editRegUrl.trim() || null }),
+        body: JSON.stringify({ name: editRegName.trim(), url: editRegUrl.trim() || null, notes: editRegNotes.trim() || null }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { toast.error(data.error || "Failed to save."); return; }
@@ -1959,11 +1972,28 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
             {/* ── GIFT REGISTRY ── */}
             {activeTab === "registry" && (
               <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Gift Registry</p>
-                    <p className="text-xs text-gray-500">Add products your guests can gift you. Max 20 items.</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">Gift Registry</p>
+                  <p className="text-xs text-gray-500">Add products your guests can gift you. Max 20 items.</p>
+                </div>
+
+                {/* Delivery address — shown to guests in Tempah Hadiah */}
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Delivery Info (shown to guests)</p>
+                  <input
+                    className={inputCls}
+                    value={inv.registryRecipientName}
+                    onChange={e => setInv(c => ({ ...c, registryRecipientName: e.target.value }))}
+                    placeholder="Nama penerima (e.g. Ahmad Bin Zakaria)"
+                  />
+                  <textarea
+                    className={textareaCls}
+                    rows={3}
+                    value={inv.registryRecipientAddress}
+                    onChange={e => setInv(c => ({ ...c, registryRecipientAddress: e.target.value }))}
+                    placeholder={"Alamat Penerima\nNo 56, Taman Melur Cempaka\n86200 Simpang Renggam, Johor"}
+                  />
+                  <p className="text-xs text-gray-400">Guests see this address when tapping "Tempah" on a product.</p>
                 </div>
 
                 {/* Item list */}
@@ -1981,14 +2011,20 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                               className={inputCls}
                               value={editRegName}
                               onChange={e => setEditRegName(e.target.value)}
-                              placeholder="Product name"
+                              placeholder="Product name *"
                               onKeyDown={e => { if (e.key === "Enter") void saveRegistryItem(item.id); }}
                             />
                             <input
                               className={inputCls}
                               value={editRegUrl}
                               onChange={e => setEditRegUrl(e.target.value)}
-                              placeholder="https://shopee.com/... (optional)"
+                              placeholder="Purchase link (optional)"
+                            />
+                            <input
+                              className={inputCls}
+                              value={editRegNotes}
+                              onChange={e => setEditRegNotes(e.target.value)}
+                              placeholder="Nota Tambahan (e.g. Nak yg warna aesthetic)"
                             />
                             <div className="flex gap-2">
                               <button type="button" onClick={() => void saveRegistryItem(item.id)} className="flex-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700">Save</button>
@@ -2013,6 +2049,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-gray-800">{item.name}</p>
                               {item.url && <p className="truncate text-xs text-gray-400">{item.url}</p>}
+                              {item.notes && <p className="truncate text-xs text-gray-500 italic">"{item.notes}"</p>}
                             </div>
                             {/* Actions */}
                             <div className="flex shrink-0 flex-col gap-1">
@@ -2021,7 +2058,7 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                                 <button type="button" disabled={idx === registryItems.length - 1} onClick={() => void moveRegistryItem(item.id, "down")} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">▼</button>
                               </div>
                               <div className="flex gap-1">
-                                <button type="button" onClick={() => { setEditingRegId(item.id); setEditRegName(item.name); setEditRegUrl(item.url ?? ""); }} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-blue-600" title="Edit">✎</button>
+                                <button type="button" onClick={() => { setEditingRegId(item.id); setEditRegName(item.name); setEditRegUrl(item.url ?? ""); setEditRegNotes(item.notes ?? ""); }} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-blue-600" title="Edit">✎</button>
                                 <button type="button" onClick={() => void deleteRegistryItem(item.id)} className="flex h-5 w-5 items-center justify-center rounded text-xs text-gray-400 hover:text-red-600" title="Delete">×</button>
                               </div>
                             </div>
@@ -2048,6 +2085,12 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       value={newRegUrl}
                       onChange={e => setNewRegUrl(e.target.value)}
                       placeholder="Purchase link (optional)"
+                    />
+                    <input
+                      className={inputCls}
+                      value={newRegNotes}
+                      onChange={e => setNewRegNotes(e.target.value)}
+                      placeholder="Nota Tambahan (e.g. Nak yg warna aesthetic)"
                     />
                     <button
                       type="button"
@@ -2769,7 +2812,6 @@ export default function EditorPage({ mode = "buyer" }: { mode?: "buyer" | "busin
                       isVisible={true}
                       cardMaxWidth="100%"
                        showGift={inv.giftDisplay}
-                       showRegistry={(mode === "demo" || activeFeatureNames.has("Gift Registry")) && registryItems.length > 0}
                     />
                   </div>
                 </div>

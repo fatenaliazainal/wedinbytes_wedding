@@ -54,7 +54,7 @@ router.post("/registry/:token", async (req, res) => {
     if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
-    const { name, url } = req.body as Record<string, unknown>;
+    const { name, url, notes } = req.body as Record<string, unknown>;
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Product name is required." }); return;
     }
@@ -71,6 +71,7 @@ router.post("/registry/:token", async (req, res) => {
         invitationToken: token,
         name: name.trim(),
         url: typeof url === "string" && url.trim() ? url.trim() : null,
+        notes: typeof notes === "string" && notes.trim() ? notes.trim() : null,
         sortOrder: existing.length,
       })
       .returning();
@@ -90,13 +91,14 @@ router.patch("/registry/:token/:id", async (req, res) => {
     if (token !== "demo" && !(await invitationHasFeature(invitation, FEATURE))) {
       res.status(403).json({ error: "Gift Registry is available with the Signature package." }); return;
     }
-    const { name, url, sortOrder } = req.body as Record<string, unknown>;
+    const { name, url, notes, sortOrder } = req.body as Record<string, unknown>;
     const updates: Partial<typeof giftRegistryItemTable.$inferInsert> = {};
     if (name !== undefined) {
       if (typeof name !== "string" || !name.trim()) { res.status(400).json({ error: "Product name cannot be empty." }); return; }
       updates.name = name.trim();
     }
     if (url !== undefined) updates.url = typeof url === "string" && url.trim() ? url.trim() : null;
+    if (notes !== undefined) updates.notes = typeof notes === "string" && notes.trim() ? notes.trim() : null;
     if (typeof sortOrder === "number") updates.sortOrder = sortOrder;
     const [item] = await db
       .update(giftRegistryItemTable)

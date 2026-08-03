@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
@@ -14,13 +14,14 @@ import {
   INVITATION_PANEL_TITLE_CLASS,
 } from "@/components/PanelStyles";
 
-export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift" | "registry";
+export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift";
 
 export interface RegistryItem {
   id: number;
   name: string;
   url: string | null;
   thumbnailUrl: string | null;
+  notes?: string | null;
   sortOrder: number;
 }
 
@@ -284,7 +285,8 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
   );
 }
 
-function GiftPanel({ invitation }: { invitation?: Invitation }) {
+function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation; registryItems?: RegistryItem[] }) {
+  const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
   const data = (invitation ?? {}) as Invitation & Record<string, unknown>;
   const qrCodes = Array.isArray(data.giftQrCodes)
     ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
@@ -292,13 +294,79 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
   const accountNumber = typeof data.giftAccountNumber === "string" ? data.giftAccountNumber : "";
   const recipient = typeof data.giftRecipient === "string" ? data.giftRecipient : "";
   const bankName = typeof data.giftBankName === "string" ? data.giftBankName : "";
+  const registryRecipientName = typeof data.registryRecipientName === "string" ? data.registryRecipientName : "";
+  const registryRecipientAddress = typeof data.registryRecipientAddress === "string" ? data.registryRecipientAddress : "";
   const copyAccount = async () => {
     if (!accountNumber) return;
     await navigator.clipboard?.writeText(accountNumber);
   };
 
+  // ── Tempah Hadiah sub-view ────────────────────────────────────────────────
+  if (selectedItem) {
+    return (
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => setSelectedItem(null)}
+          className="self-start flex items-center gap-1 text-xs font-medium text-primary/70 hover:text-primary transition-colors"
+          style={{ fontFamily: bodyFont }}
+        >
+          ← Kembali
+        </button>
+        <div className="text-center">
+          <p className="text-xl font-bold text-foreground" style={{ fontFamily: nameFont }}>Tempah Hadiah</p>
+          <div className="mt-2 h-px w-full bg-primary/15" />
+        </div>
+        {selectedItem.thumbnailUrl && (
+          <div className="mx-auto w-full max-w-[220px]">
+            <img
+              src={resolveImageUrl(selectedItem.thumbnailUrl)}
+              alt={selectedItem.name}
+              onError={(e) => fallbackToR2Proxy(e, selectedItem.thumbnailUrl!)}
+              className="w-full rounded-2xl border border-primary/10 object-cover shadow-sm"
+            />
+          </div>
+        )}
+        <p className="text-center text-base font-bold text-foreground leading-snug" style={{ fontFamily: bodyFont }}>
+          {selectedItem.name}
+        </p>
+        {selectedItem.url && (
+          <a
+            href={selectedItem.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={INVITATION_PANEL_CTA_CLASS}
+          >
+            🔗 Shop Link
+          </a>
+        )}
+        {selectedItem.notes && (
+          <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nota Tambahan</p>
+            <p className="text-sm text-foreground">{selectedItem.notes}</p>
+          </div>
+        )}
+        {registryRecipientName && (
+          <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nama penerima</p>
+            <p className="text-sm text-foreground">{registryRecipientName}</p>
+          </div>
+        )}
+        {registryRecipientAddress && (
+          <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Alamat Penerima</p>
+            <p className="text-sm text-foreground whitespace-pre-line">{registryRecipientAddress}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const hasMoneyGift = qrCodes.length > 0 || Boolean(recipient) || Boolean(bankName) || Boolean(accountNumber);
+
   return (
     <div className="flex flex-col items-center gap-5 py-2">
+      {/* ── Money Gift ── */}
       {qrCodes.length > 0 && (
         <div className="flex w-full flex-col items-center gap-4">
           {qrCodes.map((url, index) => (
@@ -326,50 +394,61 @@ function GiftPanel({ invitation }: { invitation?: Invitation }) {
           )}
         </div>
       )}
-      {!accountNumber && qrCodes.length === 0 && <p className="text-sm text-muted-foreground">Gift details are not available yet.</p>}
-    </div>
-  );
-}
 
-function RegistryPanel({ items = [] }: { items?: RegistryItem[] }) {
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <p className="text-sm text-muted-foreground">Gift Registry will appear here once products are added.</p>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-4 py-2">
-      {items.map((item) => (
-        <div key={item.id} className="flex items-center gap-3">
-          {item.thumbnailUrl ? (
-            <img
-              src={resolveImageUrl(item.thumbnailUrl)}
-              alt={item.name}
-              onError={(e) => fallbackToR2Proxy(e, item.thumbnailUrl!)}
-              className="h-14 w-14 shrink-0 rounded-lg border border-primary/10 bg-muted object-cover"
-            />
-          ) : (
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-muted">
-              <span className="text-xl">🎁</span>
-            </div>
-          )}
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="truncate text-sm font-semibold text-foreground" style={{ fontFamily: bodyFont }}>{item.name}</p>
-            {item.url && (
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="truncate text-xs text-primary underline underline-offset-2"
-              >
-                View →
-              </a>
-            )}
-          </div>
+      {/* ── Ornament divider (only when both sections exist) ── */}
+      {hasMoneyGift && registryItems.length > 0 && (
+        <div className="flex w-full items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-primary/20" />
+          <svg viewBox="0 0 60 20" className="w-14 shrink-0 text-primary/50" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="9.2" width="22" height="1.6" rx="0.8" opacity="0.4" />
+            <path d="M30 4 L35.5 10 L30 16 L24.5 10 Z" opacity="0.55" />
+            <circle cx="30" cy="10" r="1.4" opacity="0.85" />
+            <rect x="38" y="9.2" width="22" height="1.6" rx="0.8" opacity="0.4" />
+          </svg>
+          <div className="h-px flex-1 bg-primary/20" />
         </div>
-      ))}
+      )}
+
+      {/* ── Gift Registry items ── */}
+      {registryItems.length > 0 && (
+        <div className="w-full flex flex-col">
+          {registryItems.map((item, idx) => (
+            <div key={item.id}>
+              {idx > 0 && <hr className="border-primary/10 mx-2" />}
+              <div className="flex items-center gap-3 py-3 px-1">
+                {item.thumbnailUrl ? (
+                  <img
+                    src={resolveImageUrl(item.thumbnailUrl)}
+                    alt={item.name}
+                    onError={(e) => fallbackToR2Proxy(e, item.thumbnailUrl!)}
+                    className="h-16 w-16 shrink-0 rounded-xl border border-primary/10 bg-muted object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-muted">
+                    <span className="text-2xl">🎁</span>
+                  </div>
+                )}
+                <p className="min-w-0 flex-1 text-sm font-medium text-foreground leading-snug line-clamp-2" style={{ fontFamily: bodyFont }}>
+                  {item.name}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedItem(item)}
+                  className="shrink-0 flex items-center gap-0.5 rounded-full border border-primary/30 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
+                  style={{ fontFamily: bodyFont }}
+                >
+                  Tempah <span className="ml-0.5 text-primary/60">›</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* No content */}
+      {!hasMoneyGift && registryItems.length === 0 && (
+        <p className="text-sm text-muted-foreground">Gift details are not available yet.</p>
+      )}
     </div>
   );
 }
@@ -380,7 +459,6 @@ const PANEL_TITLES: Record<TabKey, string> = {
   lokasi: "Location",
   hubungi: "Contact",
   gift: "eGift",
-  registry: "Gift Registry",
 };
 
 const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
@@ -437,8 +515,7 @@ export function DetailPanel({
       {activeTab === "hubungi" && (
         <HubungiPanel invitation={invitation} />
       )}
-      {activeTab === "gift" && <GiftPanel invitation={invitation} />}
-      {activeTab === "registry" && <RegistryPanel items={registryItems} />}
+      {activeTab === "gift" && <GiftPanel invitation={invitation} registryItems={registryItems} />}
     </div>
   );
 

@@ -456,8 +456,7 @@ export default function InvitationPage() {
                 isVisible={showBottomNav}
                 cardMaxWidth="100%"
                 showRsvp={isDemoInvitation || inv?.rsvpEnabled === true}
-                showGift={isDemoInvitation || inv?.giftDisplay === true}
-                showRegistry={registryItems.length > 0}
+                showGift={isDemoInvitation || inv?.giftDisplay === true || registryItems.length > 0}
               />
             </div>
           </div>

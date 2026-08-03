@@ -69,6 +69,8 @@ const ALLOWED_FIELDS = [
   "musicUrl","musicTitle","musicArtist",
   // Overlay toggle
   "overlayEnabled",
+  // Gift Registry delivery
+  "registryRecipientName","registryRecipientAddress",
   // Footer / branding
   "showFooter","footerText","footerUrl","socialLinks",
   // Pricing package

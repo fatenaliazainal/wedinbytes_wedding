@@ -84,6 +84,9 @@ export const invitationTable = pgTable("invitation", {
   giftBankName: text("gift_bank_name"),
   giftAccountNumber: text("gift_account_number"),
   giftQrCodes: jsonb("gift_qr_codes").$type<string[]>(),
+  // Signature gift registry delivery address
+  registryRecipientName: text("registry_recipient_name"),
+  registryRecipientAddress: text("registry_recipient_address"),
   // RSVP settings (per-invitation, independent for each card)
   rsvpEnabled: boolean("rsvp_enabled").notNull().default(false),
   rsvpAdditionalInfo: text("rsvp_additional_info"),

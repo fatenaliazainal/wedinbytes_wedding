@@ -6,6 +6,7 @@ export const giftRegistryItemTable = pgTable("gift_registry_item", {
   name: text("name").notNull(),
   url: text("url"),
   thumbnailUrl: text("thumbnail_url"),
+  notes: text("notes"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
