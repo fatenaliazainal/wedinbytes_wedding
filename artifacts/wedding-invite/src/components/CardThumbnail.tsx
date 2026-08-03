@@ -8,7 +8,7 @@ interface CardThumbnailProps {
 }
 
 const INNER_W = 320;
-const INNER_H = Math.round((INNER_W * 4) / 3);
+const INNER_H = Math.round((INNER_W * 7) / 5);
 import { resolveImageUrl } from "@/lib/r2-url";
 
 export function CardThumbnail({ invitation, design, containerWidth = 220 }: CardThumbnailProps) {

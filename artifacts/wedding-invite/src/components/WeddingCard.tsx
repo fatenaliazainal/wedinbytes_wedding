@@ -354,7 +354,7 @@ function WishCard({
       whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card mx-auto mb-0 mt-7 w-[260px] max-w-[260px] rounded-[20px] border border-white/[0.35] p-[18px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:mt-8 sm:w-[280px] sm:max-w-[280px] lg:w-[300px] lg:max-w-[300px]"
+      className="wishes-card mx-auto mb-0 mt-7 w-[200px] max-w-[200px] rounded-[16px] border border-white/[0.35] p-[14px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:mt-8 sm:w-[220px] sm:max-w-[220px] lg:w-[240px] lg:max-w-[240px]"
       style={{
         height: "auto",
         minHeight: "140px",
