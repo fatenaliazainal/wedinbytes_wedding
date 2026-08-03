@@ -422,6 +422,7 @@ interface DesignFormData {
   bodyFontFamily: string;
   nameFontSize: string;
   badgeFontSize: string;
+  greetingFontSize: string;
   colorPrimary: string;
   colorSecondary: string;
   colorAccent: string;
@@ -446,7 +447,7 @@ const EMPTY_FORM: DesignFormData = {
   openingAnimation: "doors", colorPrimary: "", colorSecondary: "",
   colorAccent: "", colorBackground: "", colorCard: "", colorForeground: "", colorHeading: "", colorMuted: "", nameColor: "",
   nameFontFamily: "Dancing Script", bodyFontFamily: "Poppins",
-  nameFontSize: "38", badgeFontSize: "24",
+  nameFontSize: "38", badgeFontSize: "24", greetingFontSize: "16",
   musicUrl: "", musicTitle: "",
   musicArtist: "", openButtonText: "OPEN",
   contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
@@ -599,6 +600,7 @@ function DesignForm({
         fontBody: form.bodyFontFamily,
         nameFontSize: form.nameFontSize,
         badgeFontSize: form.badgeFontSize,
+        greetingFontSize: form.greetingFontSize,
         colorPrimary: form.colorPrimary,
         colorSecondary: form.colorSecondary,
         colorAccent: form.colorAccent,
@@ -942,6 +944,17 @@ function DesignForm({
                   className="mt-2 w-full accent-primary"
                 />
               </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Greeting &amp; Detail Names Size — {form.greetingFontSize || 16}px
+                <input
+                  type="range"
+                  min="10"
+                  max="40"
+                  value={Number(form.greetingFontSize) || 16}
+                  onChange={(e) => set("greetingFontSize")(e.target.value)}
+                  className="mt-2 w-full accent-primary"
+                />
+              </label>
             </div>
           </div>
 
@@ -1254,6 +1267,7 @@ function DesignsTab() {
                     bodyFontFamily: d.fontBody ?? "Poppins",
                     nameFontSize: d.nameFontSize ?? "38",
                     badgeFontSize: d.badgeFontSize ?? "24",
+                    greetingFontSize: (d as any).greetingFontSize ?? "16",
                     colorPrimary: d.colorPrimary ?? "",
                     colorSecondary: d.colorSecondary ?? "",
                     colorAccent: d.colorAccent ?? "",

@@ -112,6 +112,7 @@ export const invitationTable = pgTable("invitation", {
   nameFontFamily: text("name_font_family"),
   nameFontSize: text("name_font_size"),
   badgeFontSize: text("badge_font_size"),
+  greetingFontSize: text("greeting_font_size"),
   waxSealId: integer("wax_seal_id"),
   bodyFontFamily: text("body_font_family"),
   // Music override (per-invitation)
@@ -176,6 +177,7 @@ export const cardDesignTable = pgTable("card_design", {
   nameFontFamily: text("name_font_family"),
   nameFontSize: text("name_font_size"),
   badgeFontSize: text("badge_font_size"),
+  greetingFontSize: text("greeting_font_size"),
   nameColor: text("name_color"),
   colorForeground: text("color_foreground"),
   colorHeading: text("color_heading"),

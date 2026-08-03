@@ -113,7 +113,7 @@ function PricingCard({
             </div>
             {discountPct > 0 && (
               <span className="inline-block rounded-full border border-rose-400 px-3 py-0.5 text-[10px] font-bold tracking-widest text-rose-600 uppercase">
-                SPECIAL OFFER {discountPct}% OFF
+                Exclusive Offer {discountPct}% OFF
               </span>
             )}
           </div>

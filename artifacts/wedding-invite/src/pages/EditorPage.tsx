@@ -240,6 +240,7 @@ interface DesignData {
   nameFontFamily: string;
   nameFontSize: string;
   badgeFontSize: string;
+  greetingFontSize: string;
   nameColor: string;
   colorForeground: string;
   colorHeading: string;
@@ -536,6 +537,7 @@ export default function EditorPage({
     nameFontFamily: "Dancing Script",
     nameFontSize: "38",
     badgeFontSize: "24",
+    greetingFontSize: "16",
     nameColor: "0 0% 20%",
     colorForeground: "0 0% 10%",
     colorHeading: "",
@@ -750,6 +752,7 @@ export default function EditorPage({
               tpl.nameFontFamily ?? tpl.fontHeading ?? "Dancing Script",
             nameFontSize: tpl.nameFontSize ?? "38",
             badgeFontSize: tpl.badgeFontSize ?? "24",
+            greetingFontSize: (tpl as any).greetingFontSize ?? "16",
             nameColor: tpl.nameColor ?? "0 0% 20%",
             colorForeground: tpl.colorForeground ?? "0 0% 10%",
             colorHeading: tpl.colorHeading ?? "",
@@ -1018,6 +1021,9 @@ export default function EditorPage({
             badgeFontSize: invitationOwnsStyle
               ? (d.badgeFontSize ?? tpl.badgeFontSize ?? "24")
               : (tpl.badgeFontSize ?? "24"),
+            greetingFontSize: invitationOwnsStyle
+              ? (d.greetingFontSize ?? (tpl as any).greetingFontSize ?? "16")
+              : ((tpl as any).greetingFontSize ?? "16"),
             nameColor: invitationOwnsStyle
               ? (d.nameColor ?? tpl.nameColor)
               : tpl.nameColor,
@@ -1086,6 +1092,7 @@ export default function EditorPage({
             nameFontFamily: normalizeFont(tplFallback.nameFontFamily),
             nameFontSize: tplFallback.nameFontSize,
             badgeFontSize: tplFallback.badgeFontSize,
+            greetingFontSize: (tplFallback as any).greetingFontSize ?? "16",
             nameColor: tplFallback.nameColor,
             colorForeground: tplFallback.colorForeground,
             colorHeading: tplFallback.colorHeading ?? "",
@@ -1446,6 +1453,7 @@ export default function EditorPage({
         nameFontFamily: design.nameFontFamily || null,
         nameFontSize: design.nameFontSize || null,
         badgeFontSize: design.badgeFontSize || null,
+        greetingFontSize: design.greetingFontSize || null,
         bodyFontFamily: design.bodyFontFamily || null,
         // Always persist the exact resolved colour so the public invitation page
         // and the editor always show the same values, regardless of which card
@@ -3498,6 +3506,8 @@ export default function EditorPage({
                                 picked.nameFontSize ?? p.nameFontSize,
                               badgeFontSize:
                                 picked.badgeFontSize ?? p.badgeFontSize,
+                              greetingFontSize:
+                                (picked as any).greetingFontSize ?? p.greetingFontSize,
                               bodyFontFamily: normalizeFont(
                                 picked.fontBody ?? p.bodyFontFamily,
                               ),
@@ -3712,6 +3722,24 @@ export default function EditorPage({
                           setDesign((p) => ({
                             ...p,
                             badgeFontSize: e.target.value,
+                          }))
+                        }
+                        className="w-full accent-blue-500"
+                      />
+                    </Field>
+                    <Field
+                      label={`Saiz Greeting & Nama Detail — ${design.greetingFontSize || 16}px`}
+                    >
+                      <input
+                        type="range"
+                        min={10}
+                        max={40}
+                        step={1}
+                        value={Number(design.greetingFontSize) || 16}
+                        onChange={(e) =>
+                          setDesign((p) => ({
+                            ...p,
+                            greetingFontSize: e.target.value,
                           }))
                         }
                         className="w-full accent-blue-500"
@@ -3989,6 +4017,7 @@ export default function EditorPage({
                   "--name-font-size": `${Number(design.nameFontSize) || 38}px`,
                   "--badge-font-size": `${Number(design.badgeFontSize) || 24}px`,
                   "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
+                  "--greeting-font-size": `${Number(design.greetingFontSize) || 16}px`,
                   "--name-color": design.nameColor
                     ? `hsl(${design.nameColor})`
                     : "hsl(20 50% 25%)",
