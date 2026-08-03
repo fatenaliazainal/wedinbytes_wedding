@@ -64,56 +64,62 @@ export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisib
           pointerEvents: isVisible ? undefined : "none",
         }}
       >
-          {NAV_ITEMS.filter((item) => (!item.isRsvp || showRsvp) && (item.tab !== "gift" || showGift)).map((item) => {
-            const isMuzik = item.tab === "muzik";
-            const isActive = item.tab ? activeTab === item.tab : false;
-            const playing = isMuzik && !isMuted;
+          {(() => {
+            const visibleItems = NAV_ITEMS.filter((item) => (!item.isRsvp || showRsvp) && (item.tab !== "gift" || showGift));
+            const compact = visibleItems.length >= 6;
+            const iconSize = compact ? 16 : 18;
+            const labelClass = compact ? "text-[8px]" : "text-[9px]";
 
-            return (
-              <button
-                key={item.label}
-                data-testid={`button-nav-${item.label.toLowerCase().replace(" ", "-")}`}
-                onClick={() => {
-                  if (item.isRsvp) {
-                    onRsvpClick();
-                  } else if (item.tab) {
-                    onTabClick(item.tab);
-                  }
-                }}
-                className="flex flex-col items-center gap-0.5 px-1 py-1 active:scale-90 transition-transform"
-                style={{ minWidth: 44 }}
-              >
-                <motion.div
-                  key={`nav-icon-${item.tab}-${String(isActive || playing)}`}
-                  initial={{ scale: (isActive || playing) ? 1.15 : 1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
-                  className="flex items-center justify-center w-7.5 h-7.5 rounded-full transition-colors"
-                  style={{
-                    backgroundColor: isActive || playing ? "rgba(255,255,255,0.25)" : "transparent",
+            return visibleItems.map((item) => {
+              const isMuzik = item.tab === "muzik";
+              const isActive = item.tab ? activeTab === item.tab : false;
+              const playing = isMuzik && !isMuted;
+
+              return (
+                <button
+                  key={item.label}
+                  data-testid={`button-nav-${item.label.toLowerCase().replace(" ", "-")}`}
+                  onClick={() => {
+                    if (item.isRsvp) {
+                      onRsvpClick();
+                    } else if (item.tab) {
+                      onTabClick(item.tab);
+                    }
                   }}
+                  className="flex flex-1 flex-col items-center gap-0.5 px-1 py-1 active:scale-90 transition-transform"
                 >
-                  {isMuzik ? (
-                    isMuted ? (
-                      <VolumeX size={18} strokeWidth={1.8} color="white" />
-                    ) : playing ? (
-                      <MusicBars />
+                  <motion.div
+                    key={`nav-icon-${item.tab}-${String(isActive || playing)}`}
+                    initial={{ scale: (isActive || playing) ? 1.15 : 1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+                    className="flex items-center justify-center w-7.5 h-7.5 rounded-full transition-colors"
+                    style={{
+                      backgroundColor: isActive || playing ? "rgba(255,255,255,0.25)" : "transparent",
+                    }}
+                  >
+                    {isMuzik ? (
+                      isMuted ? (
+                        <VolumeX size={iconSize} strokeWidth={1.8} color="white" />
+                      ) : playing ? (
+                        <MusicBars />
+                      ) : (
+                        <item.icon size={iconSize} strokeWidth={1.8} color="white" />
+                      )
                     ) : (
-                      <item.icon size={18} strokeWidth={1.8} color="white" />
-                    )
-                  ) : (
-                    <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.8} color="white" />
-                  )}
-                </motion.div>
-                <span
-                  className="text-[9px] font-medium leading-tight text-white"
-                  style={{ opacity: isActive || playing ? 1 : 0.85 }}
-                >
-                  {isMuzik ? (isMuted ? "Muted" : "Music") : item.label}
-                </span>
-              </button>
-            );
-          })}
+                      <item.icon size={iconSize} strokeWidth={isActive ? 2.5 : 1.8} color="white" />
+                    )}
+                  </motion.div>
+                  <span
+                    className={`${labelClass} font-medium leading-tight text-white`}
+                    style={{ opacity: isActive || playing ? 1 : 0.85 }}
+                  >
+                    {isMuzik ? (isMuted ? "Muted" : "Music") : item.label}
+                  </span>
+                </button>
+              );
+            });
+          })()}
         </div>
     </>
   );
