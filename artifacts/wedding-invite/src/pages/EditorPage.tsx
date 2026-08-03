@@ -3782,7 +3782,7 @@ export default function EditorPage({
                     />
                     <HexColorInput
                       value={design.greetingColor || ""}
-                      label="Greeting & Nama Detail"
+                      label="Greeting, Nama Parents & Nama Detail"
                       helperText="Assalamualaikum & nama pasangan dalam bahagian detail"
                       preview={{
                         type: "text",

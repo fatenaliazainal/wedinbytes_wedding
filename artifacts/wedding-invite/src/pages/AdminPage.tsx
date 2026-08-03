@@ -974,8 +974,8 @@ function DesignForm({
               preview={{ type: "text", sample: "Ahmad & Siti", font: "script" }}
             />
             <ColorRow
-              label="Greeting & Detail Names"
-              helperText="Assalamualaikum & couple names in detail section"
+              label="Greeting, Parents & Detail Names"
+              helperText="Assalamualaikum, parents names & couple names in detail section"
               value={form.greetingColor}
               onChange={set("greetingColor")}
               preview={{ type: "text", sample: "Assalamualaikum", font: "script" }}

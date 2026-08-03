@@ -834,13 +834,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {(brideParents || groomParents) && (
               <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
                 {groomParents && (
-                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: groomParents }} />
+                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: groomParents }} />
                 )}
                 {brideParents && groomParents && (
-                  <p className="text-primary text-sm font-medium" style={{ fontFamily: bodyFontFamily }}>&amp;</p>
+                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }}>&amp;</p>
                 )}
                 {brideParents && (
-                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: brideParents }} />
+                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: brideParents }} />
                 )}
               </div>
             )}
