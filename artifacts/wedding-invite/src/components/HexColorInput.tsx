@@ -127,9 +127,20 @@ export function HexColorInput({ value, onChange, label, helperText, preview, com
 
       {/* Live mini-preview */}
       {preview && (
-        <div className="shrink-0 flex flex-col items-center justify-center gap-0.5 min-w-[52px]">
+        <div
+          className="shrink-0 flex flex-col items-center justify-center gap-0.5 min-w-[52px] rounded-md px-1.5 py-1"
+          style={{
+            // For text/ornament previews, show a subtle contrasting bg so light colors are visible
+            background: preview.type === "text" || preview.type === "ornament"
+              ? "hsl(0 0% 92%)"
+              : undefined,
+          }}
+        >
           {renderPreview()}
-          <span className="text-[9px] text-muted-foreground/40 whitespace-nowrap">{preview.sample}</span>
+          {/* Only show label for non-text types where the preview doesn't already communicate itself */}
+          {(preview.type === "button" || preview.type === "surface") && (
+            <span className="text-[9px] text-muted-foreground/40 whitespace-nowrap">{preview.sample}</span>
+          )}
         </div>
       )}
     </div>
