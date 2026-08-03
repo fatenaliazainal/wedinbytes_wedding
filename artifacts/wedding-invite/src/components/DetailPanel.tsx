@@ -170,16 +170,8 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
   );
 }
 function LokasiPanel({ invitation }: { invitation?: Invitation }) {
-  const mapsUrl =
-    invitation?.venueMapUrl ||
-    `https://maps.google.com/?q=${encodeURIComponent(
-      (invitation?.venueName ?? "") + " " + (invitation?.venueCity ?? "")
-    )}`;
-  const wazeUrl =
-    (invitation as Record<string, unknown>)?.venueWazeUrl as string ||
-    `https://waze.com/ul?q=${encodeURIComponent(
-      (invitation?.venueName ?? "") + " " + (invitation?.venueCity ?? "")
-    )}`;
+  const mapsUrl = invitation?.venueMapUrl || "";
+  const wazeUrl = ((invitation as Record<string, unknown>)?.venueWazeUrl as string) || "";
 
   return (
     <div className={INVITATION_PANEL_CONTENT_CLASS}>
@@ -197,30 +189,6 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
         <p className="text-xs text-muted-foreground">
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
-      </div>
-      <div className="flex gap-2 w-full">
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${INVITATION_PANEL_CTA_CLASS} flex-1 flex items-center justify-center gap-1.5`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
-          </svg>
-          Google Maps
-        </a>
-        <a
-          href={wazeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${INVITATION_PANEL_CTA_CLASS} flex-1 flex items-center justify-center gap-1.5`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20.54 7.28C19.76 3.13 16.1 0 11.72 0 6.95 0 3.06 3.89 3.06 8.67c0 1.81.57 3.49 1.54 4.87L3 18.36l5.82-1.6c1.37.96 3.04 1.52 4.85 1.52.22 0 .44-.01.65-.03.48 2.19 2.43 3.83 4.77 3.83 2.7 0 4.89-2.19 4.89-4.89 0-1.51-.68-2.86-1.75-3.77.19-.67.29-1.37.29-2.1 0-.69-.08-1.36-.22-2.04h.24z" fill="currentColor"/>
-          </svg>
-          Waze
-        </a>
       </div>
     </div>
   );

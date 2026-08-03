@@ -530,6 +530,7 @@ export default function EditorPage({
       { platform: "website", url: "https://wedinbytes.com" },
       { platform: "tiktok", url: "https://tiktok.com/@wedinbytes" },
       { platform: "instagram", url: "https://instagram.com/wedinbytes" },
+      { platform: "threads", url: "https://threads.net/@wedinbytes" },
     ],
     business: null,
   });
@@ -972,6 +973,7 @@ export default function EditorPage({
                       { platform: "website", url: "" },
                       { platform: "tiktok", url: "" },
                       { platform: "instagram", url: "" },
+                      { platform: "threads", url: "" },
                     ],
             business:
               d.business && typeof d.business === "object"
@@ -3345,19 +3347,21 @@ export default function EditorPage({
                       key={idx}
                       className="grid grid-cols-2 gap-2 items-center"
                     >
-                      <input
-                        className={inputCls}
+                      <select
+                        className={selectCls}
                         value={link.platform}
                         onChange={(e) => {
                           const next = [...inv.socialLinks];
-                          next[idx] = {
-                            ...next[idx],
-                            platform: e.target.value,
-                          };
+                          next[idx] = { ...next[idx]!, platform: e.target.value };
                           setInv((p) => ({ ...p, socialLinks: next }));
                         }}
-                        placeholder={t("placeholders.socialPlatform")}
-                      />
+                      >
+                        <option value="">-- Platform --</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="threads">Threads</option>
+                        <option value="website">Website</option>
+                      </select>
                       <input
                         className={inputCls}
                         value={link.url}
@@ -3449,46 +3453,40 @@ export default function EditorPage({
                   <select
                     className={selectCls}
                     value={inv.language}
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const newLang = e.target.value as "ms" | "en";
                       const oldLang = inv.language;
-                      const msDefaults: Record<string, string> = {
-                        coverTitle: "RAIKAN CINTA",
-                        greetingText: "Assalamualaikum wbt & salam sejahtera",
-                        invitationText:
-                          "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami.",
-                        doaText:
-                          "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
-                        rsvpIntroText: "Sila sahkan kehadiran anda...",
-                        rsvpFormNote: "Nota untuk tetamu...",
-                        message: "Ucapan atau nota tambahan untuk tetamu...",
-                      };
-                      const enDefaults: Record<string, string> = {
-                        coverTitle: "Wedding Reception",
-                        greetingText: "Assalamualaikum & warm greetings",
-                        invitationText:
-                          "With heartfelt gratitude, we joyfully invite\nDato' | Datin | Tuan | Puan | Mr. | Ms.\nto the wedding of our beloved children.",
-                        doaText:
-                          "O Allah, bless our wedding.\nUnite our hearts as You united the hearts of Adam & Hawa.",
-                        rsvpIntroText: "Please confirm your attendance...",
-                        rsvpFormNote: "Note for guests...",
-                        message: "Wishes or additional note for guests...",
-                      };
-                      const oldDefaults =
-                        oldLang === "en" ? enDefaults : msDefaults;
-                      const newDefaults =
-                        newLang === "en" ? enDefaults : msDefaults;
+                      if (newLang === oldLang) return;
+
+                      const TEMPLATE_FIELDS = [
+                        "coverTitle", "greetingText", "invitationText",
+                        "doaText", "rsvpIntroText", "rsvpFormNote", "message",
+                        "eventType", "hostName", "hostCount",
+                      ] as const;
+
+                      // Fetch both demo templates in parallel so we know what
+                      // the old defaults were (to detect unmodified fields) and
+                      // what the new defaults should be.
+                      const [oldRes, newRes] = await Promise.all([
+                        fetch(`${BASE}/api/invitation/${oldLang === "en" ? "demo-en" : "demo"}`, { credentials: "include" }),
+                        fetch(`${BASE}/api/invitation/${newLang === "en" ? "demo-en" : "demo"}`, { credentials: "include" }),
+                      ]);
+                      const oldTemplate = oldRes.ok ? await oldRes.json() : {};
+                      const newTemplate = newRes.ok ? await newRes.json() : {};
+
                       setInv((p) => {
                         const next: InvData = { ...p, language: newLang };
-                        Object.keys(newDefaults).forEach((key) => {
+                        for (const key of TEMPLATE_FIELDS) {
                           const k = key as keyof InvData;
-                          if (
-                            p[k] === oldDefaults[key] ||
-                            (p[k] as string) === ""
-                          ) {
-                            (next[k] as string) = newDefaults[key];
+                          const oldVal = oldTemplate[key];
+                          const newVal = newTemplate[key];
+                          if (newVal == null) continue;
+                          // Only replace if the field still matches the old
+                          // demo value or is blank — preserve custom edits.
+                          if (p[k] === oldVal || p[k] === "" || p[k] == null) {
+                            (next[k] as unknown) = newVal;
                           }
-                        });
+                        }
                         return next;
                       });
                     }}

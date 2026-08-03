@@ -755,12 +755,12 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
     );
   }
 
-  const mapsUrl = (inv.venueMapUrl as string) ||
-    `https://maps.google.com/?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
-  const wazeUrl = (inv as Record<string, unknown>).venueWazeUrl as string | undefined ||
-    `https://waze.com/ul?q=${encodeURIComponent((invitation.venueName ?? "") + " " + (invitation.venueCity ?? ""))}`;
-  const groomParents = invitation.groomParents?.trim() || "";
-  const brideParents = invitation.brideParents?.trim() || "";
+  const mapsUrl = (inv.venueMapUrl as string) || "";
+  const wazeUrl = ((inv as Record<string, unknown>).venueWazeUrl as string) || "";
+  // Strip HTML tags before empty-check — rich text editor can leave <p></p> even when visually blank
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").trim();
+  const groomParents = stripHtml(invitation.groomParents?.trim() || "") ? (invitation.groomParents?.trim() || "") : "";
+  const brideParents = stripHtml(invitation.brideParents?.trim() || "") ? (invitation.brideParents?.trim() || "") : "";
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth }}>
       {/* ── GROUP 1 / COVER — background is INSIDE the section so both move as one unit.
@@ -884,35 +884,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
               )}
               <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
-            </div>
-            {/* Maps icon links — Google Maps + Waze */}
-            <div className="flex items-center justify-center gap-3">
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 py-2 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
-                style={{ fontFamily: bodyFontFamily }}
-              >
-                {/* Google Maps pin SVG */}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#EA4335"/>
-                </svg>
-                Google Maps
-              </a>
-              <a
-                href={wazeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 py-2 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
-                style={{ fontFamily: bodyFontFamily }}
-              >
-                {/* Waze SVG */}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20.54 7.28C19.76 3.13 16.1 0 11.72 0 6.95 0 3.06 3.89 3.06 8.67c0 1.81.57 3.49 1.54 4.87L3 18.36l5.82-1.6c1.37.96 3.04 1.52 4.85 1.52.22 0 .44-.01.65-.03.48 2.19 2.43 3.83 4.77 3.83 2.7 0 4.89-2.19 4.89-4.89 0-1.51-.68-2.86-1.75-3.77.19-.67.29-1.37.29-2.1 0-.69-.08-1.36-.22-2.04h.24z" fill="#33CCFF"/>
-                </svg>
-                Waze
-              </a>
             </div>
           </div>
           </RevealOnScroll>
@@ -1065,7 +1036,37 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           </div>
           </RevealOnScroll>
 
-          <RevealOnScroll>
+          {(mapsUrl || wazeUrl) && (
+          <div className={detailBlock}>
+            <div className="flex items-center justify-center gap-3">
+              {mapsUrl && (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+                style={{ fontFamily: bodyFontFamily }}
+              >
+                <img src="/icons/google-maps.png" alt="Google Maps" className="w-5 h-5 object-contain" />
+                Google Maps
+              </a>
+              )}
+              {wazeUrl && (
+              <a
+                href={wazeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+                style={{ fontFamily: bodyFontFamily }}
+              >
+                <img src="/icons/waze.png" alt="Waze" className="w-5 h-5 object-contain" />
+                Waze
+              </a>
+              )}
+            </div>
+          </div>
+          )}
+
           {/* Footer / Branding */}
           {inv.showFooter !== false && (
             <div className={detailBlock}>
@@ -1113,30 +1114,17 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
 function SocialIcon({ platform }: { platform: string }) {
   const p = platform.toLowerCase();
-  const className = "w-7 h-7";
+  const imgCls = "w-6 h-6 object-contain";
+  if (p === "instagram") return <img src="/icons/instagram.png" alt="Instagram" className={imgCls} />;
+  if (p === "tiktok")    return <img src="/icons/tiktok.png"    alt="TikTok"    className={imgCls} />;
+  if (p === "threads")   return <img src="/icons/threads.jpg"   alt="Threads"   className={imgCls + " rounded-full"} />;
   if (p === "website" || p === "brand" || p === "logo" || p === "wedinstudio" || p === "wedinbytes") {
     return (
-      <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
+      <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
         <rect x="4" y="12" width="32" height="16" rx="2" fill="currentColor" />
         <text x="20" y="23.5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white">M</text>
       </svg>
     );
   }
-  if (p === "tiktok") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.5a4.85 4.85 0 0 1-1-.1z"/>
-      </svg>
-    );
-  }
-  if (p === "instagram") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-        <path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85 0 3.2-.01 3.58-.07 4.85-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07-3.2 0-3.58-.01-4.85-.07-3.26-.15-4.77-1.69-4.92-4.92-.06-1.27-.07-1.65-.07-4.85 0-3.2.01-3.58.07-4.85.15-3.23 1.66-4.77 4.92-4.92C8.42 2.17 8.8 2.16 12 2.16zm0 1.8c-3.15 0-3.52.01-4.76.07-2.48.11-3.67 1.3-3.78 3.78-.05 1.24-.06 1.6-.06 4.76s.01 3.52.06 4.76c.11 2.48 1.3 3.67 3.78 3.78 1.24.05 1.6.06 4.76.06s3.52-.01 4.76-.06c2.48-.11 3.67-1.3 3.78-3.78.05-1.24.06-1.6.06-4.76s-.01-3.52-.06-4.76c-.11-2.48-1.3-3.67-3.78-3.78C15.52 3.97 15.16 3.96 12 3.96z"/>
-        <path d="M12 7.86a4.14 4.14 0 1 0 0 8.28 4.14 4.14 0 0 0 0-8.28zm0 6.78a2.64 2.64 0 1 1 0-5.28 2.64 2.64 0 0 1 0 5.28z"/>
-        <circle cx="17.48" cy="6.52" r="1.1"/>
-      </svg>
-    );
-  }
-  return <span className={className + " flex items-center justify-center text-xs font-bold"}>{platform[0]?.toUpperCase()}</span>;
+  return <span className="w-6 h-6 flex items-center justify-center text-xs font-bold">{platform[0]?.toUpperCase()}</span>;
 }
