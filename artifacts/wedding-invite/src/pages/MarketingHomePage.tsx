@@ -204,7 +204,7 @@ export default function MarketingHomePage() {
                 className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[7px] border-gray-900 bg-gray-900 shadow-[0_24px_45px_rgba(31,41,55,0.26)] transition-transform hover:-translate-y-1 lg:mx-0"
                 style={{
                   width: 238,
-                  height: 412,
+                  height: 470,
                 }}
                 aria-label="Open live demo"
               >
@@ -213,10 +213,18 @@ export default function MarketingHomePage() {
                   className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                   style={{ width: 86, height: 26, borderRadius: "0 0 17px 17px" }}
                 />
-                {/* Invitation fills the phone screen with correct aspect ratio, no distortion */}
-                <div className="absolute inset-0 overflow-hidden">
+                {/*
+                  Option A: uniform scale-to-fill.
+                  CardThumbnail natural size at containerWidth=224: 224×398 px.
+                  Phone screen (238 outer – 14 border): 224×456 px.
+                  Scale factor = 456/398 ≈ 1.146  →  fills height, slight crop on sides.
+                  transformOrigin: top center keeps the couple names at the top visible.
+                */}
+                <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
+                    <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
+                    </div>
                   ) : (
                     <div className="w-full h-full bg-[#f6f1e7]" />
                   )}
