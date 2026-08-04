@@ -254,8 +254,8 @@ function ImageScaleControl({
                 Warning · Bottom
               </span>
             </div>
-            <div className="absolute inset-0 border-[5px] border-rose-500/20">
-              <span className="absolute right-1 top-1/2 -rotate-90 rounded bg-rose-700 px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
+            <div className="absolute inset-0 border-[5px] border-[#3d5a3e]/20">
+              <span className="absolute right-1 top-1/2 -rotate-90 rounded bg-[#3d5a3e] px-1.5 py-1 text-[8px] font-bold uppercase tracking-wide text-white">
                 Bleed
               </span>
             </div>
@@ -1303,7 +1303,7 @@ function DesignsTab() {
                 <button
                   type="button"
                   onClick={() => handleDelete(d.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-green-50 hover:text-[#3d5a3e] hover:border-green-200 transition-colors"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -1591,7 +1591,7 @@ function RawCardTab() {
                 <button
                   type="button"
                   onClick={() => handleDelete(card.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors shrink-0"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-green-50 hover:text-[#3d5a3e] hover:border-green-200 transition-colors shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -1766,7 +1766,7 @@ function ReviewsTab() {
                     <p className="text-sm font-semibold text-foreground">{r.customerName}</p>
                     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                       r.status === "approved" ? "bg-emerald-100 text-emerald-700" :
-                      r.status === "rejected" ? "bg-rose-100 text-rose-600" :
+                      r.status === "rejected" ? "bg-green-100 text-[#3d5a3e]" :
                       "bg-amber-100 text-amber-700"
                     }`}>
                       {r.status === "approved" && <CheckCircle2 size={11} />}
@@ -1799,7 +1799,7 @@ function ReviewsTab() {
                   {r.status !== "rejected" && (
                     <button
                       onClick={() => updateStatus(r.id, "rejected")}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium bg-rose-100 text-rose-600 hover:bg-rose-200"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium bg-green-100 text-[#3d5a3e] hover:bg-green-200"
                     >
                       <X size={12} /> Reject
                     </button>
@@ -1824,7 +1824,7 @@ function StatusBadge({ value }: { value: string }) {
   const tone = ["PAID", "ACTIVE", "APPROVED"].includes(value)
     ? "bg-emerald-100 text-emerald-700"
     : ["FAILED", "EXPIRED", "REFUNDED", "DISABLED"].includes(value)
-    ? "bg-rose-100 text-rose-700"
+    ? "bg-green-100 text-[#3d5a3e]"
     : "bg-amber-100 text-amber-700";
   return <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${tone}`}>{value}</span>;
 }
@@ -2007,7 +2007,7 @@ function OrdersTab() {
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors disabled:opacity-40 ${
                       selected.invitation.websiteStatus === "DISABLED"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                        : "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
+                        : "bg-green-50 text-[#3d5a3e] border-green-200 hover:bg-green-100"
                     }`}
                   >
                     {togglingStatus ? <Loader2 size={12} className="animate-spin" /> : selected.invitation.websiteStatus === "DISABLED" ? <CheckCircle2 size={12} /> : <Ban size={12} />}

@@ -87,26 +87,26 @@
   --background: 120 20% 96%;
   --foreground: 120 15% 20%;
   --border: 120 15% 80%;
-  --card: 340 60% 96%;
+  --card: 120 15% 97%;
   --card-foreground: 120 15% 20%;
   --card-border: 120 15% 80%;
   
   --sidebar: 120 20% 96%;
   --sidebar-foreground: 120 15% 20%;
   --sidebar-border: 120 15% 80%;
-  --sidebar-primary: 120 25% 55%;
+  --sidebar-primary: 123 19% 30%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 60 50% 70%;
   --sidebar-accent-foreground: 120 15% 20%;
-  --sidebar-ring: 120 25% 55%;
+  --sidebar-ring: 123 19% 30%;
 
-  --popover: 340 60% 96%;
+  --popover: 120 15% 97%;
   --popover-foreground: 120 15% 20%;
   --popover-border: 120 15% 80%;
 
-  --primary: 120 25% 55%;
+  --primary: 123 19% 30%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 340 50% 88%;
+  --secondary: 120 12% 88%;
   --secondary-foreground: 120 15% 20%;
   --muted: 120 10% 90%;
   --muted-foreground: 120 10% 45%;
@@ -116,13 +116,13 @@
   --destructive-foreground: 0 0% 100%;
 
   --input: 120 15% 80%;
-  --ring: 120 25% 55%;
+  --ring: 123 19% 30%;
   
-  --chart-1: 120 25% 55%;
-  --chart-2: 340 50% 88%;
+  --chart-1: 123 19% 30%;
+  --chart-2: 120 12% 88%;
   --chart-3: 60 50% 70%;
   --chart-4: 120 15% 80%;
-  --chart-5: 340 60% 96%;
+  --chart-5: 120 15% 97%;
 
   --app-font-sans: 'Poppins', sans-serif;
   --app-font-serif: 'Poppins', sans-serif;
@@ -166,26 +166,26 @@
   --background: 120 20% 96%;
   --foreground: 120 15% 20%;
   --border: 120 15% 80%;
-  --card: 340 60% 96%;
+  --card: 120 15% 97%;
   --card-foreground: 120 15% 20%;
   --card-border: 120 15% 80%;
   
   --sidebar: 120 20% 96%;
   --sidebar-foreground: 120 15% 20%;
   --sidebar-border: 120 15% 80%;
-  --sidebar-primary: 120 25% 55%;
+  --sidebar-primary: 123 19% 30%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 60 50% 70%;
   --sidebar-accent-foreground: 120 15% 20%;
-  --sidebar-ring: 120 25% 55%;
+  --sidebar-ring: 123 19% 30%;
 
-  --popover: 340 60% 96%;
+  --popover: 120 15% 97%;
   --popover-foreground: 120 15% 20%;
   --popover-border: 120 15% 80%;
 
-  --primary: 120 25% 55%;
+  --primary: 123 19% 30%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 340 50% 88%;
+  --secondary: 120 12% 88%;
   --secondary-foreground: 120 15% 20%;
   --muted: 120 10% 90%;
   --muted-foreground: 120 10% 45%;
@@ -195,13 +195,13 @@
   --destructive-foreground: 0 0% 100%;
 
   --input: 120 15% 80%;
-  --ring: 120 25% 55%;
+  --ring: 123 19% 30%;
   
-  --chart-1: 120 25% 55%;
-  --chart-2: 340 50% 88%;
+  --chart-1: 123 19% 30%;
+  --chart-2: 120 12% 88%;
   --chart-3: 60 50% 70%;
   --chart-4: 120 15% 80%;
-  --chart-5: 340 60% 96%;
+  --chart-5: 120 15% 97%;
 
   --shadow-2xs: 0px 4px 20px 0px hsl(120 15% 40% / 0.15);
   --shadow-xs: 0px 4px 20px 0px hsl(120 15% 40% / 0.15);

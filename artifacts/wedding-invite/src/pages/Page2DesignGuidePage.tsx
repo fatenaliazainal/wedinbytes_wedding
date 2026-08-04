@@ -71,8 +71,8 @@ export default function Page2DesignGuidePage() {
                       Warning Area · Bottom
                     </span>
                   </div>
-                  <div className="absolute inset-0 border-[14px] border-rose-500/15">
-                    <span className="absolute right-2 top-1/2 -rotate-90 rounded bg-rose-700 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                  <div className="absolute inset-0 border-[14px] border-[#3d5a3e]/15">
+                    <span className="absolute right-2 top-1/2 -rotate-90 rounded bg-[#3d5a3e] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                       Bleed Area · Background only
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export default function Page2DesignGuidePage() {
                   <div className="relative flex h-24 w-40 items-center justify-center rounded-lg border-2 border-dashed border-violet-500/70 bg-violet-200/50 text-xs font-bold uppercase tracking-wider text-violet-800">
                     Photo · max recommended size
                   </div>
-                  <div className="relative h-3 w-28 rounded-full bg-rose-400/60" aria-label="Floral Decoration placeholder" />
+                  <div className="relative h-3 w-28 rounded-full bg-green-400/60" aria-label="Floral Decoration placeholder" />
                   <button type="button" className="relative rounded-full bg-gray-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white">
                     Button
                   </button>
@@ -123,7 +123,7 @@ export default function Page2DesignGuidePage() {
               <div className="mt-4 space-y-3 text-xs text-gray-600">
                 <p><span className="mr-2 inline-block h-3 w-3 border-2 border-emerald-600 bg-emerald-200/50 align-middle" />Safe Content Area — recommended</p>
                 <p><span className="mr-2 inline-block h-3 w-3 border border-amber-500 bg-amber-200/50 align-middle" />Warning Area — content may be cut off</p>
-                <p><span className="mr-2 inline-block h-3 w-3 border-2 border-rose-500/40 bg-rose-200/30 align-middle" />Bleed Area — background only</p>
+                <p><span className="mr-2 inline-block h-3 w-3 border-2 border-[#3d5a3e]/40 bg-green-200/30 align-middle" />Bleed Area — background only</p>
               </div>
             </section>
 

@@ -71,7 +71,7 @@ export function CatalogDesignCard({
 
       <div className="flex flex-col items-center px-2.5 pb-3 pt-2.5 text-center sm:px-3 sm:pb-4">
         <p className="text-xs font-bold leading-tight text-gray-900 sm:text-sm">{design.name}</p>
-        <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-rose-700">
+        <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-[#3d5a3e]">
           WED{String(design.id).padStart(2, "0")}
         </p>
         <button

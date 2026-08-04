@@ -197,7 +197,7 @@ export default function MarketingHomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.35fr)] lg:gap-16">
             {/* Left: live invitation preview */}
             <div className="relative flex justify-center lg:justify-start">
-              <div className="absolute left-1/2 top-1/2 h-[21rem] w-[17rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-100/70 blur-3xl" />
+              <div className="absolute left-1/2 top-1/2 h-[21rem] w-[17rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-100/70 blur-3xl" />
               <button
                 type="button"
                 onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(designs[0]?.designCode ?? "")}`)}
@@ -229,7 +229,7 @@ export default function MarketingHomePage() {
             {/* Right: headline, features and actions */}
             <div className="max-w-3xl">
               <div>
-                <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-rose-700 shadow-sm ring-1 ring-rose-100">
+                <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#3d5a3e] shadow-sm ring-1 ring-green-100">
                   All-in-One
                 </p>
                 <h2 className="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-gray-900 sm:text-5xl">
@@ -262,7 +262,7 @@ export default function MarketingHomePage() {
                     key={title}
                     className={`border-gray-200 py-1 sm:px-5 ${index > 0 ? "border-t pt-5 sm:border-l sm:border-t-0 sm:pt-1" : "sm:pl-0"}`}
                   >
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-rose-700 shadow-sm ring-1 ring-rose-100">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#3d5a3e] shadow-sm ring-1 ring-green-100">
                       <Icon size={19} strokeWidth={1.8} />
                     </div>
                     <p className="text-sm font-semibold text-gray-900">{title}</p>
@@ -288,19 +288,19 @@ export default function MarketingHomePage() {
                 </button>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-rose-100 bg-white/70 px-4 py-4 text-xs text-gray-600 sm:px-5">
+              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-green-100 bg-white/70 px-4 py-4 text-xs text-gray-600 sm:px-5">
                 <span className="inline-flex items-center gap-2">
-                  <Smartphone size={15} className="text-rose-700" />
+                  <Smartphone size={15} className="text-[#3d5a3e]" />
                   Mobile friendly
                 </span>
                 <span className="hidden h-4 w-px bg-gray-200 sm:block" />
                 <span className="inline-flex items-center gap-2">
-                  <Heart size={15} className="text-rose-700" />
+                  <Heart size={15} className="text-[#3d5a3e]" />
                   Made for meaningful moments
                 </span>
                 <span className="hidden h-4 w-px bg-gray-200 sm:block" />
                 <span className="inline-flex items-center gap-2">
-                  <Users size={15} className="text-rose-700" />
+                  <Users size={15} className="text-[#3d5a3e]" />
                   Built for every guest
                 </span>
               </div>
@@ -336,7 +336,7 @@ export default function MarketingHomePage() {
       <section id="collaborations" className="bg-white py-16 px-4 sm:px-6 border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-9">
-            <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Our Network</p>
+            <p className="text-xs font-semibold tracking-widest text-[#3d5a3e] uppercase mb-2">Our Network</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Collaborations & Businesses</h2>
             <p className="mt-2 text-sm text-gray-500 max-w-lg mx-auto">Meet the talented businesses creating beautiful celebrations with Wedinbytes.</p>
           </div>
@@ -390,7 +390,7 @@ export default function MarketingHomePage() {
                             rel="noreferrer"
                             aria-label={`Visit ${business.businessName} homepage`}
                             title={`Visit ${business.businessName} homepage`}
-                            className="group relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-300"
+                            className="group relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
                           >
                             {tile}
                           </a>
@@ -413,7 +413,7 @@ export default function MarketingHomePage() {
                   <button
                     type="button"
                     onClick={() => setBusinessSlide((current) => (current - 1 + businessSlides.length) % businessSlides.length)}
-                    className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
                     aria-label="Previous businesses"
                   >
                     <ChevronLeft size={16} />
@@ -421,7 +421,7 @@ export default function MarketingHomePage() {
                   <button
                     type="button"
                     onClick={() => setBusinessSlide((current) => (current + 1) % businessSlides.length)}
-                    className="absolute right-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    className="absolute right-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
                     aria-label="Next businesses"
                   >
                     <ChevronRight size={16} />

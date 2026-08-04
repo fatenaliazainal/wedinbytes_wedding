@@ -93,13 +93,13 @@ function PricingCard({
     <div
       className={`relative flex flex-col h-full rounded-2xl p-5 transition-all duration-300 ${
         highlighted
-          ? "bg-white border-2 border-rose-200 shadow-xl shadow-rose-100/60"
+          ? "bg-white border-2 border-green-200 shadow-xl shadow-green-100/60"
           : "bg-white border border-gray-100 shadow-lg hover:shadow-xl"
       }`}
     >
       {badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-           <span className="inline-flex items-center gap-1 rounded-full bg-rose-700 px-3 py-0.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-sm">
+           <span className="inline-flex items-center gap-1 rounded-full bg-[#3d5a3e] px-3 py-0.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-sm">
             <Sparkles size={10} />
             {badge}
           </span>
@@ -128,7 +128,7 @@ function PricingCard({
               </div>
             </div>
             {discountPct > 0 && (
-              <span className="inline-block rounded-full border border-rose-400 px-3 py-0.5 text-[10px] font-bold tracking-widest text-rose-600 uppercase">
+              <span className="inline-block rounded-full border border-green-400 px-3 py-0.5 text-[10px] font-bold tracking-widest text-[#3d5a3e] uppercase">
                 Exclusive Offer {discountPct}% OFF
               </span>
             )}
@@ -145,7 +145,7 @@ function PricingCard({
        <ul className="mb-4 flex-1 space-y-1.5">
         {features.map((item) => (
            <li key={item.label} className="flex items-start gap-2 text-[11px] text-gray-700">
-            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-700">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-50 text-[#3d5a3e]">
               <Check size={10} strokeWidth={3} />
             </span>
             <span className="flex items-center gap-2">
@@ -160,7 +160,7 @@ function PricingCard({
         onClick={onChoose}
          className={`w-full rounded-lg py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
           highlighted
-            ? "bg-rose-700 text-white hover:bg-rose-800 shadow-md shadow-rose-200"
+            ? "bg-[#3d5a3e] text-white hover:bg-[#2d4330] shadow-md shadow-green-200"
             : "bg-gray-900 text-white hover:bg-gray-800"
         }`}
       >
@@ -342,7 +342,7 @@ export default function PriceListPage() {
                       const hasFeature = (pkg.features ?? []).some((f) => f.name === featureName);
                       return (
                         <div key={pkg.id} className="px-3.5 py-2 flex justify-center items-center text-gray-900">
-                          {hasFeature ? <Check size={16} className="text-rose-600" /> : <Minus size={16} className="text-gray-300" />}
+                          {hasFeature ? <Check size={16} className="text-[#3d5a3e]" /> : <Minus size={16} className="text-gray-300" />}
                         </div>
                       );
                     })}

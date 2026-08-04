@@ -1919,7 +1919,7 @@ export default function EditorPage({
               />
             </button>
             {mode === "demo" && (
-              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold tracking-wider">
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-green-100 text-[#3d5a3e] text-[10px] font-bold tracking-wider">
                 DEMO EDITOR
               </span>
             )}
@@ -1954,15 +1954,15 @@ export default function EditorPage({
 
       {/* ── Demo language toggle banner ── */}
       {mode === "demo" && (
-        <div className="bg-rose-50 border-b border-rose-100 flex items-center justify-center gap-3 py-1.5 px-4">
-          <span className="text-[11px] text-rose-600 font-semibold tracking-wide uppercase">Demo Language:</span>
-          <div className="flex rounded-full bg-white border border-rose-200 overflow-hidden shadow-sm">
+        <div className="bg-green-50 border-b border-green-100 flex items-center justify-center gap-3 py-1.5 px-4">
+          <span className="text-[11px] text-[#3d5a3e] font-semibold tracking-wide uppercase">Demo Language:</span>
+          <div className="flex rounded-full bg-white border border-green-200 overflow-hidden shadow-sm">
             <button
               onClick={() => setDemoLang("ms")}
               className={`px-4 py-1 text-[11px] font-bold tracking-wider transition-colors ${
                 demoLang === "ms"
-                  ? "bg-rose-700 text-white"
-                  : "text-rose-600 hover:bg-rose-50"
+                  ? "bg-[#3d5a3e] text-white"
+                  : "text-[#3d5a3e] hover:bg-green-50"
               }`}
             >
               BM
@@ -1971,14 +1971,14 @@ export default function EditorPage({
               onClick={() => setDemoLang("en")}
               className={`px-4 py-1 text-[11px] font-bold tracking-wider transition-colors ${
                 demoLang === "en"
-                  ? "bg-rose-700 text-white"
-                  : "text-rose-600 hover:bg-rose-50"
+                  ? "bg-[#3d5a3e] text-white"
+                  : "text-[#3d5a3e] hover:bg-green-50"
               }`}
             >
               EN
             </button>
           </div>
-          <span className="text-[10px] text-rose-400">
+          <span className="text-[10px] text-green-400">
             {demoLang === "ms" ? "Kandungan Bahasa Melayu" : "English Content"}
           </span>
         </div>

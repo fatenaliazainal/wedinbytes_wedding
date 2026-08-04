@@ -146,7 +146,7 @@ export default function BusinessProfilePage() {
         <form onSubmit={save} className="space-y-6">
           <section className="rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-2 mb-1">
-              <ImagePlus size={18} className="text-rose-700" />
+              <ImagePlus size={18} className="text-[#3d5a3e]" />
               <h2 className="font-semibold text-gray-900">Business logo</h2>
             </div>
             <p className="text-sm text-gray-500 mb-5">Upload a transparent PNG logo for your collaboration profile.</p>
@@ -166,7 +166,7 @@ export default function BusinessProfilePage() {
 
           <section className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
             <div className="flex items-center gap-2">
-              <Link2 size={18} className="text-rose-700" />
+              <Link2 size={18} className="text-[#3d5a3e]" />
               <h2 className="font-semibold text-gray-900">Business details</h2>
             </div>
             <label className="block text-sm text-gray-700">

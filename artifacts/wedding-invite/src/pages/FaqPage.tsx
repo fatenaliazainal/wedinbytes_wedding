@@ -253,7 +253,7 @@ export default function FaqPage() {
           <div className="max-w-2xl mx-auto space-y-6">
             {FAQS.map((category) => (
               <div key={category.category}>
-                <h2 className="text-xs font-bold tracking-widest text-rose-700 uppercase mb-3">{category.category}</h2>
+                <h2 className="text-xs font-bold tracking-widest text-[#3d5a3e] uppercase mb-3">{category.category}</h2>
                 <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-5 sm:px-8">
                   {category.items.map((faq) => (
                     <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />

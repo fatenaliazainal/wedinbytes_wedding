@@ -422,7 +422,7 @@ export default function PricingTab() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-semibold text-foreground">{pkg.name}</p>
                   {pkg.showBadge && pkg.badgeText && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-[#3d5a3e] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                       <Sparkles size={9} /> {pkg.badgeText}
                     </span>
                   )}
@@ -432,7 +432,7 @@ export default function PricingTab() {
                 <p className="text-xs text-muted-foreground mt-1">
                   <span className="font-medium text-foreground">Buyer:</span>{" "}
                   {(pkg as any).promoPrice
-                    ? <><s>RM{pkg.price}</s> → <span className="text-rose-600 font-medium">RM{(pkg as any).promoPrice}</span>{(pkg as any).promoStartDate || (pkg as any).promoEndDate ? ` (${(pkg as any).promoStartDate ?? "?"} – ${(pkg as any).promoEndDate ?? "?"})` : " (aktif)"}</>
+                    ? <><s>RM{pkg.price}</s> → <span className="text-[#3d5a3e] font-medium">RM{(pkg as any).promoPrice}</span>{(pkg as any).promoStartDate || (pkg as any).promoEndDate ? ` (${(pkg as any).promoStartDate ?? "?"} – ${(pkg as any).promoEndDate ?? "?"})` : " (aktif)"}</>
                     : <>RM{pkg.price}</>
                   }
                   {(pkg as any).businessPrice && (
