@@ -342,7 +342,7 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      {/* ── More Than Just an Invitation ── */}
+      {/* ── More Than Just an Invitation ── HIDDEN TEMPORARILY
       <section className="bg-white py-20 px-4 sm:px-6 border-t border-gray-100">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
@@ -377,6 +377,7 @@ export default function MarketingHomePage() {
           </div>
         </div>
       </section>
+      ── */}
 
       {/* ── Video Invitations promo ── */}
       <section className="bg-[#2d4330] py-20 px-4 sm:px-6 overflow-hidden">
