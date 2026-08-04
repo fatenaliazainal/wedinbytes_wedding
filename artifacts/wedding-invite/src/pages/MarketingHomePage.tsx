@@ -201,29 +201,28 @@ export default function MarketingHomePage() {
               <button
                 type="button"
                 onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(designs[0]?.designCode ?? "")}`)}
-                className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[8px] border-gray-900 bg-gray-900 shadow-[0_32px_60px_rgba(31,41,55,0.28)] transition-transform hover:-translate-y-1 lg:mx-0"
+                className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[7px] border-gray-900 bg-gray-900 shadow-[0_28px_50px_rgba(31,41,55,0.28)] transition-transform hover:-translate-y-1 lg:mx-0"
                 style={{
-                  width: 280,
-                  height: 560,
+                  width: 246,
+                  height: 492,
                 }}
                 aria-label="Open live demo"
               >
                 {/* Dynamic island / notch */}
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
-                  style={{ width: 96, height: 28, borderRadius: "0 0 18px 18px" }}
+                  style={{ width: 84, height: 24, borderRadius: "0 0 16px 16px" }}
                 />
                 {/*
-                  Phone screen: 264 × 544 px (280 outer – 8px border each side).
-                  CardThumbnail at containerWidth=264 renders naturally at 264 × 469 px.
-                  No extra paddingTop — the invitation's own internal top padding (28 px)
-                  lands just below the 28 px notch after scaling, exactly like the reference.
-                  Uniform scale = 544 / 469 ≈ 1.160 → fills the full screen, no empty space.
+                  Phone screen: 232 × 478 px (246 outer – 7 px border each side).
+                  CardThumbnail at containerWidth=232 renders naturally at 232 × 413 px.
+                  Uniform scale = 478 / 413 ≈ 1.157 → fills screen height, no distortion.
+                  The invitation's own 28 px internal top padding clears the 24 px notch.
                 */}
                 <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <div style={{ width: 264, height: 469, transform: "scale(1.160)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
-                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={264} />
+                    <div style={{ width: 232, height: 413, transform: "scale(1.157)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={232} />
                     </div>
                   ) : (
                     <div className="w-full h-full bg-[#f6f1e7]" />
