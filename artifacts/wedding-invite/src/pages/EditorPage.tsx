@@ -23,7 +23,7 @@ import {
   MapPin,
   Phone,
   MessageSquare,
-  Menu,
+
   X,
   User,
   LogOut,
@@ -442,7 +442,6 @@ export default function EditorPage({
       navigate(dashboardPathForUser(user));
     }
   }, [user, authLoading, navigate, mode]);
-  const [navOpen, setNavOpen] = useState(false);
   const [demoLang, setDemoLang] = useState<"ms" | "en">("ms");
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1863,43 +1862,6 @@ export default function EditorPage({
     ).catch(() => {});
   }
 
-  const navItems = [
-    {
-      label: "HOME",
-      onClick: () => {
-        navigate(dashboardPathForUser(user));
-        setNavOpen(false);
-      },
-    },
-    {
-      label: "CATALOG",
-      onClick: () => {
-        toast.info("Coming soon!");
-        setNavOpen(false);
-      },
-    },
-    {
-      label: "PRICE LIST",
-      onClick: () => {
-        toast.info("Coming soon!");
-        setNavOpen(false);
-      },
-    },
-    {
-      label: "FAQs",
-      onClick: () => {
-        toast.info("Coming soon!");
-        setNavOpen(false);
-      },
-    },
-    {
-      label: "REVIEWS",
-      onClick: () => {
-        navigate("/reviews");
-        setNavOpen(false);
-      },
-    },
-  ];
 
   const displayName =
     inv.groomShortName && inv.brideShortName
@@ -1929,17 +1891,8 @@ export default function EditorPage({
       {/* ── Header ── */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          {/* Mobile hamburger */}
-          <button
-            className="sm:hidden text-gray-500 hover:text-gray-800 transition-colors"
-            onClick={() => setNavOpen((o) => !o)}
-            aria-label="Menu"
-          >
-            {navOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-
-          {/* Logo — centred on mobile, left on desktop */}
-          <div className="flex-1 flex sm:flex-none items-center justify-center sm:justify-start gap-3">
+          {/* Left: logo + demo back button */}
+          <div className="flex items-center gap-3 shrink-0">
             {mode === "demo" && (
               <button
                 onClick={handleBack}
@@ -1966,24 +1919,18 @@ export default function EditorPage({
             )}
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden sm:flex items-center gap-6 flex-1">
-            {navItems.map(({ label, onClick }) => (
-              <button
-                key={label}
-                onClick={onClick}
-                className="text-xs font-semibold text-gray-500 hover:text-gray-900 tracking-widest transition-colors"
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
+          {/* Centre: invitation name */}
+          <div className="flex-1 flex items-center justify-center min-w-0">
+            <p className="text-sm font-semibold text-gray-700 truncate tracking-wide">
+              {displayName}
+            </p>
+          </div>
 
-          {/* Right icons */}
-          <div className="flex items-center gap-3">
+          {/* Right: dashboard + logout */}
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => navigate(dashboardPathForUser(user))}
-              title={user?.name}
+              title="Dashboard"
               className="text-gray-500 hover:text-gray-800 transition-colors"
             >
               <User size={18} />
@@ -2031,86 +1978,6 @@ export default function EditorPage({
         </div>
       )}
 
-      {/* ── Mobile drawer ── */}
-      <AnimatePresence>
-        {navOpen && (
-          <>
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="sm:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-              onClick={() => setNavOpen(false)}
-            />
-            <motion.div
-              key="drawer"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="sm:hidden fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-2xl flex flex-col"
-            >
-              <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
-                <button
-                  onClick={() => {
-                    navigate("/");
-                    setNavOpen(false);
-                  }}
-                  className="hover:opacity-70 transition-opacity"
-                  aria-label="Wedinbytes logo"
-                >
-                  <img
-                    src={logo}
-                    alt="Wedinbytes logo"
-                    className="h-9 w-9 object-contain"
-                  />
-                </button>
-                <button
-                  onClick={() => setNavOpen(false)}
-                  className="text-gray-400 hover:text-gray-700 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <nav className="flex flex-col px-4 py-4 gap-1 flex-1">
-                {navItems.map(({ label, onClick }, i) => (
-                  <motion.button
-                    key={label}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + i * 0.04 }}
-                    onClick={onClick}
-                    className="text-left text-sm font-semibold text-gray-600 hover:text-gray-900 tracking-widest py-3 px-2 rounded-lg hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
-                  >
-                    {label}
-                  </motion.button>
-                ))}
-              </nav>
-              <div className="px-5 py-5 border-t border-gray-100 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                  <User size={14} className="text-gray-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 truncate">
-                    {user?.name}
-                  </p>
-                  <p className="text-[10px] text-gray-400 truncate">
-                    {user?.email}
-                  </p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-gray-700 transition-colors"
-                >
-                  <LogOut size={15} />
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Mobile Edit / Preview toggle */}
       <div className="lg:hidden flex border-b border-gray-100 bg-white">
