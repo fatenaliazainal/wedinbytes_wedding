@@ -67,11 +67,11 @@ function FeatureIconStrip() {
               onClick={() => setActiveLabel(isOpen ? null : label)}
               onMouseEnter={() => setActiveLabel(label)}
               onMouseLeave={() => setActiveLabel(null)}
-              className={`flex h-9 w-9 items-center justify-center rounded-xl ring-1 transition-colors ${
+              className={`flex h-9 w-9 items-center justify-center rounded-xl ring-1 transition-all ${
                 isOpen
-                  ? "bg-green-50 ring-green-200"
-                  : "bg-gray-50 ring-gray-200 hover:bg-green-50 hover:ring-green-200"
-              } text-[#3d5a3e]`}
+                  ? "bg-white ring-gray-200 shadow-md"
+                  : "bg-gray-50 ring-gray-200 hover:bg-white hover:shadow-md hover:ring-gray-200"
+              } text-gray-600`}
             >
               <Icon size={16} strokeWidth={1.5} />
             </button>

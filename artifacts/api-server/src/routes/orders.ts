@@ -516,11 +516,27 @@ router.patch("/admin/users/:id/role", async (req, res) => {
 router.get("/admin/users", async (req, res) => {
   if (!adminGuard(req, res)) return;
   try {
-    const users = await db
-      .select({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role, createdAt: userTable.createdAt })
-      .from(userTable)
-      .orderBy(desc(userTable.createdAt));
-    res.json(users);
+    const [users, orders, invitations] = await Promise.all([
+      db.select({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role, createdAt: userTable.createdAt }).from(userTable).orderBy(desc(userTable.createdAt)),
+      db.select().from(orderTable),
+      db.select().from(invitationTable),
+    ]);
+    const search = String(req.query.search ?? "").trim().toLowerCase();
+    const result = users.map((user) => {
+      const userOrders = orders.filter((o) => o.userId === user.id);
+      const websites = invitations.filter((i) => i.userId === user.id);
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        totalOrders: userOrders.length,
+        totalPaid: userOrders.filter((o) => o.paymentStatus === "PAID").reduce((s, o) => s + Number(o.amount || 0), 0),
+        websites: websites.length,
+      };
+    });
+    res.json(search ? result.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(search)) : result);
   } catch (err) {
     req.log.error({ err }, "Failed to list users");
     res.status(500).json({ error: "Internal server error" });

@@ -2094,7 +2094,7 @@ function OrdersTab() {
 }
 
 function UsersTab() {
-  type UserRow = { id: number; name: string; email: string; role: string; createdAt: string };
+  type UserRow = { id: number; name: string; email: string; role: string; createdAt: string; totalOrders: number; totalPaid: number; websites: number };
   type FormState = { name: string; email: string; role: string; password: string };
   const EMPTY_FORM: FormState = { name: "", email: "", role: "buyer", password: "" };
 
@@ -2186,9 +2186,9 @@ function UsersTab() {
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center"><Users size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No users found</p></div>
         ) : (
-          <table className="w-full min-w-[600px] text-left text-xs">
+          <table className="w-full min-w-[760px] text-left text-xs">
             <thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground">
-              <tr>{["User", "Role", "Registered", "Actions"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+              <tr>{["User", "Role", "Orders", "Total Paid", "Websites", "Registered", "Actions"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.map((u) => (
@@ -2198,6 +2198,9 @@ function UsersTab() {
                     <p className="text-[10px] text-muted-foreground">{u.email}</p>
                   </td>
                   <td className="px-3 py-2.5">{roleBadge(u.role)}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{u.role === "admin" ? "—" : (u.totalOrders ?? 0)}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{u.role === "admin" ? "—" : `RM ${Number(u.totalPaid ?? 0).toFixed(2)}`}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{u.role === "admin" ? "—" : (u.websites ?? 0)}</td>
                   <td className="px-3 py-2.5 text-[10px] text-muted-foreground">{new Date(u.createdAt).toLocaleDateString("ms-MY")}</td>
                   <td className="px-3 py-2.5">
                     {deleteConfirmId === u.id ? (
@@ -2720,7 +2723,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -2743,7 +2746,6 @@ export default function AdminPage() {
       {tab === "pricing" && <PricingTab />}
       {tab === "orders" && <OrdersTab />}
       {tab === "revenue" && <RevenueTab />}
-      {tab === "customers" && <CustomersTab />}
       {tab === "users" && <UsersTab />}
       </div>
     </div>
