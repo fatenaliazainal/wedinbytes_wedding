@@ -79,7 +79,7 @@ export default function WeddingCardsHomePage() {
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-4 py-2 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
                 <Heart size={12} />
                 SIGN UP
@@ -98,7 +98,7 @@ export default function WeddingCardsHomePage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
@@ -107,7 +107,7 @@ export default function WeddingCardsHomePage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate("/register"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 SIGN UP FREE
               </button>
@@ -175,7 +175,7 @@ export default function WeddingCardsHomePage() {
           )}
 
           {!isLoading && !isError && visibleCards.length > 0 && (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
+            <div className="grid grid-cols-3 gap-x-6 gap-y-10 sm:grid-cols-4 lg:grid-cols-6 lg:gap-x-8">
               {visibleCards.map((design) => (
                 <CatalogDesignCard
                   key={design.id}
@@ -208,7 +208,7 @@ export default function WeddingCardsHomePage() {
               <button
                 type="button"
                 onClick={() => setVisibleCount((count) => Math.min(count + PAGE_SIZE, designs.length))}
-                className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold tracking-widest px-6 py-3 rounded hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold tracking-widest px-6 py-3 rounded hover:bg-[#2d4330] transition-colors"
               >
                 LOAD MORE
               </button>
@@ -219,7 +219,7 @@ export default function WeddingCardsHomePage() {
 
       <SiteFooter />
 
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
+      <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
         © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>

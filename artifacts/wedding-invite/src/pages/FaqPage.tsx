@@ -195,7 +195,7 @@ export default function FaqPage() {
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-4 py-2 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
                 <Heart size={12} />
                 SIGN UP
@@ -214,7 +214,7 @@ export default function FaqPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
@@ -223,7 +223,7 @@ export default function FaqPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate("/register"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 SIGN UP FREE
               </button>
@@ -276,7 +276,7 @@ export default function FaqPage() {
             </p>
             <button
               onClick={() => navigate("/editor")}
-              className="mt-8 inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold tracking-widest px-8 py-4 rounded-xl hover:bg-gray-800 transition-colors"
+              className="mt-8 inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold tracking-widest px-8 py-4 rounded hover:bg-[#2d4330] transition-colors"
             >
               Create Your Invitation
               <ArrowRight size={14} />
@@ -287,7 +287,7 @@ export default function FaqPage() {
 
       <SiteFooter />
 
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
+      <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
         © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>

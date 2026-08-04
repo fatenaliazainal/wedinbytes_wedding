@@ -162,7 +162,7 @@ function PricingCard({
          className={`w-full rounded-lg py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
           highlighted
             ? "bg-[#3d5a3e] text-white hover:bg-[#2d4330] shadow-md shadow-green-200"
-            : "bg-gray-900 text-white hover:bg-gray-800"
+            : "bg-[#3d5a3e] text-white hover:bg-[#2d4330]"
         }`}
       >
         Choose {name}
@@ -222,7 +222,7 @@ export default function PriceListPage() {
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-4 py-2 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
                 <Heart size={12} />
                 SIGN UP
@@ -241,7 +241,7 @@ export default function PriceListPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
@@ -250,7 +250,7 @@ export default function PriceListPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate("/register"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 SIGN UP FREE
               </button>
@@ -362,7 +362,7 @@ export default function PriceListPage() {
             </p>
             <button
               onClick={() => goToEditor()}
-              className="mt-4 inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bg-gray-900 px-7 py-3 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-800 sm:min-w-[280px]"
+              className="mt-4 inline-flex min-h-11 items-center justify-center gap-2.5 rounded bg-[#3d5a3e] px-7 py-3 text-xs font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330] sm:min-w-[280px]"
             >
               Create Your Invitation
               <ArrowRight size={16} />
@@ -373,7 +373,7 @@ export default function PriceListPage() {
 
       <SiteFooter />
 
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
+      <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
         © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>

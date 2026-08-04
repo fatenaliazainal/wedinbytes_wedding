@@ -1375,7 +1375,11 @@ export default function EditorPage({
     setInv((p) => ({ ...p, [field]: v }));
 
   const packageLocked =
-    mode !== "admin" && (inv.isCustomerOrder || inv.isPurchased);
+    mode !== "admin" &&
+    // Business users can change the package until the invitation is paid —
+    // this lets them assign Signature (Gift Registry) to a client invitation.
+    // For buyer mode, also lock on isCustomerOrder (order-form submissions).
+    (mode === "business" ? inv.isPurchased : (inv.isCustomerOrder || inv.isPurchased));
   const customerEditLocked =
     mode !== "admin" &&
     mode !== "demo" &&

@@ -169,7 +169,7 @@ export default function ReviewsPage() {
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-4 py-2 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
                 <Heart size={12} />
                 SIGN UP
@@ -188,7 +188,7 @@ export default function ReviewsPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
@@ -197,7 +197,7 @@ export default function ReviewsPage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate("/register"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 SIGN UP FREE
               </button>
@@ -330,7 +330,7 @@ export default function ReviewsPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-gray-900 text-white text-xs font-bold tracking-widest py-3.5 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                    className="w-full bg-[#3d5a3e] text-white text-xs font-bold tracking-widest py-3.5 rounded hover:bg-[#2d4330] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {submitting && <Loader2 size={14} className="animate-spin" />}
                     Submit Review
@@ -344,7 +344,7 @@ export default function ReviewsPage() {
 
       <SiteFooter />
 
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
+      <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
         © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>

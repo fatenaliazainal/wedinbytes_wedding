@@ -169,7 +169,7 @@ export default function MarketingHomePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-12">
               {previewCards.map((design) => (
                 <CatalogDesignCard
                   key={design.id}
@@ -274,7 +274,7 @@ export default function MarketingHomePage() {
               <div className="mt-9 flex flex-wrap gap-3">
                 <button
                   onClick={() => goToEditor()}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#3d5a3e] px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330]"
+                  className="inline-flex items-center gap-2 rounded bg-[#3d5a3e] px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330]"
                 >
                   START PERSONALISING
                   <ChevronRight size={14} />
@@ -310,7 +310,7 @@ export default function MarketingHomePage() {
       </section>
 
       {/* ── Video Invitations promo ── */}
-      <section className="bg-gray-950 py-20 px-4 sm:px-6">
+      <section className="bg-[#2d4330] py-20 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 mb-6">SOMETHING DIFFERENT</p>
           <h2 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white mb-6">
@@ -448,7 +448,7 @@ export default function MarketingHomePage() {
 
       <SiteFooter />
 
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
+      <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
         © {new Date().getFullYear()} Wedinbytes · All rights reserved
       </div>
     </div>
