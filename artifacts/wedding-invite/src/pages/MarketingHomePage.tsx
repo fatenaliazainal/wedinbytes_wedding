@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, ExternalLink, Heart, PenLine, Send, Smartphone, User, Users } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, MapPin, MessageCircle, Music, PenLine, Phone, QrCode, Send, Shirt, Smartphone, Timer, User, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -309,6 +309,42 @@ export default function MarketingHomePage() {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── More Than Just an Invitation ── */}
+      <section className="bg-white py-20 px-4 sm:px-6 border-t border-gray-100">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900">More Than Just an Invitation</h2>
+            <p className="mt-3 text-sm sm:text-base text-gray-500 max-w-xl mx-auto">Everything your celebration needs, thoughtfully built in.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+            {[
+              { icon: Gift,          name: "Gift Registry",     desc: "Help guests give meaningful gifts." },
+              { icon: MessageCircle, name: "Live Wishes",       desc: "Receive real-time wishes from guests." },
+              { icon: MapPin,        name: "Google Maps",       desc: "Guide your guests with ease." },
+              { icon: CalendarDays,  name: "Add to Calendar",   desc: "One tap to save your special day." },
+              { icon: Timer,         name: "Countdown",         desc: "Build excitement up to the big day." },
+              { icon: Music,         name: "Background Music",  desc: "Set the mood with your favourite track." },
+              { icon: Images,        name: "Photo Gallery",     desc: "Share beautiful moments together." },
+              { icon: Shirt,         name: "Dress Code",        desc: "Help guests know what to wear." },
+              { icon: ClipboardList, name: "Event Programme",   desc: "Keep your guests in the loop." },
+              { icon: BookOpen,      name: "Guestbook",         desc: "Collect messages and memories." },
+              { icon: Phone,         name: "Contact Host",      desc: "Guests can reach out to the host easily." },
+              { icon: QrCode,        name: "QR Code",           desc: "Share or print with a scan." },
+            ].map(({ icon: Icon, name, desc }) => (
+              <div key={name} className="flex flex-col items-center text-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 ring-1 ring-gray-200 text-[#3d5a3e]">
+                  <Icon size={24} strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{name}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-gray-500">{desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
