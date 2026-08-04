@@ -141,21 +141,50 @@ async function sendPaymentConfirmationEmailForOrder(order: typeof orderTable.$in
 }
 
 async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCode: string) {
+  // Fast path: if the callback already marked this order paid, no need to re-query ToyyibPay.
+  if (order.paymentStatus === "PAID") {
+    return { status: "PAID", updated: false };
+  }
+  if (order.paymentStatus === "FAILED") {
+    return { status: "FAILED", updated: false };
+  }
+
+  // ToyyibPay's getBillTransactions returns billpaymentAmount in the same unit we sent
+  // (cents via billAmount), NOT ringgit. So we compare Number(billpaymentAmount) directly
+  // with toCents(order.amount) rather than calling amountsMatch on both sides.
+  function billAmountMatchesOrder(billpaymentAmount: string | undefined) {
+    if (!billpaymentAmount || !order.amount) return false;
+    try {
+      const billCents = Math.round(Number(billpaymentAmount));
+      const orderCents = Math.round(Number(order.amount) * 100);
+      return Number.isFinite(billCents) && billCents === orderCents;
+    } catch {
+      return false;
+    }
+  }
+
+  // Find matching transaction — first by reference + amount, then by reference alone as
+  // a fallback (the external reference is our own unique ID so it's safe to match by it).
+  function findTransaction(txns: typeof transactions) {
+    return (
+      txns.find(
+        (item) =>
+          item.billExternalReferenceNo === order.paymentReference &&
+          billAmountMatchesOrder(item.billpaymentAmount),
+      ) ??
+      txns.find((item) => item.billExternalReferenceNo === order.paymentReference)
+    );
+  }
+
   // Try the passed billCode first.
   let transactions = await getToyyibPayTransactions(billCode);
-  let transaction = transactions.find((item) =>
-    item.billExternalReferenceNo === order.paymentReference &&
-    amountsMatch(item.billpaymentAmount, order.amount),
-  );
+  let transaction = findTransaction(transactions);
 
   // If no matching transaction and the order has a different canonical billCode stored
   // (e.g. the buyer paid via an older bill that was later superseded), fall back to it.
   if (!transaction && order.billCode && order.billCode !== billCode) {
     transactions = await getToyyibPayTransactions(order.billCode);
-    transaction = transactions.find((item) =>
-      item.billExternalReferenceNo === order.paymentReference &&
-      amountsMatch(item.billpaymentAmount, order.amount),
-    );
+    transaction = findTransaction(transactions);
   }
 
   if (!transaction) {
@@ -460,8 +489,39 @@ router.post("/payment/toyyibpay/callback", async (req, res) => {
       res.status(404).json({ error: "Order not found." });
       return;
     }
-    const result = await verifyAndApplyOrder(order, billCode);
-    res.status(result.status === "PAID" || result.status === "FAILED" ? 200 : 202).json(result);
+
+    // The HMAC hash above already authenticates the status field — ToyyibPay's server
+    // signed it with our secret key. Trust it directly instead of re-querying
+    // getBillTransactions, which can return empty results right after payment.
+    const paymentStatus = status === "1" ? "PAID" : status === "3" ? "FAILED" : "PENDING";
+
+    if (paymentStatus === "PENDING") {
+      // Unknown status — fall back to transaction lookup
+      const result = await verifyAndApplyOrder(order, billCode);
+      res.status(result.status === "PAID" || result.status === "FAILED" ? 200 : 202).json(result);
+      return;
+    }
+
+    const wasAlreadyPaid = order.paymentStatus === "PAID";
+    await db.update(orderTable).set({
+      paymentStatus,
+      paymentGateway: "toyyibpay",
+      gatewayRefNo: refno.trim() || order.gatewayRefNo,
+      paidAt: paymentStatus === "PAID" ? (order.paidAt ?? new Date()) : order.paidAt,
+      billCode: billCode || order.billCode,
+      updatedAt: new Date(),
+    }).where(eq(orderTable.id, order.id));
+
+    if (paymentStatus === "PAID" && order.invitationId) {
+      await db.update(invitationTable).set({ isPurchased: true }).where(eq(invitationTable.id, order.invitationId));
+      if (!wasAlreadyPaid) {
+        sendPaymentConfirmationEmailForOrder(order).catch((err) => {
+          logger.error({ err, orderId: order.id }, "Failed to send payment confirmation email after callback");
+        });
+      }
+    }
+
+    res.status(200).json({ status: paymentStatus, updated: true });
   } catch (err) {
     req.log.error({ err }, "Failed to process ToyyPay callback");
     res.status(502).json({ error: "Unable to verify ToyyPay callback." });
