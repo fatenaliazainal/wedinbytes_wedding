@@ -316,8 +316,8 @@ export default function MarketingHomePage() {
 
       {/* ── Video Invitations promo ── */}
       <section className="bg-[#2d4330] py-20 px-4 sm:px-6 overflow-hidden">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+        <div className="mx-auto max-w-4xl">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
 
             {/* Left: text + CTA */}
             <div className="text-center lg:text-left">
@@ -342,7 +342,7 @@ export default function MarketingHomePage() {
             </div>
 
             {/* Right: phone mockup with looping video */}
-            <div className="flex justify-center lg:justify-end">
+            <div className="flex justify-center">
               {/* Soft glow behind the phone */}
               <div className="relative">
                 <div className="absolute left-1/2 top-1/2 h-[26rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3d5a3e]/40 blur-3xl pointer-events-none" />
