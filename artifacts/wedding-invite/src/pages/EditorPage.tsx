@@ -91,7 +91,7 @@ const FONT_ALIASES: Record<string, string> = {
 };
 
 function normalizeFont(fontName?: string | null): string {
-  if (!fontName) return "Dancing Script";
+  if (!fontName) return "Rouge Script";
   return FONT_ALIASES[fontName] || fontName;
 }
 
@@ -99,81 +99,28 @@ function fontFamilyStack(fontName?: string | null): string {
   const normalized = normalizeFont(fontName);
   // Preserve explicit fallbacks for web-safe fonts; otherwise add a sensible fallback chain
   if (normalized.includes(",")) return normalized;
-  return `'${normalized}', 'Dancing Script', cursive`;
+  return `'${normalized}', 'Rouge Script', cursive`;
 }
 // Font options split into two groups so customers can pick a script font for
 // names and a classic font for body text independently.
 const SCRIPT_FONTS = [
-  { value: "Dancing Script", label: "Dancing Script" },
-  // Used by the original FL001 catalogue template.
-  { value: "Playfair Display", label: "Playfair Display" },
-  { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
-  { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
-  { value: "Allura", label: "Allura" },
-  { value: "Pinyon Script", label: "Pinyon Script" },
-  { value: "Style Script", label: "Style Script" },
-  { value: "Petit Formal Script", label: "Petit Formal Script" },
-  { value: "Meow Script", label: "Meow Script" },
   { value: "Rouge Script", label: "Rouge Script" },
-  { value: "Lily Script One", label: "Lily Script One" },
-  { value: "Playwrite South Africa", label: "Playwrite South Africa" },
-  { value: "Playwrite España", label: "Playwrite España" },
-  // — 10 new popular script/display fonts —
+  { value: "Miss Fajardose", label: "Miss Fajardose" },
+  { value: "Tangerine", label: "Tangerine" },
+  { value: "Playball", label: "Playball" },
   { value: "Sacramento", label: "Sacramento" },
   { value: "Parisienne", label: "Parisienne" },
-  { value: "Tangerine", label: "Tangerine" },
-  { value: "Satisfy", label: "Satisfy" },
-  { value: "Italianno", label: "Italianno" },
-  { value: "Carattere", label: "Carattere" },
-  { value: "Comforter Brush", label: "Comforter Brush" },
-  { value: "Birthstone", label: "Birthstone" },
-  { value: "Cinzel Decorative", label: "Cinzel Decorative" },
-  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
-  // — 10 more script/calligraphy fonts —
-  { value: "Ephesis", label: "Ephesis" },
-  { value: "Herr Von Muellerhoff", label: "Herr Von Muellerhoff" },
-  { value: "Monsieur La Doulaise", label: "Monsieur La Doulaise" },
-  { value: "Waterfall", label: "Waterfall" },
-  { value: "Lavishly Yours", label: "Lavishly Yours" },
-  { value: "Yellowtail", label: "Yellowtail" },
-  { value: "Mr Dafoe", label: "Mr Dafoe" },
-  { value: "Romanesco", label: "Romanesco" },
-  { value: "Miss Fajardose", label: "Miss Fajardose" },
-  { value: "Qwitcher Grypen", label: "Qwitcher Grypen" },
+  { value: "Corinthia", label: "Corinthia" },
+  { value: "Mea Culpa", label: "Mea Culpa" },
+  { value: "Playwrite NG Modern", label: "Playwrite Nigeria Modern" },
 ];
 
 const CLASSIC_FONTS = [
-  { value: "Playfair Display", label: "Playfair Display" },
-  { value: "Poppins", label: "Poppins" },
-  { value: "Lato", label: "Lato" },
-  { value: "Georgia, serif", label: "Georgia" },
-  { value: "Arial, sans-serif", label: "Arial" },
-  { value: "Noto Serif", label: "Noto Serif" },
-  { value: "PT Serif", label: "PT Serif" },
-  { value: "Inria Serif", label: "Inria Serif" },
-  { value: "Google Sans Flex", label: "Google Sans Flex" },
-  // — 10 new popular body fonts —
+  { value: "Libertinus Serif", label: "Libertinus Serif" },
   { value: "Montserrat", label: "Montserrat" },
-  { value: "Raleway", label: "Raleway" },
-  { value: "Nunito", label: "Nunito" },
-  { value: "EB Garamond", label: "EB Garamond" },
-  { value: "Josefin Sans", label: "Josefin Sans" },
-  { value: "Cinzel", label: "Cinzel" },
-  { value: "Libre Baskerville", label: "Libre Baskerville" },
-  { value: "Source Serif 4", label: "Source Serif 4" },
-  { value: "DM Serif Display", label: "DM Serif Display" },
-  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
-  // — 10 more body fonts —
-  { value: "Jost", label: "Jost" },
-  { value: "Outfit", label: "Outfit" },
-  { value: "Plus Jakarta Sans", label: "Plus Jakarta Sans" },
-  { value: "Urbanist", label: "Urbanist" },
-  { value: "Spectral", label: "Spectral" },
-  { value: "Crimson Pro", label: "Crimson Pro" },
-  { value: "Cantata One", label: "Cantata One" },
-  { value: "Quattrocento", label: "Quattrocento" },
-  { value: "Cormorant", label: "Cormorant" },
-  { value: "Sorts Mill Goudy", label: "Sorts Mill Goudy" },
+  { value: "DM Sans", label: "DM Sans" },
+  { value: "Enriqueta", label: "Enriqueta" },
+  { value: "Merriweather", label: "Merriweather" },
 ];
 
 type Contact = { name: string; phone: string };
@@ -591,7 +538,7 @@ export default function EditorPage({
     colorForeground: "0 0% 10%",
     colorHeading: "",
     colorMuted: "",
-    bodyFontFamily: "Poppins",
+    bodyFontFamily: "Montserrat",
     colorPrimary: "142 45% 35%",
     colorSecondary: "142 30% 92%",
     colorAccent: "142 30% 92%",
