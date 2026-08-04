@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, MapPin, MessageCircle, Music, PenLine, Phone, QrCode, Send, Shirt, Smartphone, Timer, User, Users } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, PenLine, Phone, QrCode, Send, Shirt, Smartphone, Timer, User, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -323,18 +323,18 @@ export default function MarketingHomePage() {
 
               <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-green-100 bg-white/70 px-4 py-4 text-xs text-gray-600 sm:px-5">
                 <span className="inline-flex items-center gap-2">
-                  <Smartphone size={15} className="text-[#3d5a3e]" />
-                  Mobile friendly
+                  <LayoutGrid size={15} className="text-[#3d5a3e]" />
+                  Everything in one place
                 </span>
                 <span className="hidden h-4 w-px bg-gray-200 sm:block" />
                 <span className="inline-flex items-center gap-2">
-                  <Heart size={15} className="text-[#3d5a3e]" />
-                  Made for meaningful moments
+                  <PenLine size={15} className="text-[#3d5a3e]" />
+                  Update anytime
                 </span>
                 <span className="hidden h-4 w-px bg-gray-200 sm:block" />
                 <span className="inline-flex items-center gap-2">
-                  <Users size={15} className="text-[#3d5a3e]" />
-                  Built for every guest
+                  <Send size={15} className="text-[#3d5a3e]" />
+                  Share in seconds
                 </span>
               </div>
             </div>
