@@ -1,11 +1,10 @@
 import React from "react";
 import { ShoppingBag } from "lucide-react";
-import { type Invitation, type CardDesign } from "@workspace/api-client-react";
-import { CardThumbnail } from "@/components/CardThumbnail";
+import { type CardDesign } from "@workspace/api-client-react";
+import { resolveImageUrl } from "@/lib/r2-url";
 
 interface CatalogDesignCardProps {
   design: CardDesign;
-  invitation?: Invitation;
   onPreview?: () => void;
   onOrder: () => void;
   previewLabel?: string;
@@ -13,18 +12,21 @@ interface CatalogDesignCardProps {
 
 function PreviewFrame({
   design,
-  invitation,
   onPreview,
   previewLabel,
-}: Pick<CatalogDesignCardProps, "design" | "invitation" | "onPreview" | "previewLabel">) {
-  // Only render the live invitation thumbnail when a static thumbnail image exists.
-  // Without one, fall back to a branded placeholder so the catalog stays clean
-  // even for designs that haven't had a thumbnail uploaded yet.
-  const hasThumbnail = Boolean(design.thumbnailImageUrl);
+}: Pick<CatalogDesignCardProps, "design" | "onPreview" | "previewLabel">) {
+  const thumbnailSrc = resolveImageUrl(design.thumbnailImageUrl ?? undefined);
 
-  const preview = hasThumbnail && invitation ? (
-    <CardThumbnail invitation={invitation} design={design} containerWidth={220} />
+  const preview = thumbnailSrc ? (
+    // Static thumbnail image — instant, no text flash on load
+    <img
+      src={thumbnailSrc}
+      alt={design.name}
+      draggable={false}
+      className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+    />
   ) : (
+    // No thumbnail yet — show branded logo placeholder
     <div
       className="h-full w-full flex flex-col items-center justify-center gap-3"
       style={{ background: design.colorBackground ? `hsl(${design.colorBackground})` : "#f6f1e7" }}

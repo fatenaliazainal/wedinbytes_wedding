@@ -180,7 +180,6 @@ export default function WeddingCardsHomePage() {
                 <CatalogDesignCard
                   key={design.id}
                   design={design}
-                  invitation={demoInvitation}
                   onPreview={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
                   onOrder={() => goToEditor(design.designCode ?? undefined)}
                 />

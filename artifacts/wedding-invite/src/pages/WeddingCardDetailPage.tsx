@@ -164,7 +164,6 @@ export default function WeddingCardDetailPage() {
                     <CatalogDesignCard
                       key={d.id}
                       design={d}
-                      invitation={demoInvitation}
                       onPreview={() => navigate(`/weddingcards/home/${d.id}`)}
                       onOrder={() => {
                         if (d.designCode) navigate(`/editor?new=1&designCode=${encodeURIComponent(d.designCode)}`);
