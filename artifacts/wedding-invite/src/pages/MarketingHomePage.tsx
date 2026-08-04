@@ -309,6 +309,30 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
+      {/* ── Video Invitations promo ── */}
+      <section className="bg-gray-950 py-20 px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 mb-6">SOMETHING DIFFERENT</p>
+          <h2 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white mb-6">
+            What If Your Invitation<br />Could Move?
+          </h2>
+          <p className="text-sm leading-7 text-white/60 max-w-md mx-auto mb-4">
+            Not every invitation has to be a website.
+          </p>
+          <p className="text-sm leading-7 text-white/60 max-w-md mx-auto mb-10">
+            Discover beautifully crafted <span className="text-white font-semibold">Video Invitations</span> designed to turn your invitation into a shareable experience.
+          </p>
+          <a
+            href="https://wedinbytes.com"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 border border-white/20 text-white text-xs font-bold px-7 py-3.5 rounded hover:bg-white/10 transition-colors tracking-widest"
+          >
+            DISCOVER THE COLLECTION →
+          </a>
+        </div>
+      </section>
+
       <section id="collaborations" className="bg-white py-16 px-4 sm:px-6 border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-9">
