@@ -169,7 +169,7 @@ export default function MarketingHomePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {previewCards.map((design) => (
                 <CatalogDesignCard
                   key={design.id}

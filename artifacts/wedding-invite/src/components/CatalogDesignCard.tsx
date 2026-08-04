@@ -69,9 +69,9 @@ export function CatalogDesignCard({
         previewLabel={previewLabel}
       />
 
-      <div className="flex flex-col items-center px-2.5 pb-3 pt-2.5 text-center sm:px-3 sm:pb-4">
+      <div className="flex flex-col items-center px-2 pb-2 pt-2 text-center sm:px-2.5 sm:pb-3">
         <p className="text-xs font-bold leading-tight text-gray-900 sm:text-sm">{design.name}</p>
-        <p className="mt-1 font-mono text-[9px] font-semibold tracking-wider text-[#3d5a3e]">
+        <p className="mt-0.5 font-mono text-[8px] font-semibold tracking-wider text-[#3d5a3e]">
           WED{String(design.id).padStart(2, "0")}
         </p>
         <button
