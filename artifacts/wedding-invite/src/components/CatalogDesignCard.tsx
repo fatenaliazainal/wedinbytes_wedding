@@ -46,7 +46,7 @@ function PreviewFrame({
       className="block w-full text-left"
       aria-label={previewLabel ?? `Open live demo for ${design.name}`}
     >
-      <div className="relative mx-auto aspect-[9/16] w-full overflow-hidden rounded-t-xl bg-transparent">
+      <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-t-xl bg-transparent">
         <div className="absolute inset-0">{preview}</div>
       </div>
     </button>
