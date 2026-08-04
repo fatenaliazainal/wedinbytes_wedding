@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, PenLine, Phone, QrCode, Send, Shirt, Smartphone, Timer, User, Users } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, Palette, PenLine, Phone, QrCode, Send, Share2, Shirt, Smartphone, Timer, User, UserCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -247,19 +247,19 @@ export default function MarketingHomePage() {
               <div className="mt-9 grid gap-5 sm:grid-cols-3">
                 {[
                   {
-                    icon: PenLine,
-                    title: "Customise with Ease",
-                    description: "Personalise fonts, colours, and wording to match your theme.",
+                    icon: Palette,
+                    title: "Make It Yours",
+                    description: "Choose your colours, fonts and wording to match your celebration.",
                   },
                   {
-                    icon: Users,
-                    title: "Track RSVPs Live",
-                    description: "Monitor guest responses and manage your event easily.",
+                    icon: UserCheck,
+                    title: "See Who's Coming",
+                    description: "Keep track of who's attending, all in one place.",
                   },
                   {
-                    icon: Send,
-                    title: "Send Instantly",
-                    description: "Share via link, text or email — reach your guests in seconds.",
+                    icon: Share2,
+                    title: "Share in Seconds",
+                    description: "Send your invitation to family and friends with just one link.",
                   },
                 ].map(({ icon: Icon, title, description }, index) => (
                   <div
