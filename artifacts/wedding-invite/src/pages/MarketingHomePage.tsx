@@ -158,7 +158,7 @@ export default function MarketingHomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
             <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-1">Exclusive Collection</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Love Story, Beautifully Told.</h2>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Love Story, Beautifully Told.</h1>
             <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
               Create a beautiful wedding website for your special day — effortlessly.
             </p>
