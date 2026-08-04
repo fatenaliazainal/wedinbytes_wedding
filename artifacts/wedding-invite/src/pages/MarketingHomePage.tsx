@@ -201,30 +201,33 @@ export default function MarketingHomePage() {
               <button
                 type="button"
                 onClick={() => navigate(`/invite/demo?designCode=${encodeURIComponent(designs[0]?.designCode ?? "")}`)}
-                className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[7px] border-gray-900 bg-gray-900 shadow-[0_24px_45px_rgba(31,41,55,0.26)] transition-transform hover:-translate-y-1 lg:mx-0"
+                className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[8px] border-gray-900 bg-gray-900 shadow-[0_32px_60px_rgba(31,41,55,0.28)] transition-transform hover:-translate-y-1 lg:mx-0"
                 style={{
-                  width: 238,
-                  height: 470,
+                  width: 280,
+                  height: 560,
                 }}
                 aria-label="Open live demo"
               >
                 {/* Dynamic island / notch */}
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
-                  style={{ width: 86, height: 26, borderRadius: "0 0 17px 17px" }}
+                  style={{ width: 96, height: 28, borderRadius: "0 0 18px 18px" }}
                 />
                 {/*
-                  Option A: uniform scale-to-fill.
-                  CardThumbnail natural size at containerWidth=224: 224×398 px.
-                  Phone screen (238 outer – 14 border): 224×456 px.
-                  Scale factor = 456/398 ≈ 1.146  →  fills height, slight crop on sides.
-                  translateY(22px) pushes content below the notch safe area (notch = 26 px).
-                  The bottom clips by ~22 px which only affects the very last detail line.
+                  Phone screen: 264 × 544 px (280 outer – 8px border each side).
+                  CardThumbnail at containerWidth=264 renders naturally at 264 × 469 px.
+                  24 px paddingTop = safe area below the 28 px notch.
+                  Available height = 544 – 24 = 520 px.
+                  Uniform scale = 520 / 469 ≈ 1.109 → fills height with no distortion.
+                  All content (WALIMATUL URUS → floral bottom) stays fully visible.
                 */}
-                <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
+                <div
+                  className="absolute inset-0 overflow-hidden flex items-start justify-center"
+                  style={{ paddingTop: 24 }}
+                >
                   {demoInvitation && designs[0] ? (
-                    <div style={{ width: 224, height: 398, transform: "translateY(22px) scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
-                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
+                    <div style={{ width: 264, height: 469, transform: "scale(1.109)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={264} />
                     </div>
                   ) : (
                     <div className="w-full h-full bg-[#f6f1e7]" />
