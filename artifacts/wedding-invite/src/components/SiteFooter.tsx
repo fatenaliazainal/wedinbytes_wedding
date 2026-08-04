@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { Heart, Facebook, Instagram, Twitter, Youtube, Mail } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube, Mail } from "lucide-react";
+import logo from "@assets/logo-wedinstudio.png";
 
 export default function SiteFooter() {
   const [, navigate] = useLocation();
@@ -10,9 +11,7 @@ export default function SiteFooter() {
       <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1.2fr_0.8fr]">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f25c4c] text-white">
-              <Heart size={18} fill="currentColor" />
-            </div>
+            <img src={logo} alt="Wedinstudio logo" className="h-10 w-10 object-contain" />
             <div>
               <p className="text-base font-semibold tracking-tight text-black">Wedinstudio</p>
               <p className="text-xs sm:text-sm text-black/55">Digital invitation cards for your event.</p>
