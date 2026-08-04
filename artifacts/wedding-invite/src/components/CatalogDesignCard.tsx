@@ -17,13 +17,26 @@ function PreviewFrame({
   onPreview,
   previewLabel,
 }: Pick<CatalogDesignCardProps, "design" | "invitation" | "onPreview" | "previewLabel">) {
-  const preview = invitation ? (
+  // Only render the live invitation thumbnail when a static thumbnail image exists.
+  // Without one, fall back to a branded placeholder so the catalog stays clean
+  // even for designs that haven't had a thumbnail uploaded yet.
+  const hasThumbnail = Boolean(design.thumbnailImageUrl);
+
+  const preview = hasThumbnail && invitation ? (
     <CardThumbnail invitation={invitation} design={design} containerWidth={220} />
   ) : (
     <div
-      className="h-full w-full"
+      className="h-full w-full flex flex-col items-center justify-center gap-3"
       style={{ background: design.colorBackground ? `hsl(${design.colorBackground})` : "#f6f1e7" }}
-    />
+    >
+      <img
+        src="/logo-wedinbytes.png"
+        alt="WedInBytes"
+        draggable={false}
+        className="w-16 opacity-60 select-none pointer-events-none"
+        style={{ objectFit: "contain" }}
+      />
+    </div>
   );
 
   return (

@@ -733,23 +733,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <div className="absolute inset-0 bg-secondary" />
         )}
         {showOverlay && (
-          <>
-            {/* Subtle base wash so centre text stays readable */}
-            <div className="absolute inset-0" style={{ background: overlayBg, opacity: 0.35 }} />
-            {/* Light-cloud (awan) frame — dark edges inverted to white mist, transparent centre */}
-            <img
-              src="/cloud-overlay.png"
-              aria-hidden
-              alt=""
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-              style={{
-                filter: "invert(1)",
-                opacity: Math.min(1, Math.max(0, Number(contentOverlayOpacity ?? 55) / 100) * 1.2),
-                mixBlendMode: "screen",
-              }}
-            />
-          </>
+          <div className="absolute inset-0" style={{ background: overlayBg, opacity: 0.35 }} />
         )}
       </div>
     );
