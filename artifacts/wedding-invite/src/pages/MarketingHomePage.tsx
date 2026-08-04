@@ -275,7 +275,36 @@ export default function MarketingHomePage() {
                 ))}
               </div>
 
-              <div className="mt-9 flex flex-wrap gap-3">
+              {/* ── Feature icon strip ── */}
+              <div className="mt-8 flex flex-wrap gap-2">
+                {[
+                  { icon: Gift,          label: "Gift Registry" },
+                  { icon: MessageCircle, label: "Live Wishes" },
+                  { icon: MapPin,        label: "Google Maps" },
+                  { icon: CalendarDays,  label: "Add to Calendar" },
+                  { icon: Timer,         label: "Countdown" },
+                  { icon: Music,         label: "Background Music" },
+                  { icon: Images,        label: "Photo Gallery" },
+                  { icon: Shirt,         label: "Dress Code" },
+                  { icon: ClipboardList, label: "Event Programme" },
+                  { icon: BookOpen,      label: "Guestbook" },
+                  { icon: Phone,         label: "Contact Host" },
+                  { icon: QrCode,        label: "QR Code" },
+                ].map(({ icon: Icon, label }) => (
+                  <div key={label} className="relative group">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-50 ring-1 ring-gray-200 text-[#3d5a3e] hover:bg-green-50 hover:ring-green-200 transition-colors cursor-default">
+                      <Icon size={16} strokeWidth={1.5} />
+                    </div>
+                    {/* Tooltip */}
+                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-md bg-gray-900 px-2.5 py-1 text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10">
+                      {label}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   onClick={() => goToEditor()}
                   className="inline-flex items-center gap-2 rounded bg-[#3d5a3e] px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330]"
