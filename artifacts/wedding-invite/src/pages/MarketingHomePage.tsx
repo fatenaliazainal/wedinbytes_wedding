@@ -218,11 +218,12 @@ export default function MarketingHomePage() {
                   CardThumbnail natural size at containerWidth=224: 224×398 px.
                   Phone screen (238 outer – 14 border): 224×456 px.
                   Scale factor = 456/398 ≈ 1.146  →  fills height, slight crop on sides.
-                  transformOrigin: top center keeps the couple names at the top visible.
+                  translateY(22px) pushes content below the notch safe area (notch = 26 px).
+                  The bottom clips by ~22 px which only affects the very last detail line.
                 */}
                 <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                    <div style={{ width: 224, height: 398, transform: "translateY(22px) scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
                       <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
                     </div>
                   ) : (
