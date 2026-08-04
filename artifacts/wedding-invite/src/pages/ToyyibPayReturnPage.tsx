@@ -5,10 +5,27 @@ import { useAuth } from "@/context/AuthContext";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const MAX_RETRIES = 6;       // up to 6 attempts
+const RETRY_DELAY_MS = 2500; // 2.5 seconds between each
+
+async function checkStatus(orderReference: string, billCode: string): Promise<string> {
+  const response = await fetch(
+    `${BASE}/api/payment/toyyibpay/return-status?orderReference=${encodeURIComponent(orderReference)}&billCode=${encodeURIComponent(billCode)}`,
+    { credentials: "include", cache: "no-store" },
+  );
+  const data = await response.json().catch(() => ({})) as { status?: string; error?: string };
+  if (!response.ok) throw new Error(data.error || "Unable to verify payment.");
+  return data.status === "PAID" ? "PAID" : data.status === "FAILED" ? "FAILED" : "PENDING";
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 export default function ToyyibPayReturnPage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
-  const [status, setStatus] = useState<"loading" | "PAID" | "PENDING" | "FAILED">("loading");
+  const [status, setStatus] = useState<"loading" | "confirming" | "PAID" | "PENDING" | "FAILED">("loading");
   const [message, setMessage] = useState("Checking your payment status…");
 
   useEffect(() => {
@@ -23,41 +40,78 @@ export default function ToyyibPayReturnPage() {
       return;
     }
 
-    fetch(
-      `${BASE}/api/payment/toyyibpay/return-status?orderReference=${encodeURIComponent(orderReference)}&billCode=${encodeURIComponent(billCode)}`,
-      { credentials: "include", cache: "no-store" },
-    )
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({})) as { status?: string; error?: string };
-        if (!response.ok) throw new Error(data.error || "Unable to verify payment.");
-        const nextStatus = data.status === "PAID" ? "PAID" : data.status === "FAILED" ? "FAILED" : "PENDING";
-        setStatus(nextStatus);
-        setMessage(
-          nextStatus === "PAID"
-            ? "Payment confirmed. Your invitation is now active."
-            : nextStatus === "FAILED"
-              ? "The payment was not completed. You can try again from Payment History."
+    // statusId=1 means ToyyibPay says paid. We retry if our DB hasn't caught up yet.
+    const gatewayClaimsPaid = statusId === "1";
+
+    (async () => {
+      let attempt = 0;
+      let lastStatus = "PENDING";
+
+      while (attempt < MAX_RETRIES) {
+        try {
+          if (attempt > 0) {
+            // Show a "confirming" intermediate state so the buyer isn't confused by
+            // a blank loading spinner for multiple seconds.
+            setStatus("confirming");
+            setMessage("Confirming payment with our server… please wait.");
+            await sleep(RETRY_DELAY_MS);
+          }
+
+          lastStatus = await checkStatus(orderReference, billCode);
+
+          if (lastStatus === "PAID" || lastStatus === "FAILED") break;
+
+          // If ToyyibPay didn't flag it as paid either, stop retrying immediately.
+          if (!gatewayClaimsPaid) break;
+        } catch (err) {
+          lastStatus = "PENDING";
+          if (!gatewayClaimsPaid) break;
+        }
+
+        attempt++;
+      }
+
+      const nextStatus = lastStatus === "PAID" ? "PAID" : lastStatus === "FAILED" ? "FAILED" : "PENDING";
+      setStatus(nextStatus);
+      setMessage(
+        nextStatus === "PAID"
+          ? "Payment confirmed. Your invitation is now active."
+          : nextStatus === "FAILED"
+            ? "The payment was not completed. You can try again from Payment History."
+            : gatewayClaimsPaid
+              ? "Payment was received but is still being processed. Your invitation will be activated shortly — please check Payment History in a few minutes."
               : "Payment is still being processed. You can check again from Payment History.",
-        );
-      })
-      .catch((error: unknown) => {
-        setStatus("PENDING");
-        setMessage(error instanceof Error ? error.message : "Unable to verify payment. Please check Payment History.");
-      });
+      );
+    })();
   }, []);
 
-  const Icon = status === "PAID" ? CheckCircle2 : status === "FAILED" ? XCircle : status === "PENDING" ? Clock3 : Loader2;
-  const iconClass = status === "PAID" ? "text-emerald-600" : status === "FAILED" ? "text-red-600" : "text-amber-600";
+  const isLoading = status === "loading" || status === "confirming";
+  const displayStatus = isLoading ? "loading" : status;
+
+  const Icon =
+    displayStatus === "PAID" ? CheckCircle2
+    : displayStatus === "FAILED" ? XCircle
+    : Loader2;
+
+  const iconClass =
+    displayStatus === "PAID" ? "text-emerald-600"
+    : displayStatus === "FAILED" ? "text-red-600"
+    : "text-amber-600";
+
+  const heading =
+    status === "loading" ? "Verifying payment"
+    : status === "confirming" ? "Confirming payment…"
+    : status === "PAID" ? "Payment successful"
+    : status === "FAILED" ? "Payment unsuccessful"
+    : "Payment pending";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <section className="w-full max-w-lg rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm sm:p-10">
-        <Icon className={`mx-auto h-14 w-14 ${iconClass} ${status === "loading" ? "animate-spin" : ""}`} />
-        <h1 className="mt-5 text-2xl font-bold text-slate-900">
-          {status === "loading" ? "Verifying payment" : status === "PAID" ? "Payment successful" : status === "FAILED" ? "Payment unsuccessful" : "Payment pending"}
-        </h1>
+        <Icon className={`mx-auto h-14 w-14 ${iconClass} ${isLoading ? "animate-spin" : ""}`} />
+        <h1 className="mt-5 text-2xl font-bold text-slate-900">{heading}</h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{message}</p>
-        {status !== "loading" && (
+        {!isLoading && (
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href={user?.role === "business_account" ? "/business/dashboard" : "/dashboard"}
@@ -66,7 +120,13 @@ export default function ToyyibPayReturnPage() {
               Go to Dashboard
             </Link>
             <button
-              onClick={() => navigate(user?.role === "business_account" ? "/business/dashboard?section=paymentHistory" : "/dashboard?section=paymentHistory")}
+              onClick={() =>
+                navigate(
+                  user?.role === "business_account"
+                    ? "/business/dashboard?section=paymentHistory"
+                    : "/dashboard?section=paymentHistory",
+                )
+              }
               className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               View Payment History
