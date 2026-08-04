@@ -314,7 +314,7 @@ export default function MarketingHomePage() {
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 mb-6">SOMETHING DIFFERENT</p>
           <h2 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white mb-6">
-            What If Your Invitation<br />Could Move?
+            Prefer Something a<br />Little More Animated?
           </h2>
           <p className="text-sm leading-7 text-white/60 max-w-md mx-auto mb-4">
             Not every invitation has to be a website.
