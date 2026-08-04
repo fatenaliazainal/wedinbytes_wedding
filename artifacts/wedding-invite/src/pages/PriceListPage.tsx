@@ -159,10 +159,10 @@ function PricingCard({
 
       <button
         onClick={onChoose}
-         className={`w-full rounded-lg py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
+         className={`w-full rounded py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
           highlighted
             ? "bg-[#3d5a3e] text-white hover:bg-[#2d4330] shadow-md shadow-green-200"
-            : "bg-[#3d5a3e] text-white hover:bg-[#2d4330]"
+            : "bg-gray-900 text-white hover:bg-gray-800"
         }`}
       >
         Choose {name}
