@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { Search, Heart, ShoppingBag, User, X, Menu } from "lucide-react";
+import { Search, Heart, ShoppingBag, User, X, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
 import { CatalogDesignCard } from "@/components/CatalogDesignCard";
@@ -11,7 +11,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 
-const PAGE_SIZE = 10;
+const CARDS_PER_PAGE = 15;
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -27,7 +27,7 @@ export default function WeddingCardsHomePage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE + 2);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: designs = [], isLoading, isError } = useListDesigns();
   const { data: demoInvitation } = useGetInvitation("demo");
@@ -39,12 +39,19 @@ export default function WeddingCardsHomePage() {
   }, [query, designs]);
 
   const isSearching = query.trim().length > 0;
-  const visibleCards = isSearching ? filtered : filtered.slice(0, visibleCount);
-  const hasMore = !isSearching && visibleCount < designs.length;
+  const totalPages = isSearching ? 1 : Math.ceil(filtered.length / CARDS_PER_PAGE);
+  const visibleCards = isSearching
+    ? filtered
+    : filtered.slice((currentPage - 1) * CARDS_PER_PAGE, currentPage * CARDS_PER_PAGE);
 
   function handleQueryChange(value: string) {
     setQuery(value);
-    setVisibleCount(PAGE_SIZE + 2);
+    setCurrentPage(1);
+  }
+
+  function goToPage(page: number) {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function goToEditor(designCode?: string) {
@@ -202,14 +209,41 @@ export default function WeddingCardsHomePage() {
             </div>
           )}
 
-          {hasMore && (
-            <div className="mt-10 flex justify-center">
+          {!isSearching && totalPages > 1 && (
+            <div className="mt-10 flex items-center justify-center gap-2">
               <button
                 type="button"
-                onClick={() => setVisibleCount((count) => Math.min(count + PAGE_SIZE, designs.length))}
-                className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold tracking-widest px-6 py-3 rounded hover:bg-[#2d4330] transition-colors"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Previous page"
               >
-                LOAD MORE
+                <ChevronLeft size={16} />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => goToPage(page)}
+                  className={`flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold transition-colors ${
+                    page === currentPage
+                      ? "bg-[#3d5a3e] text-white"
+                      : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Next page"
+              >
+                <ChevronRight size={16} />
               </button>
             </div>
           )}

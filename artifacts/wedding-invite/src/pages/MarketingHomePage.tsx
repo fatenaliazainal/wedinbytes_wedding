@@ -59,7 +59,7 @@ export default function MarketingHomePage() {
       .catch(() => setCollaborations([]));
   }, []);
 
-  const previewCards = designs.slice(0, 8);
+  const previewCards = designs.slice(0, 10);
   const logoCollaborations = collaborations.filter((business) => business.logoUrl);
   const [businessSlide, setBusinessSlide] = useState(0);
   const [businessCarouselPaused, setBusinessCarouselPaused] = useState(false);
