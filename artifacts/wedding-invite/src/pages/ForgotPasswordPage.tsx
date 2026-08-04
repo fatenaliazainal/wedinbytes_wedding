@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation, useSearch } from "wouter";
-import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
+import logo from "@assets/logo-wedinstudio.png";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 

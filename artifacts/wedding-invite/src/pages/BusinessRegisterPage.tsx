@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { Building2, Check } from "lucide-react";
-import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
+import logo from "@assets/logo-wedinstudio.png";
 
 const PERKS = [
   "Manage all client invitations from one dashboard",

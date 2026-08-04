@@ -49,7 +49,7 @@ import { createTranslator } from "@/lib/translations";
 import { extractYouTubeId } from "@/lib/youtube";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import { hexToHsl as hexToHslColor } from "@/lib/color-format";
-import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
+import logo from "@assets/logo-wedinstudio.png";
 
 const TABS = [
   { id: "reka-bentuk", label: "DESIGN" },

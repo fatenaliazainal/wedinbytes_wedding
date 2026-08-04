@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
-import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
+import logo from "@assets/logo-wedinstudio.png";
 
 export type SiteNavItem = {
   label: string;

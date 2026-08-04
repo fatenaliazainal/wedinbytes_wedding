@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import logo from "@assets/LOGO_WEDINBYTES_(4)_1785623893383.png";
+import logo from "@assets/logo-wedinstudio.png";
 
 export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
