@@ -10,7 +10,7 @@ import {
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
   Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag, Home, LogOut,
-  BarChart3, TrendingUp, CalendarDays,
+  BarChart3, TrendingUp, CalendarDays, UserPlus, Shield, KeyRound, Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetActiveDesignQueryKey, getListDesignsQueryKey } from "@workspace/api-client-react";
@@ -25,7 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 
-type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users";
 
 type RawCard = {
   id: number;
@@ -2093,6 +2093,178 @@ function OrdersTab() {
   );
 }
 
+function UsersTab() {
+  type UserRow = { id: number; name: string; email: string; role: string; createdAt: string };
+  type FormState = { name: string; email: string; role: string; password: string };
+  const EMPTY_FORM: FormState = { name: "", email: "", role: "buyer", password: "" };
+
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState<"add" | "edit" | null>(null);
+  const [editTarget, setEditTarget] = useState<UserRow | null>(null);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loadUsers = () => {
+    setLoading(true);
+    fetch(`${BASE}/api/admin/users`, { credentials: "include", cache: "no-store" })
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then(setUsers)
+      .catch(() => toast.error("Failed to load users."))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { loadUsers(); }, []);
+
+  const openAdd = () => { setForm(EMPTY_FORM); setEditTarget(null); setModal("add"); };
+  const openEdit = (u: UserRow) => { setForm({ name: u.name, email: u.email, role: u.role, password: "" }); setEditTarget(u); setModal("edit"); };
+  const closeModal = () => { setModal(null); setEditTarget(null); setForm(EMPTY_FORM); };
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !form.email.trim()) { toast.error("Name and email are required."); return; }
+    if (modal === "add" && form.password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
+    setSaving(true);
+    try {
+      const url = modal === "add" ? `${BASE}/api/admin/users` : `${BASE}/api/admin/users/${editTarget!.id}`;
+      const method = modal === "add" ? "POST" : "PATCH";
+      const body: Record<string, string> = { name: form.name, email: form.email, role: form.role };
+      if (form.password) body.password = form.password;
+      const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "Failed to save.");
+      toast.success(modal === "add" ? "User created." : "User updated.");
+      closeModal();
+      loadUsers();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    setDeleting(true);
+    try {
+      const r = await fetch(`${BASE}/api/admin/users/${id}`, { method: "DELETE", credentials: "include" });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "Failed to delete.");
+      toast.success("User deleted.");
+      setDeleteConfirmId(null);
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const roleBadge = (role: string) => {
+    if (role === "admin") return <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700">Admin</span>;
+    if (role === "business_account") return <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Business</span>;
+    return <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">Buyer</span>;
+  };
+
+  const filtered = users.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search size={13} className="absolute left-2.5 top-2.5 text-muted-foreground" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email…" className="w-full rounded-lg border border-border bg-card py-2 pl-8 pr-2.5 text-xs outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background hover:opacity-80">
+          <UserPlus size={13} /> Add User
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        {loading ? (
+          <div className="py-16 text-center text-sm text-muted-foreground">Loading users…</div>
+        ) : filtered.length === 0 ? (
+          <div className="py-16 text-center"><Users size={28} className="mx-auto mb-3 text-muted-foreground/50" /><p className="text-sm font-medium">No users found</p></div>
+        ) : (
+          <table className="w-full min-w-[600px] text-left text-xs">
+            <thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground">
+              <tr>{["User", "Role", "Registered", "Actions"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filtered.map((u) => (
+                <tr key={u.id} className="hover:bg-muted/40">
+                  <td className="px-3 py-2.5">
+                    <p className="font-medium">{u.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{u.email}</p>
+                  </td>
+                  <td className="px-3 py-2.5">{roleBadge(u.role)}</td>
+                  <td className="px-3 py-2.5 text-[10px] text-muted-foreground">{new Date(u.createdAt).toLocaleDateString("ms-MY")}</td>
+                  <td className="px-3 py-2.5">
+                    {deleteConfirmId === u.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-red-600 font-medium">Delete?</span>
+                        <button onClick={() => void handleDelete(u.id)} disabled={deleting} className="rounded bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white disabled:opacity-50">{deleting ? "…" : "Yes"}</button>
+                        <button onClick={() => setDeleteConfirmId(null)} disabled={deleting} className="rounded border border-border px-2 py-0.5 text-[10px] font-semibold">No</button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openEdit(u)} className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" title="Edit"><Pencil size={12} /></button>
+                        <button onClick={() => setDeleteConfirmId(u.id)} className="rounded p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600" title="Delete"><Trash2 size={12} /></button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{modal === "add" ? "Add User" : "Edit User"}</h3>
+              <button onClick={closeModal} className="rounded p-1 text-muted-foreground hover:bg-muted"><X size={14} /></button>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: "Full name", key: "name", type: "text", placeholder: "e.g. Ahmad Faris" },
+                { label: "Email", key: "email", type: "email", placeholder: "user@example.com" },
+              ].map(({ label, key, type, placeholder }) => (
+                <div key={key}>
+                  <label className="mb-1 block text-[11px] font-medium text-muted-foreground">{label}</label>
+                  <input type={type} value={form[key as keyof FormState]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} placeholder={placeholder} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+              ))}
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Role</label>
+                <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="buyer">Buyer</option>
+                  <option value="business_account">Business Account</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                  <KeyRound size={11} /> Password {modal === "edit" && <span className="font-normal text-muted-foreground">(leave blank to keep current)</span>}
+                </label>
+                <input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder={modal === "add" ? "Min. 8 characters" : "New password (optional)"} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={closeModal} disabled={saving} className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted">Cancel</button>
+              <button onClick={() => void handleSave()} disabled={saving} className="rounded-lg bg-foreground px-4 py-2 text-xs font-medium text-background disabled:opacity-50">
+                {saving ? <Loader2 size={12} className="animate-spin" /> : modal === "add" ? "Create" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CustomersTab() {
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [search, setSearch] = useState("");
@@ -2548,7 +2720,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["customers", "Customers"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -2572,6 +2744,7 @@ export default function AdminPage() {
       {tab === "orders" && <OrdersTab />}
       {tab === "revenue" && <RevenueTab />}
       {tab === "customers" && <CustomersTab />}
+      {tab === "users" && <UsersTab />}
       </div>
     </div>
   );

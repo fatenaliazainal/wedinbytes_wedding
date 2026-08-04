@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 import {
   businessProfileTable,
   db,
@@ -509,6 +510,96 @@ router.patch("/admin/users/:id/role", async (req, res) => {
   }
   res.json(updated);
 });
+
+// ── Admin user management ────────────────────────────────────────────────────
+
+router.get("/admin/users", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  try {
+    const users = await db
+      .select({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role, createdAt: userTable.createdAt })
+      .from(userTable)
+      .orderBy(desc(userTable.createdAt));
+    res.json(users);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list users");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/users", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const name = String(req.body?.name ?? "").trim();
+  const email = String(req.body?.email ?? "").trim().toLowerCase();
+  const password = String(req.body?.password ?? "");
+  const role = String(req.body?.role ?? "buyer");
+  if (!name || !email || password.length < 8 || !["buyer", "business_account", "admin"].includes(role)) {
+    res.status(400).json({ error: "Name, email, role, and a password of at least 8 characters are required." });
+    return;
+  }
+  try {
+    const [existing] = await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, email)).limit(1);
+    if (existing) { res.status(409).json({ error: "A user with this email already exists." }); return; }
+    const passwordHash = await bcrypt.hash(password, 12);
+    const [created] = await db.insert(userTable).values({ name, email, passwordHash, role }).returning({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role, createdAt: userTable.createdAt });
+    res.status(201).json(created);
+  } catch (err) {
+    req.log.error({ err }, "Failed to create user");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/users/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid user ID" }); return; }
+  const [target] = await db.select().from(userTable).where(eq(userTable.id, id)).limit(1);
+  if (!target) { res.status(404).json({ error: "User not found" }); return; }
+  const updates: Record<string, unknown> = {};
+  if (req.body?.name !== undefined) updates.name = String(req.body.name).trim();
+  if (req.body?.email !== undefined) {
+    const email = String(req.body.email).trim().toLowerCase();
+    const [conflict] = await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, email)).limit(1);
+    if (conflict && conflict.id !== id) { res.status(409).json({ error: "Email already in use by another account." }); return; }
+    updates.email = email;
+  }
+  if (req.body?.role !== undefined) {
+    const role = String(req.body.role);
+    if (!["buyer", "business_account", "admin"].includes(role)) { res.status(400).json({ error: "Invalid role." }); return; }
+    updates.role = role;
+  }
+  if (req.body?.password) {
+    const pw = String(req.body.password);
+    if (pw.length < 8) { res.status(400).json({ error: "Password must be at least 8 characters." }); return; }
+    updates.passwordHash = await bcrypt.hash(pw, 12);
+  }
+  if (Object.keys(updates).length === 0) { res.status(400).json({ error: "No fields to update." }); return; }
+  try {
+    const [updated] = await db.update(userTable).set(updates).where(eq(userTable.id, id)).returning({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role, createdAt: userTable.createdAt });
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to update user");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/admin/users/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid user ID" }); return; }
+  const [target] = await db.select({ id: userTable.id, role: userTable.role }).from(userTable).where(eq(userTable.id, id)).limit(1);
+  if (!target) { res.status(404).json({ error: "User not found" }); return; }
+  if (target.id === (req.session as any).userId) { res.status(403).json({ error: "You cannot delete your own account." }); return; }
+  try {
+    await db.delete(userTable).where(eq(userTable.id, id));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete user");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 router.patch("/admin/orders/:id", async (req, res) => {
   if (!adminGuard(req, res)) return;
