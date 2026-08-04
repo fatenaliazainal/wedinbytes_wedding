@@ -14,7 +14,9 @@ function injectGoogleFont(families: string[]) {
   document.head.appendChild(link);
 }
 
-function applyDesignTokens(design: CardDesign) {
+// Returns the design-level font families so the caller can batch them with
+// any per-invitation overrides into a single injectGoogleFont call.
+function applyDesignTokens(design: CardDesign): string[] {
   const root = document.documentElement;
   if (design.colorPrimary) root.style.setProperty("--primary", design.colorPrimary);
   if (design.colorSecondary) root.style.setProperty("--secondary", design.colorSecondary);
@@ -27,15 +29,15 @@ function applyDesignTokens(design: CardDesign) {
   if (design.colorForeground) root.style.setProperty("--foreground", design.colorForeground);
 
   const fonts: string[] = [];
-  if (design.fontHeading) fonts.push(design.fontHeading);
-  if (design.fontBody) fonts.push(design.fontBody);
-  if (fonts.length) {
-    injectGoogleFont(fonts);
-    if (design.fontHeading)
-      root.style.setProperty("--font-heading", `"${design.fontHeading}", serif`);
-    if (design.fontBody)
-      root.style.setProperty("--font-body", `"${design.fontBody}", serif`);
+  if (design.fontHeading) {
+    fonts.push(design.fontHeading);
+    root.style.setProperty("--font-heading", `"${design.fontHeading}", serif`);
   }
+  if (design.fontBody) {
+    fonts.push(design.fontBody);
+    root.style.setProperty("--font-body", `"${design.fontBody}", serif`);
+  }
+  return fonts;
 }
 
 export type DesignOverrides = {
@@ -86,12 +88,14 @@ export function useDesign(overrides?: DesignOverrides) {
 
   useEffect(() => {
     if (design) {
-      applyDesignTokens(design);
+      const designFonts = applyDesignTokens(design);
       const overrideFonts = [
         overrides?.nameFontFamily,
         overrides?.bodyFontFamily,
       ].filter((font): font is string => Boolean(font));
-      if (overrideFonts.length) injectGoogleFont(overrideFonts);
+      // Merge both sets and inject in one call so neither overwrites the other.
+      const allFonts = [...new Set([...designFonts, ...overrideFonts])];
+      if (allFonts.length) injectGoogleFont(allFonts);
       // Apply per-invitation overrides on top of global design
       if (overrides) applyOverrides(overrides);
     }
