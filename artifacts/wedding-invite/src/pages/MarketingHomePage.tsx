@@ -216,17 +216,13 @@ export default function MarketingHomePage() {
                 {/*
                   Phone screen: 264 × 544 px (280 outer – 8px border each side).
                   CardThumbnail at containerWidth=264 renders naturally at 264 × 469 px.
-                  24 px paddingTop = safe area below the 28 px notch.
-                  Available height = 544 – 24 = 520 px.
-                  Uniform scale = 520 / 469 ≈ 1.109 → fills height with no distortion.
-                  All content (WALIMATUL URUS → floral bottom) stays fully visible.
+                  No extra paddingTop — the invitation's own internal top padding (28 px)
+                  lands just below the 28 px notch after scaling, exactly like the reference.
+                  Uniform scale = 544 / 469 ≈ 1.160 → fills the full screen, no empty space.
                 */}
-                <div
-                  className="absolute inset-0 overflow-hidden flex items-start justify-center"
-                  style={{ paddingTop: 24 }}
-                >
+                <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <div style={{ width: 264, height: 469, transform: "scale(1.109)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                    <div style={{ width: 264, height: 469, transform: "scale(1.160)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
                       <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={264} />
                     </div>
                   ) : (
