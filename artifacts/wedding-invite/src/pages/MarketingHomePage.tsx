@@ -111,7 +111,7 @@ export default function MarketingHomePage() {
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-4 py-2 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
                 <Heart size={12} />
                 SIGN UP
@@ -130,7 +130,7 @@ export default function MarketingHomePage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
@@ -139,7 +139,7 @@ export default function MarketingHomePage() {
             <div className="px-5 py-5 flex flex-col gap-2">
               <button
                 onClick={() => { navigate("/register"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 SIGN UP FREE
               </button>
@@ -274,7 +274,7 @@ export default function MarketingHomePage() {
               <div className="mt-9 flex flex-wrap gap-3">
                 <button
                   onClick={() => goToEditor()}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#3d5a3e] px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330]"
                 >
                   START PERSONALISING
                   <ChevronRight size={14} />
@@ -435,7 +435,7 @@ export default function MarketingHomePage() {
                         aria-selected={businessSlide === index}
                         aria-label={`Show business page ${index + 1}`}
                         onClick={() => setBusinessSlide(index)}
-                        className={`h-1.5 rounded-full transition-all ${businessSlide === index ? "w-6 bg-gray-900" : "w-1.5 bg-gray-300 hover:bg-gray-500"}`}
+                        className={`h-1.5 rounded-full transition-all ${businessSlide === index ? "w-6 bg-[#3d5a3e]" : "w-1.5 bg-gray-300 hover:bg-gray-500"}`}
                       />
                     ))}
                   </div>

@@ -36,6 +36,7 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "PRICE LIST", href: "/pricing" },
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
+  { label: "FOR BUSINESS", href: "/for-business" },
 ];
 
 const ICON_MAP: Record<string, LucideIcon> = {
