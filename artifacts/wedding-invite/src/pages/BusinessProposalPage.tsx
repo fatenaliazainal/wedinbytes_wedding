@@ -21,9 +21,11 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 
 const NAV_ITEMS: SiteNavItem[] = [
-  { label: "TEMPLATES", href: "/weddingcards/home" },
-  { label: "PRICING", href: "/pricing" },
-  { label: "HOW IT WORKS", href: "/faq" },
+  { label: "HOME", href: "/" },
+  { label: "CATALOG", href: "/weddingcards/home" },
+  { label: "PRICE LIST", href: "/pricing" },
+  { label: "FAQs", href: "/faq" },
+  { label: "REVIEWS", href: "/reviews" },
   { label: "FOR BUSINESS", href: "/for-business" },
 ];
 
@@ -112,10 +114,17 @@ export default function BusinessProposalPage() {
           ) : (
             <>
               <button
-                onClick={() => navigate("/register/business")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-5 py-2.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
+                onClick={() => navigate("/login")}
+                className="text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors tracking-widest"
               >
-                BECOME A PARTNER
+                LOG IN
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
+              >
+                <Heart size={12} />
+                SIGN UP
               </button>
             </>
           )
