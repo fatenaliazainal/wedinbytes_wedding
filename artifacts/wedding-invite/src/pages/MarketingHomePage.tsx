@@ -222,7 +222,7 @@ export default function MarketingHomePage() {
                 */}
                 <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                    <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative", marginTop: 30 }}>
                       <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
                     </div>
                   ) : (
