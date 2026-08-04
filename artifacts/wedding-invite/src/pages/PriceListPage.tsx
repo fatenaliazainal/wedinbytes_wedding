@@ -92,14 +92,20 @@ function PricingCard({
 
   return (
     <div
-      className={`relative flex flex-col h-full rounded-2xl p-5 transition-all duration-300 ${
-        highlighted
-          ? "bg-white border-2 border-green-200 shadow-xl shadow-green-100/60"
-          : "bg-white border border-gray-100 shadow-lg hover:shadow-xl"
-      }`}
+      className={`pricing-card relative flex flex-col h-full rounded-2xl p-5 transition-all duration-[280ms] ease-out cursor-default
+        hover:-translate-y-2 hover:scale-[1.02]
+        ${highlighted
+          ? "bg-white border-2 border-green-200 shadow-xl shadow-green-100/60 hover:shadow-[0_24px_48px_rgba(61,90,62,0.22)]"
+          : "bg-white border border-gray-100 shadow-lg hover:shadow-[0_20px_40px_rgba(31,41,55,0.14)]"
+        }`}
     >
+      {/* Shine sweep — clipped to card shape without clipping the badge above */}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden z-10">
+        <div className="pricing-card-shine absolute top-0 h-full w-[55%]" />
+      </div>
+
       {badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
            <span className="inline-flex items-center gap-1 rounded-full bg-[#3d5a3e] px-3 py-0.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-sm">
             <Sparkles size={10} />
             {badge}
@@ -159,7 +165,7 @@ function PricingCard({
 
       <button
         onClick={onChoose}
-         className={`w-full rounded py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
+         className={`relative z-20 w-full rounded py-2.5 text-[11px] font-bold tracking-widest transition-colors ${
           highlighted
             ? "bg-[#3d5a3e] text-white hover:bg-[#2d4330] shadow-md shadow-green-200"
             : "bg-gray-900 text-white hover:bg-gray-800"
