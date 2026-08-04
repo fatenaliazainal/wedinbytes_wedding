@@ -104,20 +104,79 @@ function fontFamilyStack(fontName?: string | null): string {
 // Font options split into two groups so customers can pick a script font for
 // names and a classic font for body text independently.
 const SCRIPT_FONTS = [
+  { value: "Dancing Script", label: "Dancing Script" },
+  // Used by the original FL001 catalogue template.
+  { value: "Playfair Display", label: "Playfair Display" },
+  { value: "Great Vibes", label: "Magnolia (Great Vibes)" },
+  { value: "Alex Brush", label: "Esthetique (Alex Brush)" },
+  { value: "Allura", label: "Allura" },
+  { value: "Pinyon Script", label: "Pinyon Script" },
+  { value: "Style Script", label: "Style Script" },
+  { value: "Petit Formal Script", label: "Petit Formal Script" },
+  { value: "Meow Script", label: "Meow Script" },
   { value: "Rouge Script", label: "Rouge Script" },
-  { value: "Miss Fajardose", label: "Miss Fajardose" },
-  { value: "Tangerine", label: "Tangerine" },
-  { value: "Playball", label: "Playball" },
+  { value: "Lily Script One", label: "Lily Script One" },
+  { value: "Playwrite South Africa", label: "Playwrite South Africa" },
+  { value: "Playwrite España", label: "Playwrite España" },
   { value: "Sacramento", label: "Sacramento" },
   { value: "Parisienne", label: "Parisienne" },
+  { value: "Tangerine", label: "Tangerine" },
+  { value: "Satisfy", label: "Satisfy" },
+  { value: "Italianno", label: "Italianno" },
+  { value: "Carattere", label: "Carattere" },
+  { value: "Comforter Brush", label: "Comforter Brush" },
+  { value: "Birthstone", label: "Birthstone" },
+  { value: "Cinzel Decorative", label: "Cinzel Decorative" },
+  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+  { value: "Ephesis", label: "Ephesis" },
+  { value: "Herr Von Muellerhoff", label: "Herr Von Muellerhoff" },
+  { value: "Monsieur La Doulaise", label: "Monsieur La Doulaise" },
+  { value: "Waterfall", label: "Waterfall" },
+  { value: "Lavishly Yours", label: "Lavishly Yours" },
+  { value: "Yellowtail", label: "Yellowtail" },
+  { value: "Mr Dafoe", label: "Mr Dafoe" },
+  { value: "Romanesco", label: "Romanesco" },
+  { value: "Miss Fajardose", label: "Miss Fajardose" },
+  { value: "Qwitcher Grypen", label: "Qwitcher Grypen" },
+  // Added
+  { value: "Playball", label: "Playball" },
   { value: "Corinthia", label: "Corinthia" },
   { value: "Mea Culpa", label: "Mea Culpa" },
   { value: "Playwrite NG Modern", label: "Playwrite Nigeria Modern" },
 ];
 
 const CLASSIC_FONTS = [
-  { value: "Libertinus Serif", label: "Libertinus Serif" },
+  { value: "Playfair Display", label: "Playfair Display" },
+  { value: "Poppins", label: "Poppins" },
+  { value: "Lato", label: "Lato" },
+  { value: "Georgia, serif", label: "Georgia" },
+  { value: "Arial, sans-serif", label: "Arial" },
+  { value: "Noto Serif", label: "Noto Serif" },
+  { value: "PT Serif", label: "PT Serif" },
+  { value: "Inria Serif", label: "Inria Serif" },
+  { value: "Google Sans Flex", label: "Google Sans Flex" },
   { value: "Montserrat", label: "Montserrat" },
+  { value: "Raleway", label: "Raleway" },
+  { value: "Nunito", label: "Nunito" },
+  { value: "EB Garamond", label: "EB Garamond" },
+  { value: "Josefin Sans", label: "Josefin Sans" },
+  { value: "Cinzel", label: "Cinzel" },
+  { value: "Libre Baskerville", label: "Libre Baskerville" },
+  { value: "Source Serif 4", label: "Source Serif 4" },
+  { value: "DM Serif Display", label: "DM Serif Display" },
+  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+  { value: "Jost", label: "Jost" },
+  { value: "Outfit", label: "Outfit" },
+  { value: "Plus Jakarta Sans", label: "Plus Jakarta Sans" },
+  { value: "Urbanist", label: "Urbanist" },
+  { value: "Spectral", label: "Spectral" },
+  { value: "Crimson Pro", label: "Crimson Pro" },
+  { value: "Cantata One", label: "Cantata One" },
+  { value: "Quattrocento", label: "Quattrocento" },
+  { value: "Cormorant", label: "Cormorant" },
+  { value: "Sorts Mill Goudy", label: "Sorts Mill Goudy" },
+  // Added
+  { value: "Libertinus Serif", label: "Libertinus Serif" },
   { value: "DM Sans", label: "DM Sans" },
   { value: "Enriqueta", label: "Enriqueta" },
   { value: "Merriweather", label: "Merriweather" },
@@ -745,7 +804,7 @@ export default function EditorPage({
             colorCard: tpl.colorCard ?? "0 0% 100%",
             openingAnimation: tpl.openingAnimation ?? "doors",
             nameFontFamily:
-              tpl.nameFontFamily ?? tpl.fontHeading ?? "Dancing Script",
+              tpl.nameFontFamily ?? tpl.fontHeading ?? "Rouge Script",
             nameFontSize: tpl.nameFontSize ?? "38",
             badgeFontSize: tpl.badgeFontSize ?? "24",
             greetingFontSize: (tpl as any).greetingFontSize ?? "16",
@@ -975,7 +1034,7 @@ export default function EditorPage({
           // admin styling changes flow through to all invitations automatically.
           // Buyer's saved overrides are still applied on top via invitationOwnsStyle below.
           const resolvedCode =
-            urlDesignCode ?? gd.designCode ?? d.designCode ?? "FL001";
+            urlDesignCode ?? d.designCode ?? gd.designCode ?? "FL001";
           const tpl = resolveTemplate(resolvedCode);
           setInheritedColors({
             nameColor: tpl.nameColor,

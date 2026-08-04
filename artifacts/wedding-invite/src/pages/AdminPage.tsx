@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import PricingTab from "@/components/PricingTab";
-import { publicInvitePath } from "@/lib/invite-url";
+import { publicInvitePath, publicInvitePathOrToken } from "@/lib/invite-url";
 import { hexToHsl } from "@/lib/color-format";
 import { HexColorInput } from "@/components/HexColorInput";
 
@@ -1938,7 +1938,7 @@ function OrdersTab() {
           <table className="w-full min-w-[760px] text-left text-xs"><thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground"><tr>{["Order ID","Customer","Design / Package","Amount","Payment","Website","Order date"].map((x) => <th key={x} className="px-2.5 py-2 font-medium">{x}</th>)}</tr></thead>
             <tbody className="divide-y divide-border">{orders.map((order) => <tr key={order.id} onClick={() => setSelected(order)} className="cursor-pointer hover:bg-muted/40">
               <td className="px-2.5 py-2 font-mono text-[11px]">#{order.id}</td><td className="px-2.5 py-2"><p className="font-medium">{order.customer?.name ?? "Unknown"}</p><p className="text-[10px] text-muted-foreground">{order.customer?.email}</p></td>
-              <td className="px-2.5 py-2"><p>{order.invitation ? `${order.invitation.brideName} & ${order.invitation.groomName}` : "—"}</p><p className="text-[10px] text-muted-foreground">{order.package?.name ?? "—"}</p></td>
+              <td className="px-2.5 py-2"><p>{order.invitation ? `${order.invitation.coverGroomName ?? order.invitation.groomName} & ${order.invitation.coverBrideName ?? order.invitation.brideName}` : "—"}</p><p className="text-[10px] text-muted-foreground">{order.package?.name ?? "—"}</p></td>
               <td className="px-2.5 py-2">{order.amount}</td><td className="px-2.5 py-2"><StatusBadge value={order.paymentStatus} /></td><td className="px-2.5 py-2"><StatusBadge value={order.invitation?.websiteStatus ?? "DISABLED"} /></td><td className="px-2.5 py-2 text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
             </tr>)}</tbody>
           </table>
@@ -1964,7 +1964,7 @@ function OrdersTab() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Invitation</p>
-                <p>{selected.invitation ? `${selected.invitation.brideName} & ${selected.invitation.groomName}` : "—"}</p>
+                <p>{selected.invitation ? `${selected.invitation.coverGroomName ?? selected.invitation.groomName} & ${selected.invitation.coverBrideName ?? selected.invitation.brideName}` : "—"}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Package</p>
@@ -2015,16 +2015,16 @@ function OrdersTab() {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                   {publicInvitePath(selected.invitation) ? (
-                     <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={publicInvitePath(selected.invitation) ?? undefined} target="_blank" rel="noreferrer">View Website</a>
+                   {publicInvitePathOrToken(selected.invitation) ? (
+                     <a className="flex-1 rounded-xl bg-primary px-3 py-2 text-center text-sm text-primary-foreground" href={publicInvitePathOrToken(selected.invitation) ?? undefined} target="_blank" rel="noreferrer">View Website</a>
                    ) : (
-                     <button disabled title="Enter both Cover names and the event date first" className="flex-1 cursor-not-allowed rounded-xl bg-muted px-3 py-2 text-center text-sm text-muted-foreground">View Website</button>
+                     <button disabled title="No invitation linked" className="flex-1 cursor-not-allowed rounded-xl bg-muted px-3 py-2 text-center text-sm text-muted-foreground">View Website</button>
                    )}
                    <button
                      className="rounded-xl border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
-                     disabled={!publicInvitePath(selected.invitation)}
+                     disabled={!publicInvitePathOrToken(selected.invitation)}
                      onClick={() => {
-                       const path = publicInvitePath(selected.invitation!);
+                       const path = publicInvitePathOrToken(selected.invitation!);
                        if (path) void navigator.clipboard.writeText(`${window.location.origin}${path}`);
                      }}
                    >
