@@ -574,12 +574,12 @@ export default function EditorPage({
     overlayEnabled: true,
     showFooter: true,
     footerText: "Dapatkan kad digital anda di:",
-    footerUrl: "wedinbytes.com",
+    footerUrl: "wedinstudio.com",
     socialLinks: [
-      { platform: "website", url: "https://wedinbytes.com" },
-      { platform: "tiktok", url: "https://tiktok.com/@wedinbytes" },
-      { platform: "instagram", url: "https://instagram.com/wedinbytes" },
-      { platform: "threads", url: "https://threads.net/@wedinbytes" },
+      { platform: "website", url: "https://wedinstudio.com" },
+      { platform: "tiktok", url: "https://tiktok.com/@wedinstudio" },
+      { platform: "instagram", url: "https://instagram.com/wedinstudio" },
+      { platform: "threads", url: "https://threads.net/@wedinstudio" },
     ],
     business: null,
   });
@@ -1006,7 +1006,7 @@ export default function EditorPage({
                 : (d.footerText ?? ""),
             footerUrl:
               mode === "buyer" || mode === "business"
-                ? ((adminDefaults?.footerUrl as string) ?? "wedinbytes.com")
+                ? ((adminDefaults?.footerUrl as string) ?? "wedinstudio.com")
                 : (d.footerUrl ?? ""),
             socialLinks:
               mode === "buyer" || mode === "business"
@@ -1910,11 +1910,11 @@ export default function EditorPage({
             <button
               onClick={() => navigate("/")}
               className="hover:opacity-70 transition-opacity"
-              aria-label="Wedinbytes logo"
+              aria-label="Wedinstudio logo"
             >
               <img
                 src={logo}
-                alt="Wedinbytes logo"
+                alt="Wedinstudio logo"
                 className="h-10 w-10 sm:h-11 sm:w-11 object-contain"
               />
             </button>

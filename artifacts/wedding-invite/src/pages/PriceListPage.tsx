@@ -380,7 +380,7 @@ export default function PriceListPage() {
       <SiteFooter />
 
       <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} Wedinbytes · All rights reserved
+        © {new Date().getFullYear()} Wedinstudio · All rights reserved
       </div>
     </div>
   );

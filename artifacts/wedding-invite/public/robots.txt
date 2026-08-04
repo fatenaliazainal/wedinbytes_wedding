@@ -1,5 +1,5 @@
-# Wedinbytes — robots.txt
-# https://wedinbytes.com
+# Wedinstudio — robots.txt
+# https://wedinstudio.com
 
 # ── Allow all well-behaved search crawlers ────────────────────────────────────
 User-agent: *
@@ -49,4 +49,4 @@ User-agent: Claude-Web
 Disallow: /
 
 # ── Sitemap ───────────────────────────────────────────────────────────────────
-Sitemap: https://wedinbytes.com/sitemap.xml
+Sitemap: https://wedinstudio.com/sitemap.xml

@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
     <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Wedinbytes Admin</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Wedinstudio Admin</h1>
           <p className="text-sm text-gray-500 mt-1">Enter the admin password to continue</p>
         </div>
 

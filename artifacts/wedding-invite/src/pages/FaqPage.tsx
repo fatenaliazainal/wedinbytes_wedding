@@ -25,9 +25,9 @@ const FAQS = [
     category: "General",
     items: [
       {
-        question: "What is Wedinbytes?",
+        question: "What is Wedinstudio?",
         answer:
-          "Wedinbytes is a digital wedding invitation platform that allows you to create and share a beautiful online wedding invitation with your guests.",
+          "Wedinstudio is a digital wedding invitation platform that allows you to create and share a beautiful online wedding invitation with your guests.",
       },
       {
         question: "What is a digital wedding invitation?",
@@ -47,7 +47,7 @@ const FAQS = [
       {
         question: "Do I need any technical knowledge?",
         answer:
-          "No. Wedinbytes is designed to be simple and easy to use. You do not need any technical knowledge to create your digital wedding invitation.",
+          "No. Wedinstudio is designed to be simple and easy to use. You do not need any technical knowledge to create your digital wedding invitation.",
       },
     ],
   },
@@ -102,7 +102,7 @@ const FAQS = [
       },
       {
         question: "Can my guests open the invitation on their phones?",
-        answer: "Yes. Wedinbytes digital wedding invitations are designed to work on mobile devices, tablets, and desktop computers.",
+        answer: "Yes. Wedinstudio digital wedding invitations are designed to work on mobile devices, tablets, and desktop computers.",
       },
     ],
   },
@@ -288,7 +288,7 @@ export default function FaqPage() {
       <SiteFooter />
 
       <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} Wedinbytes · All rights reserved
+        © {new Date().getFullYear()} Wedinstudio · All rights reserved
       </div>
     </div>
   );

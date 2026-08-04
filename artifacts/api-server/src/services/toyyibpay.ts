@@ -68,7 +68,7 @@ function publicBaseUrl() {
 }
 
 function cleanBillText(value: string, maxLength: number) {
-  return value.replace(/[^a-zA-Z0-9 _]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength) || "Wedinbytes";
+  return value.replace(/[^a-zA-Z0-9 _]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength) || "Wedinstudio";
 }
 
 function toCents(amount: string | number) {

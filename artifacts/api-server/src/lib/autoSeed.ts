@@ -77,13 +77,13 @@ export async function autoSeedIfEmpty() {
       if (existingAdmin.length === 0) {
         logger.info("Auto-seed: seeding admin user...");
         await db.insert(userTable).values({
-          email: "admin@wedinbytes.com",
+          email: "admin@wedinstudio.com",
           passwordHash,
           name: "Admin",
           role: "admin",
         });
         logger.info(
-          "Auto-seed: admin user seeded (email: admin@wedinbytes.com).",
+          "Auto-seed: admin user seeded (email: admin@wedinstudio.com).",
         );
       } else {
         logger.info("Auto-seed: updating admin password from SEED_SECRET...");

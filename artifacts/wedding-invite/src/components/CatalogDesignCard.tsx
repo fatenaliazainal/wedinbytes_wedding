@@ -33,7 +33,7 @@ function PreviewFrame({
     >
       <img
         src="/logo-wedinbytes.png"
-        alt="WedInBytes"
+        alt="Wedinstudio"
         draggable={false}
         className="w-16 opacity-60 select-none pointer-events-none"
         style={{ objectFit: "contain" }}

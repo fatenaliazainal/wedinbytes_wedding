@@ -1070,7 +1070,7 @@ function SocialIcon({ platform }: { platform: string }) {
   if (p === "instagram") return <img src="/icons/instagram.png" alt="Instagram" className={imgCls} />;
   if (p === "tiktok")    return <img src="/icons/tiktok.png"    alt="TikTok"    className={imgCls} />;
   if (p === "threads")   return <img src="/icons/threads.jpg"   alt="Threads"   className={imgCls + " rounded-full"} />;
-  if (p === "website" || p === "brand" || p === "logo" || p === "wedinstudio" || p === "wedinbytes") {
+  if (p === "website" || p === "brand" || p === "logo" || p === "wedinstudio" || p === "wedinbytes" // wedinbytes kept for legacy data) {
     return (
       <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
         <rect x="4" y="12" width="32" height="16" rx="2" fill="currentColor" />

@@ -14,7 +14,7 @@ export default function SiteFooter() {
               <Heart size={18} fill="currentColor" />
             </div>
             <div>
-              <p className="text-base font-semibold tracking-tight text-black">Wedinbytes</p>
+              <p className="text-base font-semibold tracking-tight text-black">Wedinstudio</p>
               <p className="text-xs sm:text-sm text-black/55">Digital invitation cards for your event.</p>
             </div>
           </div>

@@ -376,7 +376,7 @@ export default function MarketingHomePage() {
           <div className="text-center mb-9">
             <p className="text-xs font-semibold tracking-widest text-[#3d5a3e] uppercase mb-2">Our Network</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Collaborations & Businesses</h2>
-            <p className="mt-2 text-sm text-gray-500 max-w-lg mx-auto">Meet the talented businesses creating beautiful celebrations with Wedinbytes.</p>
+            <p className="mt-2 text-sm text-gray-500 max-w-lg mx-auto">Meet the talented businesses creating beautiful celebrations with Wedinstudio.</p>
           </div>
           {logoCollaborations.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center text-sm text-gray-400">Our collaboration partners will appear here soon.</div>
@@ -487,7 +487,7 @@ export default function MarketingHomePage() {
       <SiteFooter />
 
       <div className="bg-[#2d4330] text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} Wedinbytes · All rights reserved
+        © {new Date().getFullYear()} Wedinstudio · All rights reserved
       </div>
     </div>
   );

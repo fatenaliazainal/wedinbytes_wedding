@@ -48,11 +48,11 @@ export default function SiteHeader({
           <button
             onClick={onLogoClick ?? (() => navigate("/"))}
             className="hover:opacity-70 transition-opacity"
-            aria-label="Wedinbytes logo"
+            aria-label="Wedinstudio logo"
           >
             <img
               src={logo}
-              alt="Wedinbytes logo"
+              alt="Wedinstudio logo"
               className="h-8 sm:h-10 w-auto object-contain"
             />
           </button>

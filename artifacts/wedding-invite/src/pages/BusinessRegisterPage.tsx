@@ -8,7 +8,7 @@ const PERKS = [
   "Manage all client invitations from one dashboard",
   "Receive orders via your branded order form",
   "Share RSVP summaries with each client",
-  "Public business profile on Wedinbytes",
+  "Public business profile on Wedinstudio",
 ];
 
 export default function BusinessRegisterPage() {
@@ -51,11 +51,11 @@ export default function BusinessRegisterPage() {
             type="button"
             onClick={() => navigate("/")}
             className="mx-auto block hover:opacity-70 transition-opacity"
-            aria-label="Go to Wedinbytes home"
+            aria-label="Go to Wedinstudio home"
           >
             <img
               src={logo}
-              alt="Wedinbytes"
+              alt="Wedinstudio"
               className="mx-auto h-16 w-auto object-contain"
             />
           </button>

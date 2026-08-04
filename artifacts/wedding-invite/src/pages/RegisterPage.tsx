@@ -40,11 +40,11 @@ export default function RegisterPage() {
             type="button"
             onClick={() => navigate("/")}
             className="mx-auto block hover:opacity-70 transition-opacity"
-              aria-label="Go to Wedinbytes home"
+              aria-label="Go to Wedinstudio home"
           >
             <img
               src={logo}
-                alt="Wedinbytes"
+                alt="Wedinstudio"
               className="mx-auto h-20 w-auto object-contain"
             />
           </button>
