@@ -208,16 +208,22 @@ export default function MarketingHomePage() {
                 }}
                 aria-label="Open live demo"
               >
+                {/* Dynamic island / notch */}
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                   style={{ width: 86, height: 26, borderRadius: "0 0 17px 17px" }}
                 />
-                <div className="absolute inset-0">
+                {/*
+                  Option A: uniform scale-to-fill.
+                  CardThumbnail natural size at containerWidth=224: 224×398 px.
+                  Phone screen (238 outer – 14 border): 224×456 px.
+                  Scale factor = 456/398 ≈ 1.146  →  fills height, slight crop on sides.
+                  transformOrigin: top center keeps the couple names at the top visible.
+                */}
+                <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
                   {demoInvitation && designs[0] ? (
-                    <div className="absolute inset-0 flex items-start justify-center overflow-hidden">
-                      <div className="mt-1 h-[calc(100%-0.25rem)] w-full origin-top scale-y-[1.58]">
-                        <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
-                      </div>
+                    <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
+                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
                     </div>
                   ) : (
                     <div className="w-full h-full bg-[#f6f1e7]" />
