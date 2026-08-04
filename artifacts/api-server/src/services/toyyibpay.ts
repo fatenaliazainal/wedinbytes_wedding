@@ -24,16 +24,33 @@ let duitNowQrStatusCache: { activated: boolean; checkedAt: number } | undefined;
 const DUITNOW_QR_STATUS_CACHE_MS = 5 * 60 * 1000;
 
 function getConfig() {
-  const userSecretKey = process.env.TOYYIBPAY_USER_SECRET_KEY?.trim();
-  const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE?.trim();
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // In production use live credentials; in dev use sandbox credentials.
+  const userSecretKey = (
+    isProduction
+      ? process.env.TOYYIBPAY_LIVE_USER_SECRET_KEY ?? process.env.TOYYIBPAY_USER_SECRET_KEY
+      : process.env.TOYYIBPAY_USER_SECRET_KEY
+  )?.trim();
+
+  const categoryCode = (
+    isProduction
+      ? process.env.TOYYIBPAY_LIVE_CATEGORY_CODE ?? process.env.TOYYIBPAY_CATEGORY_CODE
+      : process.env.TOYYIBPAY_CATEGORY_CODE
+  )?.trim();
+
   if (!userSecretKey || !categoryCode) {
     throw new Error("ToyyibPay is not configured. Add the user secret key and category code.");
   }
 
+  // TOYYIBPAY_SANDBOX is only respected outside production — prevents accidental sandbox
+  // mode if the secret is also present in the production environment.
+  const useSandbox = !isProduction && process.env.TOYYIBPAY_SANDBOX === "true";
+
   return {
     userSecretKey,
     categoryCode,
-    baseUrl: process.env.TOYYIBPAY_SANDBOX === "true" ? SANDBOX_BASE_URL : LIVE_BASE_URL,
+    baseUrl: useSandbox ? SANDBOX_BASE_URL : LIVE_BASE_URL,
   };
 }
 
@@ -209,7 +226,12 @@ export function isValidToyyibPayCallbackHash(input: {
   refno: string;
   receivedHash: string;
 }) {
-  const secret = process.env.TOYYIBPAY_USER_SECRET_KEY?.trim();
+  const isProduction = process.env.NODE_ENV === "production";
+  const secret = (
+    isProduction
+      ? process.env.TOYYIBPAY_LIVE_USER_SECRET_KEY ?? process.env.TOYYIBPAY_USER_SECRET_KEY
+      : process.env.TOYYIBPAY_USER_SECRET_KEY
+  )?.trim();
   if (!secret) return false;
   const expected = createHash("md5")
     .update(`${secret}${input.status}${input.orderId}${input.refno}ok`)
