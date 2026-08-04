@@ -409,9 +409,9 @@ function DesignPicker({
               key={design.designCode}
               type="button"
               onClick={() => onSelect(isActive ? "" : design.designCode)}
-              className={`group relative overflow-hidden rounded-xl border-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${
+              className={`group relative overflow-hidden rounded-xl border text-left transition-all focus:outline-none ${
                 isActive
-                  ? "border-[#3d5a3e] shadow-md"
+                  ? "border-gray-300 shadow-[0_0_0_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.10)]"
                   : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
               }`}
             >
@@ -434,7 +434,7 @@ function DesignPicker({
 
               {/* Selected tick */}
               {isActive && (
-                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#3d5a3e] text-white shadow">
+                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-white shadow-sm">
                   <Check size={11} strokeWidth={3} />
                 </div>
               )}

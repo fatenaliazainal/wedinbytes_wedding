@@ -3971,24 +3971,29 @@ export default function EditorPage({
           <div className="sticky top-6 w-full space-y-2">
             {/* Full preview + reset row */}
             <div className="flex items-center justify-between px-1">
-              <button
-                onClick={async () => {
-                  if (!customerEditLocked) await handleSave();
-                  const token = inv.token;
-                  const path = publicInvitePathOrToken(inv);
-                  if (!token || !path) return;
-                  window.open(`${BASE}${path}`, "_blank");
-                }}
-                className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors disabled:opacity-50"
-                disabled={saving || !previewReady}
-                title={undefined}
-              >
-                {saving
-                  ? "Saving…"
-                  : customerEditLocked
-                    ? "↗ View Preview"
-                    : "↗ Full Preview"}
-              </button>
+              {(() => {
+                const previewPath = publicInvitePathOrToken(inv);
+                const previewUrl = previewPath ? `${BASE}${previewPath}` : undefined;
+                const label = saving ? "Saving…" : customerEditLocked ? "↗ View Preview" : "↗ Full Preview";
+                return previewUrl && !saving && previewReady ? (
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => { if (!customerEditLocked) void handleSave(); }}
+                    className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors"
+                  >
+                    {label}
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 rounded-full px-3 py-1 font-medium opacity-50 cursor-not-allowed"
+                  >
+                    {label}
+                  </button>
+                );
+              })()}
               {previewOpened && (
                 <button
                   onClick={() => setPreviewOpened(false)}
