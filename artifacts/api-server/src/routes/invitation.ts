@@ -330,6 +330,12 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
+    // Prevent identity fields being changed after payment (would allow reuse for a different event)
+    const IDENTITY_FIELDS = ["groomName", "brideName", "eventDate"] as const;
+    if (req.session.role !== "admin" && isPaid && IDENTITY_FIELDS.some((f) => f in body)) {
+      res.status(423).json({ error: "Nama pengantin dan tarikh majlis tidak boleh ditukar selepas pembayaran." });
+      return;
+    }
     const requestedPackageId = "packageId" in body
       ? (body.packageId == null || body.packageId === "" ? null : Number(body.packageId))
       : (rows[0].packageId ?? null);

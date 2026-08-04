@@ -31,6 +31,7 @@ import {
   Plus,
   Trash2,
   Gift,
+  Lock,
 } from "lucide-react";
 import {
   useListDesigns,
@@ -429,7 +430,7 @@ function Field({
 }
 
 const inputCls =
-  "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
+  "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed";
 const selectCls =
   "w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white";
 const textareaCls =
@@ -1381,6 +1382,8 @@ export default function EditorPage({
     mode !== "demo" &&
     inv.isPurchased &&
     isEventDatePassed(inv.eventDate);
+  // Lock the 3 identity fields after payment so the invitation cannot be repurposed for a different event
+  const identityLocked = mode !== "admin" && mode !== "demo" && inv.isPurchased;
   const publicPath = publicInvitePathOrToken(inv);
   const previewReady = Boolean(inv.token);
 
@@ -2075,6 +2078,8 @@ export default function EditorPage({
                       value={inv.groomName}
                       onChange={(e) => setI("groomName")(e.target.value)}
                       placeholder={t("placeholders.groomFullName")}
+                      disabled={identityLocked}
+                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                   <Field label="Nama Penuh Pengantin Perempuan">
@@ -2083,9 +2088,14 @@ export default function EditorPage({
                       value={inv.brideName}
                       onChange={(e) => setI("brideName")(e.target.value)}
                       placeholder={t("placeholders.brideFullName")}
+                      disabled={identityLocked}
+                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                 </div>
+                {identityLocked && (
+                  <p className="flex items-center gap-1.5 text-xs text-amber-600"><Lock size={11} />Nama pengantin tidak boleh ditukar selepas pembayaran.</p>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Nama Cover Pengantin Lelaki">
                     <input
@@ -2278,6 +2288,8 @@ export default function EditorPage({
                       value={inv.groomName}
                       onChange={(e) => setI("groomName")(e.target.value)}
                       placeholder={t("placeholders.groomFullName")}
+                      disabled={identityLocked}
+                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                   <Field label="Nama Penuh Pengantin Perempuan">
@@ -2286,9 +2298,14 @@ export default function EditorPage({
                       value={inv.brideName}
                       onChange={(e) => setI("brideName")(e.target.value)}
                       placeholder={t("placeholders.brideFullName")}
+                      disabled={identityLocked}
+                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                 </div>
+                {identityLocked && (
+                  <p className="flex items-center gap-1.5 text-xs text-amber-600"><Lock size={11} />Nama pengantin tidak boleh ditukar selepas pembayaran.</p>
+                )}
                 <Field label="Inisial Halaman 2">
                   <input
                     className={inputCls}
@@ -2310,7 +2327,12 @@ export default function EditorPage({
                       className={inputCls}
                       value={inv.eventDate}
                       onChange={(e) => setI("eventDate")(e.target.value)}
+                      disabled={identityLocked}
+                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
+                    {identityLocked && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-600"><Lock size={11} />Tarikh tidak boleh ditukar selepas pembayaran.</p>
+                    )}
                   </Field>
                   <Field label="Hari (auto)">
                     <input

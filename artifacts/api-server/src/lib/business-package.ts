@@ -15,6 +15,7 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "venueAddress", label: "Venue address", type: "textarea", invitationField: "venueAddress" },
     { key: "venueHijriDate", label: "Islamic date", type: "text", invitationField: "venueHijriDate" },
     { key: "venueMapUrl", label: "Google Maps link", type: "url", invitationField: "venueMapUrl" },
+    { key: "venueWazeUrl", label: "Waze link", type: "url", invitationField: "venueWazeUrl" },
     { key: "musicUrl", label: "Song / music link", type: "url", invitationField: "musicUrl", placeholder: "https://www.youtube.com/watch?v=..." },
     { key: "itinerary", label: "Event programme", type: "textarea", invitationField: "itinerary" },
     { key: "contactPhone", label: "Contact number", type: "tel", required: true, invitationField: "contactPhone" },
@@ -24,6 +25,7 @@ export const DEFAULT_BUSINESS_FORM_CONFIG: PricingFormConfig = {
     { key: "rsvpDeadline", label: "RSVP deadline", type: "text", invitationField: "rsvpDeadline" },
     { key: "rsvpMaxOverallGuests", label: "Overall guest limit", type: "text", defaultValue: "1000", invitationField: "rsvpMaxOverallGuests" },
     { key: "rsvpMaxGuestsPerInvitation", label: "Guest limit per invitation", type: "text", defaultValue: "10", invitationField: "rsvpMaxGuestsPerInvitation" },
+    { key: "designCode", label: "Preferred design", type: "text", invitationField: "designCode" },
   ],
   hiddenFields: {
     eventDay: "",
@@ -78,6 +80,7 @@ const INVITATION_FIELDS = new Set([
   "showFrontText",
   "greetingText", "doaText", "invitationText", "hostName", "venueHijriDate",
   "hostCount", "schedule", "itinerary", "galleryImages",
+  "venueWazeUrl",
   "rsvpEnabled", "rsvpAdditionalInfo", "rsvpDeadline", "rsvpIntroText", "rsvpFormNote",
   "rsvpMaxOverallGuests", "rsvpMaxGuestsPerInvitation", "rsvpTimeSlots",
   "designCode", "openingAnimation", "openButtonText", "colorPrimary", "colorSecondary",

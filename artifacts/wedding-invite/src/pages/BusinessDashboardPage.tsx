@@ -542,7 +542,7 @@ export default function BusinessDashboardPage() {
                         return (
                           <div key={item.id} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors" data-testid={`row-invitation-${item.id}`}>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900">{item.groomName} & {item.brideName}</p>
+                              <p className="font-medium text-gray-900">{[item.groomName, item.brideName].filter(Boolean).join(" & ") || "Untitled Invitation"}</p>
                               <p className="text-sm text-gray-500 mt-0.5">{item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}</p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -850,21 +850,25 @@ export default function BusinessDashboardPage() {
                          const inviteUrl = publicPath ? `${window.location.origin}${BASE}${publicPath}` : "";
                         const packageName = packages.find((pkg) => pkg.id === item.packageId)?.name;
 
+                        const displayName = [item.groomName, item.brideName].filter(Boolean).join(" & ") || "Untitled Invitation";
+
                         return (
                           <div key={item.id} className="grid gap-3 border-b border-gray-100 px-4 py-3.5 last:border-b-0 hover:bg-gray-50/70 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(190px,1fr)_minmax(220px,auto)] lg:items-center" data-testid={`row-invitation-${item.id}`}>
+                            {/* Name + status */}
                             <div className="min-w-0">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                  <h4 className="truncate text-sm font-semibold text-gray-900">{item.groomName} & {item.brideName}</h4>
-                                  <p className="mt-0.5 truncate text-xs text-gray-500">{packageName || item.eventType}</p>
+                                  <h4 className="truncate text-sm font-semibold text-gray-900">{displayName}</h4>
+                                  <p className="mt-0.5 truncate text-xs text-gray-500">{packageName || item.eventType || "—"}</p>
                                 </div>
-                                <span className={`inline-block shrink-0 text-xs px-2.5 py-1 rounded-full ${item.isPurchased ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
+                                <span className={`inline-block shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${item.isPurchased ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
                                   {item.isPurchased ? "Active" : "Pending"}
                                 </span>
                               </div>
                             </div>
 
-                            <div className="grid min-w-0 grid-cols-1 gap-1 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-1">
+                            {/* Date + venue */}
+                            <div className="flex min-w-0 flex-col gap-1 text-xs text-gray-500">
                               <span className="truncate">
                                 <Calendar size={13} className="mr-1.5 inline-block text-gray-400" />
                                 {item.eventDate ? new Date(item.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Date not set"}
@@ -872,6 +876,7 @@ export default function BusinessDashboardPage() {
                               <span className="truncate">{item.venueCity || "Venue not set"}</span>
                             </div>
 
+                            {/* Actions */}
                             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                               <span className={`inline-block text-xs px-2.5 py-1 rounded-full ${countdown.variant === "success" ? "bg-green-50 text-green-700" : countdown.variant === "warning" ? "bg-yellow-50 text-yellow-700" : countdown.variant === "muted" ? "bg-gray-100 text-gray-600" : "bg-blue-50 text-blue-700"}`}>
                                 {countdown.label}
@@ -884,7 +889,7 @@ export default function BusinessDashboardPage() {
                                   Preview
                                 </a>
                               ) : (
-                                <button disabled title="The invitation URL is generated from the Cover Groom Name and Cover Bride Name" className="inline-flex cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400">
+                                <button disabled title="Set Cover Groom Name and Cover Bride Name in the editor first" className="inline-flex cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400">
                                   Preview
                                 </button>
                               )}
@@ -899,30 +904,26 @@ export default function BusinessDashboardPage() {
                                 data-testid={`button-copy-rsvp-link-${item.id}`}
                               >
                                 <Users size={13} />
-                                RSVP Link
+                                <span className="hidden sm:inline">RSVP Link</span>
                               </button>
                               <button
                                 onClick={async () => {
                                   if (!inviteUrl) {
-                                    toast.info("Enter both Cover Groom Name and Cover Bride Name, and set the event date first.");
+                                    toast.info("Set Cover Groom Name, Cover Bride Name and event date in the editor first.");
                                     return;
                                   }
                                   await navigator.clipboard.writeText(inviteUrl);
                                   toast.success("Link copied");
                                 }}
-                                 disabled={!inviteUrl}
-                                 className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+                                disabled={!inviteUrl}
+                                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Copy invitation link"
+                                title={inviteUrl ? "Copy invitation link" : "Set Cover Groom Name, Cover Bride Name and date first"}
                                 data-testid={`button-copy-link-${item.id}`}
                               >
                                 <Copy size={15} />
                               </button>
-                              {!inviteUrl && (
-                                <span className="basis-full text-[11px] leading-relaxed text-gray-400">
-                                  Invitation URL is generated from the Cover Groom Name and Cover Bride Name.
-                                </span>
-                              )}
-                              <button onClick={() => setDeleteInvitation(item)} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={`Delete invitation for ${item.groomName} and ${item.brideName}`} data-testid={`button-delete-invitation-${item.id}`}>
+                              <button onClick={() => setDeleteInvitation(item)} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={`Delete invitation for ${displayName}`} data-testid={`button-delete-invitation-${item.id}`}>
                                 <Trash2 size={15} />
                               </button>
                               {!item.isPurchased && (
@@ -965,14 +966,26 @@ export default function BusinessDashboardPage() {
                       {paymentHistory.map((payment) => (
                         <div key={payment.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-900">{payment.invitation ? `${payment.invitation.groomName} & ${payment.invitation.brideName}` : payment.packageName || "Wedding invitation"}</p>
-                            <p className="mt-1 text-xs text-gray-500">{payment.packageName || "Invitation package"} · {payment.paymentReference || "Payment completed"}{payment.gatewayRefNo && <span className="ml-1 text-gray-400">({payment.gatewayRefNo})</span>}</p>
+                            <p className="font-semibold text-gray-900">
+                              {payment.invitation
+                                ? [payment.invitation.groomName, payment.invitation.brideName].filter(Boolean).join(" & ") || "Untitled Invitation"
+                                : payment.packageName || "Wedding invitation"}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-500">{payment.packageName || "Invitation package"} · {payment.paymentReference || "—"}{payment.gatewayRefNo && <span className="ml-1 text-gray-400">({payment.gatewayRefNo})</span>}</p>
                             <p className="mt-2 text-xs text-gray-400">{new Date(payment.paidAt || payment.createdAt).toLocaleDateString("ms-MY", { day: "2-digit", month: "short", year: "numeric" })}</p>
                           </div>
                           <div className="flex items-center justify-between gap-4 sm:justify-end">
-                            {payment.paymentStatus.toUpperCase() === "PAID" ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span>
-                              : payment.paymentStatus.toUpperCase() === "PENDING" ? <button onClick={() => void startPayment({ orderId: payment.id })} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-60"><CreditCard size={12} /> {paymentStartingFor === payment.id ? "Starting..." : "Pay Now"}</button>
-                              : payment.paymentStatus.toUpperCase() === "EXPIRED" ? <button onClick={() => void (payment.invitation?.id ? startPayment({ invitationId: payment.invitation.id }) : undefined)} disabled={!payment.invitation?.id || paymentStartingFor === payment.invitation?.id} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-600 disabled:opacity-50"><CreditCard size={12} /> Retry Payment</button>
+                            {payment.paymentStatus.toUpperCase() === "PAID"
+                              ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Paid</span>
+                              : payment.paymentStatus.toUpperCase() === "PENDING"
+                              ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-semibold text-yellow-700">Pending</span>
+                                  <button onClick={() => setSection("clients")} className="text-[11px] font-semibold text-gray-500 underline underline-offset-2 hover:text-gray-800">Go to Invitations</button>
+                                </div>
+                              )
+                              : payment.paymentStatus.toUpperCase() === "EXPIRED"
+                              ? <button onClick={() => void (payment.invitation?.id ? startPayment({ invitationId: payment.invitation.id }) : undefined)} disabled={!payment.invitation?.id || paymentStartingFor === payment.invitation?.id} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-600 disabled:opacity-50"><CreditCard size={12} /> Retry Payment</button>
                               : <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">Failed</span>}
                             <span className="text-lg font-semibold text-gray-900">RM {Number(payment.amount || 0).toFixed(2)}</span>
                           </div>

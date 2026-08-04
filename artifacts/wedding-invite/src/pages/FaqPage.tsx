@@ -85,7 +85,11 @@ const FAQS = [
     items: [
       {
         question: "Can I edit my wedding details after creating the invitation?",
-        answer: "Yes. You can update your available wedding details and content after creating your invitation.",
+        answer: "Yes. You can update most details — including venue, time, music, gallery, and RSVP settings — at any time before your event.",
+      },
+      {
+        question: "Can I change the couple names or event date after I have paid?",
+        answer: "No. The couple names and event date are locked once payment is made. This ensures your invitation stays tied to your specific event. All other details remain fully editable.",
       },
       {
         question: "Can I choose the language of my invitation?",
