@@ -432,10 +432,12 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         payerPhone: invitation.contactPhone?.trim() || businessProfile?.phone?.trim() || undefined,
       });
 
-      // Persist the new billCode so future retries can reuse it.
+      // Persist the new billCode and sync the amount to the current package price.
+      // If an existing order is reused after a price change, the stored amount
+      // would otherwise drift from the bill amount and break verification matching.
       await db
         .update(orderTable)
-        .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), updatedAt: new Date() })
+        .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), amount: pkg.price, updatedAt: new Date() })
         .where(eq(orderTable.id, order.id));
 
       res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode, replacedExpired });
