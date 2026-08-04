@@ -186,6 +186,31 @@ export default function BusinessDashboardPage() {
     if (user?.role === "business_account") void load();
   }, [user?.role]);
 
+  // Silently refresh only the clients list — called by polling and visibility change.
+  const refreshClients = async () => {
+    if (user?.role !== "business_account") return;
+    try {
+      const res = await fetch(`${BASE}/api/business/clients`, { credentials: "include", cache: "no-store" });
+      if (res.ok) setClients(await res.json());
+    } catch {
+      // silent — keep stale data rather than showing an error for background polls
+    }
+  };
+
+  // Poll every 30 s so new form submissions appear without a manual reload.
+  useEffect(() => {
+    if (user?.role !== "business_account") return;
+    const id = setInterval(() => { void refreshClients(); }, 30_000);
+    return () => clearInterval(id);
+  }, [user?.role]);
+
+  // Refresh immediately whenever the planner switches back to this tab.
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === "visible") void refreshClients(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [user?.role]);
+
   const upcoming = useMemo(
     () => invitations.filter((item) => item.eventDate && new Date(item.eventDate) >= new Date()).length,
     [invitations],
