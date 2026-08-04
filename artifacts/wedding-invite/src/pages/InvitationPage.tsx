@@ -3,6 +3,7 @@ import { useLocation, useParams, useSearch } from "wouter";
 import { useGetInvitation, useListDesigns, useGetRsvpCount, useGetActiveDesign } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
+import { InvitationLoader } from "@/components/InvitationLoader";
 import { WeddingCard } from "@/components/WeddingCard";
 import { BottomNav } from "@/components/BottomNav";
 import { RsvpModal } from "@/components/RsvpModal";
@@ -292,11 +293,7 @@ export default function InvitationPage() {
   // (no "active" design row), so gating on it blocks the page unnecessarily.
   // Design tokens are applied via useEffect inside useDesign without needing to wait.
   if (invitationLoading || designsLoading || (isPublicPath && publicToken === null)) {
-    return (
-      <div className="min-h-dvh w-full bg-background flex items-center justify-center">
-        <Skeleton className="w-75 h-100 rounded-2xl" />
-      </div>
-    );
+    return <InvitationLoader />;
   }
 
   const invitationRecord = invitation as Record<string, unknown> | undefined;
