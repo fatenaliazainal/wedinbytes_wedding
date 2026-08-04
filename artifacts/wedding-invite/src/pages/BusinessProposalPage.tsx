@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import {
-  ChevronRight,
-  Heart,
-  User,
+  ClipboardList,
+  Monitor,
   LayoutDashboard,
-  FileText,
-  Users,
-  Link2,
-  BadgeCheck,
-  Globe,
-  Sparkles,
-  Image,
-  MessageSquareHeart,
-  Building2,
-  ArrowRight,
+  UserPlus,
+  Send,
+  ClipboardCheck,
+  Wand2,
   Check,
+  ArrowRight,
+  User,
+  Heart,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import SiteFooter from "@/components/SiteFooter";
@@ -25,94 +21,70 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 
 const NAV_ITEMS: SiteNavItem[] = [
-  { label: "HOME", href: "/" },
-  { label: "CATALOG", href: "/weddingcards/home" },
-  { label: "PRICE LIST", href: "/pricing" },
-  { label: "FAQs", href: "/faq" },
+  { label: "TEMPLATES", href: "/weddingcards/home" },
+  { label: "PRICING", href: "/pricing" },
+  { label: "HOW IT WORKS", href: "/faq" },
   { label: "FOR BUSINESS", href: "/for-business" },
 ];
 
-const FEATURES = [
+const BUILT_FOR = [
+  {
+    icon: ClipboardList,
+    title: "DEDICATED CLIENT FORM",
+    description:
+      "Share a form with your client. They fill in the details themselves, no more collecting info through WhatsApp.",
+  },
+  {
+    icon: Monitor,
+    title: "AUTO CREATED INVITATION",
+    description:
+      "Once details are submitted, the invitation is automatically generated in our editor as a live website.",
+  },
   {
     icon: LayoutDashboard,
-    title: "Business Dashboard",
+    title: "ORGANISE ALL CLIENTS",
     description:
-      "One clean workspace for all your client invitations. See every order's status, payment, and invitation link at a glance.",
-  },
-  {
-    icon: FileText,
-    title: "Customer Order Forms",
-    description:
-      "Clients submit their details through a branded online form — no back-and-forth messages needed. Orders land straight in your dashboard.",
-  },
-  {
-    icon: Users,
-    title: "RSVP Management",
-    description:
-      "Track guest attendance counts for every client invitation. Share a private RSVP summary link directly with your client.",
-  },
-  {
-    icon: Link2,
-    title: "Shareable RSVP Links",
-    description:
-      "Generate a one-click link for each invitation so your client can check their own RSVP numbers without needing an account.",
-  },
-  {
-    icon: Globe,
-    title: "Public Business Profile",
-    description:
-      "Your own branded page on Wedinbytes showcasing your business name, logo, and description — discoverable by couples browsing the platform.",
-  },
-  {
-    icon: Image,
-    title: "Custom Invitation Designs",
-    description:
-      "Every client invitation uses the same beautiful premium templates, styled with their couple initials, photos, and personal details.",
-  },
-  {
-    icon: MessageSquareHeart,
-    title: "Guest Wishes & RSVPs",
-    description:
-      "Each invitation includes a live wishes wall and RSVP form — delighting guests and giving you real attendance data.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Featured on Homepage",
-    description:
-      "Business accounts with a logo are showcased in the Collaborations section on the Wedinbytes homepage, building your brand visibility.",
+      "Manage all your clients and their invitation websites in one organised dashboard.",
   },
 ];
 
 const HOW_IT_WORKS = [
   {
-    step: "01",
-    title: "Register as Business Account",
-    description:
-      "Sign up and choose a Business Account. Set up your profile with your business name, logo, and description.",
+    step: 1,
+    icon: UserPlus,
+    title: "Add Your Client",
+    description: "Create a new client in your planner dashboard.",
   },
   {
-    step: "02",
-    title: "Receive Client Orders",
+    step: 2,
+    icon: Send,
+    title: "Share Their Form",
     description:
-      "Share your order form link with clients. They fill in the couple details, package selection, and preferences — everything arrives in your dashboard.",
+      "Send your client their dedicated form link to complete the details.",
   },
   {
-    step: "03",
-    title: "Create & Manage Invitations",
+    step: 3,
+    icon: ClipboardCheck,
+    title: "Client Submits Details",
     description:
-      "Review the order, generate the digital invitation, and share the link with your client. Track RSVP responses together.",
+      "Your client fills in everything they need for the invitation.",
+  },
+  {
+    step: 4,
+    icon: Wand2,
+    title: "Invitation Auto Created",
+    description:
+      "The invitation is instantly generated in the editor as a live website.",
   },
 ];
 
-const PACKAGE_HIGHLIGHTS = [
-  { label: "Unlimited client invitations", included: true },
-  { label: "Online order form for clients", included: true },
-  { label: "RSVP tracking per invitation", included: true },
-  { label: "Shareable RSVP summary links", included: true },
-  { label: "Public business profile page", included: true },
-  { label: "Homepage collaboration feature", included: true },
-  { label: "Premium invitation templates", included: true },
-  { label: "Music, gallery & wishes features", included: true },
+const PARTNER_BENEFITS = [
+  "Exclusive partner pricing",
+  "Dedicated form for each client",
+  "Auto created invitation website",
+  "Organised client management",
+  "Instant updates & preview",
+  "Collaborator exposure",
 ];
 
 export default function BusinessProposalPage() {
@@ -121,7 +93,7 @@ export default function BusinessProposalPage() {
   const [navOpen, setNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-white flex flex-col font-sans">
       <SiteHeader
         navItems={NAV_ITEMS}
         activeLabel="FOR BUSINESS"
@@ -140,17 +112,10 @@ export default function BusinessProposalPage() {
           ) : (
             <>
               <button
-                onClick={() => navigate("/login")}
-                className="text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors tracking-widest"
+                onClick={() => navigate("/register/business")}
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-xs font-bold px-5 py-2.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
               >
-                LOG IN
-              </button>
-              <button
-                onClick={() => navigate("/register")}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded hover:bg-gray-700 transition-colors tracking-widest"
-              >
-                <Heart size={12} />
-                SIGN UP
+                BECOME A PARTNER
               </button>
             </>
           )
@@ -166,24 +131,18 @@ export default function BusinessProposalPage() {
             <div className="px-5 py-5">
               <button
                 onClick={() => { navigate(dashboardPathForUser(user)); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
                 GO TO DASHBOARD
               </button>
             </div>
           ) : (
-            <div className="px-5 py-5 flex flex-col gap-2">
+            <div className="px-5 py-5">
               <button
                 onClick={() => { navigate("/register/business"); setNavOpen(false); }}
-                className="w-full rounded bg-gray-900 text-white text-sm font-bold py-2.5 tracking-widest"
+                className="w-full rounded bg-[#3d5a3e] text-white text-sm font-bold py-2.5 tracking-widest"
               >
-                GET STARTED FREE
-              </button>
-              <button
-                onClick={() => { navigate("/login"); setNavOpen(false); }}
-                className="w-full rounded border border-gray-200 text-sm font-bold py-2.5 tracking-widest text-gray-600"
-              >
-                LOG IN
+                BECOME A PARTNER
               </button>
             </div>
           )
@@ -191,176 +150,245 @@ export default function BusinessProposalPage() {
       />
 
       {/* ── Hero ── */}
-      <section className="bg-white border-b border-gray-100 px-4 py-20 sm:px-6">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-rose-700 ring-1 ring-rose-100">
-            <Building2 size={12} />
-            For Wedding Planners &amp; Event Businesses
-          </div>
-          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            Grow your business with<br className="hidden sm:block" />{" "}
-            <span className="text-rose-700">beautiful digital invitations.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-gray-500 sm:text-lg">
-            Wedinbytes gives event planners and wedding businesses a complete platform to manage client invitations, collect orders, and deliver a premium experience — all from one dashboard.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <section className="bg-white px-6 py-16 sm:px-10 lg:px-16">
+        <div className="mx-auto max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-500 mb-5">
+              FOR EVENT PLANNERS
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-gray-900 mb-6">
+              You Handle the Event.<br />
+              <em className="not-italic text-[#3d5a3e]">We Simplify the Invitation.</em>
+            </h1>
+            <p className="text-sm leading-7 text-gray-500 max-w-md mb-8">
+              A smarter way to manage your clients' digital invitations. Your client fills in the details, and the invitation is automatically created in our editor — as a live website.
+            </p>
             <button
               onClick={() => navigate("/register/business")}
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-7 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
+              className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-6 py-3 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
             >
-              START FOR FREE
-              <ChevronRight size={14} />
-            </button>
-            <button
-              onClick={() => navigate("/pricing")}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-7 py-3.5 text-xs font-bold tracking-widest text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              VIEW PRICING
+              BECOME A PARTNER <ArrowRight size={13} />
             </button>
           </div>
-          {/* Trust badges */}
-          <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs text-gray-400">
-            <span className="flex items-center gap-1.5"><Check size={12} className="text-rose-600" /> No monthly subscription</span>
-            <span className="flex items-center gap-1.5"><Check size={12} className="text-rose-600" /> Pay per invitation</span>
-            <span className="flex items-center gap-1.5"><Check size={12} className="text-rose-600" /> Your brand, your clients</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="bg-gray-50 px-4 py-20 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Simple Process</p>
-            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">How it works for your business</h2>
-            <p className="mt-3 text-sm text-gray-500 max-w-lg mx-auto">
-              From client enquiry to delivered invitation in three steps.
-            </p>
-          </div>
-
-          <div className="grid gap-8 sm:grid-cols-3">
-            {HOW_IT_WORKS.map(({ step, title, description }) => (
-              <div key={step} className="relative">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-900 text-white text-sm font-bold">
-                  {step}
+          {/* Right side — decorative placeholder matching the editor mockup in the image */}
+          <div className="hidden lg:flex items-center justify-center">
+            <div className="relative w-full max-w-sm">
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 shadow-lg">
+                <div className="bg-white rounded-xl border border-gray-100 p-3 mb-2 flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gray-200" />
+                    <div className="w-2 h-2 rounded-full bg-gray-200" />
+                    <div className="w-2 h-2 rounded-full bg-gray-200" />
+                  </div>
+                  <div className="flex-1 h-2 bg-gray-100 rounded" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">{title}</h3>
-                <p className="text-xs leading-6 text-gray-500">{description}</p>
+                <div className="bg-[#f5f0eb] rounded-xl p-6 text-center">
+                  <div className="text-[#3d5a3e] font-bold text-xl mb-1">A | H</div>
+                  <div className="text-gray-800 font-bold text-lg leading-tight mb-1">AIMAN<br />&amp; HANISAH</div>
+                  <div className="text-gray-500 text-xs mb-4">21 · 06 · 2026</div>
+                  <div className="inline-block bg-[#3d5a3e] text-white text-xs font-bold px-6 py-1.5 rounded">RSVP</div>
+                </div>
               </div>
-            ))}
+              <div className="absolute -bottom-4 -right-4 bg-[#3d5a3e] text-white text-[9px] font-bold tracking-widest px-3 py-2 rounded-full shadow-lg">
+                CREATED<br />LIVE WEBSITE
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features grid ── */}
-      <section className="bg-white border-t border-gray-100 px-4 py-20 sm:px-6">
+      {/* ── Built for Event Planners ── */}
+      <section className="bg-gray-50 border-y border-gray-100 px-6 py-14 sm:px-10">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Everything You Need</p>
-            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Features built for your workflow</h2>
-            <p className="mt-3 text-sm text-gray-500 max-w-lg mx-auto">
-              Every tool a wedding or event business needs to deliver professionally, manage clients smoothly, and grow your reputation.
-            </p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(({ icon: Icon, title, description }) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-gray-100 bg-gray-50 p-5 hover:shadow-md transition-shadow"
-              >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-rose-700 shadow-sm ring-1 ring-rose-100">
+          <p className="text-center text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-10">
+            BUILT FOR EVENT PLANNERS
+          </p>
+          <div className="grid gap-8 sm:grid-cols-3">
+            {BUILT_FOR.map(({ icon: Icon, title, description }) => (
+              <div key={title} className="flex gap-4">
+                <div className="shrink-0 mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-200 shadow-sm text-[#3d5a3e]">
                   <Icon size={18} strokeWidth={1.8} />
                 </div>
-                <p className="text-sm font-semibold text-gray-900 mb-1.5">{title}</p>
-                <p className="text-xs leading-5 text-gray-500">{description}</p>
+                <div>
+                  <p className="text-xs font-bold tracking-widest uppercase text-gray-900 mb-1.5">{title}</p>
+                  <p className="text-xs leading-6 text-gray-500">{description}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── What's included ── */}
-      <section className="bg-gray-50 border-t border-gray-100 px-4 py-20 sm:px-6">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-              <p className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">Business Account</p>
-              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl mb-4">
-                One account. Every client. All the tools.
-              </h2>
-              <p className="text-sm leading-7 text-gray-500 mb-6">
-                A Business Account unlocks a dedicated dashboard designed around managing multiple client invitations. You handle the relationship; Wedinbytes handles the technology.
-              </p>
-              <button
-                onClick={() => navigate("/register/business")}
-                className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-3.5 text-xs font-bold tracking-widest text-white transition-colors hover:bg-gray-700"
-              >
-                REGISTER AS BUSINESS
-                <ArrowRight size={14} />
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-5">
-                <Sparkles size={15} className="text-rose-700" />
-                <span className="text-xs font-bold tracking-widest text-gray-900 uppercase">Included in Business Account</span>
+      {/* ── How it Works ── */}
+      <section className="bg-white px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-12">
+            HOW IT WORKS
+          </p>
+          <div className="grid gap-8 sm:grid-cols-4">
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }, i) => (
+              <div key={step} className="relative text-center">
+                {/* connector line */}
+                {i < HOW_IT_WORKS.length - 1 && (
+                  <div className="hidden sm:block absolute top-5 left-[60%] right-0 h-px border-t border-dashed border-gray-300" />
+                )}
+                <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#3d5a3e] text-white text-xs font-bold relative z-10">
+                  {step}
+                </div>
+                <div className="mb-3 flex justify-center text-gray-400">
+                  <Icon size={20} strokeWidth={1.5} />
+                </div>
+                <p className="text-xs font-bold text-gray-900 mb-1.5">{title}</p>
+                <p className="text-[11px] leading-5 text-gray-500">{description}</p>
               </div>
-              <ul className="space-y-3">
-                {PACKAGE_HIGHLIGHTS.map(({ label, included }) => (
-                  <li key={label} className="flex items-center gap-3 text-sm text-gray-700">
-                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${included ? "bg-rose-50 text-rose-600" : "bg-gray-100 text-gray-300"}`}>
-                      <Check size={11} strokeWidth={2.5} />
-                    </span>
-                    {label}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-5 border-t border-gray-100 pt-4">
-                <button
-                  onClick={() => navigate("/pricing")}
-                  className="w-full rounded-lg border border-gray-200 py-2.5 text-xs font-bold tracking-widest text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  SEE FULL PRICING →
-                </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Auto Created as a Live Website ── */}
+      <section className="bg-gray-50 border-y border-gray-100 px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-4">
+              AUTO CREATED AS A LIVE WEBSITE
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold leading-[1.15] text-gray-900 mb-5">
+              They Fill In.<br />The Invitation<br />Builds Itself.
+            </h2>
+            <p className="text-sm leading-7 text-gray-500 mb-6">
+              As soon as the details are submitted, the invitation is automatically created in the editor — as a live website.
+            </p>
+            <ul className="space-y-2.5 mb-6">
+              {[
+                "You and your client can preview it anytime",
+                "Edit and update instantly",
+                "No manual setup, no waiting",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-sm text-gray-700">
+                  <Check size={14} className="text-[#3d5a3e] shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="rounded-xl bg-white border border-gray-200 p-4 flex gap-3 items-start">
+              <div className="mt-0.5 shrink-0 flex h-7 w-7 items-center justify-center rounded-lg bg-gray-50 border border-gray-200">
+                <Heart size={13} className="text-[#3d5a3e]" />
+              </div>
+              <p className="text-xs leading-5 text-gray-500">
+                It's your client's information. Our system turns it into a beautiful invitation website.
+              </p>
+            </div>
+          </div>
+          {/* Editor mockup */}
+          <div className="hidden lg:block">
+            <div className="rounded-2xl bg-white border border-gray-200 shadow-lg overflow-hidden">
+              {/* Browser bar */}
+              <div className="bg-gray-50 border-b border-gray-100 px-4 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-widest text-gray-800">WEDINSTUDIO</span>
+                <div className="flex gap-2">
+                  <div className="rounded px-3 py-1 text-[10px] border border-gray-200 text-gray-500">Preview</div>
+                  <div className="rounded px-3 py-1 text-[10px] bg-[#3d5a3e] text-white font-bold">Publish</div>
+                </div>
+              </div>
+              <div className="flex">
+                {/* Sidebar */}
+                <div className="w-36 border-r border-gray-100 p-3 space-y-1.5">
+                  {["Couple Details","Event Details","Programme","Gallery","RSVP","Gift Registry","Other Sections","Theme Settings"].map((item) => (
+                    <div key={item} className="text-[9px] text-gray-500 px-2 py-1 rounded hover:bg-gray-50">{item}</div>
+                  ))}
+                </div>
+                {/* Preview */}
+                <div className="flex-1 bg-[#f5f0eb] p-4 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-[#3d5a3e] font-bold text-sm mb-0.5">A | H</div>
+                    <div className="text-gray-800 font-bold text-sm leading-tight mb-0.5">AIMAN<br />&amp; HANISAH</div>
+                    <div className="text-gray-500 text-[9px] mb-3">21 · 06 · 2026</div>
+                    <div className="inline-block bg-[#3d5a3e] text-white text-[8px] font-bold px-4 py-1 rounded">RSVP</div>
+                  </div>
+                </div>
+                {/* Fields panel */}
+                <div className="w-36 border-l border-gray-100 p-3 space-y-2">
+                  <p className="text-[8px] font-bold tracking-widest text-gray-400 uppercase mb-2">COUPLE DETAILS</p>
+                  {[["Groom's Name","Aiman Hakim"],["Bride's Name","Hanisah Sofea"],["Event Date","21 · 06 · 2026"],["Venue","Tenera Hotel, Bang"],["Hashtag","#AimanHanisahForever"]].map(([l,v]) => (
+                    <div key={l}>
+                      <div className="text-[7px] text-gray-400">{l}</div>
+                      <div className="text-[8px] text-gray-700 font-medium">{v}</div>
+                    </div>
+                  ))}
+                  <button className="mt-2 w-full rounded bg-[#3d5a3e] text-white text-[8px] font-bold py-1.5">Save Changes</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── CTA banner ── */}
-      <section className="bg-gray-900 px-4 py-16 sm:px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl font-bold text-white sm:text-3xl mb-4">
-            Ready to grow your wedding business?
-          </h2>
-          <p className="text-sm text-gray-400 mb-8 max-w-xl mx-auto leading-7">
-            Join wedding planners and event businesses already using Wedinbytes to manage client invitations professionally. Sign up in minutes — no monthly fees.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
+      {/* ── Partner Benefits + Featured Collaborators ── */}
+      <section className="bg-white px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl grid lg:grid-cols-2 gap-12">
+          {/* Benefits */}
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-6">
+              PARTNER BENEFITS
+            </p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              {PARTNER_BENEFITS.map((benefit) => (
+                <div key={benefit} className="flex items-center gap-2 text-sm text-gray-700">
+                  <Check size={14} className="text-[#3d5a3e] shrink-0" />
+                  {benefit}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Collaborators */}
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-4">
+              FEATURED COLLABORATORS
+            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Your Brand Deserves Visibility Too.
+            </h2>
+            <p className="text-sm leading-7 text-gray-500 mb-6">
+              We feature our Event Planner partners in our Collaborators section with your logo and social media link.
+            </p>
+            <button
+              onClick={() => navigate("/collaborators")}
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-xs font-bold px-5 py-2.5 rounded hover:bg-gray-50 transition-colors tracking-widest"
+            >
+              SEE ALL COLLABORATORS <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer CTA ── */}
+      <section className="bg-[#2d3d2e] px-6 py-14 sm:px-10">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-white/50 mb-3">
+              READY TO WORK TOGETHER?
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              Let Us Simplify the Invitation Process.
+            </h2>
+            <p className="text-sm text-white/60 max-w-sm leading-6">
+              Save time, stay organised, and give your clients a better invitation experience.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-4 shrink-0">
             <button
               onClick={() => navigate("/register/business")}
-              className="inline-flex items-center gap-2 rounded-lg bg-white text-gray-900 px-7 py-3.5 text-xs font-bold tracking-widest transition-colors hover:bg-gray-100"
+              className="inline-flex items-center gap-2 bg-white text-[#2d3d2e] text-xs font-bold px-6 py-3 rounded hover:bg-gray-100 transition-colors tracking-widest whitespace-nowrap"
             >
-              CREATE BUSINESS ACCOUNT
-              <ChevronRight size={14} />
+              BECOME A WEDINSTUDIO PARTNER <ArrowRight size={13} />
             </button>
-            <button
-              onClick={() => navigate("/pricing")}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 text-white px-7 py-3.5 text-xs font-bold tracking-widest transition-colors hover:bg-white/10"
-            >
-              VIEW PRICING
-            </button>
+            <p className="text-xs text-white/40 italic">You handle the event. We simplify the invitation.</p>
           </div>
         </div>
       </section>
 
       <SiteFooter />
-      <div className="bg-gray-900 text-white/60 text-xs text-center py-4 tracking-wide">
-        © {new Date().getFullYear()} Wedinbytes · All rights reserved
-      </div>
     </div>
   );
 }
