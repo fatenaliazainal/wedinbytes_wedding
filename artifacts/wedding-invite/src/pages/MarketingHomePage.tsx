@@ -315,26 +315,60 @@ export default function MarketingHomePage() {
       </section>
 
       {/* ── Video Invitations promo ── */}
-      <section className="bg-[#2d4330] py-20 px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 mb-6">SOMETHING DIFFERENT</p>
-          <h2 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white mb-6">
-            Prefer Something a<br />Little More Animated?
-          </h2>
-          <p className="text-sm leading-7 text-white/60 max-w-md mx-auto mb-4">
-            Not every invitation has to be a website.
-          </p>
-          <p className="text-sm leading-7 text-white/60 max-w-md mx-auto mb-10">
-            Discover beautifully crafted <span className="text-white font-semibold">Video Invitations</span> designed to turn your invitation into a shareable experience.
-          </p>
-          <a
-            href="https://wedinbytes.com"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-7 py-3.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
-          >
-            DISCOVER THE COLLECTION →
-          </a>
+      <section className="bg-[#2d4330] py-20 px-4 sm:px-6 overflow-hidden">
+        <div className="mx-auto max-w-5xl">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+
+            {/* Left: text + CTA */}
+            <div className="text-center lg:text-left">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 mb-6">SOMETHING DIFFERENT</p>
+              <h2 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white mb-6">
+                Prefer Something a<br />Little More Animated?
+              </h2>
+              <p className="text-sm leading-7 text-white/60 max-w-md mx-auto lg:mx-0 mb-4">
+                Not every invitation has to be a website.
+              </p>
+              <p className="text-sm leading-7 text-white/60 max-w-md mx-auto lg:mx-0 mb-10">
+                Discover beautifully crafted <span className="text-white font-semibold">Video Invitations</span> designed to turn your invitation into a shareable experience.
+              </p>
+              <a
+                href="https://wedinbytes.com"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-7 py-3.5 rounded hover:bg-[#4a6e4b] transition-colors tracking-widest"
+              >
+                DISCOVER THE COLLECTION →
+              </a>
+            </div>
+
+            {/* Right: phone mockup with looping video */}
+            <div className="flex justify-center lg:justify-end">
+              {/* Soft glow behind the phone */}
+              <div className="relative">
+                <div className="absolute left-1/2 top-1/2 h-[26rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3d5a3e]/40 blur-3xl pointer-events-none" />
+                <div
+                  className="relative overflow-hidden rounded-[2.5rem] border-[7px] border-gray-900 bg-gray-900 shadow-[0_28px_56px_rgba(0,0,0,0.55)]"
+                  style={{ width: 246, height: 492 }}
+                >
+                  {/* Notch */}
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
+                    style={{ width: 84, height: 24, borderRadius: "0 0 16px 16px" }}
+                  />
+                  {/* Video — autoplay, loop, muted */}
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src={resolveImageUrl("DisplayWebsiteMockup/WIB59 ETERNAL BLOSSOM.mp4")}
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
