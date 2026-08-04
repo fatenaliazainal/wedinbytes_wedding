@@ -326,7 +326,7 @@ export default function MarketingHomePage() {
             href="https://wedinbytes.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 border border-white/20 text-white text-xs font-bold px-7 py-3.5 rounded hover:bg-white/10 transition-colors tracking-widest"
+            className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-7 py-3.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
           >
             DISCOVER THE COLLECTION →
           </a>
