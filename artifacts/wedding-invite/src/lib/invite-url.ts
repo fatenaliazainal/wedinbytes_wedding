@@ -29,14 +29,21 @@ export function publicInvitePath(invitation: {
   eventDate?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
+  groomName?: string | null;
+  brideName?: string | null;
 }): string | null {
   const dateCode = inviteDateCode(invitation.eventDate);
-  const nameSlug = inviteNameSlug(invitation.coverGroomName, invitation.coverBrideName);
+  // Prefer the dedicated cover names; fall back to the main groom/bride names
+  // so the slug URL is generated even when cover name fields are left blank.
+  const nameSlug = inviteNameSlug(
+    invitation.coverGroomName || invitation.groomName,
+    invitation.coverBrideName || invitation.brideName,
+  );
   return dateCode && nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
 }
 
 /**
- * Like publicInvitePath but falls back to /invite/:token when cover names or
+ * Like publicInvitePath but falls back to /invite/:token when names or
  * event date are not yet filled in. Use this wherever the link must always
  * be clickable (preview button, copy-link, dashboard actions).
  */
@@ -45,6 +52,8 @@ export function publicInvitePathOrToken(invitation: {
   eventDate?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
+  groomName?: string | null;
+  brideName?: string | null;
 }): string | null {
   return publicInvitePath(invitation) ?? (invitation.token ? `/invite/${invitation.token}` : null);
 }

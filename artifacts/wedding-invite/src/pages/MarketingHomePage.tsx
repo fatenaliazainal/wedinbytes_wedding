@@ -204,21 +204,19 @@ export default function MarketingHomePage() {
                 className="group relative mx-auto cursor-pointer overflow-hidden rounded-[2.5rem] border-[7px] border-gray-900 bg-gray-900 shadow-[0_24px_45px_rgba(31,41,55,0.26)] transition-transform hover:-translate-y-1 lg:mx-0"
                 style={{
                   width: 238,
-                  height: 470,
+                  height: 412,
                 }}
                 aria-label="Open live demo"
               >
+                {/* Dynamic island / notch */}
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                   style={{ width: 86, height: 26, borderRadius: "0 0 17px 17px" }}
                 />
-                <div className="absolute inset-0">
+                {/* Invitation fills the phone screen with correct aspect ratio, no distortion */}
+                <div className="absolute inset-0 overflow-hidden">
                   {demoInvitation && designs[0] ? (
-                    <div className="absolute inset-0 flex items-start justify-center overflow-hidden">
-                      <div className="mt-1 h-[calc(100%-0.25rem)] w-full origin-top scale-y-[1.58]">
-                        <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
-                      </div>
-                    </div>
+                    <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
                   ) : (
                     <div className="w-full h-full bg-[#f6f1e7]" />
                   )}
