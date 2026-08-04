@@ -95,7 +95,7 @@ function PricingCard({
       className={`pricing-card relative flex flex-col h-full rounded-2xl p-5 transition-all duration-[280ms] ease-out cursor-default
         hover:-translate-y-2 hover:scale-[1.02]
         ${highlighted
-          ? "bg-white border-2 border-green-200 shadow-xl shadow-green-100/60 hover:shadow-[0_24px_48px_rgba(61,90,62,0.22)]"
+          ? "bg-white border border-gray-200 shadow-xl hover:shadow-[0_24px_48px_rgba(31,41,55,0.18)]"
           : "bg-white border border-gray-100 shadow-lg hover:shadow-[0_20px_40px_rgba(31,41,55,0.14)]"
         }`}
     >

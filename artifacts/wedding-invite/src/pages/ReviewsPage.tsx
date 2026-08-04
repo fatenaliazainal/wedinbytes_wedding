@@ -289,7 +289,7 @@ export default function ReviewsPage() {
                     <label className="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
                     <input
                       type="text"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#3d5a3e]/20 focus:border-[#3d5a3e]"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0"
                       placeholder="Enter your name"
                       value={form.customerName}
                       onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
@@ -306,7 +306,7 @@ export default function ReviewsPage() {
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Review</label>
                     <textarea
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#3d5a3e]/20 focus:border-[#3d5a3e] min-h-[120px] resize-y"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0 min-h-[120px] resize-y"
                       placeholder="Tell us about your experience..."
                       value={form.reviewText}
                       onChange={(e) => setForm((f) => ({ ...f, reviewText: e.target.value }))}
@@ -318,7 +318,7 @@ export default function ReviewsPage() {
                     <label className="block text-xs font-medium text-gray-700 mb-1">Wedding Date <span className="text-gray-400">(optional)</span></label>
                     <input
                       type="text"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#3d5a3e]/20 focus:border-[#3d5a3e]"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0"
                       placeholder="e.g. 15 January 2026"
                       value={form.weddingDate}
                       onChange={(e) => setForm((f) => ({ ...f, weddingDate: e.target.value }))}

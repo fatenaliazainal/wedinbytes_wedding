@@ -595,13 +595,13 @@ export default function BusinessDashboardPage() {
                     ].map(({ step, label, icon: Icon }, idx) => (
                       <div key={step} className="relative">
                         <div className="flex flex-col items-center text-center">
-                          <div className="w-12 h-12 rounded-full bg-white border-2 border-green-600 flex items-center justify-center mb-2">
-                            <Icon size={20} className="text-green-600" />
+                          <div className="w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center mb-2">
+                            <Icon size={20} className="text-gray-500" />
                           </div>
                           <p className="text-xs font-medium text-gray-700">{label}</p>
                         </div>
                         {idx < 4 && (
-                          <div className="hidden sm:block absolute top-6 left-full w-full h-0.5 bg-green-200" style={{ transform: "translateX(-50%)" }} />
+                          <div className="hidden sm:block absolute top-6 left-full w-full h-0.5 bg-gray-200" style={{ transform: "translateX(-50%)" }} />
                         )}
                       </div>
                     ))}
@@ -614,7 +614,7 @@ export default function BusinessDashboardPage() {
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
                     <label className="block flex-1 text-sm text-gray-700">
                       <span className="mb-2 block font-medium">Select Package</span>
-                      <select value={selectedPackageId} onChange={(event) => { setSelectedPackageId(event.target.value); setFormShareUrl(""); }} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100" data-testid="select-package">
+                      <select value={selectedPackageId} onChange={(event) => { setSelectedPackageId(event.target.value); setFormShareUrl(""); }} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:shadow-md focus:ring-0" data-testid="select-package">
                         <option value="">Choose a package</option>
                         {packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name} · RM{pkg.price}</option>)}
                       </select>

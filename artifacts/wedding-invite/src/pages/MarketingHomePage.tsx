@@ -283,7 +283,7 @@ export default function MarketingHomePage() {
             {/* Right: headline, features and actions */}
             <div className="max-w-3xl">
               <div>
-                <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#3d5a3e] shadow-sm ring-1 ring-green-100">
+                <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#3d5a3e] shadow-sm ring-1 ring-gray-200">
                   All-in-One
                 </p>
                 <h2 className="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-gray-900 sm:text-5xl">
@@ -316,7 +316,7 @@ export default function MarketingHomePage() {
                     key={title}
                     className={`border-gray-200 py-1 sm:px-5 ${index > 0 ? "border-t pt-5 sm:border-l sm:border-t-0 sm:pt-1" : "sm:pl-0"}`}
                   >
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#3d5a3e] shadow-sm ring-1 ring-green-100">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#3d5a3e] shadow-md">
                       <Icon size={19} strokeWidth={1.8} />
                     </div>
                     <p className="text-sm font-semibold text-gray-900">{title}</p>
@@ -345,7 +345,7 @@ export default function MarketingHomePage() {
                 </button>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-green-100 bg-white/70 px-4 py-4 text-xs text-gray-600 sm:px-5">
+              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-gray-100 bg-white/70 px-4 py-4 text-xs text-gray-600 sm:px-5">
                 <span className="inline-flex items-center gap-2">
                   <LayoutGrid size={15} className="text-[#3d5a3e]" />
                   Everything in one place
@@ -511,7 +511,7 @@ export default function MarketingHomePage() {
                             rel="noreferrer"
                             aria-label={`Visit ${business.businessName} homepage`}
                             title={business.businessName}
-                            className="relative flex aspect-square items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
+                            className="relative flex aspect-square items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:shadow-md"
                           >
                             {logoImg}
                           </a>
@@ -534,7 +534,7 @@ export default function MarketingHomePage() {
                   <button
                     type="button"
                     onClick={() => setBusinessSlide((current) => (current - 1 + businessSlides.length) % businessSlides.length)}
-                    className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
+                    className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:shadow-md"
                     aria-label="Previous businesses"
                   >
                     <ChevronLeft size={16} />
@@ -542,7 +542,7 @@ export default function MarketingHomePage() {
                   <button
                     type="button"
                     onClick={() => setBusinessSlide((current) => (current + 1) % businessSlides.length)}
-                    className="absolute right-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
+                    className="absolute right-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:text-gray-900 focus:outline-none focus:shadow-md"
                     aria-label="Next businesses"
                   >
                     <ChevronRight size={16} />

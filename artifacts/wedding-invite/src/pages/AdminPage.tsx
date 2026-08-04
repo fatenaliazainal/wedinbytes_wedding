@@ -1356,7 +1356,7 @@ function DesignsTab() {
                 <button
                   type="button"
                   onClick={() => handleDelete(d.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-green-50 hover:text-[#3d5a3e] hover:border-green-200 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -1644,7 +1644,7 @@ function RawCardTab() {
                 <button
                   type="button"
                   onClick={() => handleDelete(card.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-green-50 hover:text-[#3d5a3e] hover:border-green-200 transition-colors shrink-0"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>
