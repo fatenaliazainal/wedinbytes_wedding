@@ -220,7 +220,7 @@ export default function MarketingHomePage() {
                   Scale factor = 456/398 ≈ 1.146  →  fills height, slight crop on sides.
                   transformOrigin: top center keeps the couple names at the top visible.
                 */}
-                <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
+                <div className="absolute inset-0 overflow-hidden flex items-start justify-center" style={{ paddingTop: 28 }}>
                   {demoInvitation && designs[0] ? (
                     <div style={{ width: 224, height: 398, transform: "scale(1.146)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
                       <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={224} />
