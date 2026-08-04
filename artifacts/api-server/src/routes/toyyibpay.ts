@@ -498,10 +498,11 @@ router.get("/payment/toyyibpay/status", async (req, res) => {
 });
 
 router.get("/payment/toyyibpay/return-status", async (req, res) => {
-  if (!["buyer", "business_account"].includes(String(req.session?.role ?? "")) || !req.session.userId) {
-    res.status(401).json({ error: "Authentication required." });
-    return;
-  }
+  // No session required — the orderReference + billCode pair is unguessable and
+  // sufficient to identify the transaction. The actual payment activation happens
+  // via the server-to-server callback; this endpoint just returns the current status
+  // so the return page can show the buyer a clear result even when the session
+  // cookie is absent after the cross-site redirect from ToyyibPay.
   const orderReference = String(req.query.orderReference ?? "").trim();
   const billCode = String(req.query.billCode ?? "").trim();
   if (!orderReference || !billCode) {
@@ -519,12 +520,7 @@ router.get("/payment/toyyibpay/return-status", async (req, res) => {
       res.status(404).json({ error: "Order not found." });
       return;
     }
-    const ownedOrder = await findOwnedOrder(req, order.id);
-    if (!ownedOrder) {
-      res.status(404).json({ error: "Order not found." });
-      return;
-    }
-    res.json(await verifyAndApplyOrder(ownedOrder, billCode));
+    res.json(await verifyAndApplyOrder(order, billCode));
   } catch (err) {
     req.log.error({ err }, "Failed to verify ToyyPay return status");
     res.status(502).json({ error: "Unable to verify ToyyPay return status." });
