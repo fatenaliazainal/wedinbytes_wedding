@@ -495,20 +495,13 @@ export default function MarketingHomePage() {
                     >
                       {slide.map((business) => {
                         const businessLink = businessHomepageLink(business);
-                        const tile = (
-                          <>
-                            <img
-                              src={resolveImageUrl(business.logoUrl ?? "")}
-                              alt={`${business.businessName} logo`}
-                              loading="lazy"
-                              className="h-full w-full object-contain"
-                            />
-                            {businessLink && (
-                              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold text-gray-500 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
-                                Visit {businessLink.label}
-                              </span>
-                            )}
-                          </>
+                        const logoImg = (
+                          <img
+                            src={resolveImageUrl(business.logoUrl ?? "")}
+                            alt={`${business.businessName} logo`}
+                            loading="lazy"
+                            className="h-full w-full object-contain"
+                          />
                         );
                         return businessLink ? (
                           <a
@@ -517,18 +510,18 @@ export default function MarketingHomePage() {
                             target="_blank"
                             rel="noreferrer"
                             aria-label={`Visit ${business.businessName} homepage`}
-                            title={`Visit ${business.businessName} homepage`}
-                            className="group relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
+                            title={business.businessName}
+                            className="relative flex aspect-square items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
                           >
-                            {tile}
+                            {logoImg}
                           </a>
                         ) : (
                           <div
                             key={business.slug}
                             title={business.businessName}
-                            className="relative flex h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4"
+                            className="relative flex aspect-square items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4"
                           >
-                            {tile}
+                            {logoImg}
                           </div>
                         );
                       })}
