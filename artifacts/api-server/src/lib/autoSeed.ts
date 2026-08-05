@@ -1,5 +1,5 @@
 import { db, invitationTable, cardDesignTable, userTable, pricingPackageTable, pricingFeatureTable } from "@workspace/db";
-import { eq, or } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { logger } from "./logger";
 import { DEFAULT_BUSINESS_FORM_CONFIG } from "./business-package";
@@ -318,6 +318,27 @@ export async function autoSeedIfEmpty() {
         { packageId: sig.id, name: "Gift Registry",         icon: "ShoppingBag",       sortOrder: 10 },
       ]);
       logger.info({ id: sig.id }, "Auto-seed: Signature package created.");
+    } else {
+      // Signature already exists — backfill Gift Registry feature if missing.
+      const [existingGiftReg] = await db
+        .select({ id: pricingFeatureTable.id })
+        .from(pricingFeatureTable)
+        .where(
+          and(
+            eq(pricingFeatureTable.packageId, sigPkg.id),
+            eq(pricingFeatureTable.name, "Gift Registry"),
+          ),
+        )
+        .limit(1);
+      if (!existingGiftReg) {
+        await db.insert(pricingFeatureTable).values({
+          packageId: sigPkg.id,
+          name: "Gift Registry",
+          icon: "ShoppingBag",
+          sortOrder: 10,
+        });
+        logger.info({ packageId: sigPkg.id }, "Auto-seed: backfilled Gift Registry feature for Signature.");
+      }
     }
 
   } catch (err) {
