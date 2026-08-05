@@ -54,6 +54,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles,
 };
 
+ICON_MAP["GiftCorner"] = Gift;
+
 function resolveIcon(name?: string | null): LucideIcon {
   return ICON_MAP[name ?? ""] ?? Check;
 }
