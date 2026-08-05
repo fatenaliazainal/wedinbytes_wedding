@@ -26,10 +26,10 @@ export default function SiteFooter() {
           <div>
             <p className="text-xs font-bold tracking-[0.25em] text-black/45">QUICK LINKS</p>
             <div className="mt-3 flex flex-col gap-2.5 text-sm text-black/70">
-              <button onClick={() => navigate("/home")} className="text-left hover:text-black transition-colors">About Us</button>
-              <button onClick={() => navigate("/home")} className="text-left hover:text-black transition-colors">Contact Us</button>
-              <button onClick={() => navigate("/home")} className="text-left hover:text-black transition-colors">FAQ</button>
-              <button onClick={() => navigate("/home")} className="text-left hover:text-black transition-colors">Terms & Conditions</button>
+              <button onClick={() => navigate("/about")} className="text-left hover:text-black transition-colors">About Us</button>
+              <button onClick={() => navigate("/contact")} className="text-left hover:text-black transition-colors">Contact Us</button>
+              <button onClick={() => navigate("/faq")} className="text-left hover:text-black transition-colors">FAQ</button>
+              <button onClick={() => navigate("/terms")} className="text-left hover:text-black transition-colors">Terms & Conditions</button>
             </div>
           </div>
 
