@@ -1,0 +1,200 @@
+Perform a COMPLETE security audit for the entire WedInStudio codebase.
+
+IMPORTANT:
+- DO NOT modify any code.
+- DO NOT install new packages.
+- DO NOT refactor anything.
+- DO NOT fix issues automatically.
+- This is an analysis-only task.
+
+I want a comprehensive security assessment and an implementation plan.
+
+Please inspect the following:
+
+## 1. Authentication & Authorization
+- Check if authentication can be bypassed.
+- Check for privilege escalation.
+- Verify admin routes are properly protected.
+- Ensure users cannot access other users' invitations or data.
+- Check JWT/session/token implementation.
+- Verify logout invalidates sessions correctly.
+
+## 2. API Security
+Review every API endpoint and identify:
+- Missing authentication
+- Missing authorization
+- IDOR (Insecure Direct Object Reference)
+- Rate limiting
+- Input validation
+- Missing request validation
+- Sensitive information exposure
+- HTTP method misuse
+
+List every vulnerable endpoint.
+
+## 3. Database Security
+Check for:
+- SQL Injection
+- ORM misuse
+- Unsafe raw queries
+- Missing ownership validation
+- Data leakage
+- Missing indexes affecting security
+- Foreign key integrity
+
+## 4. Input Validation
+Check every form:
+- RSVP
+- Wishes
+- Login
+- Register
+- Contact
+- Editor
+- Admin
+
+Look for:
+- XSS
+- Stored XSS
+- Reflected XSS
+- HTML injection
+- Script injection
+- Invalid file uploads
+- Unsafe URL inputs
+- Malicious payload handling
+
+## 5. File Upload Security
+If uploads exist:
+- MIME validation
+- File extension validation
+- Maximum file size
+- Executable file upload prevention
+- Virus scan support
+- Directory traversal
+- Randomized filenames
+
+## 6. DDoS & Abuse Protection
+Evaluate whether the application is vulnerable to:
+- DDoS
+- Brute force login
+- Credential stuffing
+- API spam
+- RSVP spam
+- Wishes spam
+- Form spam
+- Bot attacks
+
+Recommend:
+- Rate limiting
+- Request throttling
+- IP blocking
+- CAPTCHA
+- Queueing
+- CDN/WAF
+- Reverse proxy
+- Caching strategy
+
+## 7. Secrets & Environment
+Check whether:
+- API keys are exposed
+- .env values leak to frontend
+- Secrets are committed
+- Client-side code exposes sensitive values
+
+## 8. Payment Security
+Review payment flow:
+- Webhook verification
+- Duplicate payment prevention
+- Replay attacks
+- Tampered requests
+- Order ownership validation
+- Signature verification
+
+## 9. Admin Panel Security
+Verify:
+- Admin authentication
+- Admin authorization
+- Route protection
+- API protection
+- Hidden endpoints
+- Admin-only resources
+
+## 10. Frontend Security
+Check:
+- CSP readiness
+- XSS protection
+- Unsafe innerHTML usage
+- LocalStorage risks
+- Token storage
+- Exposed API endpoints
+- Source map exposure
+
+## 11. Backend Security
+Review:
+- Error handling
+- Stack trace exposure
+- Logging
+- Sensitive information leakage
+- Exception handling
+- CORS configuration
+- Helmet/security headers
+- CSRF protection
+
+## 12. Dependencies
+Audit all dependencies for:
+- Known vulnerabilities
+- Deprecated packages
+- Unsafe packages
+- Version risks
+
+## 13. Performance Abuse
+Look for:
+- Infinite loops
+- Recursive rendering
+- Memory leaks
+- Expensive database queries
+- N+1 queries
+- Missing pagination
+- Missing caching
+- Resource exhaustion
+
+## 14. Business Logic
+Attempt to identify:
+- Free premium access
+- Payment bypass
+- Invitation ownership bypass
+- Token guessing
+- Enumeration attacks
+- Hidden admin functions
+
+## 15. Production Readiness
+Evaluate whether the application is production-ready.
+
+Provide a score (1–10) for:
+- Authentication
+- Authorization
+- API Security
+- Database Security
+- Frontend Security
+- Backend Security
+- Infrastructure Security
+- DDoS Resistance
+- Overall Security
+
+Finally, produce:
+
+1. Executive Summary
+2. Critical vulnerabilities
+3. High-risk vulnerabilities
+4. Medium-risk vulnerabilities
+5. Low-risk vulnerabilities
+6. Potential attack scenarios
+7. Priority fixes (highest to lowest)
+8. Recommended implementation roadmap
+9. Security hardening checklist
+10. Estimated production readiness percentage
+
+IMPORTANT:
+This is an audit only.
+Do not modify any code.
+Do not generate fixes yet.
+Only identify vulnerabilities, explain the risks, and propose an implementation plan.
