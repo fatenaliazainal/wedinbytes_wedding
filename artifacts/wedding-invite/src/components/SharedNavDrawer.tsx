@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useLocation } from "wouter";
 import type { SiteNavItem } from "@/components/SiteHeader";
+import logo from "@assets/logo-wedinstudio.png";
 
 interface SharedNavDrawerProps {
   navItems: SiteNavItem[];
@@ -50,9 +51,10 @@ export default function SharedNavDrawer({
             <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
               <button
                 onClick={() => { navigate("/"); setNavOpen(false); }}
-                className="font-serif text-lg text-gray-800 tracking-wide hover:opacity-70 transition-opacity"
+                className="hover:opacity-70 transition-opacity"
+                aria-label="Wedinstudio logo"
               >
-                Wedinstudio
+                <img src={logo} alt="Wedinstudio" className="h-7 w-auto" />
               </button>
               <button
                 onClick={() => setNavOpen(false)}
