@@ -27,6 +27,7 @@ const ICON_OPTIONS = [
   { value: "Music", label: "Music", Icon: Music },
   { value: "Images", label: "Photo Gallery", Icon: Images },
   { value: "Gift", label: "Money Gift", Icon: Gift },
+  { value: "GiftRegistry", label: "Gift Registry", Icon: Gift },
   { value: "Shirt", label: "Dress Code", Icon: Shirt },
   { value: "Sparkles", label: "Sparkles", Icon: Sparkles },
   { value: "Check", label: "Check", Icon: Check },

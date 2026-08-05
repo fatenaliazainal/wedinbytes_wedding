@@ -53,6 +53,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Minus,
   Sparkles,
 };
+ICON_MAP["GiftRegistry"] = Gift;
 
 function resolveIcon(name?: string | null): LucideIcon {
   return ICON_MAP[name ?? ""] ?? Check;
