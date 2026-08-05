@@ -75,7 +75,7 @@ const TAB_FEATURE_MAP: Record<string, string[]> = {
   kehadiran: ["RSVP / Wishes"],
   hubungi: ["Contact"],
   galeri: ["Photo Gallery", "Money Gift"],
-  gift: ["Money Gift"],
+  gift: ["Money Gift", "Gift Corner"],
   registry: ["Gift Registry"],
 };
 
