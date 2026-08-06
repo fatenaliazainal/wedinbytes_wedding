@@ -354,29 +354,27 @@ function WishCard({
       whileHover={{ y: -4, transition: { duration: 0.3, ease: "easeOut" } }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
-      className="wishes-card mx-auto mb-0 mt-7 w-[200px] max-w-[200px] rounded-[16px] border border-white/[0.35] p-[14px] text-center shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_42px_rgba(0,0,0,0.12)] sm:mt-8 sm:w-[220px] sm:max-w-[220px] lg:w-[240px] lg:max-w-[240px]"
+      className="wishes-card mx-auto mb-0 mt-7 w-[175px] max-w-[175px] rounded-[22px] border border-white/[0.18] px-4 py-5 text-center shadow-[0_8px_28px_rgba(0,0,0,0.07)] transition-[box-shadow] duration-300 ease-out hover:shadow-[0_14px_36px_rgba(0,0,0,0.11)] sm:mt-8 sm:w-[195px] sm:max-w-[195px] lg:w-[215px] lg:max-w-[215px]"
       style={{
         height: "auto",
-        minHeight: "140px",
-        maxHeight: "fit-content",
-        background: "rgba(255,255,255,0.30)",
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
+        background: "rgba(255,255,255,0.14)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
       }}
     >
       <div className="flex flex-col items-center">
         <p
           ref={messageRef}
-          className={`max-w-[290px] break-words whitespace-pre-wrap text-[15px] leading-[1.8] text-foreground/85 ${expanded ? "" : "line-clamp-3"}`}
+          className={`max-w-[290px] break-words whitespace-pre-wrap text-[14px] leading-[1.9] text-foreground/80 ${expanded ? "" : "line-clamp-3"}`}
           style={{ fontFamily: bodyFontFamily }}
         >
           {" "}{message}
         </p>
-        <p className="mt-3 break-words text-[18px] font-semibold text-foreground/85" style={{ fontFamily: bodyFontFamily }}>
+        <p className="mt-4 break-words text-[13px] font-semibold text-foreground/75" style={{ fontFamily: bodyFontFamily }}>
           — {wish.name}
         </p>
         {timestamp && (
-          <time className="mt-1.5 text-[12px] text-foreground/50" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
+          <time className="mt-1 text-[10px] text-foreground/40" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
             {timestamp}
           </time>
         )}
