@@ -11,13 +11,13 @@ export const INVITATION_PANEL_CONTENT_CLASS =
   "flex flex-col items-center gap-1.5 py-0.5";
 
 export const INVITATION_PANEL_ICON_CLASS =
-  "flex h-14 w-14 items-center justify-center rounded-full bg-primary/10";
+  "flex h-12 w-12 items-center justify-center rounded-full bg-primary/10";
 
 export const INVITATION_PANEL_SECTION_TITLE_CLASS =
-  "text-center text-[17px] text-primary";
+  "text-center text-[15px] text-primary";
 
 export const INVITATION_PANEL_CARD_CLASS =
   "w-full rounded-2xl border border-primary/10 bg-background/80 p-2.5 text-center";
 
 export const INVITATION_PANEL_CTA_CLASS =
-  "w-full rounded-full bg-primary py-2 text-center text-xs font-semibold tracking-wide text-primary-foreground shadow";
+  "w-full rounded-full bg-primary py-1.5 text-center text-[11px] font-semibold tracking-wide text-primary-foreground shadow";
