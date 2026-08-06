@@ -440,6 +440,15 @@ export default function InvitationPage() {
               className="w-full flex flex-col pointer-events-auto"
               style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
             >
+              <RsvpModal
+                isOpen={isRsvpModalOpen}
+                onClose={() => setIsRsvpModalOpen(false)}
+                onSubmitted={refreshGuestWishes}
+                cardFontVars={cardFontVars}
+                invitation={invitation}
+                token={resolvedToken}
+                inset
+              />
               <DetailPanel
                 activeTab={activeTab}
                 onClose={() => setActiveTab(null)}
@@ -504,14 +513,6 @@ export default function InvitationPage() {
       </AnimatePresence>
 
 
-      <RsvpModal
-        isOpen={isRsvpModalOpen}
-        onClose={() => setIsRsvpModalOpen(false)}
-        onSubmitted={refreshGuestWishes}
-        cardFontVars={cardFontVars}
-        invitation={invitation}
-        token={resolvedToken}
-      />
     </div>
   );
 }

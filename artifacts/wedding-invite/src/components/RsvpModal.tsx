@@ -40,9 +40,10 @@ interface RsvpModalProps {
   cardFontVars?: React.CSSProperties;
   invitation?: Invitation | Record<string, unknown>;
   token?: string;
+  inset?: boolean;
 }
 
-export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitation, token }: RsvpModalProps) {
+export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitation, token, inset }: RsvpModalProps) {
   const queryClient = useQueryClient();
   const createRsvp = useCreateRsvp();
   const inv = invitation as Record<string, unknown> | undefined;
@@ -188,6 +189,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
       isOpen={isOpen}
       onClose={onClose}
       title={closedTitle}
+      inset={inset}
       style={cardFontVars}
     >
       {closedState ? (

@@ -89,7 +89,7 @@ const FAQS = [
       },
       {
         question: "Can I change the couple names or event date after I have paid?",
-        answer: "No. The couple names and event date are locked once payment is made. This ensures your invitation stays tied to your specific event. All other details remain fully editable.",
+        answer: "Yes — you can update the full names, event date, venue, and all other content at any time. Only the Cover Names are locked after payment, because they form your invitation's public URL link. This prevents the link from being reused for a different couple's invitation.",
       },
       {
         question: "Can I choose the language of my invitation?",

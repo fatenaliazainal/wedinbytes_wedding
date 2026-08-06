@@ -2078,8 +2078,6 @@ export default function EditorPage({
                       value={inv.groomName}
                       onChange={(e) => setI("groomName")(e.target.value)}
                       placeholder={t("placeholders.groomFullName")}
-                      disabled={identityLocked}
-                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                   <Field label="Nama Penuh Pengantin Perempuan">
@@ -2088,14 +2086,9 @@ export default function EditorPage({
                       value={inv.brideName}
                       onChange={(e) => setI("brideName")(e.target.value)}
                       placeholder={t("placeholders.brideFullName")}
-                      disabled={identityLocked}
-                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                 </div>
-                {identityLocked && (
-                  <p className="flex items-center gap-1.5 text-xs text-amber-600"><Lock size={11} />Nama pengantin tidak boleh ditukar selepas pembayaran.</p>
-                )}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Nama Cover Pengantin Lelaki">
                     <input
@@ -2103,6 +2096,8 @@ export default function EditorPage({
                       value={inv.coverGroomName}
                       onChange={(e) => setI("coverGroomName")(e.target.value)}
                       placeholder="Contoh: M"
+                      disabled={identityLocked}
+                      title={identityLocked ? "Nama Cover tidak boleh ditukar selepas pembayaran" : undefined}
                     />
                   </Field>
                   <Field label="Nama Cover Pengantin Perempuan">
@@ -2111,14 +2106,20 @@ export default function EditorPage({
                       value={inv.coverBrideName}
                       onChange={(e) => setI("coverBrideName")(e.target.value)}
                       placeholder="Contoh: F"
+                      disabled={identityLocked}
+                      title={identityLocked ? "Nama Cover tidak boleh ditukar selepas pembayaran" : undefined}
                     />
                   </Field>
                 </div>
-                <p className="-mt-2 text-xs leading-relaxed text-gray-500">
-                  URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
-                  Nama Cover Pengantin Perempuan di atas. Pastikan kedua-dua nama
-                  diisi dengan betul sebelum berkongsi link.
-                </p>
+                {identityLocked ? (
+                  <p className="flex items-center gap-1.5 -mt-2 text-xs text-amber-600"><Lock size={11} />Nama Cover dikunci selepas pembayaran — ia membentuk URL link jemputan anda.</p>
+                ) : (
+                  <p className="-mt-2 text-xs leading-relaxed text-gray-500">
+                    URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
+                    Nama Cover Pengantin Perempuan di atas. Pastikan kedua-dua nama
+                    diisi dengan betul sebelum berkongsi link.
+                  </p>
+                )}
                 <Field label="Inisial Cover (Pilihan)">
                   <input
                     className={inputCls}
