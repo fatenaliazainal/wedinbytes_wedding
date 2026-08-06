@@ -36,3 +36,10 @@ id = "FhzpFZ7tdnK5kVd4byOf5"
 uri = "file://attached_assets/canva-background-guide-900x1600.svg"
 type = "image"
 title = "Canva Background Guide — 900×1600 px"
+
+[[outputs]]
+id = "BjCJNS_BanE_Onplofxa7"
+uri = "file://.agents/outputs/test-results-updated.csv"
+type = "table"
+title = "Test Results — WedInStudio (167 Test Cases)"
+description = "Semua 167 test cases dengan Actual Result dan Status dikemaskini. PASS: 60 | FAIL: 3 | UNABLE: 103 | N/A: 1"
