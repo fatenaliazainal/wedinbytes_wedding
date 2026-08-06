@@ -99,12 +99,12 @@ function ReviewCard({ review }: { review: Review }) {
   }, [review.reviewText]);
 
   return (
-    <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 flex flex-col transition-shadow duration-200 hover:shadow-md">
-      <StarRating rating={review.rating} size={13} />
-      <div className="mt-2.5 flex-1">
+    <div className="rounded-lg bg-white border border-gray-100 shadow-sm p-3 flex flex-col transition-shadow duration-200 hover:shadow-md">
+      <StarRating rating={review.rating} size={10} />
+      <div className="mt-2 flex-1">
         <p
           ref={textRef}
-          className={`text-[12px] text-gray-700 leading-relaxed transition-all duration-300 ${
+          className={`text-[10px] text-gray-700 leading-relaxed transition-all duration-300 ${
             expanded ? "" : "line-clamp-3"
           }`}
         >
@@ -114,16 +114,16 @@ function ReviewCard({ review }: { review: Review }) {
           <button
             type="button"
             onClick={() => setExpanded((e) => !e)}
-            className="mt-1 text-[11px] font-medium text-[#3d5a3e] hover:text-[#2d4330] transition-colors"
+            className="mt-0.5 text-[9px] font-medium text-[#3d5a3e] hover:text-[#2d4330] transition-colors"
           >
             {expanded ? "Show Less" : "Read More"}
           </button>
         )}
       </div>
-      <div className="mt-3 pt-3 border-t border-gray-100">
-        <p className="text-[12px] font-semibold text-gray-900">{review.customerName}</p>
+      <div className="mt-2 pt-2 border-t border-gray-100">
+        <p className="text-[10px] font-semibold text-gray-900">{review.customerName}</p>
         {review.weddingDate && (
-          <p className="text-[11px] text-gray-400 mt-0.5">{review.weddingDate}</p>
+          <p className="text-[9px] text-gray-400 mt-0.5">{review.weddingDate}</p>
         )}
       </div>
     </div>
