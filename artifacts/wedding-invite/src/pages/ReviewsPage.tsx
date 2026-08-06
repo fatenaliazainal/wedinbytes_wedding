@@ -347,10 +347,10 @@ export default function ReviewsPage() {
         {/* Stats */}
         <section className="py-6 px-4 sm:px-6 bg-gray-50">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex flex-col items-center gap-1.5 rounded-2xl bg-white border border-gray-100 shadow-sm px-8 py-5">
-              <StarRating rating={5} size={22} />
-              <p className="text-2xl font-bold text-gray-900">{averageRating.toFixed(1)} out of 5</p>
-              <p className="text-xs text-gray-500">Based on {totalReviews} customer reviews</p>
+            <div className="inline-flex flex-col items-center gap-1 rounded-xl bg-white border border-gray-100 shadow-sm px-6 py-3.5">
+              <StarRating rating={5} size={15} />
+              <p className="text-[17px] font-bold text-gray-900">{averageRating.toFixed(1)} out of 5</p>
+              <p className="text-[9px] text-gray-500">Based on {totalReviews} customer reviews</p>
             </div>
           </div>
         </section>
