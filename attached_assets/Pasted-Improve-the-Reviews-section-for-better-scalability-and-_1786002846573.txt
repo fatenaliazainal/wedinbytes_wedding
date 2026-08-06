@@ -1,0 +1,111 @@
+Improve the Reviews section for better scalability and user experience.
+
+IMPORTANT:
+- Do NOT modify any backend logic.
+- Do NOT change the review submission process.
+- Do NOT change the review database structure.
+- Do NOT change APIs.
+- Preserve all existing functionality.
+- This is a UI/UX improvement only.
+
+OBJECTIVE
+
+The Reviews section must be able to handle hundreds or even thousands of reviews without requiring users to endlessly scroll.
+
+Requirements
+
+1. Reduce the size of every review card by approximately 20–30%.
+   - Reduce card width proportionally.
+   - Reduce internal padding.
+   - Reduce font sizes slightly.
+   - Reduce spacing between elements.
+   - Keep readability high.
+
+2. Keep the existing design language.
+   - Same colours
+   - Same rounded corners
+   - Same shadows
+   - Same typography style
+   - Same star rating design
+
+3. Add pagination below the review grid.
+
+Example:
+< Previous  1  2  3  4  5  ...  18  Next >
+
+4. Show only a limited number of reviews per page.
+   - Desktop: 6 reviews (3 columns × 2 rows)
+   - Tablet: 4 reviews
+   - Mobile: 4 reviews (2 per row or 1 per row depending on screen size)
+
+5. Display review statistics above the review grid.
+
+Example:
+
+★★★★☆ 4.8
+Based on 126 reviews
+
+6. Add sorting options.
+
+Sort By:
+- Newest First
+- Oldest First
+- Highest Rating
+- Lowest Rating
+
+7. Add rating filters.
+
+Filter:
+- All Reviews
+- 5 Stars
+- 4 Stars
+- 3 Stars
+- 2 Stars
+- 1 Star
+
+8. Display review count below pagination.
+
+Example:
+Showing 1–6 of 126 reviews
+
+9. Ensure pagination updates correctly after filtering or sorting.
+
+10. Make the entire section fully responsive.
+
+Desktop:
+- 3 cards per row
+
+Tablet:
+- 2 cards per row
+
+Mobile:
+- 1 card per row
+
+11. Keep card heights consistent.
+If a review is too long:
+- Limit preview to 3 lines.
+- Show "Read More".
+- Expand only that card when clicked.
+- Do not affect the layout of other cards.
+
+12. Smooth interactions.
+- Fade transition when changing pages.
+- Smooth hover effect.
+- Smooth expansion for "Read More".
+
+13. Performance.
+- Do not render all reviews at once.
+- Only render the reviews for the current page.
+- Optimise for hundreds or thousands of reviews.
+
+Design Goal
+
+The Reviews section should feel modern, premium and scalable, similar to professional SaaS websites.
+
+It should remain clean and fast even if there are 1,000+ reviews.
+
+IMPORTANT
+
+- Do NOT redesign the entire section.
+- Do NOT change existing review functionality.
+- Only improve the layout, pagination, filtering, sorting and overall user experience.
