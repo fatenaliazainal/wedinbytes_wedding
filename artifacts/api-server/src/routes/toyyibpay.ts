@@ -395,7 +395,9 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
 
       if (billIsOpen) {
         const { baseUrl } = (function () {
-          const sandbox = process.env.TOYYIBPAY_SANDBOX === "true";
+          // Mirror getConfig() logic: sandbox mode is NEVER active in production,
+          // even if TOYYIBPAY_SANDBOX is set as a shared env var.
+          const sandbox = process.env.NODE_ENV !== "production" && process.env.TOYYIBPAY_SANDBOX === "true";
           return { baseUrl: sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com" };
         })();
         const paymentUrl = `${baseUrl}/${encodeURIComponent(order.billCode)}`;

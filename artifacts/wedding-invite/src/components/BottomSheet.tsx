@@ -73,9 +73,9 @@ export function BottomSheet({
       </div>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-6 pt-3 pb-2">
+      <div className="flex items-center justify-between px-5 pt-2.5 pb-1.5">
         <p
-          className="text-xl text-primary"
+          className="text-[22px] font-semibold text-primary"
           style={{ fontFamily: NAME_FONT }}
         >
           {title}
@@ -84,18 +84,18 @@ export function BottomSheet({
           type="button"
           onClick={onClose}
           data-testid="button-close-panel"
-          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
-          <X size={16} />
+          <X size={14} />
         </button>
       </div>
 
       {/* ── Scrollable content ── */}
       <div
-        className="overflow-y-auto overscroll-contain px-6"
+        className="overflow-y-auto overscroll-contain px-5"
         style={{
-          maxHeight: "calc(75vh - 84px)",
-          paddingBottom: "max(24px, env(safe-area-inset-bottom))",
+          maxHeight: "calc(75vh - 76px)",
+          paddingBottom: "max(20px, env(safe-area-inset-bottom))",
           ...style,
         }}
       >

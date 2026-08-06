@@ -53,24 +53,24 @@ function MuzikPanel({
   musicArtist?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center relative">
-        <Music size={36} className="text-primary" />
+    <div className="flex flex-col items-center gap-3.5 py-2">
+      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center relative">
+        <Music size={28} className="text-primary" />
         {!isMuted && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary animate-ping opacity-60" />
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary animate-ping opacity-60" />
         )}
       </div>
 
-      <p className="text-2xl text-primary text-center" style={{ fontFamily: nameFont }}>Wedding Music</p>
+      <p className="text-[19px] text-primary text-center" style={{ fontFamily: nameFont }}>Wedding Music</p>
 
-      <div className="w-full bg-background/80 rounded-2xl p-4 border border-primary/10 text-center space-y-2">
-        <p className="text-xs text-muted-foreground">Theme Song</p>
-        <p className="text-lg text-foreground" style={{ fontFamily: nameFont }}>"{musicTitle ?? "Sempurna"}"</p>
-        <p className="text-xs text-muted-foreground">{musicArtist ?? "Andra & The Backbone"}</p>
+      <div className="w-full bg-background/80 rounded-2xl p-3 border border-primary/10 text-center space-y-1.5">
+        <p className="text-[11px] text-muted-foreground">Theme Song</p>
+        <p className="text-base text-foreground" style={{ fontFamily: nameFont }}>"{musicTitle ?? "Sempurna"}"</p>
+        <p className="text-[11px] text-muted-foreground">{musicArtist ?? "Andra & The Backbone"}</p>
       </div>
 
-      <div className="w-full flex items-center justify-center gap-3 bg-primary/5 rounded-2xl p-4 border border-primary/10">
-        <div className="flex items-end gap-[3px] h-6">
+      <div className="w-full flex items-center justify-center gap-3 bg-primary/5 rounded-2xl p-3 border border-primary/10">
+        <div className="flex items-end gap-[3px] h-5">
           {!isMuted &&
             [1, 2, 3, 4].map((i) => (
               <span
@@ -86,7 +86,7 @@ function MuzikPanel({
             <span className="text-xs text-muted-foreground italic">Muted</span>
           )}
         </div>
-        <p className="text-sm text-foreground/70 flex-1">
+        <p className="text-[13px] text-foreground/70 flex-1">
           {isMuted ? "Music muted" : "Now playing..."}
         </p>
       </div>
@@ -94,7 +94,7 @@ function MuzikPanel({
       <button
         onClick={onToggleMute}
         data-testid="button-toggle-mute"
-        className={`w-full py-3 rounded-full text-sm font-semibold tracking-wide shadow flex items-center justify-center gap-2 transition-colors ${
+        className={`w-full py-2.5 rounded-full text-[15px] font-semibold tracking-wide shadow flex items-center justify-center gap-2 transition-colors ${
           isMuted
             ? "bg-primary text-primary-foreground"
             : "bg-secondary text-secondary-foreground border border-primary/20"
@@ -102,11 +102,11 @@ function MuzikPanel({
       >
         {isMuted ? (
           <>
-            <Volume2 size={16} /> Unmute Music
+            <Volume2 size={15} /> Unmute Music
           </>
         ) : (
           <>
-            <VolumeX size={16} /> Mute Music
+            <VolumeX size={15} /> Mute Music
           </>
         )}
       </button>
@@ -147,7 +147,7 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
   return (
     <div className={INVITATION_PANEL_CONTENT_CLASS}>
       <div className={INVITATION_PANEL_ICON_CLASS}>
-        <Calendar size={32} className="text-primary" />
+        <Calendar size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Date</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
@@ -179,30 +179,30 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
   return (
     <div className={INVITATION_PANEL_CONTENT_CLASS}>
       <div className={INVITATION_PANEL_ICON_CLASS}>
-        <MapPin size={32} className="text-primary" />
+        <MapPin size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Venue</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
-        <p className="text-sm font-bold text-foreground">
+        <p className="text-[13px] font-bold text-foreground">
           {invitation?.venueName}
         </p>
-        <p className="text-xs text-muted-foreground"
+        <p className="text-[12px] text-muted-foreground"
           dangerouslySetInnerHTML={{ __html: invitation?.venueAddress || "" }}
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[12px] text-muted-foreground">
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
       </div>
       {(mapsUrl || wazeUrl) && (
-        <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="flex items-center justify-center gap-2.5 pt-1">
           {mapsUrl && (
             <a
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 py-1.5 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
             >
-              <img src="/icons/google-maps.png" alt="" className="w-5 h-5 object-contain" />
+              <img src="/icons/google-maps.png" alt="" className="w-4 h-4 object-contain" />
               Google Maps
             </a>
           )}
@@ -211,9 +211,9 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
               href={wazeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 py-2 px-5 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 py-1.5 px-4 rounded-full border border-border bg-background text-xs font-medium text-foreground/80 hover:bg-muted transition-colors"
             >
-              <img src="/icons/waze.png" alt="" className="w-5 h-5 object-contain" />
+              <img src="/icons/waze.png" alt="" className="w-4 h-4 object-contain" />
               Waze
             </a>
           )}
@@ -251,11 +251,11 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
   return (
     <div className={INVITATION_PANEL_CONTENT_CLASS}>
       <div className={INVITATION_PANEL_ICON_CLASS}>
-        <Phone size={32} className="text-primary" />
+        <Phone size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Contact Us</p>
 
-      <div className="w-full space-y-2">
+      <div className="w-full space-y-1.5">
         {contacts.length === 0 && (
           <div className={`${INVITATION_PANEL_CARD_CLASS} text-xs text-muted-foreground`}>
             No contact information available.
@@ -270,30 +270,30 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
               className={`${INVITATION_PANEL_CARD_CLASS} flex items-center justify-between gap-2`}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-[13px] font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
                   {contact.name || "Contact"}
                 </p>
-                <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-[12px] text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
                   {contact.phone}
                 </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <a
                   href={`tel:${contact.phone}`}
-                  className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                  className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
                   aria-label={`Call ${contact.name}`}
                 >
-                  <Phone size={16} />
+                  <Phone size={14} />
                 </a>
                 {dial && (
                   <a
                     href={`https://wa.me/${dial}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                    className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
                     aria-label={`WhatsApp ${contact.name}`}
                   >
-                    <WhatsAppIcon className="w-4 h-4" />
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>
@@ -397,30 +397,30 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
   const hasMoneyGift = qrCodes.length > 0 || Boolean(recipient) || Boolean(bankName) || Boolean(accountNumber);
 
   return (
-    <div className="flex flex-col items-center gap-5 py-2">
+    <div className="flex flex-col items-center gap-3.5 py-1.5">
       {/* ── Money Gift ── */}
       {qrCodes.length > 0 && (
-        <div className="flex w-full flex-col items-center gap-4">
+        <div className="flex w-full flex-col items-center gap-3">
           {qrCodes.map((url, index) => (
-            <div key={`${url}-${index}`} className="w-full max-w-[250px] text-center">
+            <div key={`${url}-${index}`} className="w-full max-w-[220px] text-center">
               <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full rounded-lg border border-primary/10 bg-white p-2 object-contain" />
-              <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 px-4 py-2 text-xs font-semibold text-primary">
-                <Download size={14} /> Save QR
+              <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/20 px-3.5 py-1.5 text-xs font-semibold text-primary">
+                <Download size={13} /> Save QR
               </a>
             </div>
           ))}
         </div>
       )}
       {(recipient || bankName || accountNumber) && (
-        <div className="w-full space-y-2 text-center" style={{ fontFamily: bodyFont }}>
-          {recipient && <p className="text-base font-semibold text-foreground">{recipient}</p>}
-          {bankName && <p className="text-sm text-muted-foreground">{bankName}</p>}
+        <div className="w-full space-y-1.5 text-center" style={{ fontFamily: bodyFont }}>
+          {recipient && <p className="text-[13px] font-semibold text-foreground">{recipient}</p>}
+          {bankName && <p className="text-xs text-muted-foreground">{bankName}</p>}
           {accountNumber && (
             <>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Account Number</p>
-              <p className="text-base font-semibold tracking-wide text-foreground">{accountNumber}</p>
-              <button type="button" onClick={() => void copyAccount()} className="mt-1 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
-                <Copy size={14} /> Copy account number
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Account Number</p>
+              <p className="text-[13px] font-semibold tracking-wide text-foreground">{accountNumber}</p>
+              <button type="button" onClick={() => void copyAccount()} className="mt-0.5 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
+                <Copy size={13} /> Copy account number
               </button>
             </>
           )}

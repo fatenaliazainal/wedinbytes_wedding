@@ -195,34 +195,34 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
       {closedState ? (
         <div className="pb-2">
           <p
-            className="text-xs text-center text-muted-foreground mb-5"
+            className="text-[13px] text-center text-muted-foreground mb-3"
             style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
           >
             {closedMessage}
           </p>
-          <Button type="button" variant="outline" onClick={onClose} className="w-full">
+          <Button type="button" variant="outline" onClick={onClose} className="w-full text-[15px]">
             {copy.close}
           </Button>
         </div>
       ) : (
         <div className="pb-2">
           <p
-            className="text-xs text-center text-muted-foreground mb-4"
+            className="text-[13px] text-center text-muted-foreground mb-3"
             style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
           >
             {introText || copy.defaultIntro}
           </p>
 
           <Form {...form}>
-            <form className="space-y-3 text-sm">
+            <form className="space-y-2.5">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{copy.name}</FormLabel>
+                    <FormLabel className="text-[14px] font-medium">{copy.name}</FormLabel>
                     <FormControl>
-                      <Input placeholder={copy.namePlaceholder} {...field} className="bg-background" />
+                      <Input placeholder={copy.namePlaceholder} {...field} className="bg-background h-11 text-[15px] placeholder:text-[14px]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -233,25 +233,25 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                 control={form.control}
                 name="attending"
                 render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel>{copy.attendance}</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[14px] font-medium">{copy.attendance}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
                         value={field.value}
-                        className="flex flex-col space-y-1"
+                        className="flex flex-col gap-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="yes" />
                           </FormControl>
-                          <FormLabel className="font-normal">{copy.yes}</FormLabel>
+                          <FormLabel className="font-normal text-[15px]">{copy.yes}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="no" />
                           </FormControl>
-                          <FormLabel className="font-normal">{copy.no}</FormLabel>
+                          <FormLabel className="font-normal text-[15px]">{copy.no}</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -266,11 +266,11 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                   name="numberOfGuests"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{copy.guests}</FormLabel>
+                      <FormLabel className="text-[14px] font-medium">{copy.guests}</FormLabel>
                       <FormControl>
-                        <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background" />
+                        <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background h-11 text-[15px]" />
                       </FormControl>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {language === "en"
                           ? `Maximum ${maxGuestsPerInvitation} guests for this invitation.`
                           : `Maksimum ${maxGuestsPerInvitation} tetamu untuk jemputan ini.`}
@@ -286,11 +286,11 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{copy.wishes}</FormLabel>
+                    <FormLabel className="text-[14px] font-medium">{copy.wishes}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder={copy.wishesPlaceholder}
-                        className="resize-none bg-background"
+                        className="resize-none bg-background min-h-[72px] text-[15px] placeholder:text-[14px]"
                         {...field}
                       />
                     </FormControl>
@@ -301,17 +301,17 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
             </form>
           </Form>
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex gap-2 pt-3">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 text-[15px]">
               {copy.cancel}
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-[15px]"
               disabled={createRsvp.isPending}
               onClick={form.handleSubmit(onSubmit)}
             >
-              {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={15} /> : null}
               {copy.submit}
             </Button>
           </div>
