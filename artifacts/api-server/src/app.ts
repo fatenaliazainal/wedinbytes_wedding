@@ -7,6 +7,7 @@ import path from "node:path";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { globalRateLimit } from "./lib/security";
 
 const PgSession = connectPgSimple(session);
 
@@ -76,7 +77,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(frontendDist));
 }
 
-app.use("/api", router);
+app.use("/api", globalRateLimit, router);
 
 if (process.env.NODE_ENV === "production") {
   const frontendIndex = path.resolve(

@@ -98,6 +98,17 @@ export const customerFormSubmitRateLimit = rateLimit({
   message: { error: "Too many form submissions. Please try again later." },
 });
 
+// Global safety net: prevents bots/DDOS from overwhelming unauthenticated endpoints.
+// 200 req/min is generous for any human user (editors, guests, admins) but stops
+// automated floods. Applied to every /api route before route-specific limiters.
+export const globalRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 200,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down and try again." },
+});
+
 export function regenerateSession(
   req: Request,
   userId: number,

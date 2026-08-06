@@ -261,16 +261,41 @@ router.get("/invitation/:token", async (req, res) => {
 // Public, human-readable URL lookup. The UUID token remains internal.
 router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
   try {
-    const rows = await db.select().from(invitationTable);
-    const row = rows.find((candidate) =>
-      publicDateCode(candidate.eventDate) === req.params.dateCode
-      && (
-        // Paid invitations: match against the locked slug first (immutable after payment)
-        (candidate.lockedSlug && candidate.lockedSlug === req.params.slug)
-        || publicSlug(candidate) === req.params.slug
-        || legacyNamedPublicSlug(candidate) === req.params.slug
-      ),
-    );
+    const slug = req.params.slug;
+    const dateCode = req.params.dateCode;
+
+    // Fast path: paid invitations store a lockedSlug at payment time — match it directly.
+    // This is an exact indexed lookup and covers the majority of public URL traffic.
+    const [byLockedSlug] = await db.select().from(invitationTable)
+      .where(eq(invitationTable.lockedSlug, slug))
+      .limit(1);
+
+    let row: typeof invitationTable.$inferSelect | undefined;
+
+    if (byLockedSlug && publicDateCode(byLockedSlug.eventDate) === dateCode) {
+      row = byLockedSlug;
+    } else {
+      // Narrow path: reconstruct the event date from the 6-digit dateCode (YYMMDD)
+      // so we only load invitations on that specific date instead of the whole table.
+      const eventDateFilter = /^\d{6}$/.test(dateCode)
+        ? `20${dateCode.slice(0, 2)}-${dateCode.slice(2, 4)}-${dateCode.slice(4, 6)}`
+        : null;
+
+      const candidates = eventDateFilter
+        ? await db.select().from(invitationTable)
+            .where(eq(invitationTable.eventDate, eventDateFilter))
+        : await db.select().from(invitationTable); // rare fallback for non-standard dateCodes
+
+      row = candidates.find((candidate) =>
+        publicDateCode(candidate.eventDate) === dateCode
+        && (
+          (candidate.lockedSlug && candidate.lockedSlug === slug)
+          || publicSlug(candidate) === slug
+          || legacyNamedPublicSlug(candidate) === slug
+        ),
+      );
+    }
+
     if (!row) {
       res.status(404).json({ error: "Invitation not found" });
       return;
@@ -279,7 +304,7 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
       res.status(410).json({ error: "Invitation expired" });
       return;
     }
-     res.json({ ...(await publicInvitation(row)), token: row.token });
+    res.json({ ...(await publicInvitation(row)), token: row.token });
   } catch (err) {
     req.log.error({ err }, "Failed to find public invitation");
     res.status(500).json({ error: "Internal server error" });
