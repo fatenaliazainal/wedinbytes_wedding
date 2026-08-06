@@ -491,7 +491,7 @@ router.patch("/invitation/:token", async (req, res) => {
       });
     }
 
-    auditEvent(req, "invitation.update", { invitationToken: token, fields: Object.keys(update) });
+    auditEvent(req, "invitation.update", { invitationTokenHint: token.slice(0, 4) + "…", fields: Object.keys(update) });
     res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation");
@@ -522,7 +522,7 @@ router.delete("/invitation/:token", async (req, res) => {
     }
 
     await db.delete(invitationTable).where(eq(invitationTable.id, invitation.id));
-    auditEvent(req, "invitation.delete", { invitationToken: token });
+    auditEvent(req, "invitation.delete", { invitationTokenHint: token.slice(0, 4) + "…" });
     res.json({ ok: true });
   } catch (err) {
     req.log.error({ err }, "Failed to delete invitation");
@@ -554,7 +554,7 @@ router.post("/invitation/:token/lock", async (req, res) => {
       .set({ lockPinHash: protect ? await bcrypt.hash(pin, 12) : null })
       .where(eq(invitationTable.id, row.id))
       .returning();
-    auditEvent(req, "invitation.lock_update", { invitationToken: token, protected: protect });
+    auditEvent(req, "invitation.lock_update", { invitationTokenHint: token.slice(0, 4) + "…", protected: protect });
     res.json(await publicInvitation(updated));
   } catch (err) {
     req.log.error({ err }, "Failed to update invitation lock");

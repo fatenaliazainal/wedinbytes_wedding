@@ -76,7 +76,7 @@ function stripNulls<T extends Record<string, unknown>>(obj: T): T {
 // ── List all cards (for Raw Card tab in admin) ────────────────────────────────
 // Returns card rows mapped to { id, name, path, category }.
 // The frontend resolves the stored key through the same-origin R2 proxy.
-router.get("/cards", async (req, res) => {
+router.get("/cards", requireAdmin, async (req, res) => {
   try {
     const rows = await db
       .select({

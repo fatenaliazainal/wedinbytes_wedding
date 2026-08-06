@@ -35,7 +35,7 @@ router.post("/auth/register", registerRateLimit, async (req, res) => {
       return;
     }
 
-    const existing = await db.select().from(userTable).where(eq(userTable.email, email.toLowerCase())).limit(1);
+    const existing = await db.select().from(userTable).where(eq(userTable.email, email.toLowerCase().trim())).limit(1);
     if (existing.length > 0) {
       res.status(409).json({ error: "Emel ini sudah didaftarkan." });
       return;
@@ -299,13 +299,9 @@ router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
     }
 
     const [user] = await db.select().from(userTable).where(eq(userTable.role, "admin")).limit(1);
-    if (!user) {
-      res.status(401).json({ error: "Akaun admin tidak dijumpai." });
-      return;
-    }
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
+    const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
+    if (!user || !valid) {
       res.status(401).json({ error: "Kata laluan salah." });
       return;
     }
