@@ -1,18 +1,15 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
+import { MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { type Invitation } from "@workspace/api-client-react";
 import {
   INVITATION_PANEL_CARD_CLASS,
-  INVITATION_PANEL_CLASS,
   INVITATION_PANEL_CONTENT_CLASS,
   INVITATION_PANEL_CTA_CLASS,
-  INVITATION_PANEL_HEADER_CLASS,
   INVITATION_PANEL_ICON_CLASS,
   INVITATION_PANEL_SECTION_TITLE_CLASS,
-  INVITATION_PANEL_TITLE_CLASS,
 } from "@/components/PanelStyles";
+import { BottomSheet } from "@/components/BottomSheet";
 
 export type TabKey = "muzik" | "kalendar" | "lokasi" | "hubungi" | "gift";
 
@@ -40,6 +37,10 @@ interface DetailPanelProps {
    *  sitting directly above the footer. The backdrop is still fixed/full-screen. */
   inset?: boolean;
 }
+
+const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
+const bodyFont = "var(--body-font-family, Poppins, sans-serif)";
+
 function MuzikPanel({
   isMuted,
   onToggleMute,
@@ -112,6 +113,7 @@ function MuzikPanel({
     </div>
   );
 }
+
 function KalendarPanel({ invitation }: { invitation?: Invitation }) {
   const calendarInvitation = invitation as (Invitation & {
     eventStartTime?: string | null;
@@ -169,9 +171,10 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
     </div>
   );
 }
+
 function LokasiPanel({ invitation }: { invitation?: Invitation }) {
   const mapsUrl = invitation?.venueMapUrl || "";
-  const wazeUrl = ((invitation as Record<string, unknown>)?.venueWazeUrl as string) || "";
+  const wazeUrl = ((invitation as unknown as Record<string, unknown>)?.venueWazeUrl as string) || "";
 
   return (
     <div className={INVITATION_PANEL_CONTENT_CLASS}>
@@ -219,6 +222,7 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
     </div>
   );
 }
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -226,6 +230,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function normalizeContacts(raw: unknown, fallbackPhone?: string): { name: string; phone: string }[] {
   const parsed = Array.isArray(raw)
     ? raw
@@ -497,9 +502,6 @@ const PANEL_TITLES: Record<TabKey, string> = {
   gift: "eGift",
 };
 
-const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
-const bodyFont = "var(--body-font-family, Poppins, sans-serif)";
-
 export function DetailPanel({
   activeTab,
   onClose,
@@ -512,30 +514,14 @@ export function DetailPanel({
   inset,
   registryItems = [],
 }: DetailPanelProps) {
-  const isCompactPanel = activeTab === "kalendar" || activeTab === "lokasi" || activeTab === "hubungi";
-  // In inset mode the parent container already constrains width to the invitation width,
-  // so we drop the max-w-* constraints so the panel fills it exactly.
-  const compactPanelClass = inset
-    ? INVITATION_PANEL_CLASS.replace(" max-w-[340px]", "")
-    : INVITATION_PANEL_CLASS;
-  const nonCompactPanelClass = inset
-    ? "w-full rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl"
-    : "w-full max-w-[420px] rounded-t-3xl border border-primary/10 border-b-0 bg-card p-6 pb-6 shadow-2xl";
-  const panelContent = (
-    <div className={isCompactPanel ? compactPanelClass : nonCompactPanelClass}>
-      <div className={isCompactPanel ? INVITATION_PANEL_HEADER_CLASS : "mb-6 flex items-center justify-between"}>
-        <p className={isCompactPanel ? INVITATION_PANEL_TITLE_CLASS : "text-lg text-primary"} style={{ fontFamily: nameFont }}>
-          {activeTab ? PANEL_TITLES[activeTab] : ""}
-        </p>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-          data-testid="button-close-panel"
-        >
-          <X size={16} />
-        </button>
-      </div>
-
+  return (
+    <BottomSheet
+      isOpen={!!activeTab}
+      onClose={onClose}
+      title={activeTab ? PANEL_TITLES[activeTab] : ""}
+      inset={inset}
+      previewMode={previewMode}
+    >
       {activeTab === "muzik" && (
         <MuzikPanel
           isMuted={isMuted}
@@ -544,91 +530,12 @@ export function DetailPanel({
           musicArtist={musicArtist}
         />
       )}
-      {activeTab === "kalendar" && (
-        <KalendarPanel invitation={invitation} />
-      )}
+      {activeTab === "kalendar" && <KalendarPanel invitation={invitation} />}
       {activeTab === "lokasi" && <LokasiPanel invitation={invitation} />}
-      {activeTab === "hubungi" && (
-        <HubungiPanel invitation={invitation} />
+      {activeTab === "hubungi" && <HubungiPanel invitation={invitation} />}
+      {activeTab === "gift" && (
+        <GiftPanel invitation={invitation} registryItems={registryItems} />
       )}
-      {activeTab === "gift" && <GiftPanel invitation={invitation} registryItems={registryItems} />}
-    </div>
-  );
-
-  if (!activeTab) return null;
-
-  // Preview mode: skip framer-motion animations to avoid clipping issues
-  // inside the editor's scaled phone frame.
-  if (previewMode) {
-    return (
-      <>
-        <div
-          className="absolute inset-0 z-40 bg-black/20"
-          onClick={onClose}
-        />
-        <div className="absolute bottom-0 left-0 right-0 z-50 flex justify-center">
-          {panelContent}
-        </div>
-      </>
-    );
-  }
-
-  // Inset mode: the parent (InvitationPage) renders this inside a fixed bottom-0
-  // container that is already constrained to the invitation width. The panel sits
-  // as a flex-column child directly above the footer — no fixed positioning needed
-  // on the panel itself. The backdrop is still fixed/full-screen.
-  if (inset) {
-    return (
-      <AnimatePresence>
-        <>
-          <motion.div
-            key="backdrop-inset"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm pointer-events-auto"
-            onClick={onClose}
-          />
-          <motion.div
-            key="panel-inset"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="w-full relative z-50"
-          >
-            {panelContent}
-          </motion.div>
-        </>
-      </AnimatePresence>
-    );
-  }
-
-  return (
-    <AnimatePresence>
-      <>
-        <motion.div
-          key="backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          key="panel"
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
-        >
-          {panelContent}
-        </motion.div>
-      </>
-    </AnimatePresence>
+    </BottomSheet>
   );
 }
-

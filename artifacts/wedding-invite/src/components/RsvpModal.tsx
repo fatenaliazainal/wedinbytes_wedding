@@ -1,5 +1,4 @@
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +13,7 @@ import { getListRsvpsQueryKey, getGetRsvpCountQueryKey } from "@workspace/api-cl
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { Invitation } from "@workspace/api-client-react";
-import { INVITATION_PANEL_CLASS, INVITATION_PANEL_TITLE_CLASS } from "@/components/PanelStyles";
+import { BottomSheet } from "@/components/BottomSheet";
 
 function safeJsonParse<T>(value: unknown, fallback: T): T {
   if (typeof value !== "string" || !value.trim()) return fallback;
@@ -155,7 +154,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
           queryClient.invalidateQueries({ queryKey: getListRsvpsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetRsvpCountQueryKey(resolvedToken ? { invitationToken: resolvedToken } : undefined) });
           onSubmitted?.();
-           toast.success(copy.success);
+          toast.success(copy.success);
           onClose();
           form.reset();
         },
@@ -174,7 +173,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
   };
 
   const closedState = !enabled || isDeadlinePassed || isOverallLimitReached;
-  let closedTitle = copy.title;
+  const closedTitle = copy.title;
   let closedMessage = introText || copy.defaultIntro;
   if (!enabled) {
     closedMessage = copy.disabled;
@@ -185,134 +184,137 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={INVITATION_PANEL_CLASS} style={cardFontVars}>
-        <DialogHeader>
-          <DialogTitle
-            className={`${INVITATION_PANEL_TITLE_CLASS} text-center`}
-            style={{ fontFamily: "var(--name-font-family, 'Dancing Script', serif)" }}
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={closedTitle}
+      style={cardFontVars}
+    >
+      {closedState ? (
+        <div className="pb-2">
+          <p
+            className="text-xs text-center text-muted-foreground mb-5"
+            style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
           >
-            {closedTitle}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-center text-muted-foreground" style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}>
-            {closedState ? closedMessage : (introText || copy.defaultIntro)}
-          </DialogDescription>
-        </DialogHeader>
+            {closedMessage}
+          </p>
+          <Button type="button" variant="outline" onClick={onClose} className="w-full">
+            {copy.close}
+          </Button>
+        </div>
+      ) : (
+        <div className="pb-2">
+          <p
+            className="text-xs text-center text-muted-foreground mb-4"
+            style={{ fontFamily: "var(--body-font-family, Poppins, sans-serif)" }}
+          >
+            {introText || copy.defaultIntro}
+          </p>
 
-        {closedState ? (
-          <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={onClose} className="w-full">
-                {copy.close}
-            </Button>
-          </DialogFooter>
-        ) : (
-          <>
-            <Form {...form}>
-              <form className="mt-1 space-y-3 text-sm">
+          <Form {...form}>
+            <form className="space-y-3 text-sm">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{copy.name}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={copy.namePlaceholder} {...field} className="bg-background" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="attending"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>{copy.attendance}</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="yes" />
+                          </FormControl>
+                          <FormLabel className="font-normal">{copy.yes}</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="no" />
+                          </FormControl>
+                          <FormLabel className="font-normal">{copy.no}</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("attending") === "yes" && (
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="numberOfGuests"
                   render={({ field }) => (
                     <FormItem>
-                  <FormLabel>{copy.name}</FormLabel>
+                      <FormLabel>{copy.guests}</FormLabel>
                       <FormControl>
-                        <Input placeholder={copy.namePlaceholder} {...field} className="bg-background" />
+                        <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background" />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="attending"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                       <FormLabel>{copy.attendance}</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="yes" />
-                            </FormControl>
-                             <FormLabel className="font-normal">{copy.yes}</FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="no" />
-                            </FormControl>
-                             <FormLabel className="font-normal">{copy.no}</FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch("attending") === "yes" && (
-                  <FormField
-                    control={form.control}
-                    name="numberOfGuests"
-                    render={({ field }) => (
-                      <FormItem>
-                         <FormLabel>{copy.guests}</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={1} max={maxGuestsPerInvitation} {...field} className="bg-background" />
-                        </FormControl>
                       <p className="text-[10px] text-muted-foreground">
                         {language === "en"
                           ? `Maximum ${maxGuestsPerInvitation} guests for this invitation.`
                           : `Maksimum ${maxGuestsPerInvitation} tetamu untuk jemputan ini.`}
                       </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{copy.wishes}</FormLabel>
-                      <FormControl>
-                        <Textarea
-                           placeholder={copy.wishesPlaceholder}
-                          className="resize-none bg-background"
-                          {...field}
-                        />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              )}
 
-              </form>
-            </Form>
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{copy.wishes}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={copy.wishesPlaceholder}
+                        className="resize-none bg-background"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
 
-            <DialogFooter className="gap-1 pt-1">
-              <Button type="button" variant="outline" onClick={onClose} className="w-full py-2 text-xs sm:w-auto">
-                {copy.cancel}
-              </Button>
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 text-xs sm:w-auto"
-                disabled={createRsvp.isPending}
-                onClick={form.handleSubmit(onSubmit)}
-              >
-                {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-                 {copy.submit}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              {copy.cancel}
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              disabled={createRsvp.isPending}
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              {createRsvp.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              {copy.submit}
+            </Button>
+          </div>
+        </div>
+      )}
+    </BottomSheet>
   );
 }

@@ -1,0 +1,87 @@
+Redesign the current Bottom Navigation popup into a premium mobile Bottom Sheet similar to Shopee, Grab, and modern native iOS/Android applications.
+
+IMPORTANT:
+- Do NOT modify any functionality.
+- Do NOT change business logic.
+- Do NOT change APIs.
+- Do NOT change RSVP, Calendar, Music, Contact, Location, Gift or any existing features.
+- This is a UI/UX improvement only.
+- Do NOT refactor unrelated code.
+
+Requirements:
+
+1. Replace the current modal with a modern Bottom Sheet that slides up smoothly from the bottom.
+
+2. The Bottom Sheet should NOT occupy the full screen.
+   - Height should automatically adjust based on its content.
+   - Do NOT force a fixed height (70–90%).
+   - Wrap the content naturally.
+   - Only become scrollable when content exceeds the maximum height.
+   - Maximum height should be around 75vh.
+
+3. Add large rounded top corners (24–28px).
+
+4. Add a centered drag handle at the top.
+   - Small rounded grey bar.
+   - Similar to Shopee, Grab and native iOS Bottom Sheets.
+
+5. Animation
+   - Use a spring animation instead of a linear animation.
+   - The Bottom Sheet should feel smooth, soft and natural.
+   - Opening should gently bounce into place.
+   - Closing should smoothly slide down.
+   - Animation duration around 250–300ms.
+
+6. Closing interaction
+   - Tap outside to close.
+   - Swipe/drag downward to dismiss.
+   - Maintain a smooth gesture experience similar to modern mobile apps.
+
+7. Backdrop
+   - Use a semi-transparent dark overlay.
+   - Apply a subtle backdrop blur (3–5px) to the invitation behind the Bottom Sheet.
+   - The invitation should remain slightly visible, creating a premium layered effect instead of only darkening the background.
+
+8. Prevent background scrolling while the Bottom Sheet is open.
+
+9. Add comfortable internal padding (20–24px).
+
+10. Respect Safe Area Insets on both iPhone and Android devices.
+
+11. Use ONE reusable Bottom Sheet component for ALL Bottom Navigation features:
+   - Music
+   - Calendar
+   - Gift
+   - Location
+   - Contact
+   - RSVP
+
+   Every popup should share the same animation, styling, spacing and interaction to provide a consistent premium experience throughout WedInStudio.
+
+12. Each Bottom Sheet should automatically size itself according to its content.
+   Examples:
+   - Music → compact
+   - Calendar → compact
+   - Gift → medium
+   - Contact → medium
+   - Location → medium
+   - RSVP → larger because it contains a form
+
+   Do NOT force every Bottom Sheet to have the same height.
+
+13. Preserve every existing feature and interaction exactly as they are.
+
+Design Goal:
+
+The Bottom Sheet should feel elegant, compact, modern and premium, just like a high-quality mobile application.
+
+The overall experience should resemble Shopee, Grab or native iOS Bottom Sheets with:
+- Spring animation
+- Drag-to-dismiss
+- Auto-height based on content
+- Soft backdrop blur
+- Consistent reusable component
+- Smooth and polished interactions
+
+Only improve the popup container, animations and user experience.
+Do NOT redesign the content inside each Bottom Sheet unless minor spacing adjustments are required.
