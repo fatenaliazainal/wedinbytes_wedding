@@ -345,7 +345,7 @@ export default function ReviewsPage() {
         </section>
 
         {/* Stats */}
-        <section className="py-6 px-4 sm:px-6 bg-gray-50">
+        <section className="pt-2 pb-4 px-4 sm:px-6 bg-gray-50">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex flex-col items-center gap-1 rounded-xl bg-white border border-gray-100 shadow-sm px-6 py-3.5">
               <StarRating rating={5} size={15} />
