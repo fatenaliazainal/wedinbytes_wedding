@@ -109,7 +109,7 @@ export default function MarketingHomePage() {
       .catch(() => setCollaborations([]));
   }, []);
 
-  const previewCards = designs.slice(0, 4);
+  const previewCards = designs.slice(0, 5);
   const logoCollaborations = collaborations.filter((business) => business.logoUrl);
   const [businessSlide, setBusinessSlide] = useState(0);
   const [businessCarouselPaused, setBusinessCarouselPaused] = useState(false);
@@ -219,7 +219,7 @@ export default function MarketingHomePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
               {previewCards.map((design) => (
                 <CatalogDesignCard
                   key={design.id}
