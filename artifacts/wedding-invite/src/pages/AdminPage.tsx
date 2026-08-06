@@ -983,8 +983,8 @@ function DesignForm({
                         setForm((f) => ({
                           ...f,
                           colors: checked
-                            ? f.colors.filter((c) => c !== color)
-                            : [...f.colors, color],
+                            ? (f.colors ?? []).filter((c) => c !== color)
+                            : [...(f.colors ?? []), color],
                         }))
                       }
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
