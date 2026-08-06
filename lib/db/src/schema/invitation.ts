@@ -197,6 +197,9 @@ export const cardDesignTable = pgTable("card_design", {
   overlayEnabled: boolean("overlay_enabled").notNull().default(true),
   // Default wax seal for invitations using this design (buyers can override in their editor)
   waxSealId: integer("wax_seal_id"),
+  // Catalog filter metadata — assigned by admin; nullable so existing records are unaffected
+  colors: jsonb("colors").$type<string[]>(),
+  category: text("category"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

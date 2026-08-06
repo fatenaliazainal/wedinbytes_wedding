@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import {
   useListDesigns,
@@ -24,6 +24,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
+import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
 
 type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users";
 
@@ -494,6 +495,8 @@ interface DesignFormData {
   contentOverlayOpacity: string;
   overlayEnabled: boolean;
   waxSealId: string;
+  colors: string[];
+  category: string;
 }
 
 const EMPTY_FORM: DesignFormData = {
@@ -507,6 +510,8 @@ const EMPTY_FORM: DesignFormData = {
   contentOverlayColor: "#FFFFFF", contentOverlayOpacity: "55",
   overlayEnabled: true,
   waxSealId: "",
+  colors: [],
+  category: "",
 };
 
 function DesignForm({
@@ -673,6 +678,8 @@ function DesignForm({
         contentOverlayOpacity: form.contentOverlayOpacity || "55",
         overlayEnabled: form.overlayEnabled,
         waxSealId: form.waxSealId ? parseInt(form.waxSealId, 10) : null,
+        colors: (form.colors ?? []).length > 0 ? form.colors : null,
+        category: form.category || null,
       };
       const url = mode === "add"
         ? `${BASE}/api/design`
@@ -934,6 +941,73 @@ function DesignForm({
               value={form.openButtonText}
               onChange={(e) => set("openButtonText")(e.target.value)}
             />
+          </div>
+
+          {/* Catalog Metadata — Category & Colors */}
+          <div className="space-y-4 rounded-2xl border border-border bg-muted/20 p-4">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Catalog Metadata</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Used by customers to filter designs in the catalog. Assign after uploading.
+              </p>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Category</label>
+              <select
+                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              >
+                <option value="">— No category —</option>
+                {DESIGN_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Colors — multi-select checkboxes */}
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-2">
+                Colors {(form.colors ?? []).length > 0 && <span className="ml-1 text-primary">({(form.colors ?? []).length} selected)</span>}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {DESIGN_COLORS.map((color) => {
+                  const checked = (form.colors ?? []).includes(color);
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          colors: checked
+                            ? f.colors.filter((c) => c !== color)
+                            : [...f.colors, color],
+                        }))
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                        checked
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-white text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  );
+                })}
+              </div>
+              {(form.colors ?? []).length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, colors: [] }))}
+                  className="mt-2 text-xs text-muted-foreground underline"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Typography */}
@@ -1200,6 +1274,32 @@ function DesignsTab() {
 
   const nextCode = `FL${String(designs.length + 1).padStart(3, "0")}`;
 
+  const [filterSearch, setFilterSearch] = useState("");
+  const [filterColor, setFilterColor] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+
+  const filteredDesigns = useMemo(() => {
+    return designs.filter((d: CardDesign) => {
+      if (filterSearch.trim()) {
+        const q = filterSearch.trim().toLowerCase();
+        const nameMatch = d.name?.toLowerCase().includes(q);
+        const codeMatch = d.designCode?.toLowerCase().includes(q);
+        if (!nameMatch && !codeMatch) return false;
+      }
+      if (filterColor) {
+        const cols = (d as Record<string,unknown>).colors;
+        if (!Array.isArray(cols) || !cols.includes(filterColor)) return false;
+      }
+      if (filterCategory) {
+        const cat = (d as Record<string,unknown>).category as string | null;
+        if (cat !== filterCategory) return false;
+      }
+      return true;
+    });
+  }, [designs, filterSearch, filterColor, filterCategory]);
+
+  const hasFilters = filterSearch || filterColor || filterCategory;
+
   if (showAdd) {
     return (
       <DesignForm
@@ -1226,7 +1326,11 @@ function DesignsTab() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{designs.length} designs in system</p>
+        <p className="text-sm text-muted-foreground">
+          {hasFilters
+            ? `${filteredDesigns.length} of ${designs.length} designs`
+            : `${designs.length} designs in system`}
+        </p>
         <button
           type="button"
           onClick={() => setShowAdd(true)}
@@ -1235,6 +1339,45 @@ function DesignsTab() {
           <Plus size={15} />
           Add Design
         </button>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-[180px] rounded-xl border border-border bg-white px-3 py-2">
+          <Search size={14} className="shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            value={filterSearch}
+            onChange={(e) => setFilterSearch(e.target.value)}
+            placeholder="Search name / code…"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <select
+          value={filterColor}
+          onChange={(e) => setFilterColor(e.target.value)}
+          className="rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          <option value="">All Colors</option>
+          {DESIGN_COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          <option value="">All Categories</option>
+          {DESIGN_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={() => { setFilterSearch(""); setFilterColor(""); setFilterCategory(""); }}
+            className="rounded-xl border border-border bg-white px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Reset
+          </button>
+        )}
       </div>
 
       {isLoading && (
@@ -1252,12 +1395,12 @@ function DesignsTab() {
 
       {!isLoading && !isError && (
         <div className="divide-y divide-border rounded-2xl border border-border overflow-hidden bg-card">
-          {designs.length === 0 && (
+          {filteredDesigns.length === 0 && (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              No designs yet. Add the first one!
+              {hasFilters ? "No designs match the current filters." : "No designs yet. Add the first one!"}
             </div>
           )}
-          {designs.map((d: CardDesign) => (
+          {filteredDesigns.map((d: CardDesign) => (
             <div key={d.id} className="flex items-center gap-4 px-5 py-4">
               {/* Thumbnail */}
               <div className="h-20 w-14 shrink-0 rounded-lg overflow-hidden border border-border bg-muted relative">
@@ -1348,6 +1491,8 @@ function DesignsTab() {
                     contentOverlayOpacity: d.contentOverlayOpacity ?? "55",
                     overlayEnabled: d.overlayEnabled ?? true,
                     waxSealId: d.waxSealId ? String(d.waxSealId) : "",
+                    colors: Array.isArray((d as Record<string,unknown>).colors) ? (d as Record<string,unknown>).colors as string[] : [],
+                    category: (d as Record<string,unknown>).category as string ?? "",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
                 >

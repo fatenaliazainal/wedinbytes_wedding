@@ -286,6 +286,10 @@ export interface CardDesign {
   contentOverlayOpacity?: string;
   /** ID of the default wax seal for this design (null = initials circle) */
   waxSealId?: number | null;
+  /** Catalog filter color tags e.g. ["Burgundy", "Gold"] */
+  colors?: string[] | null;
+  /** Catalog filter category e.g. "Floral" */
+  category?: string | null;
 }
 
 export interface ErrorResponse {

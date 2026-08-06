@@ -1628,27 +1628,30 @@ export function useGetActiveDesign<TData = Awaited<ReturnType<typeof getActiveDe
 
 
 
-export const getListDesignsUrl = () => {
+export type ListDesignsParams = {
+  search?: string;
+  color?: string;
+  category?: string;
+};
 
-
-
-
-  return `/api/design`
+export const getListDesignsUrl = (params?: ListDesignsParams) => {
+  const sp = new URLSearchParams();
+  if (params?.search) sp.set('search', params.search);
+  if (params?.color) sp.set('color', params.color);
+  if (params?.category) sp.set('category', params.category);
+  const qs = sp.toString();
+  return `/api/design${qs ? `?${qs}` : ''}`;
 }
 
 /**
  * @summary List all card designs
  */
-export const listDesigns = async ( options?: RequestInit): Promise<CardDesign[]> => {
-
-  return customFetch<CardDesign[]>(getListDesignsUrl(),
-  {
+export const listDesigns = async (params?: ListDesignsParams, options?: RequestInit): Promise<CardDesign[]> => {
+  return customFetch<CardDesign[]>(getListDesignsUrl(params), {
     ...options,
     method: 'GET'
-
-
-  }
-);}
+  });
+}
 
 
 
@@ -1661,16 +1664,17 @@ export const getListDesignsQueryKey = () => {
     }
 
 
-export const getListDesignsQueryOptions = <TData = Awaited<ReturnType<typeof listDesigns>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDesigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListDesignsQueryOptions = <TData = Awaited<ReturnType<typeof listDesigns>>, TError = ErrorType<unknown>>(params?: ListDesignsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDesigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListDesignsQueryKey();
+  const hasParams = params && Object.values(params).some(v => !!v);
+  const queryKey = queryOptions?.queryKey ?? (hasParams ? [...getListDesignsQueryKey(), params] : getListDesignsQueryKey());
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDesigns>>> = ({ signal }) => listDesigns({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDesigns>>> = ({ signal }) => listDesigns(params, { signal, ...requestOptions });
 
 
 
@@ -1688,11 +1692,12 @@ export type ListDesignsQueryError = ErrorType<unknown>
  */
 
 export function useListDesigns<TData = Awaited<ReturnType<typeof listDesigns>>, TError = ErrorType<unknown>>(
+  params?: ListDesignsParams,
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDesigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListDesignsQueryOptions(options)
+  const queryOptions = getListDesignsQueryOptions(params, options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

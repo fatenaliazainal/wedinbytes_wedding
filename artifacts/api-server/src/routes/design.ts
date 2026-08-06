@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { GetActiveDesignResponse, ListDesignsResponse, ActivateDesignResponse } from "@workspace/api-zod";
 import { db, cardDesignTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, ilike, and, or, sql, type SQL } from "drizzle-orm";
 import multer from "multer";
 import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
 import { auditEvent, requireAdmin } from "../lib/security";
@@ -26,6 +26,7 @@ const ALLOWED_DESIGN_FIELDS = [
   "fontHeading","fontBody","nameFontFamily","nameFontSize","badgeFontSize","greetingFontSize","nameColor","greetingColor",
   "cardMaxWidth","openingAnimation","designCode","openButtonText","name",
   "contentOverlayColor","contentOverlayOpacity","overlayEnabled","waxSealId",
+  "colors","category",
 ];
 
 function stripNulls<T extends Record<string, unknown>>(obj: T): T {
@@ -117,13 +118,43 @@ router.get("/design/active", async (req, res) => {
 
 // ── List designs ─────────────────────────────────────────────────────────────
 // Admins see all designs; everyone else sees only active (catalog-visible) ones.
+// Optional query params: search (name/designCode), color (exact tag), category (exact match).
 router.get("/design", async (req, res) => {
   try {
     const isAdmin = req.session.role === "admin";
-    const rows = isAdmin
-      ? await db.select().from(cardDesignTable).orderBy(cardDesignTable.id)
-      : await db.select().from(cardDesignTable).where(eq(cardDesignTable.isActive, true)).orderBy(cardDesignTable.id);
-    res.json(rows.map(stripNulls));
+    const { search, color, category } = req.query as Record<string, string | undefined>;
+
+    const conditions: SQL[] = [];
+
+    // Visibility — non-admins only see active designs
+    if (!isAdmin) conditions.push(eq(cardDesignTable.isActive, true));
+
+    // Search by name or design code (case-insensitive partial match)
+    if (search?.trim()) {
+      const pattern = `%${search.trim()}%`;
+      conditions.push(or(
+        ilike(cardDesignTable.name, pattern),
+        ilike(cardDesignTable.designCode, pattern),
+      ) as SQL);
+    }
+
+    // Filter by category (exact match, case-insensitive)
+    if (category?.trim()) {
+      conditions.push(ilike(cardDesignTable.category, category.trim()));
+    }
+
+    const rows = await db
+      .select()
+      .from(cardDesignTable)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(cardDesignTable.id);
+
+    // Filter by color in JS — jsonb @> requires a cast and the array is small
+    const filtered = color?.trim()
+      ? rows.filter((r) => Array.isArray(r.colors) && r.colors.includes(color.trim()))
+      : rows;
+
+    res.json(filtered.map(stripNulls));
   } catch (err) {
     req.log.error({ err }, "Failed to list designs");
     res.status(500).json({ error: "Internal server error" });

@@ -563,7 +563,9 @@ export const ListDesignsResponseItem = zod.object({
   "colorForeground": zod.string().optional(),
   "contentOverlayColor": zod.string().optional(),
   "contentOverlayOpacity": zod.string().optional(),
-  "waxSealId": zod.number().nullable().optional()
+  "waxSealId": zod.number().nullable().optional(),
+  "colors": zod.array(zod.string()).nullable().optional(),
+  "category": zod.string().nullable().optional(),
 })
 export const ListDesignsResponse = zod.array(ListDesignsResponseItem)
 
