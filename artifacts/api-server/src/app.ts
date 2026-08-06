@@ -7,7 +7,7 @@ import path from "node:path";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { globalRateLimit } from "./lib/security";
+import { globalRateLimit, uploadConcurrencyGuard } from "./lib/security";
 
 const PgSession = connectPgSimple(session);
 
@@ -76,6 +76,14 @@ if (process.env.NODE_ENV === "production") {
   const frontendDist = path.resolve(__dirname, "../../wedding-invite/dist/public");
   app.use(express.static(frontendDist));
 }
+
+// Limit concurrent multipart uploads to prevent RAM exhaustion from buffered file bytes
+app.use((req, res, next) => {
+  if (req.headers["content-type"]?.includes("multipart/form-data")) {
+    return uploadConcurrencyGuard(req, res, next);
+  }
+  next();
+});
 
 app.use("/api", globalRateLimit, router);
 

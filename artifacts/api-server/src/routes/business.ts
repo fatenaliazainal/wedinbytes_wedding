@@ -13,7 +13,7 @@ import {
   pricingFeatureTable,
   userTable,
 } from "@workspace/db";
-import { auditEvent, customerFormSubmitRateLimit } from "../lib/security";
+import { auditEvent, customerFormSubmitRateLimit, businessSearchRateLimit, uploadConcurrencyGuard } from "../lib/security";
 import { normalizeBusinessFormConfig, mapBusinessCustomerToInvitation, validateBusinessCustomerData } from "../lib/business-package";
 import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
 import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
@@ -830,7 +830,7 @@ router.get("/business/collaborations", async (req, res) => {
   }
 });
 
-router.get("/business/search", async (req, res) => {
+router.get("/business/search", businessSearchRateLimit, async (req, res) => {
   try {
     const query = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 80) : "";
     const rows = await db.select().from(businessProfileTable).where(and(

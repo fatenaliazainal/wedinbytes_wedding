@@ -3,7 +3,7 @@ import { db, cardTable, invitationTable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import multer from "multer";
 import { deleteImage, uploadImage, downloadImage, isR2Configured } from "../services/cloudflare/r2-storage-admin";
-import { auditEvent, canManageInvitation, requireAdmin } from "../lib/security";
+import { auditEvent, canManageInvitation, requireAdmin, r2RateLimit, uploadConcurrencyGuard } from "../lib/security";
 import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
 import { invitationHasFeature } from "../lib/pricing-features";
 import { isEventDatePassed } from "../lib/invitation-expiration";
@@ -44,7 +44,7 @@ const giftQrUpload = multer({
 
 // Serve R2 object keys through the same origin when no public R2 domain is configured.
 // This keeps uploaded gallery images visible without exposing storage credentials.
-router.get("/r2", async (req, res) => {
+router.get("/r2", r2RateLimit, async (req, res) => {
   const key = typeof req.query.key === "string" ? req.query.key : "";
   const allowedPrefixes = ["wed_card_design/", "gallery/", "initials/", "logos/", "business-logos/", "gift-qr/", "wax_seals/", "registry-thumb/", "DisplayWebsiteMockup/"];
   if (!key || key.includes("..") || key.startsWith("/")

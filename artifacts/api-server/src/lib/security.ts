@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { rateLimit } from "express-rate-limit";
 import { db, businessProfileTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { PgRateLimitStore } from "./rate-limit-pg-store";
 
 export async function canManageInvitation(
   req: Request,
@@ -101,13 +102,57 @@ export const customerFormSubmitRateLimit = rateLimit({
 // Global safety net: prevents bots/DDOS from overwhelming unauthenticated endpoints.
 // 200 req/min is generous for any human user (editors, guests, admins) but stops
 // automated floods. Applied to every /api route before route-specific limiters.
+// Backed by PostgreSQL so counters survive server restarts (a crash won't reset the window).
 export const globalRateLimit = rateLimit({
   windowMs: 60 * 1000,
   limit: 200,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  store: new PgRateLimitStore(60 * 1000),
   message: { error: "Too many requests. Please slow down and try again." },
 });
+
+// R2 image proxy — cap bandwidth abuse by limiting how often a single IP can
+// pull files from R2 through the same-origin proxy.
+export const r2RateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many image requests. Please slow down." },
+});
+
+// Business search — ILIKE on the DB; keep bots from running continuous scans.
+export const businessSearchRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many search requests. Please slow down." },
+});
+
+// Upload concurrency guard — limits simultaneous in-flight multipart uploads
+// so a burst of large files cannot exhaust server RAM.
+let _activeUploads = 0;
+const MAX_CONCURRENT_UPLOADS = 10;
+
+export const uploadConcurrencyGuard: RequestHandler = (_req, res, next) => {
+  if (_activeUploads >= MAX_CONCURRENT_UPLOADS) {
+    res.status(503).json({ error: "Server terlalu sibuk memproses fail. Sila cuba lagi sebentar." });
+    return;
+  }
+  _activeUploads++;
+  let released = false;
+  const release = () => {
+    if (!released) {
+      released = true;
+      _activeUploads--;
+    }
+  };
+  res.on("finish", release);
+  res.on("close", release);
+  next();
+};
 
 export function regenerateSession(
   req: Request,
