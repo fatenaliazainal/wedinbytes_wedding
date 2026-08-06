@@ -373,11 +373,7 @@ function WishCard({
         <p className="mt-4 break-words text-[13px] font-semibold text-foreground/75" style={{ fontFamily: bodyFontFamily }}>
           — {wish.name}
         </p>
-        {timestamp && (
-          <time className="mt-1 text-[10px] text-foreground/40" dateTime={wish.createdAt} style={{ fontFamily: bodyFontFamily }}>
-            {timestamp}
-          </time>
-        )}
+
         {isLong && (
           <button
             type="button"
