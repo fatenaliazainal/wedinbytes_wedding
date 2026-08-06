@@ -472,76 +472,76 @@ export default function ReviewsPage() {
         </section>
 
         {/* Submit Form */}
-        <section className="py-10 px-4 sm:px-6 bg-gray-50">
+        <section className="py-8 px-4 sm:px-6 bg-gray-50">
           <div className="max-w-xl mx-auto">
-            <div className="text-center mb-5">
-              <h2 className="text-2xl font-bold text-gray-900">Share Your Experience</h2>
-              <p className="mt-2 text-sm text-gray-500">We would love to hear about your experience with Wedinstudio.</p>
+            <div className="text-center mb-4">
+              <h2 className="text-[19px] font-bold text-gray-900">Share Your Experience</h2>
+              <p className="mt-1 text-[11px] text-gray-500">We would love to hear about your experience with Wedinstudio.</p>
             </div>
 
-            <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-5 sm:p-6">
               {success ? (
-                <div className="text-center py-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-700 mb-3">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-700 mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="text-sm font-medium text-gray-900">Thank you for sharing your experience with us!</p>
-                  <p className="text-xs text-gray-500 mt-1">Your review has been submitted for approval.</p>
+                  <p className="text-[11px] font-medium text-gray-900">Thank you for sharing your experience with us!</p>
+                  <p className="text-[10px] text-gray-500 mt-1">Your review has been submitted for approval.</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-[10px] font-medium text-gray-700 mb-1">Full Name</label>
                     <input
                       type="text"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-[11px] outline-none focus:shadow-sm focus:outline-none focus:ring-0"
                       placeholder="Enter your name"
                       value={form.customerName}
                       onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                     />
-                    {errors.customerName && <p className="mt-1 text-xs text-red-600">{errors.customerName}</p>}
+                    {errors.customerName && <p className="mt-1 text-[10px] text-red-600">{errors.customerName}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Rating</label>
+                    <label className="block text-[10px] font-medium text-gray-700 mb-1">Rating</label>
                     <StarInput value={form.rating} onChange={(n) => setForm((f) => ({ ...f, rating: n }))} />
-                    {errors.rating && <p className="mt-1 text-xs text-red-600">{errors.rating}</p>}
+                    {errors.rating && <p className="mt-1 text-[10px] text-red-600">{errors.rating}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Review</label>
+                    <label className="block text-[10px] font-medium text-gray-700 mb-1">Review</label>
                     <textarea
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0 min-h-[120px] resize-y"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-[11px] outline-none focus:shadow-sm focus:outline-none focus:ring-0 min-h-[96px] resize-y"
                       placeholder="Tell us about your experience..."
                       value={form.reviewText}
                       onChange={(e) => setForm((f) => ({ ...f, reviewText: e.target.value }))}
                     />
-                    {errors.reviewText && <p className="mt-1 text-xs text-red-600">{errors.reviewText}</p>}
+                    {errors.reviewText && <p className="mt-1 text-[10px] text-red-600">{errors.reviewText}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-[10px] font-medium text-gray-700 mb-1">
                       Wedding Date <span className="text-gray-400">(optional)</span>
                     </label>
                     <input
                       type="text"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:shadow-sm focus:outline-none focus:ring-0"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-[11px] outline-none focus:shadow-sm focus:outline-none focus:ring-0"
                       placeholder="e.g. 15 January 2026"
                       value={form.weddingDate}
                       onChange={(e) => setForm((f) => ({ ...f, weddingDate: e.target.value }))}
                     />
                   </div>
 
-                  {errors.submit && <p className="text-xs text-red-600 text-center">{errors.submit}</p>}
+                  {errors.submit && <p className="text-[10px] text-red-600 text-center">{errors.submit}</p>}
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-[#3d5a3e] text-white text-xs font-bold tracking-widest py-3.5 rounded hover:bg-[#2d4330] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                    className="w-full bg-[#3d5a3e] text-white text-[10px] font-bold tracking-widest py-2.5 rounded hover:bg-[#2d4330] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {submitting && <Loader2 size={14} className="animate-spin" />}
+                    {submitting && <Loader2 size={12} className="animate-spin" />}
                     Submit Review
                   </button>
                 </form>
