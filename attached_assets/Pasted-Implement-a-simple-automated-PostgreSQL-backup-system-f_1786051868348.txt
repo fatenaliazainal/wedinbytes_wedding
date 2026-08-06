@@ -1,0 +1,255 @@
+Implement a simple automated PostgreSQL backup system for PRODUCTION ONLY.
+
+GOAL:
+
+Production Replit PostgreSQL
+→ pg_dump
+→ gzip
+→ Cloudflare R2 private bucket:
+wedinstudio-db-backups
+
+This backup system must NEVER run against the development database or from the development environment.
+
+IMPORTANT:
+
+* PRODUCTION ONLY.
+* Do NOT modify database schema or data.
+* Do NOT change existing R2 image/upload functionality.
+* Do NOT refactor unrelated code.
+* Keep implementation minimal and low-cost.
+* Never expose DATABASE_URL or R2 credentials in logs.
+* Do NOT create or activate any paid scheduler yet.
+
+R2 CONFIGURATION
+
+I will manually create this Cloudflare R2 bucket:
+
+wedinstudio-db-backups
+
+The bucket will be PRIVATE.
+
+Do NOT create the bucket automatically.
+
+Backups should be uploaded using this object key format:
+
+db-backups/weekly/wedinstudio-db-YYYY-MM-DD-HHmm.sql.gz
+
+Example:
+
+db-backups/weekly/wedinstudio-db-2026-08-07-0400.sql.gz
+
+I do NOT need to manually create the db-backups/weekly folders.
+The upload script should create that prefix automatically through the object key.
+
+PRODUCTION-ONLY SAFETY
+
+The backup script MUST refuse to run unless:
+
+NODE_ENV === "production"
+
+If NODE_ENV is anything else, immediately exit without running pg_dump or uploading anything.
+
+Print only:
+
+"Database backup skipped: production only."
+
+Additionally, do NOT hardcode DATABASE_URL.
+
+The script must use the DATABASE_URL available in the PRODUCTION deployment environment.
+
+Do not introduce a separate development DATABASE_URL fallback.
+
+I want to make it difficult to accidentally back up the development database.
+
+BACKUP SCRIPT
+
+Create one standalone production backup script.
+
+It should:
+
+1. Verify NODE_ENV === "production".
+2. Verify required environment variables exist.
+3. Create a temporary local backup using pg_dump.
+4. Compress it using gzip.
+5. Upload it to:
+
+Bucket:
+wedinstudio-db-backups
+
+Key:
+db-backups/weekly/wedinstudio-db-YYYY-MM-DD-HHmm.sql.gz
+
+6. Confirm the R2 upload succeeded.
+7. Only after successful upload, delete the temporary local backup.
+8. Exit non-zero if pg_dump, compression, or upload fails.
+
+The PostgreSQL operation must be READ-ONLY.
+
+Do NOT run:
+
+* DROP
+* DELETE
+* UPDATE
+* INSERT
+* migrations
+* drizzle-kit push
+* schema changes
+
+Use pg_dump only.
+
+R2 CONNECTION
+
+Inspect the existing project's Cloudflare R2 implementation and reuse the existing S3-compatible client/package and endpoint configuration where practical.
+
+However, database backups must use the separate private bucket:
+
+wedinstudio-db-backups
+
+Do NOT upload database backups to the existing public/assets bucket.
+
+If the existing R2 API credentials have permission to access wedinstudio-db-backups, reuse them.
+
+If separate credentials are required, tell me exactly which Replit PRODUCTION Secrets I need to add.
+
+Do NOT expose secret values.
+
+RETENTION
+
+Keep the latest 8 successful weekly database backups.
+
+Only AFTER the newest backup has been successfully uploaded:
+
+1. List objects under:
+   db-backups/weekly/
+
+2. Identify backup files belonging to this backup system.
+
+3. Sort them by timestamp.
+
+4. Keep the latest 8.
+
+5. Delete older backups.
+
+SAFETY RULE:
+
+If the NEW backup fails at any point, DO NOT delete any existing backup.
+
+Never allow retention cleanup to leave me without a valid backup.
+
+PRODUCTION SECRETS
+
+Use production deployment secrets only.
+
+Expected configuration should be similar to:
+
+DATABASE_URL
+R2_ACCOUNT_ID
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
+
+and a backup bucket configuration such as:
+
+R2_BACKUP_BUCKET=wedinstudio-db-backups
+
+Reuse the project's existing environment variable names where appropriate rather than creating duplicates unnecessarily.
+
+Do NOT put any credentials in source code.
+
+TESTING
+
+Do NOT run a real production pg_dump automatically from the development workspace.
+
+Test only:
+
+* production guard
+* script syntax
+* configuration validation
+* R2 integration logic where it can be tested safely
+
+The development test MUST confirm that running the backup command in development results in:
+
+"Database backup skipped: production only."
+
+Do not temporarily bypass the production guard for testing.
+
+I will perform the first real backup from the production environment after deployment.
+
+AUTOMATION
+
+Prepare the script so it can eventually run once per week in production.
+
+Do NOT create or enable scheduling yet.
+
+First tell me:
+
+1. Exact production command required to run the backup.
+2. Cheapest practical way to execute it weekly.
+3. Whether that method has additional Replit cost.
+4. Whether the scheduled job will receive the production DATABASE_URL and production R2 secrets.
+5. How to ensure the scheduled job cannot accidentally use the development database.
+
+Do not activate a paid Replit Scheduled Deployment without my approval.
+
+RESTORE
+
+Do NOT implement automatic restoration.
+
+Provide a short manual procedure for:
+
+R2 .sql.gz backup
+→ NEW PostgreSQL database
+
+Never automatically restore over the production database.
+
+FINAL OUTPUT
+
+IMPLEMENTED
+
+* files created
+* files modified
+
+PRODUCTION GUARD
+
+* explain exactly how development execution is blocked
+
+R2 CONFIGURATION
+
+* bucket: wedinstudio-db-backups
+* privacy status required
+* prefix
+* required production secrets
+
+TEST RESULT
+
+* production guard: PASS/FAIL
+* script/config validation: PASS/FAIL
+
+WEEKLY PRODUCTION COMMAND
+
+* exact command
+
+SCHEDULING OPTIONS
+
+* cheapest recommended method
+* estimated additional cost if known
+* DO NOT activate anything
+
+FIRST PRODUCTION BACKUP
+
+* exact steps I should perform after deployment to safely create the first backup
+
+RETENTION
+
+* confirm latest 8 successful backups are retained
+
+RESTORE PROCEDURE
+
+* concise manual restore steps
+
+MANUAL ACTION REQUIRED
+
+* list only things I need to do myself
+
+Do not perform another security audit.
+Do not perform a database audit.
+Do not modify unrelated functionality.
