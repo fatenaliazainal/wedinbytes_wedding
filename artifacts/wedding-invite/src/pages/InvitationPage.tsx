@@ -392,7 +392,7 @@ export default function InvitationPage() {
       <div
         ref={cardScrollRef}
         className={`w-full absolute inset-0 z-10 transition-all duration-700 ${
-          isOpened ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden pointer-events-none"
+          isOpened ? "overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [-ms-overflow-style:none]" : "overflow-hidden pointer-events-none"
         }`}
         style={{
           WebkitOverflowScrolling: "touch",
