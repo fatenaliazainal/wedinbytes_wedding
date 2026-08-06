@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountResponse } from "@workspace/api-zod";
 import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
-import { auditEvent, canManageInvitation, rsvpSubmitRateLimit } from "../lib/security";
+import { auditEvent, canManageInvitation, rsvpSubmitRateLimit, wishesRateLimit, tokenLookupRateLimit } from "../lib/security";
 import { isInvitationExpired } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
@@ -64,7 +64,7 @@ router.get("/rsvp", async (req, res) => {
 
 // Public wishes feed. Keep guest messages available on invitations without
 // exposing RSVP status, guest counts, time slots, or invitation ownership data.
-router.get("/rsvp/wishes", async (req, res) => {
+router.get("/rsvp/wishes", wishesRateLimit, async (req, res) => {
   try {
     const invitationToken = typeof req.query.invitationToken === "string"
       ? req.query.invitationToken.trim()
@@ -151,7 +151,7 @@ router.get("/rsvp/buyer", async (req, res) => {
 
 // Public shareable RSVP summary — no auth required.
 // Business accounts share this link with their customers so they can see responses.
-router.get("/rsvp/public/:token", async (req, res) => {
+router.get("/rsvp/public/:token", tokenLookupRateLimit, async (req, res) => {
   try {
     const { token } = req.params;
     const [invitation] = await db

@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { deleteImage } from "../services/cloudflare/r2-storage-admin";
 import { GetInvitationResponse } from "@workspace/api-zod";
 import { businessClientTable, businessProfileTable, db, invitationTable, orderTable } from "@workspace/db";
-import { auditEvent, canManageInvitation, pinUnlockRateLimit } from "../lib/security";
+import { auditEvent, canManageInvitation, pinUnlockRateLimit, publicInvitationRateLimit } from "../lib/security";
 import { isOwnedStorageKey } from "../lib/image-validation";
 import { getOrCreateBusinessProfile } from "./business";
 import { invitationHasFeature } from "../lib/pricing-features";
@@ -259,7 +259,7 @@ router.get("/invitation/:token", async (req, res) => {
 });
 
 // Public, human-readable URL lookup. The UUID token remains internal.
-router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
+router.get("/invitation/public/:dateCode/:slug", publicInvitationRateLimit, async (req, res) => {
   try {
     const slug = req.params.slug;
     const dateCode = req.params.dateCode;
@@ -516,7 +516,10 @@ router.delete("/invitation/:token", async (req, res) => {
       res.status(404).json({ error: "Invitation not found" });
       return;
     }
-    if (req.session.role === "admin" || !(await canManageInvitation(req, invitation))) {
+    // canManageInvitation already returns true for admins, owners, and
+    // business accounts that own the invitation. The previous condition was
+    // inverted — "admin OR not-owner" — which incorrectly blocked admins.
+    if (!(await canManageInvitation(req, invitation))) {
       res.status(403).json({ error: "You do not own this invitation" });
       return;
     }

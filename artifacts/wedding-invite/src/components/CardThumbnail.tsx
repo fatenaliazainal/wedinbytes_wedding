@@ -1,4 +1,5 @@
 import React from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { type Invitation, type CardDesign } from "@workspace/api-client-react";
 
 interface CardThumbnailProps {
@@ -104,7 +105,7 @@ export function CardThumbnail({ invitation, design, containerWidth = 220 }: Card
               textTransform: "uppercase",
               marginBottom: 10,
             }}
-            dangerouslySetInnerHTML={{ __html: invitation.eventType || "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation.eventType) }}
           />
 
           <h1

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { MapPin, Phone, Calendar, Music, Volume2, VolumeX, Copy, Download } from "lucide-react";
 import { fallbackToR2Proxy, resolveImageUrl } from "@/lib/r2-url";
 import { type Invitation } from "@workspace/api-client-react";
@@ -187,7 +188,7 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
           {invitation?.venueName}
         </p>
         <p className="text-[11px] text-muted-foreground"
-          dangerouslySetInnerHTML={{ __html: invitation?.venueAddress || "" }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation?.venueAddress) }}
         />
         <p className="text-[11px] text-muted-foreground">
           {invitation?.venueCity}, {invitation?.venueState}

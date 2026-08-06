@@ -1,0 +1,151 @@
+Please fix ONLY the production-critical security issues listed below, using the simplest and most cost-efficient implementation possible.
+
+IMPORTANT:
+
+* Do NOT refactor unrelated code.
+* Do NOT redesign the architecture.
+* Do NOT change UI/UX unless required for the security fix.
+* Reuse existing packages/utilities where possible.
+* Minimize new dependencies.
+* Minimize file changes and Agent work.
+* Before installing any package, check whether an existing dependency can solve the issue.
+* Keep all existing invitation, editor, authentication, payment, RSVP, wishes, and admin functionality working.
+* Do not implement P2/P3 items yet.
+* Make the fixes directly; do not spend time producing another full security audit.
+
+FIX THESE ITEMS ONLY:
+
+1. STORED XSS — CRITICAL
+   Sanitize user-controlled HTML currently rendered through dangerouslySetInnerHTML.
+
+Affected areas include:
+
+* WeddingCard.tsx
+* DetailPanel.tsx
+* CardThumbnail.tsx
+
+Fields include:
+greetingText, invitationText, groomParents, brideParents, venueAddress, doaText, schedule and any equivalent user-editable content rendered as HTML.
+
+Use the smallest safe solution.
+
+IMPORTANT: Some invitation fields may intentionally contain formatting such as line breaks or supported HTML formatting. Preserve legitimate formatting while blocking scripts, event handlers, javascript: URLs and other executable content.
+
+Prefer creating ONE reusable sanitization helper/component instead of repeating sanitization logic throughout the app.
+
+2. TOYYIBPAY CALLBACK — CRITICAL
+   Secure:
+   POST /payment/toyyibpay/callback
+
+Do not trust statusId alone.
+
+First inspect the existing ToyyibPay integration and determine what verification information ToyyibPay actually sends/supports in this project.
+
+Implement the strongest verification possible using the existing ToyyibPay integration without breaking legitimate payment callbacks.
+
+Also ensure:
+
+* billCode exists in our DB
+* callback corresponds to the correct pending order/invitation
+* amount matches the expected amount if ToyyibPay provides the amount
+* already-paid transactions remain idempotent
+* unknown/mismatched callbacks never activate an invitation
+
+Do NOT invent an HMAC/signature mechanism if ToyyibPay does not support one.
+
+3. SESSION SECRET — HIGH
+   Remove the hardcoded production fallback:
+
+"wedding-invite-dev-secret-2025"
+
+Production must fail startup if SESSION_SECRET is missing.
+
+Development may use an explicit development-only fallback if necessary, but it must never be possible in production.
+
+4. SECURITY HEADERS — HIGH
+   Add standard security headers.
+
+Use Helmet if it is already installed or if adding it is the simplest reliable solution.
+
+Configure a CSP compatible with the current application.
+
+IMPORTANT:
+Do not blindly enable a CSP that breaks existing invitation assets, images, fonts, audio, API requests or required external services.
+
+5. CORS — HIGH
+   Tighten CORS configuration.
+
+Do not automatically allow requests simply because Origin is missing/null.
+
+Keep legitimate production frontend/API communication working.
+
+If server-to-server requests without Origin are required, handle those intentionally rather than treating every missing Origin as trusted.
+
+6. ADMIN DELETE GUARD — HIGH
+   Fix the inverted authorization condition on invitation deletion.
+
+Expected behavior:
+
+* invitation owner can delete their own invitation
+* admin can delete any invitation
+* unrelated normal user cannot delete another user's invitation
+
+Add or update a small authorization test if an existing test structure is available.
+
+7. RATE LIMITING — HIGH
+   Reuse the application's existing rate-limiting implementation.
+
+Add reasonable protection to:
+
+* wishes submission
+* public invitation endpoints where appropriate
+* token lookup endpoints
+
+Do not use overly aggressive limits that could block normal wedding guests.
+
+DO NOT IMPLEMENT YET:
+
+* CSRF middleware
+* pagination
+* upload quotas
+* CAPTCHA
+* idle session timeout
+* email enumeration changes
+* broad dependency upgrades
+* unrelated security improvements
+
+Those can be handled separately after the critical production path is secured.
+
+IMPLEMENTATION APPROACH:
+
+Before changing code:
+
+1. Inspect only the files/dependencies directly relevant to the items above.
+2. Reuse existing patterns wherever possible.
+3. Make the smallest safe patch.
+4. Avoid broad codebase exploration unless required.
+
+After implementation:
+
+* Run TypeScript/typecheck.
+* Run existing relevant tests if available.
+* Run build.
+* Fix only errors caused by these changes.
+
+Finally give me a SHORT report containing:
+
+FIXED
+
+* item
+* files changed
+
+NEEDS MANUAL CONFIGURATION
+
+* environment variables/secrets I need to add in Replit
+* ToyyibPay settings I need to configure, if any
+
+NOT FIXED
+
+* anything from the requested list that could not be safely implemented and why
+
+Do not perform another full audit.

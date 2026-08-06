@@ -504,6 +504,16 @@ router.post("/payment/toyyibpay/callback", async (req, res) => {
       return;
     }
 
+    // Verify the billCode from the callback corresponds to this order.
+    // order.billCode may be null for very old orders created before billCode was stored;
+    // skip the check only in that case. When present, a mismatch means the callback is
+    // for a different bill and should be rejected.
+    if (order.billCode && billCode && order.billCode !== billCode) {
+      req.log.warn({ orderId, billCode, storedBillCode: order.billCode }, "ToyyibPay callback billCode mismatch");
+      res.status(400).json({ error: "Invalid ToyyibPay callback: bill code mismatch." });
+      return;
+    }
+
     // The HMAC hash above already authenticates the status field — ToyyibPay's server
     // signed it with our secret key. Trust it directly instead of re-querying
     // getBillTransactions, which can return empty results right after payment.

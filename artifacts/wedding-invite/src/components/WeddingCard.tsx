@@ -1,4 +1,5 @@
 import React from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -809,23 +810,23 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           {/* Invitation Text */}
           <div className={detailBlock}>
             {/* Greeting — decorative but secondary; name font kept, reduced from text-xl */}
-            <p className="leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: greetingText }} />
+            <p className="leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(greetingText) }} />
             <OrnamentDivider />
             {(brideParents || groomParents) && (
               <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
                 {groomParents && (
-                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: groomParents }} />
+                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(groomParents) }} />
                 )}
                 {brideParents && groomParents && (
                   <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }}>&amp;</p>
                 )}
                 {brideParents && (
-                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: brideParents }} />
+                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(brideParents) }} />
                 )}
               </div>
             )}
             {/* Invitation message — readable size, not italic */}
-            <p className="text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitationText }} />
+            <p className="text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
             {/* Couple names (secondary mention) — name font + primary kept; size reduced so they don't compete with the cover hero */}
             <div className="space-y-0.5">
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{groomName}</p>
@@ -859,7 +860,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               {/* Venue name — functional primary value, not decorative accent */}
               <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
               {invitation.venueAddress && (
-                <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: invitation.venueAddress }} />
+                <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation.venueAddress) }} />
               )}
               <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
             </div>
@@ -884,7 +885,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                   ))}
                 </div>
               ) : schedule ? (
-                <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: schedule as string }} />
+                <p className="text-xs text-foreground/75 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(schedule as string) }} />
               ) : null}
             </div>
           )}
@@ -893,7 +894,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           <RevealOnScroll>
           {/* Prayer */}
           <div className={detailBlock}>
-            <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: doaText }} />
+            <p className="text-sm text-foreground/80 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(doaText) }} />
           </div>
           </RevealOnScroll>
 

@@ -1,5 +1,6 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import pinoHttp from "pino-http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -23,6 +24,27 @@ if (process.env.NODE_ENV === "production" && !sessionSecret) {
 }
 
 app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        // Audio/video URLs are user-supplied (music links) — must allow any source.
+        mediaSrc: ["'self'", "blob:", "*"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    // Cross-origin isolation not enforced — would break Google Fonts iframes.
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+
+app.use(
   pinoHttp({
     logger,
     serializers: {
@@ -40,7 +62,11 @@ app.use(
   cors({
     origin: configuredCorsOrigins.length
       ? (origin, callback) => {
-          if (!origin || configuredCorsOrigins.includes(origin)) {
+          if (!origin) {
+            // No Origin header — server-to-server request (e.g. payment callbacks).
+            // Pass through without setting CORS headers; browsers always send Origin.
+            callback(null, false);
+          } else if (configuredCorsOrigins.includes(origin)) {
             callback(null, true);
           } else {
             callback(new Error("Origin is not allowed by CORS."));
@@ -60,7 +86,9 @@ app.use(
       pool,
       createTableIfMissing: false,
     }),
-    secret: sessionSecret || "wedding-invite-dev-secret-2025",
+    // sessionSecret is guaranteed non-null in production by the startup check above.
+    // The fallback string is only ever reached in development (NODE_ENV !== "production").
+    secret: sessionSecret ?? "wedding-invite-dev-secret-DO-NOT-USE-IN-PROD",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -80,7 +108,8 @@ if (process.env.NODE_ENV === "production") {
 // Limit concurrent multipart uploads to prevent RAM exhaustion from buffered file bytes
 app.use((req, res, next) => {
   if (req.headers["content-type"]?.includes("multipart/form-data")) {
-    return uploadConcurrencyGuard(req, res, next);
+    uploadConcurrencyGuard(req, res, next);
+    return;
   }
   next();
 });

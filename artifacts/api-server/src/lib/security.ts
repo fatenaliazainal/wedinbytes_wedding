@@ -131,6 +131,34 @@ export const businessSearchRateLimit = rateLimit({
   message: { error: "Too many search requests. Please slow down." },
 });
 
+// Public invitation page — each wedding typically has many guests opening the link.
+// 60/min is generous for real guests but deters automated scanners.
+export const publicInvitationRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down." },
+});
+
+// Public wishes feed — guests may refresh; keep limit permissive.
+export const wishesRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down." },
+});
+
+// RSVP token lookup — read-only but should not be enumerated.
+export const tokenLookupRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down." },
+});
+
 // Upload concurrency guard — limits simultaneous in-flight multipart uploads
 // so a burst of large files cannot exhaust server RAM.
 let _activeUploads = 0;
