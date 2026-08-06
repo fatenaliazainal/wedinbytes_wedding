@@ -356,10 +356,8 @@ export default function ReviewsPage() {
         </section>
 
         {/* Review List */}
-        <section ref={gridRef} className="py-8 px-4 sm:px-6 bg-white scroll-mt-16">
+        <section ref={gridRef} className="py-4 px-4 sm:px-6 bg-white scroll-mt-16">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-xl font-bold text-gray-900 text-center mb-6">What Couples Say</h2>
-
             {loading ? (
               <div className="flex justify-center py-10">
                 <Loader2 className="animate-spin text-gray-400" size={28} />
