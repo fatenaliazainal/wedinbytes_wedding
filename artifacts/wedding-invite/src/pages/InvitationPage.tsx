@@ -116,11 +116,12 @@ export default function InvitationPage() {
   const inv = invitation as Record<string, unknown> | undefined;
   const isDemoInvitation = resolvedToken === "demo";
   // Both demo and real invitations use the active card design as the base template.
-  // ?designCode= URL param wins (e.g. catalogue preview). Active design is next.
-  // inv.designCode is kept only as a last resort when no design has been activated yet.
+  // ?designCode= URL param wins (e.g. catalogue preview).
+  // For real invitations, buyer's saved designCode is next.
+  // Active global design is a fallback (used for demo or when buyer has no saved choice).
   const designCode = overrideDesignCode
+    ?? (isDemoInvitation ? undefined : (inv?.designCode as string | undefined))
     ?? activeDesign?.designCode
-    ?? (inv?.designCode as string | undefined)
     ?? "FL001";
   const templateDesign = allDesigns.find((d) => d.designCode === designCode);
   // The demo invitation supplies sample content only. Its saved design values
