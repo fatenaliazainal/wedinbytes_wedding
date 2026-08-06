@@ -141,6 +141,7 @@ TOYYIBPAY_CATEGORY_CODE = "8bw99mw0"
 TOYYIBPAY_PUBLIC_BASE_URL = "https://wedinstudio.com"
 TOYYIBPAY_DUITNOW_QR_ENABLED = "true"
 CORS_ORIGINS = "https://wedinstudio.com"
+CF_R2_BACKUP_BUCKET_NAME = "wedinstudio-db-backups"
 
 [userenv.development]
 CF_R2_BUCKET_NAME_DEVELOPMENT = "wedinbytes"
