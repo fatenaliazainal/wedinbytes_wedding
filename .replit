@@ -140,6 +140,7 @@ VITE_R2_DOMAIN_URL = "https://pub-da9ec13fc33b409985c91f43625efdb4.r2.dev"
 TOYYIBPAY_CATEGORY_CODE = "8bw99mw0"
 TOYYIBPAY_PUBLIC_BASE_URL = "https://wedinstudio.com"
 TOYYIBPAY_DUITNOW_QR_ENABLED = "true"
+CORS_ORIGINS = "https://wedinstudio.com"
 
 [userenv.development]
 CF_R2_BUCKET_NAME_DEVELOPMENT = "wedinbytes"

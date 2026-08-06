@@ -1,0 +1,126 @@
+Perform a TARGETED post-fix security audit only.
+
+Goal:
+Verify that the security fixes just implemented are correct and that the website is safe enough for production deployment.
+
+IMPORTANT:
+
+* READ-ONLY audit.
+* Do NOT modify any code.
+* Do NOT perform another full codebase audit.
+* Do NOT refactor anything.
+* Minimize Agent usage.
+* Inspect only the relevant files/routes and their immediate dependencies.
+* Focus on verifying the fixes, not finding every theoretical improvement.
+
+Verify these areas:
+
+1. Stored XSS
+   Confirm all user-controlled content rendered through dangerouslySetInnerHTML is safely sanitized.
+
+Try to identify whether payloads such as:
+
+<script>
+<img onerror>
+javascript: URLs
+inline event handlers
+SVG-based payloads
+
+could still execute.
+
+Also confirm legitimate invitation formatting still works.
+
+2. ToyyibPay payment callback
+Confirm an attacker cannot activate a paid invitation simply by manually POSTing:
+billCode + statusId=1
+
+Verify:
+- callback authenticity/verification
+- billCode validation
+- correct order/invitation matching
+- amount validation where available
+- duplicate callback/idempotency protection
+- invalid callbacks cannot activate an invitation
+
+Clearly tell me if any limitation depends on ToyyibPay itself.
+
+3. Session security
+Confirm production cannot start with a hardcoded/default SESSION_SECRET.
+
+Confirm cookies still have appropriate:
+- HttpOnly
+- Secure in production
+- SameSite settings
+
+4. Security headers / CSP
+Confirm security headers are actually returned.
+
+Check that CSP meaningfully reduces XSS risk without breaking:
+- invitation images
+- fonts
+- audio
+- API requests
+- required external assets
+
+5. CORS
+Confirm untrusted/null origins cannot make credentialed browser requests.
+
+Also confirm legitimate frontend → API requests still work.
+
+6. Authorization
+Verify invitation deletion behavior:
+- owner → allowed
+- admin → allowed
+- unrelated user → denied
+- unauthenticated user → denied
+
+7. Rate limiting
+Confirm rate limits exist on the requested public/wishes/token endpoints and are reasonable for legitimate wedding guests.
+
+Also check ONLY for security regressions directly introduced by these fixes.
+
+DO NOT audit:
+- pagination
+- CAPTCHA
+- upload quotas
+- idle session timeout
+- email enumeration
+- dependency vulnerabilities unrelated to these changes
+- general code quality
+- performance optimization
+- architecture
+- UI/UX
+
+OUTPUT ONLY:
+
+SECURITY VERIFICATION
+
+PASS
+- ...
+
+PARTIAL
+- ...
+- why
+
+FAIL
+- ...
+- exact issue
+
+MANUAL ACTION REQUIRED
+- environment variables/settings I need to configure
+
+REGRESSIONS FOUND
+- ...
+
+PRODUCTION BLOCKERS
+- Only issues serious enough that I should NOT launch the website.
+
+FINAL VERDICT
+Choose ONE:
+1. SAFE TO DEPLOY
+2. SAFE TO DEPLOY AFTER MANUAL CONFIGURATION
+3. DO NOT DEPLOY
+
+Keep the report concise.
+
+Do not make any code changes.
