@@ -1384,6 +1384,7 @@ export default function EditorPage({
     isEventDatePassed(inv.eventDate);
   // Lock the 3 identity fields after payment so the invitation cannot be repurposed for a different event
   const identityLocked = mode !== "admin" && mode !== "demo" && inv.isPurchased;
+  const coverNamesEmpty = !inv.coverGroomName?.trim() || !inv.coverBrideName?.trim();
   const publicPath = publicInvitePathOrToken(inv);
   const previewReady = Boolean(inv.token);
 
@@ -2096,8 +2097,6 @@ export default function EditorPage({
                       value={inv.coverGroomName}
                       onChange={(e) => setI("coverGroomName")(e.target.value)}
                       placeholder="Contoh: M"
-                      disabled={identityLocked}
-                      title={identityLocked ? "Nama Cover tidak boleh ditukar selepas pembayaran" : undefined}
                     />
                   </Field>
                   <Field label="Nama Cover Pengantin Perempuan">
@@ -2106,18 +2105,18 @@ export default function EditorPage({
                       value={inv.coverBrideName}
                       onChange={(e) => setI("coverBrideName")(e.target.value)}
                       placeholder="Contoh: F"
-                      disabled={identityLocked}
-                      title={identityLocked ? "Nama Cover tidak boleh ditukar selepas pembayaran" : undefined}
                     />
                   </Field>
                 </div>
                 {identityLocked ? (
-                  <p className="flex items-center gap-1.5 -mt-2 text-xs text-amber-600"><Lock size={11} />Nama Cover dikunci selepas pembayaran — ia membentuk URL link jemputan anda.</p>
+                  <p className="flex items-center gap-1.5 -mt-2 text-xs text-blue-600"><Lock size={11} />URL link jemputan anda telah dikunci selepas pembayaran. Nama Cover boleh ditukar tetapi URL kekal sama.</p>
                 ) : (
-                  <p className="-mt-2 text-xs leading-relaxed text-gray-500">
-                    URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
-                    Nama Cover Pengantin Perempuan di atas. Pastikan kedua-dua nama
-                    diisi dengan betul sebelum berkongsi link.
+                  <p className={`-mt-2 text-xs leading-relaxed ${coverNamesEmpty ? "text-red-500 font-medium" : "text-gray-500"}`}>
+                    {coverNamesEmpty ? "⚠ " : ""}URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
+                    Nama Cover Pengantin Perempuan di atas.{" "}
+                    {coverNamesEmpty
+                      ? "Kedua-dua nama wajib diisi sebelum boleh simpan."
+                      : "Pastikan kedua-dua nama diisi dengan betul sebelum berkongsi link."}
                   </p>
                 )}
                 <Field label="Inisial Cover (Pilihan)">
@@ -3947,21 +3946,28 @@ export default function EditorPage({
           </fieldset>
 
           {/* Action buttons */}
-          <div className="flex gap-3 mt-8 pt-4 border-t border-gray-100">
-            <button
-              onClick={handleSave}
-              disabled={saving || customerEditLocked}
-              className="text-white px-6 py-2.5 rounded text-sm font-medium transition-colors disabled:opacity-50"
-              style={{ backgroundColor: primaryCss }}
-            >
-              {saving ? "Saving..." : "SAVE"}
-            </button>
-            <button
-              onClick={handleBack}
-              className="bg-white text-gray-700 px-6 py-2.5 rounded text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              BACK
-            </button>
+          <div className="mt-8 pt-4 border-t border-gray-100 space-y-2">
+            {coverNamesEmpty && !customerEditLocked && (
+              <p className="text-xs text-red-500 flex items-center gap-1">
+                <Lock size={11} /> Sila isi <strong>Nama Cover Pengantin Lelaki</strong> dan <strong>Nama Cover Pengantin Perempuan</strong> untuk simpan.
+              </p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={handleSave}
+                disabled={saving || customerEditLocked || coverNamesEmpty}
+                className="text-white px-6 py-2.5 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: primaryCss }}
+              >
+                {saving ? "Saving..." : "SAVE"}
+              </button>
+              <button
+                onClick={handleBack}
+                className="bg-white text-gray-700 px-6 py-2.5 rounded text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                BACK
+              </button>
+            </div>
           </div>
         </div>
 

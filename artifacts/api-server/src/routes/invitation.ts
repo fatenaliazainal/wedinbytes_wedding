@@ -265,7 +265,9 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
     const row = rows.find((candidate) =>
       publicDateCode(candidate.eventDate) === req.params.dateCode
       && (
-        publicSlug(candidate) === req.params.slug
+        // Paid invitations: match against the locked slug first (immutable after payment)
+        (candidate.lockedSlug && candidate.lockedSlug === req.params.slug)
+        || publicSlug(candidate) === req.params.slug
         || legacyNamedPublicSlug(candidate) === req.params.slug
       ),
     );
@@ -330,13 +332,7 @@ router.patch("/invitation/:token", async (req, res) => {
       res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
-    // Prevent the URL slug fields being changed after payment so the public link
-    // stays fixed and cannot be repurposed for a different couple's invitation.
-    const URL_SLUG_FIELDS = ["coverGroomName", "coverBrideName"] as const;
-    if (req.session.role !== "admin" && isPaid && URL_SLUG_FIELDS.some((f) => f in body)) {
-      res.status(423).json({ error: "Nama Cover Pengantin tidak boleh ditukar selepas pembayaran kerana ia membentuk link URL jemputan anda." });
-      return;
-    }
+    // Cover names are freely editable — the URL slug is locked separately in lockedSlug at payment time.
     const requestedPackageId = "packageId" in body
       ? (body.packageId == null || body.packageId === "" ? null : Number(body.packageId))
       : (rows[0].packageId ?? null);

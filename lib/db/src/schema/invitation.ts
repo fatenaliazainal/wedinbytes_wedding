@@ -14,6 +14,8 @@ export const invitationTable = pgTable("invitation", {
   isPurchased: boolean("is_purchased").notNull().default(false),
   websiteStatus: text("website_status").notNull().default("ACTIVE"),
   lockPinHash: text("lock_pin_hash"),
+  // URL slug locked at payment time — never changes even if cover names are edited later
+  lockedSlug: text("locked_slug"),
   // Basic info
   groomName: text("groom_name").notNull(),
   brideName: text("bride_name").notNull(),
