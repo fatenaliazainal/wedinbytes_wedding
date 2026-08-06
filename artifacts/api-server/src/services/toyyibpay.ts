@@ -85,11 +85,17 @@ async function postForm(path: string, values: Record<string, string>) {
     body: new URLSearchParams(values),
   });
   const text = await response.text();
+  // Log raw response for every createBill call so credential errors are visible
+  if (path === "createBill") {
+    const env = process.env.NODE_ENV ?? "unknown";
+    const catCode = (values.categoryCode ?? "").slice(-4).padStart((values.categoryCode ?? "").length, "*");
+    console.error(`[toyyibpay] createBill raw response (env=${env}, categoryCode=...${catCode}, status=${response.status}): ${text.slice(0, 300)}`);
+  }
   let data: unknown;
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(`ToyyibPay returned an invalid response for ${path}.`);
+    throw new Error(`ToyyibPay returned an invalid response for ${path}: ${text.slice(0, 120)}`);
   }
   if (!response.ok) {
     throw new Error(`ToyyibPay request failed with status ${response.status}: ${getToyyibPayResponseMessage(data)}`);
@@ -114,6 +120,13 @@ function getToyyibPayResponseMessage(data: unknown): string {
 }
 
 export function isToyyibPayConfigured() {
+  const isProduction = process.env.NODE_ENV === "production";
+  if (isProduction) {
+    // In production, check that LIVE credentials are present (fall back to non-live as getConfig() does)
+    const liveKey = process.env.TOYYIBPAY_LIVE_USER_SECRET_KEY?.trim() || process.env.TOYYIBPAY_USER_SECRET_KEY?.trim();
+    const liveCat = process.env.TOYYIBPAY_LIVE_CATEGORY_CODE?.trim() || process.env.TOYYIBPAY_CATEGORY_CODE?.trim();
+    return Boolean(liveKey && liveCat);
+  }
   return Boolean(process.env.TOYYIBPAY_USER_SECRET_KEY?.trim() && process.env.TOYYIBPAY_CATEGORY_CODE?.trim());
 }
 
