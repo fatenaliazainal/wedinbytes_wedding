@@ -1,0 +1,119 @@
+Please perform a READ-ONLY database safety and backup audit for this production app.
+
+Do NOT modify the database, schema, code, or deployment configuration yet.
+
+I want to understand whether my production data is adequately protected against accidental deletion, corruption, deployment mistakes, or database failure.
+
+Please check:
+
+1. DATABASE HOSTING
+
+* Identify exactly what database this app currently uses in production.
+* Is it Replit PostgreSQL, Neon, or another provider?
+* Identify how DATABASE_URL is configured, but DO NOT display or expose credentials/secrets.
+
+2. EXISTING BACKUPS
+
+* Does the current database provider automatically back up the database?
+* If yes, determine:
+
+  * backup frequency
+  * retention period
+  * point-in-time recovery availability
+  * whether backups are automatic
+  * whether I need to enable/configure anything manually
+
+Do not assume these features exist. Clearly distinguish between what you can verify from the project/configuration and what I need to confirm in the provider dashboard.
+
+3. RESTORE CAPABILITY
+   If the production database were accidentally deleted or corrupted today:
+
+* What data could I recover?
+* How far back could I restore?
+* What would the recovery process be?
+* Can I restore without overwriting the current production database first?
+
+4. IMPORTANT DATA
+   Identify the main production tables/data that would be costly or impossible to recreate, such as:
+
+* users
+* invitations
+* orders/payments
+* RSVP
+* wishes
+* business/customer data
+* uploaded asset references
+
+Do not dump actual customer data.
+
+5. EXTERNAL STORAGE
+   Check whether uploaded images/files are stored outside PostgreSQL, such as Cloudflare R2.
+
+If so:
+
+* Are those files covered by the database backup?
+* Is separate backup/versioning required?
+* What happens if an R2 object is accidentally deleted?
+
+6. CURRENT RISKS
+   Identify realistic scenarios that could permanently lose production data, including:
+
+* accidental DELETE
+* DROP TABLE
+* bad migration
+* deployment mistake
+* database provider failure
+* accidental R2 deletion
+
+7. RECOMMENDED BACKUP STRATEGY
+   Recommend the SIMPLEST and MOST COST-EFFECTIVE backup setup for this app.
+
+I do not want unnecessary infrastructure.
+
+Prefer built-in provider backups/PITR if they are sufficient.
+
+Only recommend a custom scheduled backup if it provides meaningful protection that the current provider does not already provide.
+
+If custom backups are needed, explain:
+
+* what should be backed up
+* frequency
+* retention
+* storage destination
+* estimated complexity
+* whether Replit Scheduled Deployments/Cron is actually necessary
+
+OUTPUT ONLY:
+
+CURRENT DATABASE
+...
+
+CURRENT BACKUP PROTECTION
+...
+
+WHAT IS NOT BACKED UP
+...
+
+RESTORE CAPABILITY
+...
+
+DATA-LOSS RISKS
+...
+
+RECOMMENDED SETUP
+...
+
+MANUAL ACTION REQUIRED
+...
+
+FINAL VERDICT
+Choose one:
+
+1. CURRENT BACKUPS ARE SUFFICIENT
+2. ENABLE PROVIDER BACKUP/PITR
+3. ADD A SIMPLE SECONDARY BACKUP
+4. DATABASE IS CURRENTLY AT RISK
+
+Keep the report concise.
+
+Do not make any changes.
