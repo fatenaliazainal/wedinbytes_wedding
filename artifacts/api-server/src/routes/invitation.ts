@@ -304,7 +304,11 @@ router.get("/invitation/public/:dateCode/:slug", async (req, res) => {
       res.status(410).json({ error: "Invitation expired" });
       return;
     }
-    res.json({ ...(await publicInvitation(row)), token: row.token });
+    // Strip the internal token from the public spread and re-expose it only as
+    // rsvpToken so guests visiting via slug URL cannot discover the private
+    // token-based editor URL from the network response.
+    const { token: _hidden, ...invData } = await publicInvitation(row) as Record<string, unknown>;
+    res.json({ ...invData, rsvpToken: row.token });
   } catch (err) {
     req.log.error({ err }, "Failed to find public invitation");
     res.status(500).json({ error: "Internal server error" });

@@ -47,7 +47,9 @@ export default function InvitationPage() {
         return response.json() as Promise<{ token: string }>;
       })
       .then((data) => {
-        if (!cancelled) setPublicToken(data.token);
+        // Server returns rsvpToken (not token) on the public slug URL so the
+        // private editor token is never exposed in the network response.
+        if (!cancelled) setPublicToken((data as Record<string, unknown>).rsvpToken as string ?? data.token);
       })
       .catch(() => {
         if (!cancelled) navigate("/", { replace: true });
