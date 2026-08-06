@@ -335,10 +335,10 @@ export default function ReviewsPage() {
         {/* Hero */}
         <section className="bg-white py-10 px-4 sm:px-6 text-center">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-[21px] sm:text-[25px] font-bold text-gray-900 leading-tight">
               Loved by Couples, Made for Memories.
             </h1>
-            <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-4 text-[11px] text-gray-500 max-w-xl mx-auto leading-relaxed">
               See what couples have to say about their experience with Wedinstudio.
             </p>
           </div>
