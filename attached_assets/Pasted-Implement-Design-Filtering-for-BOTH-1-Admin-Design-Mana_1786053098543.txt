@@ -1,0 +1,384 @@
+Implement Design Filtering for BOTH:
+1. Admin Design Management
+2. Customer-facing Design Catalog
+
+CRITICAL DATABASE SAFETY REQUIREMENT:
+
+The existing database contains production data.
+
+DO NOT DELETE, REMOVE, DROP, TRUNCATE, RESET, RECREATE, OVERWRITE, OR REPLACE any existing database data, table, column, record, relationship, or existing field.
+
+"DO NOT MODIFY EXISTING DATA" specifically means:
+- Do not delete any existing rows.
+- Do not remove any existing columns.
+- Do not drop any tables.
+- Do not recreate the designs table.
+- Do not reset the database.
+- Do not reseed the database in a way that replaces existing data.
+- Do not change existing field values.
+- Do not rename existing columns unless absolutely required (prefer not to).
+- Do not remove existing relationships.
+- Do not remove existing design images/files.
+- Do not remove or change existing design codes.
+- Do not remove existing functionality.
+
+Existing production data MUST remain intact.
+
+==================================================
+STEP 1 — INSPECT FIRST
+==================================================
+
+Before changing anything:
+
+1. Inspect the existing database schema.
+2. Identify the current designs table/model.
+3. Inspect all existing columns and relationships.
+4. Inspect the ORM/schema/migration system currently used by the project.
+5. Inspect Admin Add Design.
+6. Inspect Admin Edit Design.
+7. Inspect Admin Design list.
+8. Inspect the customer-facing design/catalog page.
+9. Inspect existing API/routes for designs.
+
+DO NOT make assumptions about the current schema.
+
+Use the project's EXISTING architecture, ORM and migration system.
+
+==================================================
+STEP 2 — ADD MISSING DATABASE FIELDS SAFELY
+==================================================
+
+The database currently may NOT contain fields for:
+
+- colors
+- category
+
+If these fields do not exist, ADD them using a SAFE, NON-DESTRUCTIVE migration.
+
+DO NOT recreate the table.
+
+Existing design records must remain untouched.
+
+Preferred behavior:
+
+colors:
+- Support multiple colors per design.
+- Use the most appropriate structure supported by the existing database/ORM.
+- For example array/JSON or a normalized relation if the current architecture already uses that pattern.
+
+category:
+- Single category per design initially.
+- Use nullable field or equivalent safe structure.
+
+IMPORTANT:
+
+New fields MUST be nullable or have a safe default so existing records remain valid.
+
+Existing designs without metadata should continue working normally.
+
+Example existing record:
+
+WIB88
+Vintage Burgundy
+
+After migration it should still exist exactly as before, simply with:
+
+colors = null / []
+category = null
+
+DO NOT automatically guess or populate colors/categories for existing designs.
+
+Admin will assign them manually later.
+
+==================================================
+STEP 3 — ADMIN ADD / EDIT DESIGN
+==================================================
+
+Add these fields to the EXISTING Add Design and Edit Design forms:
+
+COLORS
+- Multi-select.
+- Allow multiple colors.
+
+Example:
+Burgundy
+Gold
+Cream
+
+CATEGORY
+- Single-select dropdown.
+
+Do not remove or change any existing form fields.
+
+Do not redesign the form.
+
+Use the existing UI style.
+
+Saving these fields must update ONLY the relevant design metadata.
+
+==================================================
+STEP 4 — ADMIN FILTER
+==================================================
+
+Add a compact filter bar ABOVE the existing Admin Design list.
+
+Do NOT redesign or modify the existing list.
+
+Filters:
+
+[ Search name / code ] [ All Colors ▼ ] [ All Categories ▼ ] [ Reset ]
+
+Search:
+- Design name
+- Design code
+- Partial match
+- Case-insensitive
+
+Color:
+- Match against design colors.
+
+Category:
+- Match against category.
+
+Filters must work together.
+
+Example:
+
+search = Mahabbah
+color = Pink
+category = Floral
+
+Only matching designs should display.
+
+Existing Admin functionality MUST remain:
+
+- design count
+- Add Design
+- thumbnails
+- Active status
+- Hide
+- Edit
+- Delete
+- all current actions
+
+==================================================
+STEP 5 — CUSTOMER FRONTEND FILTER
+==================================================
+
+Add filtering to the existing customer-facing Design Catalog.
+
+Use the SAME database metadata as Admin.
+
+Do NOT create duplicate metadata.
+
+Filters:
+
+[ Search Design ] [ Color ▼ ] [ Category ▼ ] [ Reset ]
+
+Search:
+- name
+- design code
+
+Color:
+- colors metadata
+
+Category:
+- category metadata
+
+CRITICAL:
+
+Frontend must ONLY return designs that are already allowed to be publicly displayed according to the project's CURRENT visibility/active logic.
+
+Filtering must NEVER bypass existing visibility rules.
+
+Hidden/inactive designs must remain hidden.
+
+Do not modify the existing design card/layout.
+
+==================================================
+STEP 6 — EXISTING DESIGNS WITHOUT METADATA
+==================================================
+
+Existing designs with:
+
+colors = null / []
+category = null
+
+MUST:
+
+- still appear normally when no Color/Category filter is selected
+- still be editable
+- still work on Admin
+- still work on Frontend if currently public
+- NOT disappear simply because metadata has not been assigned yet
+
+Admin can gradually assign metadata later.
+
+==================================================
+STEP 7 — SHARED FILTER DATA
+==================================================
+
+Admin and Frontend must use the same source for:
+
+- Colors
+- Categories
+
+Do not maintain two separate hardcoded lists.
+
+If the project already has a suitable settings/config structure, reuse it.
+
+Keep implementation simple and consistent with the existing architecture.
+
+==================================================
+STEP 8 — PERFORMANCE
+==================================================
+
+This system will contain many designs later.
+
+Prefer server-side filtering.
+
+Support API/query parameters similar to:
+
+?search=
+&color=
+&category=
+&page=
+&limit=
+
+Apply filtering BEFORE pagination.
+
+Frontend:
+
+existing public/active condition
+→ search
+→ color
+→ category
+→ pagination
+
+Admin:
+
+existing admin query
+→ search
+→ color
+→ category
+→ pagination
+
+Do NOT fetch the entire database permanently into the browser just to filter it.
+
+==================================================
+STEP 9 — FRONTEND URL FILTER STATE
+==================================================
+
+Where compatible with the current routing architecture, sync customer filters with URL query parameters.
+
+Example:
+
+/designs?color=burgundy&category=classic
+
+Refresh must preserve selected filters.
+
+Changing a filter should reset pagination to page 1.
+
+==================================================
+STEP 10 — PERFORM TESTS AFTER IMPLEMENTATION
+==================================================
+
+AFTER implementation, perform actual tests.
+
+Do not stop after writing the code.
+
+Test:
+
+1. Existing database records still exist.
+2. Existing record count has NOT decreased because of this implementation.
+3. Existing design codes still exist.
+4. Existing design data was not removed.
+5. Existing images/files/references still work.
+6. Existing Admin Design page loads.
+7. Existing Frontend Design page loads.
+8. Add Design still works.
+9. Edit Design still works.
+10. Hide/Show still works.
+11. Delete functionality still behaves exactly as before.
+12. New colors field saves correctly.
+13. Multiple colors save correctly.
+14. New category field saves correctly.
+15. Editing metadata does not overwrite unrelated design fields.
+16. Admin search by name works.
+17. Admin search by code works.
+18. Admin color filter works.
+19. Admin category filter works.
+20. Combined Admin filters work.
+21. Admin Reset works.
+22. Frontend search works.
+23. Frontend color filter works.
+24. Frontend category filter works.
+25. Combined Frontend filters work.
+26. Frontend Reset works.
+27. Hidden/inactive designs remain hidden on Frontend.
+28. Existing designs without color/category still appear under All.
+29. Pagination works with filters.
+30. Filter URL state survives refresh if implemented.
+
+==================================================
+STEP 11 — DATABASE INTEGRITY CHECK
+==================================================
+
+After implementation and testing, verify database integrity.
+
+Compare BEFORE vs AFTER where possible:
+
+- total existing design record count
+- existing design IDs
+- existing design codes
+
+There must be NO unexpected missing records.
+
+Do NOT use destructive commands during testing.
+
+DO NOT:
+- DROP
+- TRUNCATE
+- database reset
+- destructive seed
+- delete test against production records
+- recreate schema/table
+
+If testing create/update/delete functionality requires test data,
+CREATE a clearly identifiable temporary TEST record only.
+
+Never use an existing production design as test data.
+
+If a temporary test record is created, remove ONLY that exact test record after testing.
+
+Never bulk-delete anything.
+
+==================================================
+STEP 12 — REPORT BACK
+==================================================
+
+When finished, provide a concise implementation report containing:
+
+1. Database changes made.
+2. Migration created/applied.
+3. New fields/tables added.
+4. Files changed.
+5. Admin filters implemented.
+6. Frontend filters implemented.
+7. Tests performed.
+8. Test results.
+9. Database integrity check result.
+10. Confirmation that no existing production records were removed.
+11. Any issue or limitation discovered.
+
+IMPORTANT FINAL RULE:
+
+Make the MINIMUM necessary changes.
+
+PRESERVE ALL EXISTING DATA AND EXISTING FUNCTIONALITY.
+
+Adding new nullable fields / new supporting structures is allowed.
+
+REMOVING existing data, fields, tables, records, functionality or files is NOT allowed.
+
+Do not perform unrelated refactoring or cleanup.
