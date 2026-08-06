@@ -405,7 +405,7 @@ export default function ReviewsPage() {
 
                 {/* Grid */}
                 <div
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-opacity duration-200"
+                  className="grid grid-cols-2 lg:grid-cols-3 gap-3 transition-opacity duration-200"
                   style={{ opacity: visible ? 1 : 0 }}
                 >
                   {pageReviews.length === 0 ? (
