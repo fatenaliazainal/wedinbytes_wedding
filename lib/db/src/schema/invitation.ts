@@ -100,6 +100,7 @@ export const invitationTable = pgTable("invitation", {
   rsvpMaxGuestsPerInvitation: integer("rsvp_max_guests_per_invitation").notNull().default(10),
   rsvpTimeSlots: text("rsvp_time_slots"), // JSON array of strings, e.g. ["10:00 AM","12:00 PM"]
   rsvpNotificationEmail: text("rsvp_notification_email"),
+  rsvpNotificationEmailEnabled: boolean("rsvp_notification_email_enabled").notNull().default(false),
   // Buyer design overrides (per-invitation, does NOT affect demo/global design)
   designCode: text("design_code"),
   openingAnimation: text("opening_animation"),

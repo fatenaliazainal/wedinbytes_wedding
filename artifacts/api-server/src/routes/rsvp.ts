@@ -294,6 +294,11 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
 
+    // Skip notification if owner has not enabled it
+    if (!invitation.rsvpNotificationEmailEnabled) {
+      return res.status(201).json(data);
+    }
+
     // Notify via rsvpNotificationEmail (set in editor) or fall back to owner account email
     const groomName = invitation.coverGroomName || invitation.groomName || "";
     const brideName = invitation.coverBrideName || invitation.brideName || "";
