@@ -147,6 +147,7 @@ export const rsvpTable = pgTable("rsvp", {
   side: text("side"),
   timeSlot: text("time_slot"),
   message: text("message"),
+  email: text("email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [unique("rsvp_invitation_name").on(t.invitationToken, t.name)]);
 

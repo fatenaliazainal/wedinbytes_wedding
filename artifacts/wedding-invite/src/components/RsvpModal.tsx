@@ -65,6 +65,9 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         guests: "Number of guests",
         wishes: "Message (optional)",
         wishesPlaceholder: "Leave a message for the couple...",
+        email: "Email (optional)",
+        emailPlaceholder: "your@email.com",
+        emailHint: "We'll send you a confirmation email.",
         close: "Close",
         cancel: "Cancel",
         submit: "Submit",
@@ -85,6 +88,9 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         guests: "Bilangan tetamu",
         wishes: "Ucapan (jika ada)",
         wishesPlaceholder: "Tinggalkan ucapan untuk pengantin...",
+        email: "E-mel (pilihan)",
+        emailPlaceholder: "emel@anda.com",
+        emailHint: "Kami akan hantar pengesahan ke e-mel anda.",
         close: "Tutup",
         cancel: "Batal",
         submit: "Hantar",
@@ -107,6 +113,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
     attending: z.string(),
     numberOfGuests: z.coerce.number().min(1),
     message: z.string().optional(),
+    email: z.string().email(language === "en" ? "Invalid email address" : "Alamat e-mel tidak sah").optional().or(z.literal("")),
   });
   type FormValues = z.infer<typeof formSchema>;
 
@@ -121,6 +128,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
       attending: "yes",
       numberOfGuests: 1,
       message: "",
+      email: "",
     },
   });
 
@@ -131,6 +139,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         attending: "yes",
         numberOfGuests: 1,
         message: "",
+        email: "",
       });
     }
   }, [isOpen]);
@@ -148,6 +157,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
           attending: values.attending === "yes",
           numberOfGuests: values.numberOfGuests,
           message: values.message,
+          email: values.email || undefined,
         },
       },
       {
@@ -280,6 +290,21 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium">{copy.email}</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder={copy.emailPlaceholder} {...field} className="bg-background h-10 text-[14px] placeholder:text-[13px]" />
+                    </FormControl>
+                    <p className="text-[11px] text-muted-foreground">{copy.emailHint}</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

@@ -14,5 +14,6 @@ export interface Rsvp {
   numberOfGuests: number;
   timeSlot?: string;
   message?: string;
+  email?: string;
   createdAt: string;
 }

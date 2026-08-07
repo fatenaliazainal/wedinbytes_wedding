@@ -465,6 +465,7 @@ export const ListRsvpsResponseItem = zod.object({
   "numberOfGuests": zod.number(),
   "timeSlot": zod.string().optional(),
   "message": zod.string().optional(),
+  "email": zod.string().optional(),
   "createdAt": zod.string()
 })
 export const ListRsvpsResponse = zod.array(ListRsvpsResponseItem)
@@ -479,7 +480,8 @@ export const CreateRsvpBody = zod.object({
   "attending": zod.boolean(),
   "numberOfGuests": zod.number(),
   "timeSlot": zod.string().optional(),
-  "message": zod.string().optional()
+  "message": zod.string().optional(),
+  "email": zod.string().email().optional()
 })
 
 

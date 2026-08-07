@@ -13,4 +13,5 @@ export interface CreateRsvpBody {
   numberOfGuests: number;
   timeSlot?: string;
   message?: string;
+  email?: string;
 }

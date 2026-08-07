@@ -4,6 +4,7 @@ import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
 import { auditEvent, canManageInvitation, rsvpSubmitRateLimit, wishesRateLimit, tokenLookupRateLimit } from "../lib/security";
 import { isInvitationExpired } from "../lib/invitation-expiration";
+import { sendRsvpConfirmationEmail } from "../lib/resend";
 
 const router: IRouter = Router();
 
@@ -21,6 +22,7 @@ function normalizeRsvpForApi(r: typeof rsvpTable.$inferSelect) {
     ...r,
     timeSlot: r.timeSlot ?? undefined,
     message: r.message ?? undefined,
+    email: r.email ?? undefined,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -191,7 +193,7 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
       return;
     }
 
-    const { invitationToken, name, attending, numberOfGuests, timeSlot, message } = body.data;
+    const { invitationToken, name, attending, numberOfGuests, timeSlot, message, email } = body.data;
 
     if (!invitationToken) {
       res.status(400).json({ error: "Invitation token is required" });
@@ -278,7 +280,7 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
 
     const [upserted] = await db
       .insert(rsvpTable)
-      .values({ invitationToken, name, attending, numberOfGuests, timeSlot: timeSlot ?? null, message: message ?? null })
+      .values({ invitationToken, name, attending, numberOfGuests, timeSlot: timeSlot ?? null, message: message ?? null, email: email ?? null })
       .onConflictDoUpdate({
         target: [rsvpTable.invitationToken, rsvpTable.name],
         set: {
@@ -286,11 +288,31 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
           numberOfGuests: body.data.numberOfGuests,
           timeSlot: timeSlot ?? null,
           message: message ?? null,
+          email: email ?? null,
         },
       })
       .returning();
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
+
+    // Send confirmation email — non-blocking, non-fatal
+    if (email) {
+      const groomName = invitation.coverGroomName || invitation.groomName || "";
+      const brideName = invitation.coverBrideName || invitation.brideName || "";
+      sendRsvpConfirmationEmail({
+        guestEmail: email,
+        guestName: name,
+        attending,
+        groomName,
+        brideName,
+        eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
+        venueName: invitation.venueName ?? null,
+        venueAddress: invitation.venueAddress ?? null,
+      }).catch((emailErr: unknown) => {
+        req.log.warn({ emailErr }, "RSVP confirmation email failed — non-fatal");
+      });
+    }
+
     res.status(201).json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to create RSVP");
