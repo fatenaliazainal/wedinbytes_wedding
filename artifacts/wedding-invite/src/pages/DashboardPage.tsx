@@ -8,7 +8,7 @@ import {
   User, Plus, Copy, Check, QrCode, X, Trash2,
   Calendar, Clock, CreditCard, Link2,
   LayoutGrid, List as ListIcon, Activity, AlertCircle, FileText,
-  EyeOff, Save, KeyRound, Download, ReceiptText
+  EyeOff, Save, KeyRound, Download, ReceiptText, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import SiteHeader from "@/components/SiteHeader";
@@ -166,10 +166,12 @@ function PaymentHistoryTable({
   payments,
   onDownloadReceipt,
   onPayNow,
+  onRefreshStatus,
 }: {
   payments: PaymentHistoryItem[];
   onDownloadReceipt: (payment: PaymentHistoryItem) => void;
   onPayNow: (payment: PaymentHistoryItem) => void;
+  onRefreshStatus?: (payment: PaymentHistoryItem) => void;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -201,7 +203,10 @@ function PaymentHistoryTable({
                   {payment.paymentStatus.toUpperCase() === "PAID" ? (
                     <button onClick={() => onDownloadReceipt(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"><Download size={14} /> Download Receipt</button>
                   ) : payment.paymentStatus.toUpperCase() === "PENDING" ? (
-                     <button onClick={() => onPayNow(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"><CreditCard size={14} /> Pay Now</button>
+                    <div className="flex flex-col gap-1.5">
+                      <button onClick={() => onPayNow(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"><CreditCard size={14} /> Pay Now</button>
+                      {onRefreshStatus && <button onClick={() => onRefreshStatus(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"><RefreshCw size={13} /> Check Status</button>}
+                    </div>
                   ) : payment.paymentStatus.toUpperCase() === "EXPIRED" ? (
                     <button onClick={() => onPayNow(payment)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"><CreditCard size={14} /> Retry Payment</button>
                   ) : (
@@ -347,7 +352,24 @@ export default function DashboardPage() {
         const globalDesign = designRes.ok ? await designRes.json() : null;
         const allDesigns: Design[] = allDesRes.ok ? await allDesRes.json() : [];
         setInvitations(invData);
-        setPaymentHistory(paymentHistoryRes.ok ? await paymentHistoryRes.json() : []);
+        const histData: PaymentHistoryItem[] = paymentHistoryRes.ok ? await paymentHistoryRes.json() : [];
+        setPaymentHistory(histData);
+        // Auto-reconcile any PENDING orders silently on page load so buyers who
+        // paid on a different device or browser see the correct status immediately.
+        const pendingOrders = histData.filter(p => p.paymentStatus.toUpperCase() === "PENDING");
+        for (const order of pendingOrders) {
+          fetch(`${BASE}/api/payment/toyyibpay/status?orderId=${order.id}`, { credentials: "include", cache: "no-store" })
+            .then(async r => {
+              if (!r.ok) return;
+              const d = await r.json() as { status?: string };
+              if (d.status === "PAID") {
+                const hr = await fetch(`${BASE}/api/buyer/payment-history`, { credentials: "include", cache: "no-store" });
+                if (hr.ok) setPaymentHistory(await hr.json());
+                toast.success("Payment confirmed! Your invitation is now active.");
+              }
+            })
+            .catch(() => {});
+        }
         setInvitation(invData[0] ?? null);
         setDesigns(allDesigns);
         const tpl = allDesigns.find((d) => d.designCode === invData[0]?.designCode);
@@ -571,6 +593,26 @@ export default function DashboardPage() {
     URL.revokeObjectURL(url);
   };
 
+  const reconcileStatus = async (orderId: number) => {
+    try {
+      const res = await fetch(`${BASE}/api/payment/toyyibpay/status?orderId=${orderId}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { status?: string };
+      if (data.status === "PAID") {
+        const histRes = await fetch(`${BASE}/api/buyer/payment-history`, { credentials: "include", cache: "no-store" });
+        if (histRes.ok) setPaymentHistory(await histRes.json());
+        toast.success("Payment confirmed! Your invitation is now active.");
+      } else {
+        toast.info("Payment is still pending. Please check again in a few minutes.");
+      }
+    } catch {
+      // Silently ignore — user can retry manually
+    }
+  };
+
   const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
@@ -578,7 +620,9 @@ export default function DashboardPage() {
       const result = await startToyyibPayCheckout(input);
       if (result.replacedExpired) {
         toast.info("Your previous payment session had expired. Starting a new payment.");
+        await new Promise(resolve => setTimeout(resolve, 1200));
       }
+      window.location.assign(result.paymentUrl);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to start payment.");
     } finally {
@@ -984,6 +1028,7 @@ export default function DashboardPage() {
                     void startPayment({ orderId: payment.id });
                   }
                 }}
+                onRefreshStatus={(payment) => void reconcileStatus(payment.id)}
               />
             </div>
           </div>
@@ -1081,6 +1126,7 @@ export default function DashboardPage() {
                     void startPayment({ orderId: payment.id });
                   }
                 }}
+                onRefreshStatus={(payment) => void reconcileStatus(payment.id)}
               />
             </section>
           </div>

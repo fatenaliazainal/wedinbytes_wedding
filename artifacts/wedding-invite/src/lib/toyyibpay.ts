@@ -20,6 +20,8 @@ export async function getToyyibPayAvailability() {
 export type ToyyibPayCheckoutResult = {
   /** True when the API created a fresh bill because the buyer's previous order had expired. */
   replacedExpired: boolean;
+  /** The ToyyibPay payment URL to redirect the buyer to. */
+  paymentUrl: string;
 };
 
 /**
@@ -62,6 +64,7 @@ export async function startToyyibPayCheckout(
   }
 
   const replacedExpired = data.replacedExpired ?? _depth > 0;
-  window.location.assign(data.paymentUrl);
-  return { replacedExpired };
+  // Return the URL rather than navigating here so callers can show notices
+  // (e.g. "previous session expired") before the page transitions.
+  return { replacedExpired, paymentUrl: data.paymentUrl };
 }

@@ -372,6 +372,26 @@ export default function BusinessDashboardPage() {
     }
   };
 
+  const reconcileStatus = async (orderId: number) => {
+    try {
+      const res = await fetch(`${BASE}/api/payment/toyyibpay/status?orderId=${orderId}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { status?: string };
+      if (data.status === "PAID") {
+        const histRes = await fetch(`${BASE}/api/business/payment-history`, { credentials: "include", cache: "no-store" });
+        if (histRes.ok) setPaymentHistory(await histRes.json());
+        toast.success("Payment confirmed! Your invitation is now active.");
+      } else {
+        toast.info("Payment is still pending. Please check again in a few minutes.");
+      }
+    } catch {
+      // Silently ignore — user can retry manually
+    }
+  };
+
   const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
@@ -379,7 +399,9 @@ export default function BusinessDashboardPage() {
       const result = await startToyyibPayCheckout(input);
       if (result.replacedExpired) {
         toast.info("Your previous payment session had expired. Starting a new payment.");
+        await new Promise(resolve => setTimeout(resolve, 1200));
       }
+      window.location.assign(result.paymentUrl);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to start payment.");
     } finally {
@@ -981,7 +1003,7 @@ export default function BusinessDashboardPage() {
                               ? (
                                 <div className="flex items-center gap-2">
                                   <span className="rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-semibold text-yellow-700">Pending</span>
-                                  <button onClick={() => setSection("clients")} className="text-[11px] font-semibold text-gray-500 underline underline-offset-2 hover:text-gray-800">Go to Invitations</button>
+                                  <button onClick={() => void reconcileStatus(payment.id)} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 underline underline-offset-2 hover:text-gray-800 disabled:opacity-50">Check Status</button>
                                 </div>
                               )
                               : payment.paymentStatus.toUpperCase() === "EXPIRED"

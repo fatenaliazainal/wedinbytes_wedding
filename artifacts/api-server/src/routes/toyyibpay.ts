@@ -271,6 +271,13 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         return;
       }
       if (existingOrder.paymentStatus === "EXPIRED" || existingOrder.paymentStatus === "FAILED") {
+        if (!existingOrder.invitationId) {
+          // Order has no invitation linked — cannot retry automatically.
+          res.status(409).json({
+            error: "This order has expired and cannot be retried automatically. Please contact support or create a new invitation.",
+          });
+          return;
+        }
         res.status(409).json({
           error: "This order has expired or failed. Please retry using your invitation instead.",
           retryWithInvitationId: existingOrder.invitationId,
@@ -397,10 +404,13 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         });
         if (isClosed) billIsOpen = false;
       } catch {
-        // If the bill status cannot be verified (network error, invalid bill code,
-        // etc.), treat it as closed and issue a fresh bill to avoid sending the
-        // buyer to an unreachable payment page.
-        billIsOpen = false;
+        // Lookup failed — the existing bill may still be active.
+        // Creating a new bill now risks a duplicate charge, so return an error
+        // and ask the buyer to retry in a moment.
+        res.status(503).json({
+          error: "Unable to verify your existing payment session. Please wait a moment and try again.",
+        });
+        return;
       }
 
       if (billIsOpen) {
@@ -558,9 +568,9 @@ router.get("/payment/toyyibpay/status", async (req, res) => {
     return;
   }
   const orderId = Number(req.query.orderId);
-  const billCode = String(req.query.billCode ?? "").trim();
-  if (!Number.isInteger(orderId) || !billCode) {
-    res.status(400).json({ error: "orderId and billCode are required." });
+  const billCodeParam = String(req.query.billCode ?? "").trim();
+  if (!Number.isInteger(orderId)) {
+    res.status(400).json({ error: "orderId is required." });
     return;
   }
 
@@ -572,6 +582,14 @@ router.get("/payment/toyyibpay/status", async (req, res) => {
     }
     if (order.paymentStatus === "PAID") {
       res.json({ status: "PAID" });
+      return;
+    }
+    // Use the caller-supplied billCode, or fall back to the one stored on the order.
+    // This lets dashboard reconciliation work even when the buyer switches devices
+    // and doesn't have the original billCode in their session.
+    const billCode = billCodeParam || order.billCode || "";
+    if (!billCode) {
+      res.json({ status: order.paymentStatus ?? "PENDING", updated: false });
       return;
     }
     res.json(await verifyAndApplyOrder(order, billCode));

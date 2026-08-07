@@ -5,8 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const MAX_RETRIES = 6;       // up to 6 attempts
-const RETRY_DELAY_MS = 2500; // 2.5 seconds between each
+const MAX_RETRIES = 15;      // up to 15 attempts (~45 seconds total)
+const RETRY_DELAY_MS = 3000; // 3 seconds between each
 
 async function checkStatus(orderReference: string, billCode: string): Promise<string> {
   const response = await fetch(
@@ -79,7 +79,7 @@ export default function ToyyibPayReturnPage() {
           : nextStatus === "FAILED"
             ? "The payment was not completed. You can try again from Payment History."
             : gatewayClaimsPaid
-              ? "Payment was received but is still being processed. Your invitation will be activated shortly — please check Payment History in a few minutes."
+              ? "Payment was received but is still being confirmed. Please use the button below to check again, or visit Payment History in a few minutes."
               : "Payment is still being processed. You can check again from Payment History.",
       );
     })();
@@ -113,6 +113,14 @@ export default function ToyyibPayReturnPage() {
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{message}</p>
         {!isLoading && (
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            {status === "PENDING" && (
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Check Again
+              </button>
+            )}
             <Link
               href={user?.role === "business_account" ? "/business/dashboard" : "/dashboard"}
               className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
