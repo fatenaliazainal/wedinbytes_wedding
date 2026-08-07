@@ -1,0 +1,159 @@
+IMPORTANT UPDATE:
+
+KEEP the existing Music modal exactly as it is.
+
+Do NOT remove the Music modal, Music button, song information, "Now playing" status, or Mute Music button.
+
+The new autoplay implementation must integrate with the EXISTING Music modal.
+
+DESIRED FLOW:
+
+1. User opens the wedding invitation.
+2. Initialize the existing YouTube music player.
+3. Attempt to autoplay the theme song immediately.
+4. If the browser blocks audible autoplay, wait for the user's first interaction anywhere on the invitation.
+5. On the first click/tap/pointer interaction, start the music automatically.
+6. The Music modal does NOT need to open automatically.
+7. User can open the existing Music modal whenever they want.
+8. The existing button inside the modal controls the SAME YouTube player.
+
+Music modal behaviour:
+
+WHEN MUSIC IS PLAYING:
+- Show "Now playing..."
+- Button should display:
+  "Mute Music"
+- Clicking it should mute the existing YouTube player.
+
+Example:
+
+playerRef.current.mute();
+
+WHEN MUSIC IS MUTED:
+- Button should display:
+  "Unmute Music"
+- Clicking it should unmute the SAME player.
+
+Example:
+
+playerRef.current.unMute();
+playerRef.current.playVideo();
+
+IMPORTANT:
+Mute must NOT pause or restart the song.
+
+The song should continue progressing silently while muted.
+
+Example:
+
+Playing at 01:20
+→ user clicks Mute Music
+→ song continues silently
+→ 20 seconds later user clicks Unmute Music
+→ song continues around 01:40
+
+DO NOT restart from 00:00 when unmuting.
+
+The modal close (X) button must ONLY close the modal.
+It must NOT stop, pause, mute, restart, or destroy the music player.
+
+The music player must exist independently from the modal.
+
+Closing/opening the modal must NOT recreate the YouTube iframe.
+
+Architecture should be approximately:
+
+Invitation Page
+      |
+      └── Persistent YouTube Player
+              |
+              ├── autoplay / first-interaction fallback
+              |
+              └── Music Modal
+                     ├── display song information
+                     ├── Now playing status
+                     └── Mute / Unmute controls
+
+Use ONE player instance only.
+
+For React:
+
+const playerRef = useRef(null);
+const [isMuted, setIsMuted] = useState(false);
+const [isPlaying, setIsPlaying] = useState(false);
+
+Example mute function:
+
+const toggleMute = () => {
+  const player = playerRef.current;
+
+  if (!player) return;
+
+  if (player.isMuted()) {
+    player.unMute();
+    setIsMuted(false);
+
+    // Make sure playback continues
+    player.playVideo();
+  } else {
+    player.mute();
+    setIsMuted(true);
+  }
+};
+
+Synchronize state with YouTube:
+
+onStateChange: (event) => {
+  if (event.data === YT.PlayerState.PLAYING) {
+    setIsPlaying(true);
+  }
+
+  if (event.data === YT.PlayerState.PAUSED) {
+    setIsPlaying(false);
+  }
+
+  if (event.data === YT.PlayerState.ENDED) {
+    playerRef.current.seekTo(0);
+    playerRef.current.playVideo();
+  }
+}
+
+The modal button label should be based on mute state:
+
+isMuted ? "Unmute Music" : "Mute Music"
+
+Do NOT use pauseVideo() for the Mute Music button.
+
+Do NOT destroy the player when the modal closes.
+
+Do NOT initialize another player when the modal opens.
+
+IMPORTANT AUTOPLAY FALLBACK:
+
+If autoplay with sound is blocked by the browser, the first interaction anywhere on the invitation should call:
+
+playerRef.current.playVideo();
+
+Once playback successfully starts, remove the autoplay interaction listeners.
+
+However, if the user has intentionally muted the music, opening/closing the modal or interacting with the page must NEVER automatically unmute it.
+
+Preserve the user's mute preference for the entire invitation session.
+
+Also preserve the current Music modal design and styling.
+Do not redesign it.
+
+TEST:
+- Open invitation -> music attempts autoplay
+- If blocked -> first tap anywhere starts music
+- Open Music modal -> music keeps playing
+- Close modal -> music keeps playing
+- Mute -> music becomes silent but continues progressing
+- Unmute -> music continues from current timestamp
+- Reopen modal -> correct mute state is shown
+- Scrolling -> no restart
+- RSVP/navigation/gallery -> no restart
+- Only ONE YouTube iframe/player exists
+- Song loops when finished
+
+Do not modify unrelated invitation features or existing data.

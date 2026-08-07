@@ -180,18 +180,16 @@ export default function InvitationPage() {
   const [unlockPin, setUnlockPin] = useState("");
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState("");
+  // ── HTML5 audio (non-YouTube URLs) ──────────────────────────────────────
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioStartedRef = useRef(false);
-  const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
   const musicUrl = (invitationStyle?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
-  // Pre-create and load the audio element as soon as musicUrl is known.
-  // iOS Safari requires the Audio object to exist BEFORE the gesture —
-  // only then will .play() called inside a tap handler succeed.
+  // Pre-create + preload HTML5 audio so iOS Safari allows .play() inside a gesture.
   useEffect(() => {
     if (!musicUrl || isYouTubeMusic) return undefined;
     const audio = new Audio(musicUrl);
@@ -208,15 +206,14 @@ export default function InvitationPage() {
     };
   }, [musicUrl, isYouTubeMusic]);
 
-  // Called synchronously in the envelope tap — plays the pre-loaded audio.
+  // Called in the envelope tap handler — plays the pre-loaded HTML5 audio.
   const playAudioNow = useCallback(() => {
     if (!audioRef.current || audioStartedRef.current) return;
     audioRef.current.play().catch(() => {});
     audioStartedRef.current = true;
   }, []);
 
-  // Desktop fallback: if opened without a tap (e.g. openingAnimation="none"),
-  // start audio via effect since there is no gesture to hook into.
+  // Desktop fallback for HTML5 audio when there's no tap (openingAnimation="none").
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     if (!audioStartedRef.current && audioRef.current) {
@@ -227,10 +224,134 @@ export default function InvitationPage() {
   }, [isOpened, musicUrl, isYouTubeMusic]);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.muted = isMuted;
-    }
+    if (audioRef.current) audioRef.current.muted = isMuted;
   }, [isMuted]);
+
+  // ── YouTube IFrame API player ────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ytPlayerRef = useRef<any>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const hasUserMutedRef = useRef(false);
+  // Holds the first-interaction handler so we can clean it up if needed.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const firstInteractionRef = useRef<((e: any) => void) | null>(null);
+
+  useEffect(() => {
+    if (!isOpened || !youtubeVideoId) return undefined;
+
+    const initYTPlayer = () => {
+      if (ytPlayerRef.current) return; // already initialised
+      const el = document.getElementById("yt-bg-player");
+      if (!el) return;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ytPlayerRef.current = new (window as any).YT.Player(el, {
+        videoId: youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          loop: 1,
+          playlist: youtubeVideoId,
+          playsinline: 1,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          fs: 0,
+        },
+        events: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onReady: (event: any) => {
+            event.target.playVideo();
+
+            // First-interaction fallback for browsers that block autoplay.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const handler = () => {
+              if (!hasUserMutedRef.current) {
+                ytPlayerRef.current?.playVideo();
+              }
+            };
+            firstInteractionRef.current = handler;
+            document.addEventListener("click",       handler, { once: true, passive: true });
+            document.addEventListener("touchstart",  handler, { once: true, passive: true });
+            document.addEventListener("pointerdown", handler, { once: true, passive: true });
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onStateChange: (event: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const YT = (window as any).YT;
+            if (event.data === YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+              // Music is playing — remove the first-interaction fallback listeners.
+              if (firstInteractionRef.current) {
+                document.removeEventListener("click",       firstInteractionRef.current);
+                document.removeEventListener("touchstart",  firstInteractionRef.current);
+                document.removeEventListener("pointerdown", firstInteractionRef.current);
+                firstInteractionRef.current = null;
+              }
+            } else if (event.data === YT.PlayerState.PAUSED) {
+              setIsPlaying(false);
+            } else if (event.data === YT.PlayerState.ENDED) {
+              ytPlayerRef.current?.seekTo(0);
+              ytPlayerRef.current?.playVideo();
+            }
+          },
+        },
+      });
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).YT?.Player) {
+      initYTPlayer();
+    } else {
+      // Load the YouTube IFrame API script once.
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+      // Chain onto any existing onYouTubeIframeAPIReady callback.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prev = (window as any).onYouTubeIframeAPIReady as (() => void) | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (prev) prev();
+        initYTPlayer();
+      };
+    }
+
+    return () => {
+      // Clean up first-interaction listeners.
+      if (firstInteractionRef.current) {
+        document.removeEventListener("click",       firstInteractionRef.current);
+        document.removeEventListener("touchstart",  firstInteractionRef.current);
+        document.removeEventListener("pointerdown", firstInteractionRef.current);
+        firstInteractionRef.current = null;
+      }
+      // Destroy the player instance.
+      try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
+      ytPlayerRef.current = null;
+      setIsPlaying(false);
+    };
+  }, [isOpened, youtubeVideoId]);
+
+  // Mute / unmute via YouTube API — song keeps progressing.
+  const toggleMute = useCallback(() => {
+    const player = ytPlayerRef.current;
+    if (player) {
+      if (player.isMuted()) {
+        player.unMute();
+        player.playVideo();
+        setIsMuted(false);
+        hasUserMutedRef.current = false;
+      } else {
+        player.mute();
+        setIsMuted(true);
+        hasUserMutedRef.current = true;
+      }
+    } else {
+      // HTML5 audio path.
+      setIsMuted((prev) => !prev);
+    }
+  }, []);
 
   const handleTabClick = (tab: TabKey) => {
     setActiveTab((prev) => (prev === tab ? null : tab));
@@ -386,7 +507,7 @@ export default function InvitationPage() {
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           isOpened={isOpened}
-          onOpen={() => { playAudioNow(); setIsOpened(true); }}
+          onOpen={() => { if (!isYouTubeMusic) playAudioNow(); setIsOpened(true); }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -397,7 +518,7 @@ export default function InvitationPage() {
       ) : (
         <EnvelopeDoors
           isOpened={isOpened}
-          onOpen={() => { playAudioNow(); setIsOpened(true); }}
+          onOpen={() => { if (!isYouTubeMusic) playAudioNow(); setIsOpened(true); }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -437,15 +558,14 @@ export default function InvitationPage() {
           }
         />
 
-        {/* Hidden YouTube player for background music */}
+        {/* Persistent YouTube IFrame API player mount point.
+            Rendered as soon as the invitation opens and never re-mounted —
+            the YT.Player instance controls playback without reloading the iframe. */}
         {isOpened && youtubeVideoId && (
-          <iframe
-            key={`yt-${youtubeVideoId}-${isMuted ? "muted" : "unmuted"}`}
-            ref={youtubeRef}
-            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&mute=${isMuted ? 1 : 0}&playsinline=1`}
-            allow="autoplay"
-            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none"
-            title="Background music"
+          <div
+            id="yt-bg-player"
+            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none overflow-hidden"
+            aria-hidden="true"
           />
         )}
 
@@ -474,7 +594,7 @@ export default function InvitationPage() {
                 onClose={() => setActiveTab(null)}
                 invitation={invitation}
                 isMuted={isMuted}
-                onToggleMute={() => setIsMuted((prev) => !prev)}
+                onToggleMute={toggleMute}
                 musicTitle={(invitationStyle?.musicTitle as string | undefined) ?? templateDesign?.musicTitle ?? design?.musicTitle ?? undefined}
                 musicArtist={(invitationStyle?.musicArtist as string | undefined) ?? templateDesign?.musicArtist ?? design?.musicArtist ?? undefined}
                 registryItems={registryItems}
@@ -521,7 +641,7 @@ export default function InvitationPage() {
             className="fixed top-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto"
           >
             <button
-              onClick={() => setIsMuted((prev) => !prev)}
+              onClick={toggleMute}
               type="button"
               title={isMuted ? "Unmute" : "Mute music"}
               className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
