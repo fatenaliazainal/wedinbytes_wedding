@@ -631,7 +631,7 @@ export default function DashboardPage() {
         const missing = missingPayFields(card);
         if (missing.length > 0) {
           toast.error(
-            `Sila lengkapkan maklumat berikut sebelum bayar: ${missing.join(", ")}.`,
+            `Sila isi maklumat berikut sebelum meneruskan pembayaran: ${missing.join(", ")}.`,
             { duration: 5000 }
           );
           navigate(`/editor?token=${encodeURIComponent(card.token)}`);
@@ -890,7 +890,7 @@ export default function DashboardPage() {
                                         <>
                                           <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
                                            {missingPayFields(card).length > 0 ? (
-                                             <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Lengkapkan dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Lengkapkan dahulu</button>
+                                             <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Sila isi dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Isi maklumat dahulu</button>
                                            ) : (
                                              <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
                                            )}
@@ -990,9 +990,9 @@ export default function DashboardPage() {
                                         <>
                                           <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
                                             {missingPayFields(card).length > 0 ? (
-                                              <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Lengkapkan dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Lengkap</button>
+                                              <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Sila isi dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Isi dahulu</button>
                                             ) : (
-                                              <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60" title="Pay Now"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
+                                              <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60" title="Pay Now"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Memproses..." : "Bayar Sekarang"}</button>
                                             )}
                                         </>
                                      )}

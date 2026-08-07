@@ -401,7 +401,7 @@ export default function BusinessDashboardPage() {
         if (!(card.coverBrideName || card.brideName)?.trim()) missing.push("Nama pengantin perempuan");
         if (!card.eventDate) missing.push("Tarikh majlis");
         if (missing.length > 0) {
-          toast.error(`Sila lengkapkan maklumat berikut sebelum bayar: ${missing.join(", ")}.`, { duration: 5000 });
+          toast.error(`Sila isi maklumat berikut sebelum meneruskan pembayaran: ${missing.join(", ")}.`, { duration: 5000 });
           return;
         }
       }
