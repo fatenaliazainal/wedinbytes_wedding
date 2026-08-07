@@ -295,6 +295,10 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
 
     // Skip notification if owner has not enabled it
+    req.log.info({
+      rsvpNotificationEmailEnabled: invitation.rsvpNotificationEmailEnabled,
+      rsvpNotificationEmail: invitation.rsvpNotificationEmail,
+    }, "RSVP notification check");
     if (!invitation.rsvpNotificationEmailEnabled) {
       return res.status(201).json(data);
     }
