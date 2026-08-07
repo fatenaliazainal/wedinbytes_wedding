@@ -236,8 +236,12 @@ export default function InvitationPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const firstInteractionRef = useRef<((e: any) => void) | null>(null);
 
+  // Load the YouTube IFrame API and initialise the player as soon as the
+  // video ID is known — BEFORE the envelope is opened — so the player is
+  // fully ready when the user taps and playVideo() can be called
+  // synchronously inside the gesture handler.
   useEffect(() => {
-    if (!isOpened || !youtubeVideoId) return undefined;
+    if (!youtubeVideoId) return undefined;
 
     const initYTPlayer = () => {
       if (ytPlayerRef.current) return; // already initialised
@@ -248,7 +252,8 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          autoplay: 1,
+          // autoplay:0 — we call playVideo() manually inside the tap gesture.
+          autoplay: 0,
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -259,28 +264,12 @@ export default function InvitationPage() {
         },
         events: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onReady: (event: any) => {
-            event.target.playVideo();
-
-            // First-interaction fallback for browsers that block autoplay.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const handler = () => {
-              if (!hasUserMutedRef.current) {
-                ytPlayerRef.current?.playVideo();
-              }
-            };
-            firstInteractionRef.current = handler;
-            document.addEventListener("click",       handler, { once: true, passive: true });
-            document.addEventListener("touchstart",  handler, { once: true, passive: true });
-            document.addEventListener("pointerdown", handler, { once: true, passive: true });
-          },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
-              // Music is playing — remove the first-interaction fallback listeners.
+              // Music started — remove any pending first-interaction fallback.
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
                 document.removeEventListener("touchstart",  firstInteractionRef.current);
@@ -302,13 +291,11 @@ export default function InvitationPage() {
     if ((window as any).YT?.Player) {
       initYTPlayer();
     } else {
-      // Load the YouTube IFrame API script once.
       if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
         const tag = document.createElement("script");
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
       }
-      // Chain onto any existing onYouTubeIframeAPIReady callback.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prev = (window as any).onYouTubeIframeAPIReady as (() => void) | undefined;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,19 +306,17 @@ export default function InvitationPage() {
     }
 
     return () => {
-      // Clean up first-interaction listeners.
       if (firstInteractionRef.current) {
         document.removeEventListener("click",       firstInteractionRef.current);
         document.removeEventListener("touchstart",  firstInteractionRef.current);
         document.removeEventListener("pointerdown", firstInteractionRef.current);
         firstInteractionRef.current = null;
       }
-      // Destroy the player instance.
       try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
       ytPlayerRef.current = null;
       setIsPlaying(false);
     };
-  }, [isOpened, youtubeVideoId]);
+  }, [youtubeVideoId]);
 
   // Mute / unmute via YouTube API — song keeps progressing.
   const toggleMute = useCallback(() => {
@@ -507,7 +492,11 @@ export default function InvitationPage() {
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           isOpened={isOpened}
-          onOpen={() => { if (!isYouTubeMusic) playAudioNow(); setIsOpened(true); }}
+          onOpen={() => {
+            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            else { playAudioNow(); }
+            setIsOpened(true);
+          }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -518,7 +507,11 @@ export default function InvitationPage() {
       ) : (
         <EnvelopeDoors
           isOpened={isOpened}
-          onOpen={() => { if (!isYouTubeMusic) playAudioNow(); setIsOpened(true); }}
+          onOpen={() => {
+            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            else { playAudioNow(); }
+            setIsOpened(true);
+          }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -558,10 +551,10 @@ export default function InvitationPage() {
           }
         />
 
-        {/* Persistent YouTube IFrame API player mount point.
-            Rendered as soon as the invitation opens and never re-mounted —
-            the YT.Player instance controls playback without reloading the iframe. */}
-        {isOpened && youtubeVideoId && (
+        {/* YouTube IFrame API player mount point — rendered immediately so the
+            player is fully loaded before the envelope opens. playVideo() is
+            called synchronously inside the tap handler (gesture context). */}
+        {youtubeVideoId && (
           <div
             id="yt-bg-player"
             className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none overflow-hidden"
