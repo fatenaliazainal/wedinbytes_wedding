@@ -332,7 +332,8 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
         dashboardUrl: "https://wedinstudio.com/dashboard",
       });
     }).catch((emailErr: unknown) => {
-      req.log.warn({ emailErr }, "RSVP owner notification failed — non-fatal");
+      const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+      req.log.warn({ emailErrMsg: msg }, "RSVP owner notification failed — non-fatal");
     });
 
     res.status(201).json(data);
