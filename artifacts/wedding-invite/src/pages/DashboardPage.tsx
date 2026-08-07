@@ -16,7 +16,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import { WeddingCard } from "@/components/WeddingCard";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
-import { publicInvitePathOrToken } from "@/lib/invite-url";
+import { publicInvitePath, publicInvitePathOrToken } from "@/lib/invite-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
@@ -893,6 +893,11 @@ export default function DashboardPage() {
                                     The invitation URL is based on the Cover Groom Name and Cover Bride Name. Complete both fields in Edit before sharing.
                                   </p>
                                 )}
+                                {cardInviteLink && !publicInvitePath(card) && (
+                                  <p className="-mt-2 mb-3 text-[11px] leading-relaxed text-amber-600">
+                                    ⚠️ URL masih guna nombor rujukan — isi <strong>tarikh majlis</strong> dan <strong>nama pengantin</strong> dalam Edit untuk jana URL nama pengantin.
+                                  </p>
+                                )}
 
                                {/* Action Row */}
                                 <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 overflow-x-auto">
@@ -974,6 +979,11 @@ export default function DashboardPage() {
                                    {!cardInviteLink && (
                                      <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
                                        URL generated from the Cover Groom Name and Cover Bride Name.
+                                     </p>
+                                   )}
+                                   {cardInviteLink && !publicInvitePath(card) && (
+                                     <p className="mt-1 text-[11px] leading-relaxed text-amber-600">
+                                       ⚠️ URL masih guna nombor rujukan — isi <strong>tarikh majlis</strong> dan <strong>nama pengantin</strong> dalam Edit.
                                      </p>
                                    )}
                                </td>
