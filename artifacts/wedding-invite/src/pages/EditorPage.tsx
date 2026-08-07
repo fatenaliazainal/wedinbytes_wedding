@@ -3101,49 +3101,42 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "left" }}
                   />
                 </Field>
-                <Field label="Notifikasi Email RSVP">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={inv.rsvpNotificationEmailEnabled}
-                        onClick={() =>
-                          setInv((p) => ({
-                            ...p,
-                            rsvpNotificationEmailEnabled: !p.rsvpNotificationEmailEnabled,
-                          }))
-                        }
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                          inv.rsvpNotificationEmailEnabled ? "bg-gray-800" : "bg-gray-200"
+                <Field label="Email Notifikasi RSVP" hint="Kosongkan untuk guna email akaun anda.">
+                  <input
+                    type="email"
+                    className={inputCls}
+                    placeholder="contoh@email.com"
+                    value={inv.rsvpNotificationEmail}
+                    onChange={(e) =>
+                      setInv((p) => ({ ...p, rsvpNotificationEmail: e.target.value }))
+                    }
+                  />
+                </Field>
+                <Field label="Hantar Notifikasi Email">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={inv.rsvpNotificationEmailEnabled}
+                      onClick={() =>
+                        setInv((p) => ({
+                          ...p,
+                          rsvpNotificationEmailEnabled: !p.rsvpNotificationEmailEnabled,
+                        }))
+                      }
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                        inv.rsvpNotificationEmailEnabled ? "bg-gray-800" : "bg-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                          inv.rsvpNotificationEmailEnabled ? "translate-x-4" : "translate-x-1"
                         }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                            inv.rsvpNotificationEmailEnabled ? "translate-x-4" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                      <span className="text-sm text-gray-600">
-                        {inv.rsvpNotificationEmailEnabled ? "Aktif" : "Tidak aktif"}
-                      </span>
-                    </div>
-                    {inv.rsvpNotificationEmailEnabled && (
-                      <input
-                        type="email"
-                        className={inputCls}
-                        placeholder="contoh@email.com"
-                        value={inv.rsvpNotificationEmail}
-                        onChange={(e) =>
-                          setInv((p) => ({ ...p, rsvpNotificationEmail: e.target.value }))
-                        }
                       />
-                    )}
-                    {inv.rsvpNotificationEmailEnabled && (
-                      <p className="text-xs text-gray-400">
-                        Kosongkan untuk hantar ke email akaun anda.
-                      </p>
-                    )}
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      {inv.rsvpNotificationEmailEnabled ? "Aktif" : "Tidak aktif"}
+                    </span>
                   </div>
                 </Field>
                 <Field label="Tarikh Akhir RSVP">
