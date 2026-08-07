@@ -294,33 +294,37 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
 
-    // Notify invitation owner — non-blocking, non-fatal
-    if (invitation.userId) {
-      const groomName = invitation.coverGroomName || invitation.groomName || "";
-      const brideName = invitation.coverBrideName || invitation.brideName || "";
-      Promise.resolve().then(async () => {
+    // Notify via rsvpNotificationEmail (set in editor) or fall back to owner account email
+    const groomName = invitation.coverGroomName || invitation.groomName || "";
+    const brideName = invitation.coverBrideName || invitation.brideName || "";
+    Promise.resolve().then(async () => {
+      let notifyEmail: string | null = invitation.rsvpNotificationEmail ?? null;
+      let notifyName = groomName || brideName || "Owner";
+      if (!notifyEmail && invitation.userId) {
         const [owner] = await db
           .select({ email: userTable.email, name: userTable.name })
           .from(userTable)
-          .where(eq(userTable.id, invitation.userId!))
+          .where(eq(userTable.id, invitation.userId))
           .limit(1);
-        if (!owner?.email) return;
-        await sendRsvpOwnerNotification({
-          ownerEmail: owner.email,
-          ownerName: owner.name,
-          guestName: name,
-          attending,
-          numberOfGuests,
-          message: message ?? null,
-          groomName,
-          brideName,
-          eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
-          dashboardUrl: "https://wedinstudio.com/dashboard",
-        });
-      }).catch((emailErr: unknown) => {
-        req.log.warn({ emailErr }, "RSVP owner notification failed — non-fatal");
+        notifyEmail = owner?.email ?? null;
+        notifyName = owner?.name ?? notifyName;
+      }
+      if (!notifyEmail) return;
+      await sendRsvpOwnerNotification({
+        ownerEmail: notifyEmail,
+        ownerName: notifyName,
+        guestName: name,
+        attending,
+        numberOfGuests,
+        message: message ?? null,
+        groomName,
+        brideName,
+        eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
+        dashboardUrl: "https://wedinstudio.com/dashboard",
       });
-    }
+    }).catch((emailErr: unknown) => {
+      req.log.warn({ emailErr }, "RSVP owner notification failed — non-fatal");
+    });
 
     res.status(201).json(data);
   } catch (err) {
