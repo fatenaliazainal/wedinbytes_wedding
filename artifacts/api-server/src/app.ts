@@ -18,6 +18,14 @@ const configuredCorsOrigins = (process.env.CORS_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+// In development, also allow the Replit proxy domain so the preview iframe works.
+if (process.env.NODE_ENV !== "production" && process.env.REPLIT_DEV_DOMAIN) {
+  const devOrigin = `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  if (!configuredCorsOrigins.includes(devOrigin)) {
+    configuredCorsOrigins.push(devOrigin);
+  }
+}
 const sessionSecret = process.env.SESSION_SECRET;
 if (process.env.NODE_ENV === "production" && !sessionSecret) {
   throw new Error("SESSION_SECRET is required in production.");
