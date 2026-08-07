@@ -189,40 +189,41 @@ export default function InvitationPage() {
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
-  // Called synchronously inside the envelope tap so mobile browsers
-  // treat it as a user-gesture-initiated play() call.
-  const playAudioNow = useCallback(() => {
-    if (!musicUrl || isYouTubeMusic || audioStartedRef.current) return;
+  // Pre-create and load the audio element as soon as musicUrl is known.
+  // iOS Safari requires the Audio object to exist BEFORE the gesture —
+  // only then will .play() called inside a tap handler succeed.
+  useEffect(() => {
+    if (!musicUrl || isYouTubeMusic) return undefined;
     const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.35;
-    audio.play().catch(() => {});
+    audio.preload = "auto";
+    audio.load();
     audioRef.current = audio;
-    audioStartedRef.current = true;
-  }, [musicUrl, isYouTubeMusic]);
-
-  useEffect(() => {
-    if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
-
-    // Audio may already be running (started in gesture handler above).
-    if (!audioStartedRef.current) {
-      // Desktop fallback — no gesture restriction.
-      const audio = new Audio(musicUrl);
-      audio.loop = true;
-      audio.volume = 0.35;
-      audio.play().catch(() => {});
-      audioRef.current = audio;
-      audioStartedRef.current = true;
-    }
-
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
       audioStartedRef.current = false;
     };
+  }, [musicUrl, isYouTubeMusic]);
+
+  // Called synchronously in the envelope tap — plays the pre-loaded audio.
+  const playAudioNow = useCallback(() => {
+    if (!audioRef.current || audioStartedRef.current) return;
+    audioRef.current.play().catch(() => {});
+    audioStartedRef.current = true;
+  }, []);
+
+  // Desktop fallback: if opened without a tap (e.g. openingAnimation="none"),
+  // start audio via effect since there is no gesture to hook into.
+  useEffect(() => {
+    if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
+    if (!audioStartedRef.current && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+      audioStartedRef.current = true;
+    }
+    return undefined;
   }, [isOpened, musicUrl, isYouTubeMusic]);
 
   useEffect(() => {
