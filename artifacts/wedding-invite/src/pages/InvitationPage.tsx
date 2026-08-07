@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useParams, useSearch } from "wouter";
 import { useGetInvitation, useListDesigns, useGetRsvpCount, useGetActiveDesign } from "@workspace/api-client-react";
 import { EnvelopeDoors } from "@/components/EnvelopeDoors";
@@ -181,6 +181,7 @@ export default function InvitationPage() {
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioStartedRef = useRef(false);
   const youtubeRef = useRef<HTMLIFrameElement | null>(null);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -188,23 +189,39 @@ export default function InvitationPage() {
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
-  useEffect(() => {
-    if (!isOpened || !musicUrl) return undefined;
-
-    if (isYouTubeMusic) {
-      // YouTube iframe handles playback; mute is toggled by reloading the iframe.
-      return undefined;
-    }
-
+  // Called synchronously inside the envelope tap so mobile browsers
+  // treat it as a user-gesture-initiated play() call.
+  const playAudioNow = useCallback(() => {
+    if (!musicUrl || isYouTubeMusic || audioStartedRef.current) return;
     const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.35;
     audio.play().catch(() => {});
     audioRef.current = audio;
+    audioStartedRef.current = true;
+  }, [musicUrl, isYouTubeMusic]);
+
+  useEffect(() => {
+    if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
+
+    // Audio may already be running (started in gesture handler above).
+    if (!audioStartedRef.current) {
+      // Desktop fallback — no gesture restriction.
+      const audio = new Audio(musicUrl);
+      audio.loop = true;
+      audio.volume = 0.35;
+      audio.play().catch(() => {});
+      audioRef.current = audio;
+      audioStartedRef.current = true;
+    }
+
     return () => {
-      audio.pause();
-      audio.src = "";
-      audioRef.current = null;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
+      audioStartedRef.current = false;
     };
   }, [isOpened, musicUrl, isYouTubeMusic]);
 
@@ -368,7 +385,7 @@ export default function InvitationPage() {
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           isOpened={isOpened}
-          onOpen={() => setIsOpened(true)}
+          onOpen={() => { playAudioNow(); setIsOpened(true); }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -379,7 +396,7 @@ export default function InvitationPage() {
       ) : (
         <EnvelopeDoors
           isOpened={isOpened}
-          onOpen={() => setIsOpened(true)}
+          onOpen={() => { playAudioNow(); setIsOpened(true); }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
