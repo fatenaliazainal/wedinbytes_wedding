@@ -1,10 +1,10 @@
 import { Router, type IRouter } from "express";
 import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountResponse } from "@workspace/api-zod";
-import { db, rsvpTable, invitationTable } from "@workspace/db";
+import { db, rsvpTable, invitationTable, userTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
 import { auditEvent, canManageInvitation, rsvpSubmitRateLimit, wishesRateLimit, tokenLookupRateLimit } from "../lib/security";
 import { isInvitationExpired } from "../lib/invitation-expiration";
-import { sendRsvpConfirmationEmail } from "../lib/resend";
+import { sendRsvpOwnerNotification } from "../lib/resend";
 
 const router: IRouter = Router();
 
@@ -193,7 +193,7 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
       return;
     }
 
-    const { invitationToken, name, attending, numberOfGuests, timeSlot, message, email } = body.data;
+    const { invitationToken, name, attending, numberOfGuests, timeSlot, message } = body.data;
 
     if (!invitationToken) {
       res.status(400).json({ error: "Invitation token is required" });
@@ -280,7 +280,7 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
 
     const [upserted] = await db
       .insert(rsvpTable)
-      .values({ invitationToken, name, attending, numberOfGuests, timeSlot: timeSlot ?? null, message: message ?? null, email: email ?? null })
+      .values({ invitationToken, name, attending, numberOfGuests, timeSlot: timeSlot ?? null, message: message ?? null })
       .onConflictDoUpdate({
         target: [rsvpTable.invitationToken, rsvpTable.name],
         set: {
@@ -288,28 +288,37 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
           numberOfGuests: body.data.numberOfGuests,
           timeSlot: timeSlot ?? null,
           message: message ?? null,
-          email: email ?? null,
         },
       })
       .returning();
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
 
-    // Send confirmation email — non-blocking, non-fatal
-    if (email) {
+    // Notify invitation owner — non-blocking, non-fatal
+    if (invitation.userId) {
       const groomName = invitation.coverGroomName || invitation.groomName || "";
       const brideName = invitation.coverBrideName || invitation.brideName || "";
-      sendRsvpConfirmationEmail({
-        guestEmail: email,
-        guestName: name,
-        attending,
-        groomName,
-        brideName,
-        eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
-        venueName: invitation.venueName ?? null,
-        venueAddress: invitation.venueAddress ?? null,
+      Promise.resolve().then(async () => {
+        const [owner] = await db
+          .select({ email: userTable.email, name: userTable.name })
+          .from(userTable)
+          .where(eq(userTable.id, invitation.userId!))
+          .limit(1);
+        if (!owner?.email) return;
+        await sendRsvpOwnerNotification({
+          ownerEmail: owner.email,
+          ownerName: owner.name,
+          guestName: name,
+          attending,
+          numberOfGuests,
+          message: message ?? null,
+          groomName,
+          brideName,
+          eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
+          dashboardUrl: "https://wedinstudio.com/dashboard",
+        });
       }).catch((emailErr: unknown) => {
-        req.log.warn({ emailErr }, "RSVP confirmation email failed — non-fatal");
+        req.log.warn({ emailErr }, "RSVP owner notification failed — non-fatal");
       });
     }
 
