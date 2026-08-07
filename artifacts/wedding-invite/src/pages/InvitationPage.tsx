@@ -188,27 +188,23 @@ export default function InvitationPage() {
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
-  // Called synchronously inside the envelope open click handler so mobile browsers
-  // recognise it as a user-gesture-initiated play() call.
-  const startAudioInGesture = useCallback(() => {
-    if (!musicUrl || isYouTubeMusic || audioRef.current) return;
+  useEffect(() => {
+    if (!isOpened || !musicUrl) return undefined;
+
+    if (isYouTubeMusic) {
+      // YouTube iframe handles playback; mute is toggled by reloading the iframe.
+      return undefined;
+    }
+
     const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.35;
-    audio.muted = isMuted;
     audio.play().catch(() => {});
     audioRef.current = audio;
-  }, [musicUrl, isYouTubeMusic, isMuted]);
-
-  // Cleanup only — audio is started in startAudioInGesture above.
-  useEffect(() => {
-    if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
     };
   }, [isOpened, musicUrl, isYouTubeMusic]);
 
@@ -372,7 +368,7 @@ export default function InvitationPage() {
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           isOpened={isOpened}
-          onOpen={() => { startAudioInGesture(); setIsOpened(true); }}
+          onOpen={() => setIsOpened(true)}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -383,7 +379,7 @@ export default function InvitationPage() {
       ) : (
         <EnvelopeDoors
           isOpened={isOpened}
-          onOpen={() => { startAudioInGesture(); setIsOpened(true); }}
+          onOpen={() => setIsOpened(true)}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}
@@ -423,18 +419,14 @@ export default function InvitationPage() {
           }
         />
 
-        {/* Hidden YouTube player for background music.
-            Pre-rendered (but invisible) before opening so the iframe is already
-            in the DOM when the user taps — mobile browsers allow autoplay when
-            the load is triggered close to a user gesture. */}
-        {youtubeVideoId && (
+        {/* Hidden YouTube player for background music */}
+        {isOpened && youtubeVideoId && (
           <iframe
             key={`yt-${youtubeVideoId}-${isMuted ? "muted" : "unmuted"}`}
             ref={youtubeRef}
-            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&mute=${isMuted ? 1 : 0}&playsinline=1&enablejsapi=1`}
-            allow="autoplay; encrypted-media"
-            aria-hidden="true"
-            className={`absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none ${isOpened ? "" : "hidden"}`}
+            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&mute=${isMuted ? 1 : 0}&playsinline=1`}
+            allow="autoplay"
+            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none"
             title="Background music"
           />
         )}
