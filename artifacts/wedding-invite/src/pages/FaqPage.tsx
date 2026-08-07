@@ -123,6 +123,10 @@ const FAQS = [
         answer: "The Premium package includes additional features such as Photo Gallery, Money Gift, and Dress Code.",
       },
       {
+        question: "Apa yang perlu dilengkapkan sebelum saya boleh membayar?",
+        answer: "Sebelum pembayaran boleh diproses, anda perlu mengisi nama pengantin lelaki, nama pengantin perempuan, dan tarikh majlis dalam bahagian Edit. Maklumat ini diperlukan untuk menjana URL unik undangan anda — contohnya wedinstudio.com/invite/260814/amirul-amira. URL ini tidak akan berubah selepas pembayaran dilakukan.",
+      },
+      {
         question: "Can I change my package after creating my invitation?",
         answer: (
           <>

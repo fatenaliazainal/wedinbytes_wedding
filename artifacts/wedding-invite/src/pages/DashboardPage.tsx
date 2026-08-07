@@ -613,7 +613,32 @@ export default function DashboardPage() {
     }
   };
 
+  /** Returns a list of human-readable field names that must be filled before payment. */
+  const missingPayFields = (card: Invitation): string[] => {
+    const missing: string[] = [];
+    if (!(card.coverGroomName || card.groomName)?.trim()) missing.push("Nama pengantin lelaki");
+    if (!(card.coverBrideName || card.brideName)?.trim()) missing.push("Nama pengantin perempuan");
+    if (!card.eventDate) missing.push("Tarikh majlis");
+    return missing;
+  };
+
   const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
+    // Pre-payment validation: names + event date must be set before checkout so
+    // the shareable URL is name-based from the moment the invitation goes live.
+    if (input.invitationId != null) {
+      const card = invitations.find(c => c.id === input.invitationId);
+      if (card) {
+        const missing = missingPayFields(card);
+        if (missing.length > 0) {
+          toast.error(
+            `Sila lengkapkan maklumat berikut sebelum bayar: ${missing.join(", ")}.`,
+            { duration: 5000 }
+          );
+          navigate(`/editor?token=${encodeURIComponent(card.token)}`);
+          return;
+        }
+      }
+    }
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
     try {
@@ -864,7 +889,11 @@ export default function DashboardPage() {
                                      ) : (
                                         <>
                                           <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
-                                           <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
+                                           {missingPayFields(card).length > 0 ? (
+                                             <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Lengkapkan dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Lengkapkan dahulu</button>
+                                           ) : (
+                                             <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
+                                           )}
                                         </>
                                      )}
                                   </div>
@@ -960,7 +989,11 @@ export default function DashboardPage() {
                                      ) : (
                                         <>
                                           <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200">Pending</span>
-                                            <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60" title="Pay Now"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
+                                            {missingPayFields(card).length > 0 ? (
+                                              <button onClick={() => void startPayment({ invitationId: card.id })} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors" title={`Lengkapkan dahulu: ${missingPayFields(card).join(", ")}`}><CreditCard size={12}/> Lengkap</button>
+                                            ) : (
+                                              <button onClick={() => void startPayment({ invitationId: card.id })} disabled={paymentStartingFor === card.id} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:cursor-wait disabled:opacity-60" title="Pay Now"><CreditCard size={12}/> {paymentStartingFor === card.id ? "Starting..." : "Pay Now"}</button>
+                                            )}
                                         </>
                                      )}
                                   </div>

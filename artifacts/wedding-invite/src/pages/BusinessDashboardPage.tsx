@@ -393,6 +393,19 @@ export default function BusinessDashboardPage() {
   };
 
   const startPayment = async (input: { invitationId?: number; orderId?: number }) => {
+    if (input.invitationId != null) {
+      const card = invitations.find(c => c.id === input.invitationId);
+      if (card) {
+        const missing: string[] = [];
+        if (!(card.coverGroomName || card.groomName)?.trim()) missing.push("Nama pengantin lelaki");
+        if (!(card.coverBrideName || card.brideName)?.trim()) missing.push("Nama pengantin perempuan");
+        if (!card.eventDate) missing.push("Tarikh majlis");
+        if (missing.length > 0) {
+          toast.error(`Sila lengkapkan maklumat berikut sebelum bayar: ${missing.join(", ")}.`, { duration: 5000 });
+          return;
+        }
+      }
+    }
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
     try {
