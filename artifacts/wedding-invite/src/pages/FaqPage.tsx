@@ -59,6 +59,11 @@ const FAQS = [
         answer: "Yes. Guests can confirm their attendance directly through your digital wedding invitation.",
       },
       {
+        question: "Will I receive an email when a guest RSVPs?",
+        answer:
+          "Yes — once your invitation is paid and active, you will receive an email notification at your registered RSVP email address every time a guest submits their RSVP. This feature is only available for paid invitations. Unpaid (preview) or admin-disabled invitations do not send email notifications.",
+      },
+      {
         question: "Can guests leave wishes for the couple?",
         answer: "Yes. Guests can leave their wishes and messages for the couple through the invitation.",
       },
