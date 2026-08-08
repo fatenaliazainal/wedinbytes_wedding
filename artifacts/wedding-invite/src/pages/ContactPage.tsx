@@ -75,8 +75,8 @@ export default function ContactPage() {
               rel="noreferrer"
               className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 shadow-sm">
-                <img src="/icons/whatsapp2.png" alt="WhatsApp" className="h-6 w-6 object-contain" />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                <img src="/icons/whatsapp2.png" alt="WhatsApp" className="h-6 w-6 object-contain brightness-0 invert" />
               </div>
               <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
               <p className="mt-1 text-xs text-gray-500">+{WHATSAPP_NUMBER}</p>
@@ -87,8 +87,8 @@ export default function ContactPage() {
               href={`mailto:${SUPPORT_EMAIL}`}
               className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 shadow-sm">
-                <img src="/icons/email2.png" alt="Email" className="h-6 w-6 object-contain" />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                <img src="/icons/email2.png" alt="Email" className="h-6 w-6 object-contain brightness-0 invert" />
               </div>
               <p className="text-sm font-semibold text-gray-900">Email</p>
               <p className="mt-1 text-xs text-gray-500">{SUPPORT_EMAIL}</p>
@@ -96,8 +96,8 @@ export default function ContactPage() {
             </a>
 
             <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-sm">
-                <Clock size={22} strokeWidth={1.8} />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                <Clock size={22} strokeWidth={1.8} className="text-white" />
               </div>
               <p className="text-sm font-semibold text-gray-900">Response Time</p>
               <p className="mt-1 text-xs text-gray-500">Monday – Friday</p>
