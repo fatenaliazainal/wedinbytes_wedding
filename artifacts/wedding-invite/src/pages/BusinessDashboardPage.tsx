@@ -34,7 +34,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
-  { label: "PRICE LIST", href: "/pricing" },
+  { label: "PACKAGES", href: "/pricing" },
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
   { label: "FOR BUSINESS", href: "/for-business" },
@@ -399,9 +399,9 @@ export default function BusinessDashboardPage() {
         const missing: string[] = [];
         if (!(card.coverGroomName || card.groomName)?.trim()) missing.push("Nama pengantin lelaki");
         if (!(card.coverBrideName || card.brideName)?.trim()) missing.push("Nama pengantin perempuan");
-        if (!card.eventDate) missing.push("Tarikh majlis");
+        if (!card.eventDate) missing.push("Event date");
         if (missing.length > 0) {
-          toast.error(`Sila isi maklumat berikut sebelum meneruskan pembayaran: ${missing.join(", ")}.`, { duration: 5000 });
+          toast.error(`Please fill in the following before proceeding with payment: ${missing.join(", ")}.`, { duration: 5000 });
           return;
         }
       }

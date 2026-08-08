@@ -37,6 +37,7 @@ interface Invitation {
   groomInitial?: string | null;
   isPurchased: boolean;
   isLocked?: boolean;
+  packageId?: number | null;
   createdAt: string;
   colorPrimary?: string;
   designCode?: string;
@@ -434,7 +435,11 @@ export default function DashboardPage() {
   const actionButtonsFor = (card: Invitation) => {
     const path = publicInvitePathOrToken(card);
     return [
-    { icon: Edit2,  label: "Edit",  onClick: () => navigate(`/editor?token=${encodeURIComponent(card.token)}`) },
+    { icon: Edit2,  label: "Edit",  onClick: () => {
+        const params = new URLSearchParams({ token: card.token });
+        if (!card.isPurchased && card.packageId) params.set("package", String(card.packageId));
+        navigate(`/editor?${params.toString()}`);
+      } },
     { icon: Eye,    label: "View",  onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : undefined },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: () => copyLink(card) },
@@ -618,7 +623,7 @@ export default function DashboardPage() {
     const missing: string[] = [];
     if (!(card.coverGroomName || card.groomName)?.trim()) missing.push("Nama pengantin lelaki");
     if (!(card.coverBrideName || card.brideName)?.trim()) missing.push("Nama pengantin perempuan");
-    if (!card.eventDate) missing.push("Tarikh majlis");
+    if (!card.eventDate) missing.push("Event date");
     return missing;
   };
 
@@ -631,7 +636,7 @@ export default function DashboardPage() {
         const missing = missingPayFields(card);
         if (missing.length > 0) {
           toast.error(
-            `Sila isi maklumat berikut sebelum meneruskan pembayaran: ${missing.join(", ")}.`,
+            `Please fill in the following before proceeding with payment: ${missing.join(", ")}.`,
             { duration: 5000 }
           );
           navigate(`/editor?token=${encodeURIComponent(card.token)}`);
@@ -658,7 +663,7 @@ export default function DashboardPage() {
   const NAV_ITEMS: SiteNavItem[] = [
     { label: "HOME",       href: "/" },
     { label: "CATALOG",    href: "/weddingcards/home" },
-    { label: "PRICE LIST", href: "/pricing" },
+    { label: "PACKAGES", href: "/pricing" },
     { label: "FAQs",       href: "/faq" },
     { label: "REVIEWS",    href: "/reviews" },
     { label: "FOR BUSINESS", href: "/for-business" },
@@ -920,7 +925,7 @@ export default function DashboardPage() {
                                 )}
                                 {cardInviteLink && !publicInvitePath(card) && (
                                   <p className="-mt-2 mb-3 text-[11px] leading-relaxed text-amber-600">
-                                    ⚠️ URL masih guna nombor rujukan — isi <strong>tarikh majlis</strong> dan <strong>nama pengantin</strong> dalam Edit untuk jana URL nama pengantin.
+                                    ⚠️ URL is still using a reference number — fill in the <strong>event date</strong> and <strong>couple names</strong> in Edit to generate a personalised URL.
                                   </p>
                                 )}
 
@@ -1008,7 +1013,7 @@ export default function DashboardPage() {
                                    )}
                                    {cardInviteLink && !publicInvitePath(card) && (
                                      <p className="mt-1 text-[11px] leading-relaxed text-amber-600">
-                                       ⚠️ URL masih guna nombor rujukan — isi <strong>tarikh majlis</strong> dan <strong>nama pengantin</strong> dalam Edit.
+                                       ⚠️ URL is still using a reference number — fill in the <strong>event date</strong> and <strong>couple names</strong> in Edit.
                                      </p>
                                    )}
                                </td>

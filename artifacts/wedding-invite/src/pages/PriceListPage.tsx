@@ -33,7 +33,7 @@ import type { PricingPackage } from "@workspace/api-client-react";
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
-  { label: "PRICE LIST", href: "/pricing" },
+  { label: "PACKAGES", href: "/pricing" },
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
   { label: "FOR BUSINESS", href: "/for-business" },
@@ -206,7 +206,7 @@ export default function PriceListPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <SiteHeader
         navItems={NAV_ITEMS}
-        activeLabel="PRICE LIST"
+        activeLabel="PACKAGES"
         navOpen={navOpen}
         setNavOpen={setNavOpen}
         rightSlot={

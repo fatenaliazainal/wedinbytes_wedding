@@ -20,7 +20,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
-  { label: "PRICE LIST", href: "/pricing" },
+  { label: "PACKAGES", href: "/pricing" },
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
   { label: "FOR BUSINESS", href: "/for-business" },

@@ -32,7 +32,7 @@ type PublicRsvpData = {
 const navItems: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
-  { label: "PRICE LIST", href: "/pricing" },
+  { label: "PACKAGES", href: "/pricing" },
   { label: "FAQs", href: "/faq" },
 ];
 

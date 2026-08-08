@@ -85,7 +85,7 @@ export default function RsvpDashboardPage() {
 
   const navItems: SiteNavItem[] = [
     { label: "HOME", href: "/" }, { label: "CATALOG", href: "/weddingcards/home" },
-    { label: "PRICE LIST", href: "/pricing" }, { label: "FAQs", href: "/faq" }, { label: "REVIEWS", href: "/reviews" },
+    { label: "PACKAGES", href: "/pricing" }, { label: "FAQs", href: "/faq" }, { label: "REVIEWS", href: "/reviews" },
   ];
 
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

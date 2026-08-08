@@ -82,7 +82,7 @@ const INVITATION_FIELDS = new Set([
   "hostCount", "schedule", "itinerary", "galleryImages",
   "venueWazeUrl",
   "rsvpEnabled", "rsvpAdditionalInfo", "rsvpDeadline", "rsvpIntroText", "rsvpFormNote",
-  "rsvpMaxOverallGuests", "rsvpMaxGuestsPerInvitation", "rsvpTimeSlots",
+  "rsvpMaxOverallGuests", "rsvpMaxGuestsPerInvitation", "rsvpTimeSlots", "rsvpEmail",
   "designCode", "openingAnimation", "openButtonText", "colorPrimary", "colorSecondary",
   "colorBackground", "colorCard", "nameFontFamily", "nameFontSize", "badgeFontSize",
   "nameColor", "bodyFontFamily", "musicUrl", "musicTitle", "musicArtist",

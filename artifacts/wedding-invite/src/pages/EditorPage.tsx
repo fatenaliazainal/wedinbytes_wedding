@@ -277,6 +277,7 @@ interface InvData {
   rsvpMaxOverallGuests: number;
   rsvpMaxGuestsPerInvitation: number;
   rsvpTimeSlots: string;
+  rsvpEmail: string;
   overlayEnabled: boolean;
   showFooter: boolean;
   footerText: string;
@@ -412,10 +413,12 @@ function isEventDatePassed(eventDate: string | null | undefined): boolean {
 function Field({
   label,
   required,
+  hint,
   children,
 }: {
   label: string;
   required?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -424,6 +427,7 @@ function Field({
         {label}
         {required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
+      {hint && <p className="text-xs text-gray-400">{hint}</p>}
       {children}
     </div>
   );
@@ -485,11 +489,14 @@ export default function EditorPage({
       // Demo editor shows every tab so the admin can populate all premium
       // feature content that will be displayed in the public catalog preview.
       if (mode === "demo") return true;
+      // No package selected yet (loading or unset) — show all tabs so the
+      // buyer can explore everything while the package resolves.
+      if ((mode === "buyer" || mode === "business") && activePackageId === null) return true;
       const required = TAB_FEATURE_MAP[tab.id];
       if (!required) return true; // base tab always visible
       return required.some((name) => activeFeatureNames.has(name));
     });
-  }, [activeFeatureNames, mode]);
+  }, [activeFeatureNames, activePackageId, mode]);
 
   const [inv, setInv] = useState<InvData>({
     id: 0,
@@ -572,6 +579,7 @@ export default function EditorPage({
     rsvpMaxOverallGuests: 1000,
     rsvpMaxGuestsPerInvitation: 10,
     rsvpTimeSlots: "",
+    rsvpEmail: "",
     overlayEnabled: true,
     showFooter: true,
     footerText: "Dapatkan kad digital anda di:",
@@ -994,6 +1002,7 @@ export default function EditorPage({
             rsvpMaxOverallGuests: d.rsvpMaxOverallGuests ?? 1000,
             rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
             rsvpTimeSlots: d.rsvpTimeSlots ?? "",
+            rsvpEmail: d.rsvpEmail ?? "",
             // Buyer editors always inherit the current Admin footer defaults.
             overlayEnabled: d.overlayEnabled ?? true,
             showFooter:
@@ -1511,6 +1520,7 @@ export default function EditorPage({
         rsvpMaxOverallGuests: inv.rsvpMaxOverallGuests,
         rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
         rsvpTimeSlots: inv.rsvpTimeSlots || null,
+        rsvpEmail: inv.rsvpEmail || null,
         packageId: activePackageId ?? null,
         // Buyer design overrides are stored per invitation, never in the global template.
         designCode: design.designCode || null,
@@ -3131,6 +3141,20 @@ export default function EditorPage({
                           Number(e.target.value) || 1,
                         ),
                       }))
+                    }
+                  />
+                </Field>
+                <Field
+                  label="Email Notifikasi RSVP"
+                  hint="Salinan RSVP akan dihantar ke email ini"
+                >
+                  <input
+                    type="email"
+                    className={inputCls}
+                    placeholder="contoh@email.com"
+                    value={inv.rsvpEmail}
+                    onChange={(e) =>
+                      setInv((p) => ({ ...p, rsvpEmail: e.target.value }))
                     }
                   />
                 </Field>
