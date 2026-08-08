@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, Mail, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -75,8 +75,8 @@ export default function ContactPage() {
               rel="noreferrer"
               className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 shadow-sm">
-                <MessageCircle size={22} strokeWidth={1.8} />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 shadow-sm">
+                <img src="/icons/whatsapp2.png" alt="WhatsApp" className="h-6 w-6 object-contain" />
               </div>
               <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
               <p className="mt-1 text-xs text-gray-500">+{WHATSAPP_NUMBER}</p>
@@ -87,8 +87,8 @@ export default function ContactPage() {
               href={`mailto:${SUPPORT_EMAIL}`}
               className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-sm">
-                <Mail size={22} strokeWidth={1.8} />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 shadow-sm">
+                <img src="/icons/email2.png" alt="Email" className="h-6 w-6 object-contain" />
               </div>
               <p className="text-sm font-semibold text-gray-900">Email</p>
               <p className="mt-1 text-xs text-gray-500">{SUPPORT_EMAIL}</p>
