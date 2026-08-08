@@ -1019,7 +1019,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           {inv.showFooter !== false && (
             <div className={detailBlock}>
               <OrnamentDivider />
-              <div className="text-center space-y-3" style={{ zoom: 0.6 }}>
+              <div className="text-center space-y-3" style={{ zoom: 0.66 }}>
                 <p className="text-sm text-foreground/70" style={{ fontFamily: bodyFontFamily }}>
                   {(inv.footerText as string) || t.footerTextDefault}
                 </p>
@@ -1042,7 +1042,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-foreground/70 hover:text-primary transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#3d5a3e] hover:opacity-80 transition-opacity"
                         aria-label={link.platform}
                       >
                         <SocialIcon platform={link.platform} />
@@ -1061,17 +1061,13 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
 function SocialIcon({ platform }: { platform: string }) {
   const p = platform.toLowerCase();
-  const imgCls = "w-6 h-6 object-contain";
-  if (p === "instagram") return <img src="/icons/instagram.png" alt="Instagram" className={imgCls} />;
-  if (p === "tiktok")    return <img src="/icons/tiktok.png"    alt="TikTok"    className={imgCls} />;
-  if (p === "threads")   return <img src="/icons/threads.jpg"   alt="Threads"   className={imgCls + " rounded-full"} />;
+  const imgCls = "w-5 h-5 object-contain brightness-0 invert";
+  if (p === "instagram") return <img src="/icons/instagram2.png" alt="Instagram" className={imgCls} />;
+  if (p === "tiktok")    return <img src="/icons/tiktok2.png"    alt="TikTok"    className={imgCls} />;
+  if (p === "threads")   return <img src="/icons/threads2.png"   alt="Threads"   className={imgCls} />;
+  if (p === "whatsapp")  return <img src="/icons/whatsapp2.png"  alt="WhatsApp"  className={imgCls} />;
   if (p === "website" || p === "brand" || p === "logo" || p === "wedinstudio" || p === "wedinbytes" /* legacy */) {
-    return (
-      <svg viewBox="0 0 40 40" className="w-6 h-6" aria-hidden="true">
-        <rect x="4" y="12" width="32" height="16" rx="2" fill="currentColor" />
-        <text x="20" y="23.5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white">M</text>
-      </svg>
-    );
+    return <img src="/icons/globe2.png" alt="Website" className={imgCls} />;
   }
-  return <span className="w-6 h-6 flex items-center justify-center text-xs font-bold">{platform[0]?.toUpperCase()}</span>;
+  return <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-white">{platform[0]?.toUpperCase()}</span>;
 }
