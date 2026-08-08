@@ -10,6 +10,8 @@ interface RsvpNotificationPayload {
   invitationTitle?: string | null;
 }
 
+const SITE_URL = "https://wedinstudio.com";
+
 /**
  * Send an RSVP notification email to the couple's email address.
  * Reads RESEND_API_KEY from process.env — never exposed to the frontend.
@@ -24,59 +26,86 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
 
   const { to, guestName, attending, numberOfGuests, timeSlot, message, invitationTitle } = payload;
 
-  const attendingLabel = attending ? "Hadir" : "Tidak Hadir";
-  const title = invitationTitle || "Majlis Anda";
+  const attendingLabel = attending ? "Attending" : "Not Attending";
 
   // ── HTML version ──────────────────────────────────────────────────────────
   const rows: string[] = [];
-  rows.push(row("Nama", esc(guestName), true));
-  rows.push(row("Kehadiran", attendingLabel, false));
-  if (attending) rows.push(row("Bilangan Tetamu", `${numberOfGuests} orang`, true));
-  if (timeSlot) rows.push(row("Slot Masa", esc(timeSlot), attending ? false : true));
-  if (message) rows.push(row("Ucapan", esc(message), true, true));
+  rows.push(row("Name", esc(guestName), true));
+  rows.push(row("Attendance", attendingLabel, false));
+  if (attending) rows.push(row("Number of Guests", `${numberOfGuests}`, true));
+  if (timeSlot) rows.push(row("Time Slot", esc(timeSlot), attending ? false : true));
+  if (message) rows.push(row("Message / Wishes", esc(message), true, true));
 
   const htmlBody = `<!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 0;">
     <tr><td align="center">
       <table role="presentation" width="480" cellpadding="0" cellspacing="0"
              style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:480px;width:100%;">
+
         <!-- header -->
         <tr>
-          <td style="background:#3d5a3e;padding:24px 32px;">
+          <td style="background:#3d5a3e;padding:28px 32px;">
             <p style="margin:0;font-size:11px;letter-spacing:2px;color:#a8c5a0;text-transform:uppercase;">Wedinstudio</p>
-            <h1 style="margin:8px 0 0;font-size:20px;color:#ffffff;font-weight:600;">RSVP Baru Diterima</h1>
+            <h1 style="margin:10px 0 0;font-size:22px;color:#ffffff;font-weight:600;line-height:1.3;">
+              You've Received a New RSVP
+            </h1>
           </td>
         </tr>
+
         <!-- intro -->
         <tr>
-          <td style="padding:24px 32px 8px;">
-            <p style="margin:0;font-size:14px;color:#555;">
-              Tetamu baru telah menghantar RSVP untuk <strong>${esc(title)}</strong>.
+          <td style="padding:24px 32px 12px;">
+            <p style="margin:0;font-size:15px;color:#444;line-height:1.6;">
+              A guest has just responded to your wedding invitation${invitationTitle ? ` for <strong>${esc(invitationTitle)}</strong>` : ""}.
             </p>
           </td>
         </tr>
-        <!-- table -->
+
+        <!-- guest details heading -->
         <tr>
-          <td style="padding:8px 32px 24px;">
+          <td style="padding:0 32px 8px;">
+            <p style="margin:0;font-size:11px;letter-spacing:1.5px;color:#3d5a3e;text-transform:uppercase;font-weight:700;">
+              Guest Details
+            </p>
+          </td>
+        </tr>
+
+        <!-- detail table -->
+        <tr>
+          <td style="padding:0 32px 28px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                    style="border-collapse:collapse;font-size:14px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
               ${rows.join("")}
             </table>
           </td>
         </tr>
+
+        <!-- divider -->
+        <tr><td style="height:1px;background:#f0f0f0;"></td></tr>
+
         <!-- footer -->
         <tr>
-          <td style="padding:16px 32px 24px;border-top:1px solid #f0f0f0;">
-            <p style="margin:0;font-size:12px;color:#aaa;">
-              Emel ini dihantar secara automatik oleh sistem Wedinstudio.
-              Sila jangan balas emel ini.
+          <td style="padding:24px 32px 28px;text-align:center;">
+            <p style="margin:0 0 6px;font-size:14px;color:#555;line-height:1.6;">
+              Thank you for choosing Wedinstudio to be part of your special day.
             </p>
+            <p style="margin:0 0 16px;font-size:14px;color:#555;">
+              With love,<br>
+              <strong style="color:#3d5a3e;">Wedinstudio</strong>
+            </p>
+            <a href="${SITE_URL}"
+               style="display:inline-block;font-size:12px;color:#3d5a3e;text-decoration:none;border:1px solid #3d5a3e;border-radius:20px;padding:6px 18px;letter-spacing:0.5px;">
+              wedinstudio.com
+            </a>
+            <p style="margin:16px 0 0;font-size:12px;color:#bbb;">Digital Wedding Invitations</p>
           </td>
         </tr>
+
       </table>
+      <p style="margin:16px 0 0;font-size:11px;color:#aaa;">This email was sent automatically. Please do not reply.</p>
     </td></tr>
   </table>
 </body>
@@ -84,15 +113,29 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
 
   // ── Plain-text version (important for deliverability) ─────────────────────
   const textLines: string[] = [
-    `RSVP Baru — ${title}`,
-    `${"─".repeat(40)}`,
-    `Nama        : ${guestName}`,
-    `Kehadiran   : ${attendingLabel}`,
+    "You've Received a New RSVP",
+    "─".repeat(40),
+    "",
+    `A guest has just responded to your wedding invitation${invitationTitle ? ` for ${invitationTitle}` : ""}.`,
+    "",
+    "Guest Details",
+    `Name             : ${guestName}`,
+    `Attendance       : ${attendingLabel}`,
   ];
-  if (attending) textLines.push(`Bil. Tetamu : ${numberOfGuests} orang`);
-  if (timeSlot) textLines.push(`Slot Masa   : ${timeSlot}`);
-  if (message) textLines.push(`Ucapan      :\n${message}`);
-  textLines.push("", "Emel ini dihantar secara automatik oleh Wedinstudio.");
+  if (attending) textLines.push(`Number of Guests : ${numberOfGuests}`);
+  if (timeSlot) textLines.push(`Time Slot        : ${timeSlot}`);
+  if (message) textLines.push(`Message / Wishes :\n${message}`);
+  textLines.push(
+    "",
+    "Thank you for choosing Wedinstudio to be part of your special day.",
+    "",
+    "With love,",
+    "Wedinstudio",
+    SITE_URL,
+    "Digital Wedding Invitations",
+    "",
+    "This email was sent automatically. Please do not reply.",
+  );
   const textBody = textLines.join("\n");
 
   const resend = new Resend(apiKey);
@@ -101,7 +144,7 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
       from: "Wedinstudio <noreply@wedinstudio.com>",
       reply_to: "noreply@wedinstudio.com",
       to: [to],
-      subject: `RSVP: ${guestName} — ${attendingLabel} | ${title}`,
+      subject: `You've Received a New RSVP — ${guestName}`,
       html: htmlBody,
       text: textBody,
     });
