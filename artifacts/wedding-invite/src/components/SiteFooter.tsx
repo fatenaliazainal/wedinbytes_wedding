@@ -3,12 +3,12 @@ import { useLocation } from "wouter";
 import logo from "@assets/logo-wedinstudio.png";
 
 const SOCIAL_ICONS = [
-  { src: "/icons/instagram.png", label: "Instagram" },
-  { src: "/icons/threads.png",   label: "Threads"   },
-  { src: "/icons/tiktok.png",    label: "TikTok"    },
-  { src: "/icons/whatsapp.png",  label: "WhatsApp"  },
-  { src: "/icons/globe.png",     label: "Website"   },
-  { src: "/icons/email.png",     label: "Email"     },
+  { src: "/icons/instagram2.png", label: "Instagram" },
+  { src: "/icons/threads2.png",   label: "Threads"   },
+  { src: "/icons/tiktok2.png",    label: "TikTok"    },
+  { src: "/icons/whatsapp2.png",  label: "WhatsApp"  },
+  { src: "/icons/globe2.png",     label: "Website"   },
+  { src: "/icons/email2.png",     label: "Email"     },
 ];
 
 export default function SiteFooter() {
