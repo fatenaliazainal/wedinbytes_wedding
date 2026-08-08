@@ -1042,7 +1042,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#3d5a3e] hover:opacity-80 transition-opacity"
+                        className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary hover:opacity-80 transition-opacity"
                         aria-label={link.platform}
                       >
                         <SocialIcon platform={link.platform} />
