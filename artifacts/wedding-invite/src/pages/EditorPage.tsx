@@ -278,6 +278,7 @@ interface InvData {
   rsvpMaxGuestsPerInvitation: number;
   rsvpTimeSlots: string;
   rsvpEmail: string;
+  rsvpEmailNotification: boolean;
   overlayEnabled: boolean;
   showFooter: boolean;
   footerText: string;
@@ -583,6 +584,7 @@ export default function EditorPage({
     rsvpMaxGuestsPerInvitation: 10,
     rsvpTimeSlots: "",
     rsvpEmail: "",
+    rsvpEmailNotification: true,
     overlayEnabled: true,
     showFooter: true,
     footerText: "Dapatkan kad digital anda di:",
@@ -1006,6 +1008,7 @@ export default function EditorPage({
             rsvpMaxGuestsPerInvitation: d.rsvpMaxGuestsPerInvitation ?? 10,
             rsvpTimeSlots: d.rsvpTimeSlots ?? "",
             rsvpEmail: d.rsvpEmail ?? "",
+            rsvpEmailNotification: d.rsvpEmailNotification ?? true,
             // Buyer editors always inherit the current Admin footer defaults.
             overlayEnabled: d.overlayEnabled ?? true,
             showFooter:
@@ -1539,6 +1542,7 @@ export default function EditorPage({
         rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
         rsvpTimeSlots: inv.rsvpTimeSlots || null,
         rsvpEmail: inv.rsvpEmail || null,
+        rsvpEmailNotification: inv.rsvpEmailNotification,
         // Paid / customer-order invitations must save with their locked package,
         // even when the editor is showing a preview package via ?package= param.
         packageId: packageLocked
@@ -3180,6 +3184,40 @@ export default function EditorPage({
                     }
                   />
                 </Field>
+                {inv.rsvpEmail && (
+                  <Field
+                    label="Hantar Email Notifikasi"
+                    hint="Nyahaktif untuk berhenti terima email apabila tetamu RSVP"
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setInv((p) => ({
+                            ...p,
+                            rsvpEmailNotification: !p.rsvpEmailNotification,
+                          }))
+                        }
+                        className={[
+                          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none",
+                          inv.rsvpEmailNotification ? "bg-[#3d5a3e]" : "bg-gray-200",
+                        ].join(" ")}
+                        role="switch"
+                        aria-checked={inv.rsvpEmailNotification}
+                      >
+                        <span
+                          className={[
+                            "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
+                            inv.rsvpEmailNotification ? "translate-x-5" : "translate-x-0",
+                          ].join(" ")}
+                        />
+                      </button>
+                      <span className="text-xs text-gray-500">
+                        {inv.rsvpEmailNotification ? "Aktif" : "Tidak aktif"}
+                      </span>
+                    </div>
+                  </Field>
+                )}
               </div>
             )}
 

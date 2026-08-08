@@ -294,10 +294,11 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
 
     // Fire-and-forget RSVP notification email — never blocks the RSVP response.
-    // Only send for paid (isPurchased) + admin-active (websiteStatus === "ACTIVE") invitations.
+    // Only send when: paid + admin-active + couple has opted in (rsvpEmailNotification !== false).
     // Unpaid (preview) and admin-disabled invitations are intentionally excluded.
     const isPaidAndActive = invitation.isPurchased && invitation.websiteStatus === "ACTIVE";
-    if (invitation.rsvpEmail && isPaidAndActive) {
+    const emailOptedIn = invitation.rsvpEmailNotification !== false;
+    if (invitation.rsvpEmail && isPaidAndActive && emailOptedIn) {
       sendRsvpNotification({
         to: invitation.rsvpEmail,
         guestName: name,

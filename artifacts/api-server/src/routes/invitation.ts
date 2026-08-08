@@ -62,7 +62,7 @@ const ALLOWED_FIELDS = [
   // RSVP settings
   "rsvpEnabled","rsvpAdditionalInfo","rsvpDeadline",
   "rsvpIntroText","rsvpFormNote",
-  "rsvpMaxOverallGuests","rsvpMaxGuestsPerInvitation","rsvpTimeSlots","rsvpEmail",
+  "rsvpMaxOverallGuests","rsvpMaxGuestsPerInvitation","rsvpTimeSlots","rsvpEmail","rsvpEmailNotification",
   // Buyer design overrides
   "designCode","openingAnimation","openButtonText","waxSealId",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard","colorForeground","colorHeading","colorMuted",
