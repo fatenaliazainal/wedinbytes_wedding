@@ -5,10 +5,12 @@ import pinoHttp from "pino-http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import path from "node:path";
+import fs from "node:fs";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { globalRateLimit, uploadConcurrencyGuard } from "./lib/security";
+import { findBySlug, findByToken, injectOgTags } from "./lib/og-meta";
 
 const PgSession = connectPgSimple(session);
 
@@ -129,6 +131,49 @@ if (process.env.NODE_ENV === "production") {
     __dirname,
     "../../wedding-invite/dist/public/index.html",
   );
+  // Read base HTML once at startup — injectOgTags returns a modified copy per request.
+  let baseHtml: string;
+  try {
+    baseHtml = fs.readFileSync(frontendIndex, "utf8");
+  } catch {
+    baseHtml = "";
+  }
+
+  const serveWithOg = (html: string, res: express.Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store"); // OG content is dynamic per invitation
+    res.send(html);
+  };
+
+  // ── /invite/:dateCode/:slug — pretty public URL ──────────────────────────
+  app.get("/invite/:dateCode/:slug", async (req, res, next) => {
+    if (!baseHtml) return next();
+    try {
+      const data = await findBySlug(req.params.dateCode, req.params.slug);
+      if (!data) return next(); // invitation not found — fall through to generic 404 SPA
+      const canonicalUrl = `https://wedinstudio.com/invite/${req.params.dateCode}/${req.params.slug}`;
+      const html = injectOgTags(baseHtml, data, canonicalUrl);
+      serveWithOg(html, res);
+    } catch {
+      next();
+    }
+  });
+
+  // ── /invite/:token — internal token URL ──────────────────────────────────
+  app.get("/invite/:token", async (req, res, next) => {
+    if (!baseHtml) return next();
+    try {
+      const data = await findByToken(req.params.token);
+      if (!data) return next();
+      const canonicalUrl = `https://wedinstudio.com/invite/${req.params.token}`;
+      const html = injectOgTags(baseHtml, data, canonicalUrl);
+      serveWithOg(html, res);
+    } catch {
+      next();
+    }
+  });
+
+  // ── Generic SPA fallback ──────────────────────────────────────────────────
   app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
     res.sendFile(frontendIndex);
   });
