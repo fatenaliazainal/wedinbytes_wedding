@@ -57,10 +57,7 @@ export default function ContactPage() {
           <div className="text-sm leading-7 text-gray-800">
 
             {/* HQ heading */}
-            <p className="mb-4 font-bold text-gray-900">Wedinstudio HQ</p>
-
-            {/* Company reg */}
-            <p className="text-gray-700">WEDINBYTES ENTERPRISE (IP0629841-X)</p>
+            <p className="mb-4 font-bold text-gray-900">WEDINBYTES ENTERPRISE (IP0629841-X)</p>
 
             {/* Spacer */}
             <div className="mt-5" />
