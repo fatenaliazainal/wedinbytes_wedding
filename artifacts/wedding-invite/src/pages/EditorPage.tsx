@@ -477,6 +477,9 @@ export default function EditorPage({
   const { data: activeDesign } = useGetActiveDesign();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
+  // Tracks the locked paid/assigned package so saves always use it even when
+  // the editor is previewing a different package via ?package= URL param.
+  const paidPackageIdRef = useRef<number | null>(null);
 
   const activePackage = packages.find((p) => p.id === activePackageId);
   const activeFeatureNames = useMemo(
@@ -1325,8 +1328,12 @@ export default function EditorPage({
           }
         }
 
-        // Business order-form invitations and paid invitations keep their
-        // assigned package.
+        // Resolve which package to display in the editor.
+        // The ?package= URL param (set by the pricing page) always wins for
+        // the tab display so buyers can preview any package's feature set.
+        // For paid / customer-order invitations we remember the locked
+        // package in a ref so that saves always use the correct package,
+        // even when the editor is showing a different package for preview.
         if (
           (mode === "buyer" || mode === "business") &&
           loadedPackages.length > 0
@@ -1334,17 +1341,28 @@ export default function EditorPage({
           const urlPackage = new URLSearchParams(window.location.search).get(
             "package",
           );
-          const pkgId =
+          const isPaidOrCustomer = !!(
             loadedInv?.isCustomerOrder || loadedInv?.isPurchased
+          );
+
+          // Persist the locked package so handleSave can always use it.
+          if (isPaidOrCustomer && loadedInv?.packageId != null) {
+            paidPackageIdRef.current = loadedInv.packageId;
+          }
+
+          // Display package: URL param > paid/saved package > first active.
+          const pkgId = urlPackage
+            ? parseInt(urlPackage, 10)
+            : isPaidOrCustomer
               ? (loadedInv.packageId ?? null)
-              : urlPackage
-                ? parseInt(urlPackage, 10)
-                : (loadedInv?.packageId ?? null);
+              : (loadedInv?.packageId ?? null);
+
           const resolvedPkg =
-            loadedInv?.isCustomerOrder || loadedInv?.isPurchased
-              ? loadedPackages.find((p) => p.id === pkgId)
-              : loadedPackages.find((p) => p.id === pkgId && p.isActive) ||
-                loadedPackages.find((p) => p.isActive);
+            loadedPackages.find((p) => p.id === pkgId && p.isActive) ||
+            (isPaidOrCustomer && !urlPackage
+              ? loadedPackages.find((p) => p.id === pkgId) // allow inactive paid pkg
+              : null) ||
+            (!urlPackage ? loadedPackages.find((p) => p.isActive) : null);
           setActivePackageId(resolvedPkg?.id ?? null);
         }
       } catch {
@@ -1521,7 +1539,11 @@ export default function EditorPage({
         rsvpMaxGuestsPerInvitation: inv.rsvpMaxGuestsPerInvitation,
         rsvpTimeSlots: inv.rsvpTimeSlots || null,
         rsvpEmail: inv.rsvpEmail || null,
-        packageId: activePackageId ?? null,
+        // Paid / customer-order invitations must save with their locked package,
+        // even when the editor is showing a preview package via ?package= param.
+        packageId: packageLocked
+          ? (paidPackageIdRef.current ?? activePackageId ?? null)
+          : (activePackageId ?? null),
         // Buyer design overrides are stored per invitation, never in the global template.
         designCode: design.designCode || null,
         openingAnimation: design.openingAnimation || null,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -29,6 +29,8 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import type { PricingPackage } from "@workspace/api-client-react";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -71,6 +73,7 @@ function PricingCard({
   badge,
   highlighted = false,
   onChoose,
+  chooseLabel,
 }: {
   name: string;
   price: string;
@@ -83,6 +86,7 @@ function PricingCard({
   badge?: string;
   highlighted?: boolean;
   onChoose: () => void;
+  chooseLabel?: string;
 }) {
   // Business accounts see their dedicated price (if set); fall back to buyer price
   const effectivePrice = (isBusinessAccount && businessPrice) ? businessPrice : price;
@@ -172,7 +176,7 @@ function PricingCard({
             : "bg-gray-900 text-white hover:bg-gray-800"
         }`}
       >
-        Choose {name}
+        {chooseLabel ?? `Choose ${name}`}
       </button>
     </div>
   );
@@ -183,6 +187,27 @@ export default function PriceListPage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
   const { data: packages = [], isLoading, isError } = useListPricing();
+
+  // Track the logged-in buyer's paid invitation (if any) so we can show the
+  // right button label on each package card.
+  const [paidInv, setPaidInv] = useState<{
+    packageId: number | null;
+    token: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!user) { setPaidInv(null); return; }
+    fetch(`${BASE}/api/invitations-by-user/${user.id}`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: { isPurchased?: boolean; packageId?: number | null; token?: string }[]) => {
+        const paid = rows.find((r) => r.isPurchased);
+        setPaidInv(paid ? { packageId: paid.packageId ?? null, token: paid.token ?? "" } : null);
+      })
+      .catch(() => setPaidInv(null));
+  }, [user]);
 
   function goToEditor(packageId?: number, designCode?: string) {
     const params = new URLSearchParams();
@@ -298,22 +323,40 @@ export default function PriceListPage() {
               <div className="py-16 text-center text-sm text-gray-400">No pricing packages available.</div>
             ) : (
               <div className={`grid gap-4 lg:gap-5 items-stretch ${sortedPackages.length === 1 ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-2"}`}>
-                {sortedPackages.map((pkg) => (
-                  <PricingCard
-                    key={pkg.id}
-                    name={pkg.name}
-                    price={pkg.price}
-                    businessPrice={(pkg as any).businessPrice}
-                    isBusinessAccount={user?.role === "business_account"}
-                    promoPrice={pkg.promoPrice}
-                    isPromoActive={pkg.isPromoActive}
-                    description={pkg.description || "Everything you need for a beautiful and memorable digital wedding invitation."}
-                    features={(pkg.features ?? []).map((f) => ({ icon: resolveIcon(f.icon), label: f.name }))}
-                    badge={pkg.showBadge ? pkg.badgeText : undefined}
-                    highlighted={pkg.isFeatured}
-                    onChoose={() => goToEditor(pkg.id)}
-                  />
-                ))}
+                {sortedPackages.map((pkg) => {
+                  // If the buyer already paid for THIS package, go straight to their editor.
+                  // If they paid for a DIFFERENT package, still let them preview this one.
+                  const isOwnedPackage = paidInv?.packageId === pkg.id;
+                  const chooseLabel = isOwnedPackage
+                    ? "Edit My Invitation"
+                    : paidInv
+                      ? `Preview ${pkg.name}`
+                      : undefined; // default "Choose <name>"
+                  return (
+                    <PricingCard
+                      key={pkg.id}
+                      name={pkg.name}
+                      price={pkg.price}
+                      businessPrice={(pkg as any).businessPrice}
+                      isBusinessAccount={user?.role === "business_account"}
+                      promoPrice={pkg.promoPrice}
+                      isPromoActive={pkg.isPromoActive}
+                      description={pkg.description || "Everything you need for a beautiful and memorable digital wedding invitation."}
+                      features={(pkg.features ?? []).map((f) => ({ icon: resolveIcon(f.icon), label: f.name }))}
+                      badge={pkg.showBadge ? pkg.badgeText : undefined}
+                      highlighted={pkg.isFeatured}
+                      chooseLabel={chooseLabel}
+                      onChoose={() => {
+                        if (isOwnedPackage && paidInv?.token) {
+                          // Take them directly to their existing invitation in the editor.
+                          navigate(`/editor?token=${encodeURIComponent(paidInv.token)}`);
+                        } else {
+                          goToEditor(pkg.id);
+                        }
+                      }}
+                    />
+                  );
+                })}
               </div>
             )}
 
