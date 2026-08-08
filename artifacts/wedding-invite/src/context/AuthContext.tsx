@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ email, password, name, accountType }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Pendaftaran gagal.");
+    if (!res.ok) throw new Error(data.error || "Registration failed.");
     setUser(data);
   };
 

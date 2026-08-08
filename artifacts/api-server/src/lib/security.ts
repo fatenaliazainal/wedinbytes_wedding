@@ -56,7 +56,7 @@ export const passwordResetRequestRateLimit = rateLimit({
   limit: 5,
   standardHeaders: "draft-8",
   legacyHeaders: false,
-  message: { error: "Terlalu banyak permintaan reset kata laluan. Sila cuba lagi kemudian." },
+  message: { error: "Too many password reset requests. Please try again later." },
 });
 
 export const passwordResetRateLimit = rateLimit({
@@ -64,7 +64,7 @@ export const passwordResetRateLimit = rateLimit({
   limit: 10,
   standardHeaders: "draft-8",
   legacyHeaders: false,
-  message: { error: "Terlalu banyak cubaan reset kata laluan. Sila cuba lagi kemudian." },
+  message: { error: "Too many password reset attempts. Please try again later." },
 });
 
 export const pinUnlockRateLimit = rateLimit({
@@ -166,7 +166,7 @@ const MAX_CONCURRENT_UPLOADS = 10;
 
 export const uploadConcurrencyGuard: RequestHandler = (_req, res, next) => {
   if (_activeUploads >= MAX_CONCURRENT_UPLOADS) {
-    res.status(503).json({ error: "Server terlalu sibuk memproses fail. Sila cuba lagi sebentar." });
+    res.status(503).json({ error: "Server is busy processing your file. Please try again shortly." });
     return;
   }
   _activeUploads++;

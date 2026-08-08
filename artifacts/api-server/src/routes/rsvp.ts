@@ -114,7 +114,7 @@ router.get("/rsvp/wishes", wishesRateLimit, async (req, res) => {
 router.get("/rsvp/buyer", async (req, res) => {
   try {
     if (!req.session.userId) {
-      res.status(401).json({ error: "Tidak log masuk." });
+      res.status(401).json({ error: "Not logged in." });
       return;
     }
     const invitations = await db

@@ -27,17 +27,17 @@ router.post("/auth/register", registerRateLimit, async (req, res) => {
       const { email, password, name } = req.body;
       const requestedRole = req.body?.accountType === "business_account" ? "business_account" : "buyer";
     if (!email || !password || !name) {
-      res.status(400).json({ error: "Email, kata laluan dan nama diperlukan." });
+      res.status(400).json({ error: "Email, password and name are required." });
       return;
     }
     if (password.length < 6) {
-      res.status(400).json({ error: "Kata laluan mesti sekurang-kurangnya 6 aksara." });
+      res.status(400).json({ error: "Password must be at least 6 characters." });
       return;
     }
 
     const existing = await db.select().from(userTable).where(eq(userTable.email, email.toLowerCase().trim())).limit(1);
     if (existing.length > 0) {
-      res.status(409).json({ error: "Emel ini sudah didaftarkan." });
+      res.status(409).json({ error: "This email is already registered." });
       return;
     }
 
@@ -55,7 +55,7 @@ router.post("/auth/register", registerRateLimit, async (req, res) => {
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     req.log.error({ err }, "Register failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
@@ -63,19 +63,19 @@ router.post("/auth/login", loginRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).json({ error: "Emel dan kata laluan diperlukan." });
+      res.status(400).json({ error: "Email and password are required." });
       return;
     }
 
     const [user] = await db.select().from(userTable).where(eq(userTable.email, email.toLowerCase())).limit(1);
     if (!user) {
-      res.status(401).json({ error: "Emel atau kata laluan salah." });
+      res.status(401).json({ error: "Incorrect email or password." });
       return;
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      res.status(401).json({ error: "Emel atau kata laluan salah." });
+      res.status(401).json({ error: "Incorrect email or password." });
       return;
     }
 
@@ -85,7 +85,7 @@ router.post("/auth/login", loginRateLimit, async (req, res) => {
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     req.log.error({ err }, "Login failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
@@ -93,11 +93,11 @@ router.post("/auth/forgot-password", passwordResetRequestRateLimit, async (req, 
   try {
     const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
     const genericResponse = {
-      message: "Jika emel ini wujud, pautan reset kata laluan telah dijana.",
+      message: "If this email exists, a password reset link has been sent.",
     };
 
     if (!email) {
-      res.status(400).json({ error: "Emel diperlukan." });
+      res.status(400).json({ error: "Email is required." });
       return;
     }
 
@@ -125,7 +125,7 @@ router.post("/auth/forgot-password", passwordResetRequestRateLimit, async (req, 
     });
   } catch (err) {
     req.log.error({ err }, "Forgot password request failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
@@ -135,11 +135,11 @@ router.post("/auth/reset-password", passwordResetRateLimit, async (req, res) => 
     const password = typeof req.body?.password === "string" ? req.body.password : "";
 
     if (!token || !password) {
-      res.status(400).json({ error: "Token dan kata laluan diperlukan." });
+      res.status(400).json({ error: "Token and password are required." });
       return;
     }
     if (password.length < 6) {
-      res.status(400).json({ error: "Kata laluan mesti sekurang-kurangnya 6 aksara." });
+      res.status(400).json({ error: "Password must be at least 6 characters." });
       return;
     }
 
@@ -150,7 +150,7 @@ router.post("/auth/reset-password", passwordResetRateLimit, async (req, res) => 
     }).from(userTable).where(eq(userTable.passwordResetTokenHash, tokenHash)).limit(1);
 
     if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt.getTime() < Date.now()) {
-      res.status(400).json({ error: "Pautan reset tidak sah atau telah tamat tempoh." });
+      res.status(400).json({ error: "Reset link is invalid or has expired." });
       return;
     }
 
@@ -164,34 +164,34 @@ router.post("/auth/reset-password", passwordResetRateLimit, async (req, res) => 
       .where(eq(userTable.id, user.id));
 
     auditEvent(req, "auth.password_reset", { userId: user.id });
-    res.json({ message: "Kata laluan berjaya dikemaskini." });
+    res.json({ message: "Password updated successfully." });
   } catch (err) {
     req.log.error({ err }, "Password reset failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
 router.get("/auth/me", async (req, res) => {
   try {
     if (!req.session.userId) {
-      res.status(401).json({ error: "Tidak log masuk." });
+      res.status(401).json({ error: "Not logged in." });
       return;
     }
     const [user] = await db.select().from(userTable).where(eq(userTable.id, req.session.userId)).limit(1);
     if (!user) {
-      res.status(401).json({ error: "Pengguna tidak dijumpai." });
+      res.status(401).json({ error: "User not found." });
       return;
     }
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     req.log.error({ err }, "Me failed");
-    res.status(500).json({ error: "Ralat pelayan." });
+    res.status(500).json({ error: "Server error." });
   }
 });
 
 router.patch("/auth/profile", async (req, res) => {
   if (!req.session.userId) {
-    res.status(401).json({ error: "Tidak log masuk." });
+    res.status(401).json({ error: "Not logged in." });
     return;
   }
 
@@ -200,11 +200,11 @@ router.patch("/auth/profile", async (req, res) => {
     const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
 
     if (!name || name.length > 120) {
-      res.status(400).json({ error: "Nama penuh diperlukan dan mestilah tidak melebihi 120 aksara." });
+      res.status(400).json({ error: "Full name is required and must not exceed 120 characters." });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
-      res.status(400).json({ error: "Sila masukkan alamat emel yang sah." });
+      res.status(400).json({ error: "Please enter a valid email address." });
       return;
     }
 
@@ -214,7 +214,7 @@ router.patch("/auth/profile", async (req, res) => {
       .where(eq(userTable.email, email))
       .limit(1);
     if (existing && existing.id !== req.session.userId) {
-      res.status(409).json({ error: "Emel ini sudah digunakan oleh akaun lain." });
+      res.status(409).json({ error: "This email is already used by another account." });
       return;
     }
 
@@ -225,7 +225,7 @@ router.patch("/auth/profile", async (req, res) => {
       .returning({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role });
 
     if (!updated) {
-      res.status(404).json({ error: "Pengguna tidak dijumpai." });
+      res.status(404).json({ error: "User not found." });
       return;
     }
 
@@ -233,13 +233,13 @@ router.patch("/auth/profile", async (req, res) => {
     res.json(updated);
   } catch (err) {
     req.log.error({ err }, "Profile update failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
 router.post("/auth/change-password", async (req, res) => {
   if (!req.session.userId) {
-    res.status(401).json({ error: "Tidak log masuk." });
+    res.status(401).json({ error: "Not logged in." });
     return;
   }
 
@@ -249,19 +249,19 @@ router.post("/auth/change-password", async (req, res) => {
     const confirmPassword = typeof req.body?.confirmPassword === "string" ? req.body.confirmPassword : "";
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      res.status(400).json({ error: "Semua medan kata laluan diperlukan." });
+      res.status(400).json({ error: "All password fields are required." });
       return;
     }
     if (newPassword.length < 6) {
-      res.status(400).json({ error: "Kata laluan baharu mesti sekurang-kurangnya 6 aksara." });
+      res.status(400).json({ error: "New password must be at least 6 characters." });
       return;
     }
     if (newPassword !== confirmPassword) {
-      res.status(400).json({ error: "Pengesahan kata laluan tidak sepadan." });
+      res.status(400).json({ error: "Password confirmation does not match." });
       return;
     }
     if (newPassword === currentPassword) {
-      res.status(400).json({ error: "Kata laluan baharu mesti berbeza daripada kata laluan semasa." });
+      res.status(400).json({ error: "New password must be different from the current password." });
       return;
     }
 
@@ -271,22 +271,22 @@ router.post("/auth/change-password", async (req, res) => {
       .where(eq(userTable.id, req.session.userId))
       .limit(1);
     if (!user) {
-      res.status(404).json({ error: "Pengguna tidak dijumpai." });
+      res.status(404).json({ error: "User not found." });
       return;
     }
 
     if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
-      res.status(400).json({ error: "Kata laluan semasa tidak betul." });
+      res.status(400).json({ error: "Current password is incorrect." });
       return;
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
     await db.update(userTable).set({ passwordHash }).where(eq(userTable.id, user.id));
     auditEvent(req, "auth.password_change", { userId: user.id });
-    res.json({ message: "Kata laluan berjaya dikemaskini." });
+    res.json({ message: "Password updated successfully." });
   } catch (err) {
     req.log.error({ err }, "Password change failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 
@@ -294,7 +294,7 @@ router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
   try {
     const { password } = req.body;
     if (!password) {
-      res.status(400).json({ error: "Kata laluan diperlukan." });
+      res.status(400).json({ error: "Password is required." });
       return;
     }
 
@@ -302,7 +302,7 @@ router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
 
     const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
     if (!user || !valid) {
-      res.status(401).json({ error: "Kata laluan salah." });
+      res.status(401).json({ error: "Incorrect password." });
       return;
     }
 
@@ -312,7 +312,7 @@ router.post("/auth/admin-login", adminLoginRateLimit, async (req, res) => {
     res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     req.log.error({ err }, "Admin login failed");
-    res.status(500).json({ error: "Ralat pelayan. Sila cuba lagi." });
+    res.status(500).json({ error: "Server error. Please try again." });
   }
 });
 

@@ -29,13 +29,13 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Permintaan reset gagal.");
+      if (!response.ok) throw new Error(data.error || "Reset request failed.");
       setMessage(data.message);
       if (data.resetUrl) {
         setResetUrl(data.resetUrl);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Permintaan reset gagal.");
+      setError(err instanceof Error ? err.message : "Reset request failed.");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
       return;
     }
     if (password !== confirmPassword) {
-      setError("Kata laluan dan pengesahan kata laluan tidak sepadan.");
+      setError("Passwords do not match.");
       return;
     }
 
@@ -62,12 +62,12 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Reset kata laluan gagal.");
+      if (!response.ok) throw new Error(data.error || "Password reset failed.");
       setMessage(data.message);
       setPassword("");
       setConfirmPassword("");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Reset kata laluan gagal.");
+      setError(err instanceof Error ? err.message : "Password reset failed.");
     } finally {
       setLoading(false);
     }
