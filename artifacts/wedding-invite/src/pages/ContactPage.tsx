@@ -91,9 +91,9 @@ export default function ContactPage() {
 
             {/* Working hours */}
             <p className="font-bold text-gray-900">WORKING HOURS:</p>
-            <p>Isnin – Jumaat: 9:00pg – 6:00ptg</p>
-            <p>Sabtu – Ahad: Closed</p>
-            <p>Cuti Umum: Closed</p>
+            <p>Monday – Friday: 9:00am – 6:00pm</p>
+            <p>Saturday – Sunday: Closed</p>
+            <p>Public Holiday: Closed</p>
 
           </div>
         </section>
