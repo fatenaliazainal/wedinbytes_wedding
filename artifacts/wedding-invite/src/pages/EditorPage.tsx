@@ -2062,9 +2062,9 @@ export default function EditorPage({
                 style={
                   activeTab === tab.id
                     ? {
-                        backgroundColor: primaryCss,
+                        backgroundColor: "#3d5a3e",
                         color: "#fff",
-                        borderColor: primaryCss,
+                        borderColor: "#3d5a3e",
                       }
                     : {
                         backgroundColor: "#fff",
@@ -4003,7 +4003,7 @@ export default function EditorPage({
                 onClick={handleSave}
                 disabled={saving || customerEditLocked || coverNamesEmpty}
                 className="text-white px-6 py-2.5 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: primaryCss }}
+                style={{ backgroundColor: "#3d5a3e" }}
               >
                 {saving ? "Saving..." : "SAVE"}
               </button>
