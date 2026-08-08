@@ -1,10 +1,9 @@
 import { Router, type IRouter } from "express";
 import { CreateRsvpBody, ListRsvpsResponse, ListRsvpsResponseItem, GetRsvpCountResponse } from "@workspace/api-zod";
-import { db, rsvpTable, invitationTable, userTable } from "@workspace/db";
+import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
 import { auditEvent, canManageInvitation, rsvpSubmitRateLimit, wishesRateLimit, tokenLookupRateLimit } from "../lib/security";
 import { isInvitationExpired } from "../lib/invitation-expiration";
-import { sendRsvpOwnerNotification } from "../lib/resend";
 
 const router: IRouter = Router();
 
@@ -22,7 +21,6 @@ function normalizeRsvpForApi(r: typeof rsvpTable.$inferSelect) {
     ...r,
     timeSlot: r.timeSlot ?? undefined,
     message: r.message ?? undefined,
-    email: r.email ?? undefined,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -293,49 +291,6 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
       .returning();
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
-
-    // Skip notification if owner has not enabled it
-    req.log.info({
-      rsvpNotificationEmailEnabled: invitation.rsvpNotificationEmailEnabled,
-      rsvpNotificationEmail: invitation.rsvpNotificationEmail,
-    }, "RSVP notification check");
-    if (!invitation.rsvpNotificationEmailEnabled) {
-      return res.status(201).json(data);
-    }
-
-    // Notify via rsvpNotificationEmail (set in editor) or fall back to owner account email
-    const groomName = invitation.coverGroomName || invitation.groomName || "";
-    const brideName = invitation.coverBrideName || invitation.brideName || "";
-    Promise.resolve().then(async () => {
-      let notifyEmail: string | null = invitation.rsvpNotificationEmail ?? null;
-      let notifyName = groomName || brideName || "Owner";
-      if (!notifyEmail && invitation.userId) {
-        const [owner] = await db
-          .select({ email: userTable.email, name: userTable.name })
-          .from(userTable)
-          .where(eq(userTable.id, invitation.userId))
-          .limit(1);
-        notifyEmail = owner?.email ?? null;
-        notifyName = owner?.name ?? notifyName;
-      }
-      if (!notifyEmail) return;
-      await sendRsvpOwnerNotification({
-        ownerEmail: notifyEmail,
-        ownerName: notifyName,
-        guestName: name,
-        attending,
-        numberOfGuests,
-        message: message ?? null,
-        groomName,
-        brideName,
-        eventDate: invitation.eventDate ? String(invitation.eventDate) : null,
-        dashboardUrl: "https://wedinstudio.com/dashboard",
-      });
-    }).catch((emailErr: unknown) => {
-      const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
-      req.log.warn({ emailErrMsg: msg }, "RSVP owner notification failed — non-fatal");
-    });
-
     res.status(201).json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to create RSVP");

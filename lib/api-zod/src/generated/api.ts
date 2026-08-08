@@ -465,7 +465,6 @@ export const ListRsvpsResponseItem = zod.object({
   "numberOfGuests": zod.number(),
   "timeSlot": zod.string().optional(),
   "message": zod.string().optional(),
-  "email": zod.string().optional(),
   "createdAt": zod.string()
 })
 export const ListRsvpsResponse = zod.array(ListRsvpsResponseItem)
