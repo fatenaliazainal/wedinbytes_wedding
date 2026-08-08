@@ -1,7 +1,15 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { Facebook, Instagram, Twitter, Youtube, Mail } from "lucide-react";
 import logo from "@assets/logo-wedinstudio.png";
+
+const SOCIAL_ICONS = [
+  { src: "/icons/instagram.png", label: "Instagram" },
+  { src: "/icons/threads.png",   label: "Threads"   },
+  { src: "/icons/tiktok.png",    label: "TikTok"    },
+  { src: "/icons/whatsapp.png",  label: "WhatsApp"  },
+  { src: "/icons/globe.png",     label: "Website"   },
+  { src: "/icons/email.png",     label: "Email"     },
+];
 
 export default function SiteFooter() {
   const [, navigate] = useLocation();
@@ -35,21 +43,15 @@ export default function SiteFooter() {
 
           <div>
             <p className="text-xs font-bold tracking-[0.25em] text-black/45">FOLLOW US</p>
-            <div className="mt-3 flex items-center gap-2.5">
-              {[
-                { icon: Facebook, label: "Facebook" },
-                { icon: Instagram, label: "Instagram" },
-                { icon: Twitter, label: "Twitter" },
-                { icon: Youtube, label: "Youtube" },
-                { icon: Mail, label: "Email" },
-              ].map(({ icon: Icon, label }) => (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {SOCIAL_ICONS.map(({ src, label }) => (
                 <button
                   key={label}
                   type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-black/70 hover:text-black hover:shadow-sm transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white hover:shadow-sm transition-all"
                   aria-label={label}
                 >
-                  <Icon size={15} />
+                  <img src={src} alt={label} className="h-[18px] w-[18px] rounded-sm object-cover" />
                 </button>
               ))}
             </div>
