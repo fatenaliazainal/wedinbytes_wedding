@@ -36,6 +36,15 @@ import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
 import TermsPage from "@/pages/TermsPage";
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.style.overflow = "";
+  }, [location]);
+  return null;
+}
+
 function PublicInvitationRoute() {
   return <InvitationPage />;
 }
@@ -65,6 +74,8 @@ function AdminEditorRedirect() {
 
 function Router() {
   return (
+    <>
+    <ScrollToTop />
     <Switch>
       <Route path="/" component={MarketingHomePage} />
       <Route path="/invite" component={HomePage} />
@@ -101,6 +112,7 @@ function Router() {
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 
