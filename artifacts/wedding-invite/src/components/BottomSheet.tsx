@@ -96,6 +96,7 @@ export function BottomSheet({
         style={{
           maxHeight: "calc(75vh - 76px)",
           paddingBottom: "max(20px, env(safe-area-inset-bottom))",
+          touchAction: "pan-y",
           ...style,
         }}
       >
