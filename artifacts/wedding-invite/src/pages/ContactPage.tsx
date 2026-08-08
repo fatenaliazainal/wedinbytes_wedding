@@ -45,47 +45,59 @@ export default function ContactPage() {
         onDashboardClick={() => { setDrawerOpen(false); navigate(dashboardPathForUser(user)); }}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 bg-[#f9f9f7]">
         <section className="mx-auto max-w-2xl px-6 py-20 sm:py-28">
+
           {/* Title */}
-          <div className="mb-14 text-center">
-            <h1 className="font-serif text-3xl font-normal tracking-widest text-gray-900 sm:text-4xl">
-              CONTACT US
-            </h1>
-            <div className="mx-auto mt-4 h-px w-12 bg-gray-400" />
-          </div>
+          <h1 className="mb-10 text-center font-serif text-3xl font-bold tracking-widest text-gray-900 sm:text-4xl">
+            CONTACT US
+          </h1>
 
           {/* Info block */}
-          <div className="space-y-7 text-sm text-gray-800">
-            {/* Company name */}
-            <p className="text-base font-bold text-gray-900">
-              WEDINBYTES ENTERPRISE&nbsp;
-              <span className="font-normal text-gray-500">(IP0629841-X)</span>
-            </p>
+          <div className="text-sm leading-7 text-gray-800">
+
+            {/* HQ heading */}
+            <p className="mb-4 font-bold text-gray-900">Wedinstudio HQ</p>
+
+            {/* Company reg */}
+            <p className="text-gray-700">WEDINBYTES ENTERPRISE (IP0629841-X)</p>
+
+            {/* Spacer */}
+            <div className="mt-5" />
 
             {/* WhatsApp */}
-            <div>
-              <p className="font-bold text-gray-900">Whatsapp Us</p>
+            <p>
+              WHATSAPP:{" "}
               <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-0.5 inline-block text-gray-700 underline underline-offset-2 hover:text-[#3d5a3e]"
+                className="text-gray-700 hover:text-[#3d5a3e] hover:underline"
               >
                 +{WHATSAPP_NUMBER}
               </a>
-            </div>
+            </p>
 
             {/* Email */}
-            <div>
-              <p className="font-bold text-gray-900">Email Us</p>
+            <p className="italic">
+              EMAIL:{" "}
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="mt-0.5 inline-block text-gray-700 underline underline-offset-2 hover:text-[#3d5a3e]"
+                className="text-gray-700 hover:text-[#3d5a3e] hover:underline"
               >
                 {SUPPORT_EMAIL}
               </a>
-            </div>
+            </p>
+
+            {/* Spacer */}
+            <div className="mt-5" />
+
+            {/* Working hours */}
+            <p className="font-bold text-gray-900">WORKING HOURS:</p>
+            <p>Isnin – Jumaat: 9:00pg – 6:00ptg</p>
+            <p>Sabtu – Ahad: Closed</p>
+            <p>Cuti Umum: Closed</p>
+
           </div>
         </section>
       </main>
