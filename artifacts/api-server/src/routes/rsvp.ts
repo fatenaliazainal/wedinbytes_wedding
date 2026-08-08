@@ -4,6 +4,7 @@ import { db, rsvpTable, invitationTable } from "@workspace/db";
 import { eq, sql, and } from "drizzle-orm";
 import { auditEvent, canManageInvitation, rsvpSubmitRateLimit, wishesRateLimit, tokenLookupRateLimit } from "../lib/security";
 import { isInvitationExpired } from "../lib/invitation-expiration";
+import { sendRsvpNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -291,6 +292,20 @@ router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
       .returning();
     const data = ListRsvpsResponseItem.parse(normalizeRsvpForApi(upserted));
     auditEvent(req, "rsvp.submit", { invitationToken, attending, numberOfGuests });
+
+    // Fire-and-forget RSVP notification email — never blocks the RSVP response.
+    if (invitation.rsvpEmail) {
+      sendRsvpNotification({
+        to: invitation.rsvpEmail,
+        guestName: name,
+        attending,
+        numberOfGuests,
+        timeSlot,
+        message,
+        invitationTitle: invitation.eventTitle ?? null,
+      }).catch((err) => req.log.warn({ err }, "RSVP notification email failed"));
+    }
+
     res.status(201).json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to create RSVP");
