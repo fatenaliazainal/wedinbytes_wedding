@@ -1,4 +1,4 @@
-import { ReplitConnectors } from "@replit/connectors-sdk";
+import { Resend } from "resend";
 
 interface RsvpNotificationPayload {
   to: string;
@@ -12,9 +12,16 @@ interface RsvpNotificationPayload {
 
 /**
  * Send an RSVP notification email to the couple's email address.
- * Errors are caught and logged so a failed email never breaks the RSVP submission.
+ * Reads RESEND_API_KEY from process.env — never exposed to the frontend.
+ * Errors are caught so a failed email never breaks the RSVP submission.
  */
 export async function sendRsvpNotification(payload: RsvpNotificationPayload): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("[email] RESEND_API_KEY not set — skipping RSVP notification email");
+    return;
+  }
+
   const { to, guestName, attending, numberOfGuests, timeSlot, message, invitationTitle } = payload;
 
   const attendingText = attending ? "✅ Hadir" : "❌ Tidak Hadir";
@@ -55,15 +62,11 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
     </div>
   `;
 
-  const connectors = new ReplitConnectors();
-  await connectors.proxy("resend", "/emails", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: "Wedinstudio <noreply@wedinstudio.com>",
-      to: [to],
-      subject: `RSVP Baru: ${guestName} — ${attendingText}`,
-      html: htmlBody,
-    }),
+  const resend = new Resend(apiKey);
+  await resend.emails.send({
+    from: "Wedinstudio <noreply@wedinstudio.com>",
+    to: [to],
+    subject: `RSVP Baru: ${guestName} — ${attendingText}`,
+    html: htmlBody,
   });
 }
