@@ -70,6 +70,14 @@ export default defineConfig({
       strict: true,
     },
     historyApiFallback: true,
+    // Prevent browsers from caching dev server HTML responses.
+    // Without this, a browser that previously received a response with a
+    // Content-Security-Policy header (e.g. from Helmet via the old API-server
+    // proxy) will reuse those cached headers on a 304, blocking module scripts
+    // and producing a blank page.
+    headers: {
+      "Cache-Control": "no-store",
+    },
     proxy: {
       "/api": {
         target: "http://localhost:24366",
