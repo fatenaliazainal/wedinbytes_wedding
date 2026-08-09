@@ -140,7 +140,12 @@ if (process.env.NODE_ENV !== "production") {
       headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
     };
     const proxy = http.request(options, (proxyRes) => {
-      res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
+      // Drop Helmet's restrictive CSP so Vite's inline module scripts can run.
+      res.removeHeader("content-security-policy");
+      res.removeHeader("x-content-type-options");
+      const headers = { ...proxyRes.headers };
+      delete headers["content-security-policy"];
+      res.writeHead(proxyRes.statusCode ?? 200, headers);
       proxyRes.pipe(res, { end: true });
     });
     proxy.on("error", () => {
