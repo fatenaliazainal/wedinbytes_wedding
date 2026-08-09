@@ -8,8 +8,8 @@
  * before serving it.
  */
 
-import { db, invitationTable } from "@workspace/db";
-import { eq, and, or } from "drizzle-orm";
+import { db, invitationTable, cardDesignTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const SITE_URL = "https://wedinstudio.com";
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
@@ -26,87 +26,111 @@ function publicDateCode(eventDate: string | null | undefined): string | null {
 }
 
 interface InvitationOgData {
-  groomName: string;
+  /** Display name — cover name preferred, falls back to main name */
+  groomDisplayName: string;
   brideName: string;
   eventDate: string | null;
-  cardImageUrl: string | null;
+  /** R2 key from card_design.card_image_url for the design used by this invitation */
+  designCardImageUrl: string | null;
   eventTitle: string | null;
+}
+
+const INVITE_SELECT = {
+  coverGroomName: invitationTable.coverGroomName,
+  coverBrideName: invitationTable.coverBrideName,
+  groomName: invitationTable.groomName,
+  brideName: invitationTable.brideName,
+  eventDate: invitationTable.eventDate,
+  eventTitle: invitationTable.eventTitle,
+  designCode: invitationTable.designCode,
+  lockedSlug: invitationTable.lockedSlug,
+} as const;
+
+/**
+ * Resolve the invitation row into display data, joining card_design
+ * to get the card image URL for the OG thumbnail.
+ */
+async function toOgData(row: {
+  coverGroomName: string | null;
+  coverBrideName: string | null;
+  groomName: string | null;
+  brideName: string | null;
+  eventDate: string | null;
+  eventTitle: string | null;
+  designCode: string | null;
+}): Promise<InvitationOgData> {
+  let designCardImageUrl: string | null = null;
+  if (row.designCode) {
+    const designs = await db
+      .select({ cardImageUrl: cardDesignTable.cardImageUrl })
+      .from(cardDesignTable)
+      .where(eq(cardDesignTable.designCode, row.designCode))
+      .limit(1);
+    designCardImageUrl = designs[0]?.cardImageUrl ?? null;
+  }
+
+  return {
+    groomDisplayName: row.coverGroomName || row.groomName || "",
+    brideName: row.coverBrideName || row.brideName || "",
+    eventDate: row.eventDate,
+    designCardImageUrl,
+    eventTitle: row.eventTitle,
+  };
 }
 
 /** Look up invitation by the public slug URL (/invite/:dateCode/:slug) */
 async function findBySlug(dateCode: string, slug: string): Promise<InvitationOgData | null> {
+  const slugify = (s: string | null | undefined) =>
+    (s ?? "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
   // Fast path — paid invitations store lockedSlug
   const byLocked = await db
-    .select({
-      groomName: invitationTable.groomName,
-      brideName: invitationTable.brideName,
-      eventDate: invitationTable.eventDate,
-      cardImageUrl: invitationTable.cardImageUrl,
-      eventTitle: invitationTable.eventTitle,
-      lockedSlug: invitationTable.lockedSlug,
-    })
+    .select(INVITE_SELECT)
     .from(invitationTable)
     .where(eq(invitationTable.lockedSlug, slug))
     .limit(1);
 
   if (byLocked.length && publicDateCode(byLocked[0].eventDate) === dateCode) {
-    return byLocked[0];
+    return toOgData(byLocked[0]);
   }
 
-  // Slow path — scan candidates with matching cover names
-  const candidates = await db
-    .select({
-      groomName: invitationTable.groomName,
-      brideName: invitationTable.brideName,
-      eventDate: invitationTable.eventDate,
-      cardImageUrl: invitationTable.cardImageUrl,
-      eventTitle: invitationTable.eventTitle,
-      coverGroomName: invitationTable.coverGroomName,
-      coverBrideName: invitationTable.coverBrideName,
-      lockedSlug: invitationTable.lockedSlug,
-    })
-    .from(invitationTable);
-
-  const slugify = (s: string | null | undefined) =>
-    (s ?? "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+  // Slow path — scan all invitations for matching dateCode + cover/main names
+  const candidates = await db.select(INVITE_SELECT).from(invitationTable);
 
   const match = candidates.find((c) => {
     if (publicDateCode(c.eventDate) !== dateCode) return false;
-    const gs = slugify(c.coverGroomName);
-    const bs = slugify(c.coverBrideName);
-    return slug === (gs && bs ? `${gs}-${bs}` : gs || bs);
+    const g = slugify(c.coverGroomName || c.groomName);
+    const b = slugify(c.coverBrideName || c.brideName);
+    return slug === (g && b ? `${g}-${b}` : g || b);
   });
 
-  return match ?? null;
+  return match ? toOgData(match) : null;
 }
 
 /** Look up invitation by its internal token (/invite/:token) */
 async function findByToken(token: string): Promise<InvitationOgData | null> {
   if (!token || token === "demo" || token === "demo-en") return null;
   const rows = await db
-    .select({
-      groomName: invitationTable.groomName,
-      brideName: invitationTable.brideName,
-      eventDate: invitationTable.eventDate,
-      cardImageUrl: invitationTable.cardImageUrl,
-      eventTitle: invitationTable.eventTitle,
-    })
+    .select(INVITE_SELECT)
     .from(invitationTable)
     .where(eq(invitationTable.token, token))
     .limit(1);
-  return rows[0] ?? null;
+  if (!rows[0]) return null;
+  return toOgData(rows[0]);
 }
 
-/** Build the public R2 image URL from a stored key */
-function ogImageUrl(cardImageUrl: string | null | undefined): string {
-  if (!cardImageUrl) return FALLBACK_IMAGE;
-  // Keys that start with known card-design prefixes are publicly accessible via /api/r2
-  const publicPrefixes = ["wed_card_design/", "DisplayWebsiteMockup/"];
-  if (publicPrefixes.some((p) => cardImageUrl.startsWith(p))) {
-    return `${SITE_URL}/api/r2?key=${encodeURIComponent(cardImageUrl)}`;
+/** Build the public R2 image URL from a stored card_design key */
+function ogImageUrl(designCardImageUrl: string | null | undefined): string {
+  if (!designCardImageUrl) return FALLBACK_IMAGE;
+  // card_design.card_image_url keys use the wed_card_design/ prefix — publicly accessible via /api/r2
+  if (designCardImageUrl.startsWith("wed_card_design/")) {
+    return `${SITE_URL}/api/r2?key=${encodeURIComponent(designCardImageUrl)}`;
   }
   return FALLBACK_IMAGE;
 }
@@ -138,7 +162,7 @@ export function injectOgTags(
   data: InvitationOgData,
   canonicalUrl: string,
 ): string {
-  const groomName = data.groomName || "";
+  const groomName = data.groomDisplayName || "";
   const brideName = data.brideName || "";
   const couple = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr = formatEventDate(data.eventDate);
@@ -148,7 +172,7 @@ export function injectOgTags(
   const description = couple && dateStr
     ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
     : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
-  const image = ogImageUrl(data.cardImageUrl);
+  const image = ogImageUrl(data.designCardImageUrl);
 
   const replacements: [RegExp, string][] = [
     // <title>
@@ -159,7 +183,7 @@ export function injectOgTags(
     [/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${esc(description)}" />`],
     // og:image
     [/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${esc(image)}" />`],
-    // og:image:width / og:image:height — remove fixed dimensions since R2 images vary
+    // og:image:width / og:image:height — remove fixed dimensions since images vary
     [/<meta property="og:image:width"[^>]*>\s*/, ""],
     [/<meta property="og:image:height"[^>]*>\s*/, ""],
     // og:url
