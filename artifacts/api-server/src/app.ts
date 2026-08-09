@@ -6,6 +6,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import path from "node:path";
 import fs from "node:fs";
+import http from "node:http";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -125,6 +126,49 @@ app.use((req, res, next) => {
 });
 
 app.use("/api", globalRateLimit, router);
+
+if (process.env.NODE_ENV !== "production") {
+  // In development, /invite/* may be routed to this server by Replit's proxy.
+  // Forward those requests to the Vite dev server so the SPA loads correctly.
+  // The CSP header is stripped so Vite's inline module scripts can execute.
+  const VITE_PORT = 24366;
+  app.get(/^\/invite(\/.*)?$/, (req, res) => {
+    const options: http.RequestOptions = {
+      hostname: "127.0.0.1",
+      port: VITE_PORT,
+      path: req.url,
+      method: req.method,
+      headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
+    };
+    const proxy = http.request(options, (proxyRes) => {
+      res.removeHeader("content-security-policy");
+      const fwdHeaders = { ...proxyRes.headers };
+      delete fwdHeaders["content-security-policy"];
+      res.writeHead(proxyRes.statusCode ?? 200, fwdHeaders);
+      proxyRes.pipe(res, { end: true });
+    });
+    proxy.on("error", () => res.status(502).send("Frontend dev server not reachable"));
+    req.pipe(proxy, { end: true });
+  });
+  // Also forward Vite-specific asset paths so scripts load when the proxy HTML
+  // is served from this port rather than from the Vite dev server directly.
+  app.get(/^\/([@]vite|@react-refresh|@replit|src|node_modules\/.vite|__vite)(\/.*)?$/, (req, res) => {
+    const options: http.RequestOptions = {
+      hostname: "127.0.0.1",
+      port: VITE_PORT,
+      path: req.url,
+      method: req.method,
+      headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
+    };
+    const proxy = http.request(options, (proxyRes) => {
+      res.removeHeader("content-security-policy");
+      res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+    proxy.on("error", () => res.status(502).send("Vite asset not reachable"));
+    req.pipe(proxy, { end: true });
+  });
+}
 
 if (process.env.NODE_ENV === "production") {
   const frontendIndex = path.resolve(
