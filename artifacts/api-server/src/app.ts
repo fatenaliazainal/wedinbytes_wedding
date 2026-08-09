@@ -36,20 +36,30 @@ if (process.env.NODE_ENV === "production" && !sessionSecret) {
 
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "blob:"],
-        // Audio/video URLs are user-supplied (music links) — must allow any source.
-        mediaSrc: ["'self'", "blob:", "*"],
-        connectSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        frameAncestors: ["'none'"],
-      },
-    },
+    // CSP is disabled in development so Vite's inline module scripts can execute
+    // when the dev proxy forwards /invite/* to the Vite dev server.
+    // In production the full CSP is enforced.
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production"
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'"],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://fonts.googleapis.com",
+              ],
+              fontSrc: ["'self'", "https://fonts.gstatic.com"],
+              imgSrc: ["'self'", "data:", "blob:"],
+              // Audio/video URLs are user-supplied (music links) — must allow any source.
+              mediaSrc: ["'self'", "blob:", "*"],
+              connectSrc: ["'self'"],
+              objectSrc: ["'none'"],
+              frameAncestors: ["'none'"],
+            },
+          }
+        : false,
     // Cross-origin isolation not enforced — would break Google Fonts iframes.
     crossOriginEmbedderPolicy: false,
   }),
