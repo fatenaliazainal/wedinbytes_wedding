@@ -151,9 +151,15 @@ if (process.env.NODE_ENV !== "production") {
       headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
     };
     const proxy = http.request(options, (proxyRes) => {
-      res.removeHeader("content-security-policy");
       const fwdHeaders = { ...proxyRes.headers };
+      // Remove headers that cause the browser to cache CSP from an old response:
+      // - etag / last-modified: prevent conditional 304 requests that reuse old headers
+      // - cache-control: override with no-store so headers are never cached
+      // - content-security-policy: removed by disabling Helmet CSP in dev, belt-and-suspenders
+      delete fwdHeaders["etag"];
+      delete fwdHeaders["last-modified"];
       delete fwdHeaders["content-security-policy"];
+      fwdHeaders["cache-control"] = "no-store";
       res.writeHead(proxyRes.statusCode ?? 200, fwdHeaders);
       proxyRes.pipe(res, { end: true });
     });
@@ -171,8 +177,9 @@ if (process.env.NODE_ENV !== "production") {
       headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
     };
     const proxy = http.request(options, (proxyRes) => {
-      res.removeHeader("content-security-policy");
-      res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
+      const fwdHeaders = { ...proxyRes.headers };
+      delete fwdHeaders["content-security-policy"];
+      res.writeHead(proxyRes.statusCode ?? 200, fwdHeaders);
       proxyRes.pipe(res, { end: true });
     });
     proxy.on("error", () => res.status(502).send("Vite asset not reachable"));
