@@ -72,7 +72,7 @@ export default defineConfig({
     historyApiFallback: true,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:24366",
         changeOrigin: true,
         headers: {
           "X-Forwarded-Proto": "https",

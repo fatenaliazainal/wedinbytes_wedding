@@ -12,7 +12,7 @@ version = "1.0.0"
 [[services]]
 name = "web"
 paths = [ "/" ]
-localPort = 24366
+localPort = 8080
 
 [services.development]
 run = "pnpm --filter @workspace/wedding-invite run dev"
@@ -27,6 +27,6 @@ from = "/*"
 to = "/index.html"
 
 [services.env]
-PORT = "24366"
+PORT = "8080"
 BASE_PATH = "/"
 VITE_R2_DOMAIN_URL="https://pub-481ad7c8cfa7476cab2b1b405062a026.r2.dev/"

@@ -138,11 +138,13 @@ app.use((req, res, next) => {
 app.use("/api", globalRateLimit, router);
 
 if (process.env.NODE_ENV !== "production") {
-  // In development, /invite/* may be routed to this server by Replit's proxy.
-  // Forward those requests to the Vite dev server so the SPA loads correctly.
-  // The CSP header is stripped so Vite's inline module scripts can execute.
-  const VITE_PORT = 24366;
-  app.get(/^\/invite(\/.*)?$/, (req, res) => {
+  // In development, Vite runs on port 8080 and the API server runs on port 24366.
+  // Replit's proxy may route /* requests (the catch-all route) to port 24366 (this
+  // server), so we forward all non-API requests to Vite at port 8080.
+  const VITE_PORT = 8080;
+  app.use((req, res, next) => {
+    // Only proxy requests that are not handled by the API router above.
+    if (req.path.startsWith("/api")) { next(); return; }
     const options: http.RequestOptions = {
       hostname: "127.0.0.1",
       port: VITE_PORT,
@@ -151,38 +153,10 @@ if (process.env.NODE_ENV !== "production") {
       headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
     };
     const proxy = http.request(options, (proxyRes) => {
-      const fwdHeaders = { ...proxyRes.headers };
-      // Remove headers that cause the browser to cache CSP from an old response:
-      // - etag / last-modified: prevent conditional 304 requests that reuse old headers
-      // - cache-control: override with no-store so headers are never cached
-      // - content-security-policy: removed by disabling Helmet CSP in dev, belt-and-suspenders
-      delete fwdHeaders["etag"];
-      delete fwdHeaders["last-modified"];
-      delete fwdHeaders["content-security-policy"];
-      fwdHeaders["cache-control"] = "no-store";
-      res.writeHead(proxyRes.statusCode ?? 200, fwdHeaders);
+      res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
       proxyRes.pipe(res, { end: true });
     });
-    proxy.on("error", () => res.status(502).send("Frontend dev server not reachable"));
-    req.pipe(proxy, { end: true });
-  });
-  // Also forward Vite-specific asset paths so scripts load when the proxy HTML
-  // is served from this port rather than from the Vite dev server directly.
-  app.get(/^\/([@]vite|@react-refresh|@replit|src|node_modules\/.vite|__vite)(\/.*)?$/, (req, res) => {
-    const options: http.RequestOptions = {
-      hostname: "127.0.0.1",
-      port: VITE_PORT,
-      path: req.url,
-      method: req.method,
-      headers: { ...req.headers, host: `127.0.0.1:${VITE_PORT}` },
-    };
-    const proxy = http.request(options, (proxyRes) => {
-      const fwdHeaders = { ...proxyRes.headers };
-      delete fwdHeaders["content-security-policy"];
-      res.writeHead(proxyRes.statusCode ?? 200, fwdHeaders);
-      proxyRes.pipe(res, { end: true });
-    });
-    proxy.on("error", () => res.status(502).send("Vite asset not reachable"));
+    proxy.on("error", () => res.status(502).send("Vite dev server (port 8080) not reachable"));
     req.pipe(proxy, { end: true });
   });
 }
