@@ -235,6 +235,7 @@ async function readOrderRows() {
         eventDate: invitation.eventDate,
         coverBrideName: invitation.coverBrideName,
         coverGroomName: invitation.coverGroomName,
+        lockedSlug: invitation.lockedSlug,
         venueName: invitation.venueName,
         websiteStatus: invitationStatus(invitation, invitation ? paidInvitationIds.has(invitation.id) : false),
         isPurchased: invitation.isPurchased,

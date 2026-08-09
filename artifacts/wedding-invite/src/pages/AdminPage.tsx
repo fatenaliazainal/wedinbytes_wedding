@@ -50,6 +50,7 @@ type AdminOrder = {
   invitation?: {
     id: number; token: string; brideName: string; groomName: string;
     coverBrideName?: string | null; coverGroomName?: string | null;
+    lockedSlug?: string | null;
     eventDate: string; venueName: string; websiteStatus: string; isPurchased: boolean;
   } | null;
 };

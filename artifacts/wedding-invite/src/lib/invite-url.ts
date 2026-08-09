@@ -27,19 +27,23 @@ export function inviteNameSlug(
 
 export function publicInvitePath(invitation: {
   eventDate?: string | null;
+  lockedSlug?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
   groomName?: string | null;
   brideName?: string | null;
 }): string | null {
   const dateCode = inviteDateCode(invitation.eventDate);
-  // Prefer the dedicated cover names; fall back to the main groom/bride names
-  // so the slug URL is generated even when cover name fields are left blank.
-  const nameSlug = inviteNameSlug(
-    invitation.coverGroomName || invitation.groomName,
-    invitation.coverBrideName || invitation.brideName,
-  );
-  return dateCode && nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
+  if (!dateCode) return null;
+  // Prefer the locked slug (set at payment time — most reliable);
+  // fall back to cover names, then main groom/bride names.
+  const nameSlug =
+    invitation.lockedSlug ||
+    inviteNameSlug(
+      invitation.coverGroomName || invitation.groomName,
+      invitation.coverBrideName || invitation.brideName,
+    );
+  return nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
 }
 
 /**
@@ -50,6 +54,7 @@ export function publicInvitePath(invitation: {
 export function publicInvitePathOrToken(invitation: {
   token?: string | null;
   eventDate?: string | null;
+  lockedSlug?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
   groomName?: string | null;
