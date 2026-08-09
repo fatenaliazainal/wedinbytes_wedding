@@ -220,8 +220,10 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
     const [inv] = await db.select().from(invitationTable).where(eq(invitationTable.id, order.invitationId)).limit(1);
     const slugSnapshot = inv && !inv.lockedSlug
       ? (() => {
-          const g = (inv.coverGroomName ?? "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-          const b = (inv.coverBrideName ?? "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+          const slugify = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+          // Mirror frontend logic: prefer cover name, fall back to main groom/bride name
+          const g = slugify(inv.coverGroomName || inv.groomName || "");
+          const b = slugify(inv.coverBrideName || inv.brideName || "");
           return g && b ? `${g}-${b}` : null;
         })()
       : null;

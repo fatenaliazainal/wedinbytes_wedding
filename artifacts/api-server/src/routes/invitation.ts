@@ -39,8 +39,16 @@ function publicSlug(row: typeof invitationTable.$inferSelect): string | null {
   return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
+// Mirrors the frontend's publicInvitePath logic: coverName falls back to mainName.
+// This is the canonical slug used for new URLs and lockedSlug generation.
+function frontendSlug(row: typeof invitationTable.$inferSelect): string | null {
+  const groomSlug = slugPart(row.coverGroomName || row.groomName);
+  const brideSlug = slugPart(row.coverBrideName || row.brideName);
+  return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
+}
+
 // Existing links generated before Cover names became mandatory remain readable.
-// This alias is lookup-only; every new link is generated from publicSlug().
+// This alias is lookup-only; every new link is generated from frontendSlug().
 function legacyNamedPublicSlug(row: typeof invitationTable.$inferSelect): string | null {
   const groomSlug = slugPart(row.groomShortName) || slugPart(row.groomName) || slugPart(row.groomInitial);
   const brideSlug = slugPart(row.brideShortName) || slugPart(row.brideName) || slugPart(row.brideInitial);
@@ -290,8 +298,9 @@ router.get("/invitation/public/:dateCode/:slug", publicInvitationRateLimit, asyn
         publicDateCode(candidate.eventDate) === dateCode
         && (
           (candidate.lockedSlug && candidate.lockedSlug === slug)
-          || publicSlug(candidate) === slug
-          || legacyNamedPublicSlug(candidate) === slug
+          || publicSlug(candidate) === slug        // coverGroomName + coverBrideName
+          || frontendSlug(candidate) === slug      // coverName || groomName (matches frontend)
+          || legacyNamedPublicSlug(candidate) === slug // pre-cover-name fallback
         ),
       );
     }
