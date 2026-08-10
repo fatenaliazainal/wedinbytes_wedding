@@ -194,9 +194,10 @@ export async function getBillplzBill(billId: string): Promise<BillplzBill> {
 /**
  * Validate Billplz X-Signature from a callback or redirect.
  *
- * Billplz passes all params as `billplz[key]=value`. The X-Signature is an
- * HMAC-SHA256 over the sorted `key|value` pairs (excluding `billplz[x_signature]`),
- * joined by newlines, computed with the x_signature_key.
+ * Billplz server-to-server callbacks use FLAT keys (id, paid, x_signature…).
+ * Billplz return-URL redirects use bracketed keys (billplz[id], billplz[paid]…).
+ * Both are HMAC-SHA256 over sorted `key|value` pairs (excluding the signature
+ * key itself), joined by newlines, signed with the X-Signature Key.
  */
 export function isValidBillplzSignature(params: Record<string, string>): boolean {
   const isProduction = process.env.NODE_ENV === "production";
@@ -208,14 +209,29 @@ export function isValidBillplzSignature(params: Record<string, string>): boolean
 
   if (!xSignatureKey) return false;
 
-  const receivedSignature = params["billplz[x_signature]"];
-  if (!receivedSignature) return false;
+  // Detect format: bracketed (return URL) vs flat (server-to-server callback)
+  const isBracketed = Object.keys(params).some(k => k.startsWith("billplz["));
 
-  // Collect all billplz[...] params except x_signature, sort alphabetically
-  const signingPairs = Object.entries(params)
-    .filter(([key]) => key.startsWith("billplz[") && key !== "billplz[x_signature]")
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}|${value ?? ""}`);
+  let receivedSignature: string;
+  let signingPairs: string[];
+
+  if (isBracketed) {
+    // Return-URL format: billplz[id], billplz[paid], billplz[x_signature]…
+    receivedSignature = params["billplz[x_signature]"] ?? "";
+    signingPairs = Object.entries(params)
+      .filter(([key]) => key.startsWith("billplz[") && key !== "billplz[x_signature]")
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}|${value ?? ""}`);
+  } else {
+    // Flat callback format: id, paid, x_signature…
+    receivedSignature = params["x_signature"] ?? "";
+    signingPairs = Object.entries(params)
+      .filter(([key]) => key !== "x_signature")
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}|${value ?? ""}`);
+  }
+
+  if (!receivedSignature) return false;
 
   const signingString = signingPairs.join("\n");
 
@@ -233,19 +249,36 @@ export function isValidBillplzSignature(params: Record<string, string>): boolean
 }
 
 export function parseBillplzCallbackParams(raw: Record<string, unknown>): Record<string, string> {
-  // Normalize: Express may parse `billplz[id]` as `billplz.id` or as a nested object.
-  // We accept both flat query-string format (key = "billplz[id]") and
-  // nested object format (key = "billplz", value = { id: "..." }).
+  // Normalise the three possible body shapes Express may produce:
+  //
+  // 1. Bracketed + nested (Express extended mode parses billplz[id] → { billplz: { id: … } })
+  // 2. Bracketed + flat   (key literally starts with "billplz[")
+  // 3. Flat keys          (Billplz server-to-server callback: id, paid, x_signature…)
+  //
+  // For shapes 1 & 2 we re-emit billplz[key] so the rest of the code is uniform.
+  // For shape 3 we pass keys through as-is so isValidBillplzSignature can detect the format.
+
   const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(raw)) {
-    if (key === "billplz" && value && typeof value === "object") {
-      // Nested: { billplz: { id: "x", paid: "true", ... } }
-      for (const [subKey, subValue] of Object.entries(value as Record<string, unknown>)) {
-        out[`billplz[${subKey}]`] = String(subValue ?? "");
-      }
-    } else if (key.startsWith("billplz[")) {
+
+  const hasBillplzObject = "billplz" in raw && raw["billplz"] !== null && typeof raw["billplz"] === "object";
+  const hasBillplzPrefix = Object.keys(raw).some(k => k.startsWith("billplz["));
+
+  if (hasBillplzObject) {
+    // Shape 1 — nested object
+    for (const [subKey, subValue] of Object.entries(raw["billplz"] as Record<string, unknown>)) {
+      out[`billplz[${subKey}]`] = String(subValue ?? "");
+    }
+  } else if (hasBillplzPrefix) {
+    // Shape 2 — literal bracketed keys
+    for (const [key, value] of Object.entries(raw)) {
+      if (key.startsWith("billplz[")) out[key] = String(value ?? "");
+    }
+  } else {
+    // Shape 3 — flat keys (server-to-server callback)
+    for (const [key, value] of Object.entries(raw)) {
       out[key] = String(value ?? "");
     }
   }
+
   return out;
 }

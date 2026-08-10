@@ -23,9 +23,8 @@ export function publicInvitePath(invitation: {
   brideName?: string | null;
 }): string | null {
   const dateCode = inviteDateCode(invitation.eventDate);
-  // Prefer dedicated cover names; fall back to main names so the slug URL is
-  // generated even when the cover name fields are left blank.
-  const groom = slugPart(invitation.coverGroomName || invitation.groomName);
-  const bride = slugPart(invitation.coverBrideName || invitation.brideName);
+  // Prefer full names (groomName/brideName); fall back to cover names if blank.
+  const groom = slugPart(invitation.groomName || invitation.coverGroomName);
+  const bride = slugPart(invitation.brideName || invitation.coverBrideName);
   return dateCode && groom && bride ? `/invite/${dateCode}/${groom}-${bride}` : null;
 }

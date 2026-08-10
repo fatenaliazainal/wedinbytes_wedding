@@ -172,8 +172,8 @@ async function applyBillplzPayment(
       ? (() => {
           const slugify = (s: string) =>
             s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-          const g = slugify(inv.coverGroomName || inv.groomName || "");
-          const b = slugify(inv.coverBrideName || inv.brideName || "");
+          const g = slugify(inv.groomName || inv.coverGroomName || "");
+          const b = slugify(inv.brideName || inv.coverBrideName || "");
           return g && b ? `${g}-${b}` : null;
         })()
       : null;
@@ -426,20 +426,22 @@ router.post("/payment/billplz/callback", async (req, res) => {
   const params = parseBillplzCallbackParams(raw);
 
   if (!isValidBillplzSignature(params)) {
-    // Log full params (redacted signature) to help diagnose key mismatches
     const debugParams = { ...params };
-    if (debugParams["billplz[x_signature]"]) {
-      debugParams["billplz[x_signature]"] = debugParams["billplz[x_signature]"].slice(0, 8) + "…";
+    // Redact signature value in logs
+    for (const k of ["billplz[x_signature]", "x_signature"]) {
+      if (debugParams[k]) debugParams[k] = debugParams[k].slice(0, 8) + "…";
     }
     req.log.warn({ debugParams, rawBodyKeys: Object.keys(req.body ?? {}) }, "Billplz callback: invalid X-Signature — check BILLPLZ_X_SIGNATURE_KEY matches the key shown in your Billplz dashboard");
     res.status(400).json({ error: "Invalid Billplz callback signature." });
     return;
   }
 
-  const billId = params["billplz[id]"] ?? "";
-  const paidStr = params["billplz[paid]"] ?? "false";
-  const orderReference = params["billplz[reference_1]"] ?? "";
-  const state = params["billplz[state]"] ?? "";
+  // Support both bracketed (return-URL) and flat (server-to-server callback) formats
+  const isBracketed = Object.keys(params).some(k => k.startsWith("billplz["));
+  const billId        = isBracketed ? (params["billplz[id]"]          ?? "") : (params["id"]          ?? "");
+  const paidStr       = isBracketed ? (params["billplz[paid]"]        ?? "false") : (params["paid"]   ?? "false");
+  const orderReference = isBracketed ? (params["billplz[reference_1]"] ?? "") : (params["reference_1"] ?? "");
+  const state         = isBracketed ? (params["billplz[state]"]       ?? "") : (params["state"]        ?? "");
 
   if (!billId || !orderReference) {
     res.status(400).json({ error: "Missing required Billplz callback fields." });

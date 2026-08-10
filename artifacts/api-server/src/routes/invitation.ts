@@ -39,11 +39,11 @@ function publicSlug(row: typeof invitationTable.$inferSelect): string | null {
   return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
-// Mirrors the frontend's publicInvitePath logic: coverName falls back to mainName.
+// Mirrors the frontend's publicInvitePath logic: full name takes priority over cover name.
 // This is the canonical slug used for new URLs and lockedSlug generation.
 function frontendSlug(row: typeof invitationTable.$inferSelect): string | null {
-  const groomSlug = slugPart(row.coverGroomName || row.groomName);
-  const brideSlug = slugPart(row.coverBrideName || row.brideName);
+  const groomSlug = slugPart(row.groomName || row.coverGroomName);
+  const brideSlug = slugPart(row.brideName || row.coverBrideName);
   return groomSlug && brideSlug ? `${groomSlug}-${brideSlug}` : null;
 }
 
