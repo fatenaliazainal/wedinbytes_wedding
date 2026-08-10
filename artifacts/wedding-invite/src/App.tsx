@@ -30,6 +30,7 @@ import BusinessProfilePage from "@/pages/BusinessProfilePage";
 import PublicBusinessProfilePage from "@/pages/PublicBusinessProfilePage";
 import CustomerFormPage from "@/pages/CustomerFormPage";
 import ToyyibPayReturnPage from "@/pages/ToyyibPayReturnPage";
+import BillplzReturnPage from "@/pages/BillplzReturnPage";
 import BusinessProposalPage from "@/pages/BusinessProposalPage";
 import BusinessRegisterPage from "@/pages/BusinessRegisterPage";
 import AboutPage from "@/pages/AboutPage";
@@ -104,6 +105,7 @@ function Router() {
       <Route path="/business/:slug/customer-form/:token" component={CustomerFormPage} />
       <Route path="/customer-form/:token" component={CustomerFormPage} />
       <Route path="/payment/toyyibpay/return" component={ToyyibPayReturnPage} />
+      <Route path="/payment/billplz/return" component={BillplzReturnPage} />
       <Route path="/for-business" component={BusinessProposalPage} />
       <Route path="/register/business" component={BusinessRegisterPage} />
       <Route path="/about" component={AboutPage} />

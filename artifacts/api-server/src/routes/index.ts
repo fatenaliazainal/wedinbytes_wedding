@@ -10,6 +10,7 @@ import pricingRouter from "./pricing";
 import orderRouter from "./orders";
 import businessRouter from "./business";
 import toyyibPayRouter from "./toyyibpay";
+import billplzRouter from "./billplz";
 import waxSealsRouter from "./wax-seals";
 import giftRegistryRouter from "./gift-registry";
 
@@ -26,6 +27,7 @@ router.use(pricingRouter);
 router.use(orderRouter);
 router.use(businessRouter);
 router.use(toyyibPayRouter);
+router.use(billplzRouter);
 router.use(waxSealsRouter);
 router.use(giftRegistryRouter);
 

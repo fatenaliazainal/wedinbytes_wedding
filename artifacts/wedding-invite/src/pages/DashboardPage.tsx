@@ -18,6 +18,7 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
 import { publicInvitePath, publicInvitePathOrToken } from "@/lib/invite-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
+import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -323,6 +324,8 @@ export default function DashboardPage() {
   });
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
+  const [paymentConfig, setPaymentConfig] = useState<PaymentMethodConfig | null>(null);
+  const [gatewayModalInput, setGatewayModalInput] = useState<{ invitationId?: number; orderId?: number } | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -644,10 +647,47 @@ export default function DashboardPage() {
         }
       }
     }
+
+    // Fetch payment method config (cached per component mount)
+    let config = paymentConfig;
+    if (!config) {
+      try {
+        config = await getPaymentMethodConfig();
+        setPaymentConfig(config);
+      } catch {
+        // Fail open with defaults
+        config = { toyyibpayEnabled: true, billplzEnabled: false };
+      }
+    }
+
+    const { toyyibpayEnabled, billplzEnabled } = config;
+
+    if (!toyyibpayEnabled && !billplzEnabled) {
+      toast.error("No payment methods are currently available. Please contact support.");
+      return;
+    }
+
+    // If both are enabled, show gateway selection modal
+    if (toyyibpayEnabled && billplzEnabled) {
+      setGatewayModalInput(input);
+      return;
+    }
+
+    // Only one gateway enabled — start directly
+    await executePayment(input, toyyibpayEnabled ? "toyyibpay" : "billplz");
+  };
+
+  const executePayment = async (
+    input: { invitationId?: number; orderId?: number },
+    gateway: "toyyibpay" | "billplz",
+  ) => {
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
+    setGatewayModalInput(null);
     try {
-      const result = await startToyyibPayCheckout(input);
+      const result = gateway === "toyyibpay"
+        ? await startToyyibPayCheckout(input)
+        : await startBillplzCheckout(input);
       if (result.replacedExpired) {
         toast.info("Your previous payment session had expired. Starting a new payment.");
         await new Promise(resolve => setTimeout(resolve, 1200));
@@ -1178,6 +1218,40 @@ export default function DashboardPage() {
       <footer className="py-6 border-t border-slate-200 mt-auto text-center text-slate-400 text-[11px] tracking-wider uppercase font-semibold">
         <p>&copy; {new Date().getFullYear()} Wedinstudio. All rights reserved.</p>
       </footer>
+
+      {/* ── Gateway selection modal ── */}
+      {gatewayModalInput && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setGatewayModalInput(null)}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-900">Choose Payment Method</h2>
+              <button onClick={() => setGatewayModalInput(null)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => void executePayment(gatewayModalInput, "toyyibpay")}
+                className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-left transition hover:border-slate-900 hover:bg-slate-50"
+              >
+                <CreditCard size={20} className="shrink-0 text-slate-600" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">ToyyibPay</p>
+                  <p className="text-xs text-slate-500">FPX / DuitNow QR</p>
+                </div>
+              </button>
+              <button
+                onClick={() => void executePayment(gatewayModalInput, "billplz")}
+                className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-left transition hover:border-slate-900 hover:bg-slate-50"
+              >
+                <CreditCard size={20} className="shrink-0 text-slate-600" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Billplz</p>
+                  <p className="text-xs text-slate-500">FPX / Online Banking</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

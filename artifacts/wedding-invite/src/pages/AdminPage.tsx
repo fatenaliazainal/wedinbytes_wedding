@@ -2028,6 +2028,59 @@ function StatusBadge({ value }: { value: string }) {
   return <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${tone}`}>{value}</span>;
 }
 
+function PaymentMethodsConfig() {
+  const [cfg, setCfg] = useState<{ toyyibpayEnabled: boolean; billplzEnabled: boolean } | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BASE}/api/payment/config`, { credentials: "include", cache: "no-store" })
+      .then(r => r.json()).then(setCfg).catch(() => {});
+  }, []);
+
+  const toggle = async (key: "toyyibpayEnabled" | "billplzEnabled") => {
+    if (!cfg) return;
+    const next = { ...cfg, [key]: !cfg[key] };
+    setSaving(true);
+    try {
+      const res = await fetch(`${BASE}/api/payment/config`, {
+        method: "PATCH", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: next[key] }),
+      });
+      if (!res.ok) throw new Error();
+      setCfg(next);
+      toast.success("Payment method settings saved.");
+    } catch { toast.error("Failed to save payment method settings."); }
+    finally { setSaving(false); }
+  };
+
+  if (!cfg) return null;
+
+  return (
+    <div className="mb-4 rounded-xl border border-border bg-card p-4">
+      <p className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment Methods</p>
+      <div className="flex flex-wrap gap-4">
+        {(["toyyibpayEnabled", "billplzEnabled"] as const).map((key) => {
+          const label = key === "toyyibpayEnabled" ? "ToyyibPay" : "Billplz";
+          const enabled = cfg[key];
+          return (
+            <button key={key} disabled={saving} onClick={() => void toggle(key)}
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
+                enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        : "border-border bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full ${enabled ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+              {label}
+              <span className="opacity-60">{enabled ? "Enabled" : "Disabled"}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function OrdersTab() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [stats, setStats] = useState<AdminOrderStats | null>(null);
@@ -2108,6 +2161,7 @@ function OrdersTab() {
 
   return (
     <div className="space-y-4">
+      <PaymentMethodsConfig />
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {statsCards.map(([label, value, Icon]) => (
           <div key={label} className="rounded-xl border border-border bg-card p-3">
@@ -2160,6 +2214,12 @@ function OrdersTab() {
                 <p className="text-xs text-muted-foreground">Payment</p>
                 <StatusBadge value={selected.paymentStatus} />
                 <p className="mt-1">{selected.amount}</p>
+                {selected.paymentGateway && (
+                  <p className="mt-0.5 text-[11px] text-muted-foreground capitalize">via {selected.paymentGateway}</p>
+                )}
+                {selected.paymentReference && (
+                  <p className="text-[10px] font-mono text-muted-foreground/70 break-all">{selected.paymentReference}</p>
+                )}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Invitation</p>

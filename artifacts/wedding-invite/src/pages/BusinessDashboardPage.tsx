@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
+import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import { publicInvitePathOrToken } from "@/lib/invite-url";
 
@@ -147,6 +148,8 @@ export default function BusinessDashboardPage() {
   const [deleteInvitation, setDeleteInvitation] = useState<Invitation | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
   const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
+  const [paymentConfig, setPaymentConfig] = useState<PaymentMethodConfig | null>(null);
+  const [gatewayModalInput, setGatewayModalInput] = useState<{ invitationId?: number; orderId?: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [packageFilter, setPackageFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
@@ -406,10 +409,33 @@ export default function BusinessDashboardPage() {
         }
       }
     }
+
+    let config = paymentConfig;
+    if (!config) {
+      try { config = await getPaymentMethodConfig(); setPaymentConfig(config); }
+      catch { config = { toyyibpayEnabled: true, billplzEnabled: false }; }
+    }
+
+    const { toyyibpayEnabled, billplzEnabled } = config;
+    if (!toyyibpayEnabled && !billplzEnabled) {
+      toast.error("No payment methods are currently available. Please contact support.");
+      return;
+    }
+    if (toyyibpayEnabled && billplzEnabled) { setGatewayModalInput(input); return; }
+    await executePayment(input, toyyibpayEnabled ? "toyyibpay" : "billplz");
+  };
+
+  const executePayment = async (
+    input: { invitationId?: number; orderId?: number },
+    gateway: "toyyibpay" | "billplz",
+  ) => {
     const busyId = input.orderId ?? input.invitationId ?? null;
     setPaymentStartingFor(busyId);
+    setGatewayModalInput(null);
     try {
-      const result = await startToyyibPayCheckout(input);
+      const result = gateway === "toyyibpay"
+        ? await startToyyibPayCheckout(input)
+        : await startBillplzCheckout(input);
       if (result.replacedExpired) {
         toast.info("Your previous payment session had expired. Starting a new payment.");
         await new Promise(resolve => setTimeout(resolve, 1200));
@@ -1037,6 +1063,28 @@ export default function BusinessDashboardPage() {
         </div>
       </main>
       <SiteFooter />
+
+      {/* Gateway selection modal */}
+      {gatewayModalInput && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setGatewayModalInput(null)}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900">Choose Payment Method</h2>
+              <button onClick={() => setGatewayModalInput(null)} className="text-gray-400 hover:text-gray-700"><X size={18} /></button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button onClick={() => void executePayment(gatewayModalInput, "toyyibpay")} className="flex items-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-left transition hover:border-gray-900 hover:bg-gray-50">
+                <CreditCard size={20} className="shrink-0 text-gray-600" />
+                <div><p className="text-sm font-semibold text-gray-900">ToyyibPay</p><p className="text-xs text-gray-500">FPX / DuitNow QR</p></div>
+              </button>
+              <button onClick={() => void executePayment(gatewayModalInput, "billplz")} className="flex items-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-left transition hover:border-gray-900 hover:bg-gray-50">
+                <CreditCard size={20} className="shrink-0 text-gray-600" />
+                <div><p className="text-sm font-semibold text-gray-900">Billplz</p><p className="text-xs text-gray-500">FPX / Online Banking</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

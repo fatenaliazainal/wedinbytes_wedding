@@ -1,0 +1,176 @@
+I want to add **Billplz** as a second payment gateway to my existing website.
+
+Website: https://wedinstudio.com/
+
+### IMPORTANT — DO NOT CHANGE EXISTING TOYYIBPAY
+
+* The current **ToyyibPay payment flow is already working correctly**.
+* Do NOT modify, refactor, remove, or break any existing ToyyibPay functionality.
+* Existing ToyyibPay orders, payment status handling, callbacks/webhooks, database records, admin controls, and UI must continue working exactly as they do now.
+* Treat ToyyibPay as the existing payment gateway and add Billplz alongside it.
+
+### BILLPLZ REQUIREMENTS
+
+Add **Billplz** as a second payment gateway with the same overall order flow as ToyyibPay:
+
+1. Customer creates an order.
+2. Customer selects a payment method.
+3. Customer can choose:
+
+   * ToyyibPay
+   * Billplz
+4. If Billplz is selected:
+
+   * Create a Billplz bill for the order.
+   * Redirect the customer to the Billplz payment page.
+   * Handle the payment return/callback properly.
+   * Update the order/payment status using the same logic and standards as the existing ToyyibPay flow.
+5. The order should only be treated as successfully paid when payment is actually confirmed.
+6. Failed/unpaid/pending payments must be handled correctly.
+7. Prevent duplicate payment/order records where applicable.
+
+### SANDBOX / TEST MODE
+
+I want Billplz to support **Sandbox/Test mode first**.
+
+Please:
+
+* Add Billplz configuration through environment variables/secrets.
+* Do NOT hardcode API keys, secret keys, collection IDs, etc.
+* Make it easy to switch between Sandbox and Production later.
+* Clearly separate test/sandbox configuration from production configuration.
+* Use the official Billplz API/payment flow and current API requirements.
+
+Suggested environment variables can be something like:
+
+BILLPLZ_ENABLED
+BILLPLZ_SANDBOX
+BILLPLZ_API_KEY
+BILLPLZ_X_SIGNATURE_KEY
+BILLPLZ_COLLECTION_ID
+
+Use appropriate names based on the existing project architecture if necessary.
+
+### ADMIN CONTROL
+
+Add an admin setting that allows the admin to:
+
+* Enable/disable ToyyibPay
+* Enable/disable Billplz
+
+The admin should be able to control whether a payment method is displayed to customers.
+
+Example:
+
+Payment Methods
+☑ ToyyibPay
+☑ Billplz
+
+If Billplz is disabled:
+
+* Billplz must NOT appear on the customer checkout/payment page.
+* Existing ToyyibPay must continue working normally.
+
+If ToyyibPay is disabled:
+
+* ToyyPay must NOT appear on checkout.
+* Billplz can still be used if enabled.
+
+If both are enabled:
+
+* Both payment methods should be displayed.
+
+If both are disabled:
+
+* Do not allow the customer to proceed with payment and show an appropriate message.
+
+### CUSTOMER UI
+
+Keep the existing website design and payment UI style.
+
+Do NOT redesign the whole checkout/payment page.
+
+Only add the minimum UI required to select between the available payment gateways.
+
+The payment method selection should look consistent with the existing WedInStudio design.
+
+### ORDER / DATABASE
+
+Reuse the existing order structure wherever possible.
+
+Do NOT create a completely separate order system for Billplz unless technically necessary.
+
+Store which gateway was used for each payment/order, for example:
+
+payment_gateway = "toyyibpay"
+payment_gateway = "billplz"
+
+Store the relevant Billplz bill/payment reference IDs so the payment can be tracked.
+
+Make sure existing ToyyibPay orders are not affected.
+
+### PAYMENT STATUS
+
+Make sure Billplz correctly handles:
+
+* Pending
+* Paid
+* Failed / unsuccessful
+* Cancelled where applicable
+
+Payment confirmation should be handled securely using Billplz's official callback/webhook/signature mechanism.
+
+Do NOT rely only on the customer's browser returning to the website to mark an order as paid.
+
+### ADMIN ORDER VIEW
+
+If the admin order dashboard already shows payment information, add Billplz information there without changing the existing dashboard structure unnecessarily.
+
+For example:
+
+Payment Gateway: Billplz
+Payment Status: Paid
+Bill ID: XXXXX
+
+Existing ToyyibPay orders should continue displaying their existing information exactly as before.
+
+### IMPLEMENTATION RULES
+
+Before changing anything:
+
+1. Inspect the existing ToyyibPay implementation.
+2. Understand the current order/payment flow.
+3. Identify the existing database/payment status fields.
+4. Identify how payment callbacks/webhooks are currently handled.
+5. Reuse the existing architecture where possible.
+
+Then implement Billplz as an additional gateway.
+
+Do NOT:
+
+* Rewrite the payment system.
+* Refactor unrelated code.
+* Change existing ToyyibPay behaviour.
+* Change existing pricing.
+* Change order calculations.
+* Change existing customer order flow unless required for selecting the payment gateway.
+* Remove any existing functionality.
+
+After implementation, test the complete flow in Billplz Sandbox:
+
+Customer → Order → Billplz Bill → Sandbox Payment → Callback/Webhook → Order Payment Status → Admin Dashboard
+
+Also regression-test the existing:
+
+Customer → Order → ToyyibPay → Payment → Callback/Webhook → Order Payment Status → Admin Dashboard
+
+Finally, tell me:
+
+1. Which files were changed.
+2. What database changes were made.
+3. What environment variables/secrets I need to add in Replit.
+4. What Billplz Sandbox credentials/configuration I need.
+5. The exact steps to test Billplz Sandbox.
+6. How to switch from Sandbox to Production later.
+
+IMPORTANT: Do not make any production payment configuration changes yet. Implement and prepare Sandbox/Test mode first.
