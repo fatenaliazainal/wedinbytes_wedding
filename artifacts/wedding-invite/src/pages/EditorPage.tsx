@@ -586,7 +586,7 @@ export default function EditorPage({
     rsvpTimeSlots: "",
     rsvpEmail: "",
     rsvpEmailNotification: true,
-    overlayEnabled: true,
+    overlayEnabled: false,
     showFooter: true,
     footerText: "Dapatkan kad digital anda di:",
     footerUrl: "wedinstudio.com",
@@ -1011,7 +1011,7 @@ export default function EditorPage({
             rsvpEmail: d.rsvpEmail ?? "",
             rsvpEmailNotification: d.rsvpEmailNotification ?? true,
             // Buyer editors always inherit the current Admin footer defaults.
-            overlayEnabled: d.overlayEnabled ?? true,
+            overlayEnabled: d.overlayEnabled ?? false,
             showFooter:
               mode === "buyer" || mode === "business"
                 ? ((adminDefaults?.showFooter as boolean) ?? true)
