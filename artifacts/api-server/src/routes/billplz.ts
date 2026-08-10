@@ -426,7 +426,12 @@ router.post("/payment/billplz/callback", async (req, res) => {
   const params = parseBillplzCallbackParams(raw);
 
   if (!isValidBillplzSignature(params)) {
-    req.log.warn({ params }, "Billplz callback: invalid X-Signature");
+    // Log full params (redacted signature) to help diagnose key mismatches
+    const debugParams = { ...params };
+    if (debugParams["billplz[x_signature]"]) {
+      debugParams["billplz[x_signature]"] = debugParams["billplz[x_signature]"].slice(0, 8) + "…";
+    }
+    req.log.warn({ debugParams, rawBodyKeys: Object.keys(req.body ?? {}) }, "Billplz callback: invalid X-Signature — check BILLPLZ_X_SIGNATURE_KEY matches the key shown in your Billplz dashboard");
     res.status(400).json({ error: "Invalid Billplz callback signature." });
     return;
   }
@@ -451,6 +456,33 @@ router.post("/payment/billplz/callback", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to process Billplz callback");
     res.status(502).json({ error: "Unable to process Billplz callback." });
+  }
+});
+
+// ─── Billplz status (authenticated, by orderId — mirrors ToyyibPay status endpoint) ───
+
+router.get("/payment/billplz/status", async (req, res) => {
+  if (!["buyer", "business_account"].includes(String(req.session?.role ?? "")) || !req.session.userId) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  const orderId = Number(req.query.orderId);
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    res.status(400).json({ error: "Valid orderId is required." });
+    return;
+  }
+  try {
+    const order = await findOwnedOrder(req, orderId);
+    if (!order) { res.status(404).json({ error: "Order not found." }); return; }
+    if (!order.billCode) {
+      res.json({ status: order.paymentStatus ?? "PENDING", updated: false });
+      return;
+    }
+    const result = await verifyBillplzAndApply(order, order.billCode);
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "Failed to verify Billplz order status");
+    res.status(502).json({ error: "Unable to verify Billplz order status." });
   }
 });
 

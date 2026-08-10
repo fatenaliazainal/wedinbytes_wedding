@@ -362,18 +362,27 @@ export default function DashboardPage() {
         // Auto-reconcile any PENDING orders silently on page load so buyers who
         // paid on a different device or browser see the correct status immediately.
         const pendingOrders = histData.filter(p => p.paymentStatus.toUpperCase() === "PENDING");
-        for (const order of pendingOrders) {
-          fetch(`${BASE}/api/payment/toyyibpay/status?orderId=${order.id}`, { credentials: "include", cache: "no-store" })
-            .then(async r => {
-              if (!r.ok) return;
-              const d = await r.json() as { status?: string };
-              if (d.status === "PAID") {
-                const hr = await fetch(`${BASE}/api/buyer/payment-history`, { credentials: "include", cache: "no-store" });
-                if (hr.ok) setPaymentHistory(await hr.json());
-                toast.success("Payment confirmed! Your invitation is now active.");
-              }
-            })
-            .catch(() => {});
+        let anyConfirmed = false;
+        await Promise.all(pendingOrders.map(async (order) => {
+          try {
+            const gateway = (order.paymentGateway ?? "toyyibpay").toLowerCase();
+            const endpoint = gateway === "billplz"
+              ? `${BASE}/api/payment/billplz/status?orderId=${order.id}`
+              : `${BASE}/api/payment/toyyibpay/status?orderId=${order.id}`;
+            const r = await fetch(endpoint, { credentials: "include", cache: "no-store" });
+            if (!r.ok) return;
+            const d = await r.json() as { status?: string };
+            if (d.status === "PAID") anyConfirmed = true;
+          } catch { /* silent */ }
+        }));
+        if (anyConfirmed) {
+          const [freshInv, freshHist] = await Promise.all([
+            fetch(`${BASE}/api/invitations-by-user/${user.id}`, { credentials: "include", cache: "no-store" }).then(r => r.ok ? r.json() : []),
+            fetch(`${BASE}/api/buyer/payment-history`, { credentials: "include", cache: "no-store" }).then(r => r.ok ? r.json() : []),
+          ]);
+          setInvitations(freshInv);
+          setPaymentHistory(freshHist);
+          toast.success("Payment confirmed! Your invitation is now active.");
         }
         setInvitation(invData[0] ?? null);
         setDesigns(allDesigns);
@@ -649,16 +658,14 @@ export default function DashboardPage() {
       }
     }
 
-    // Fetch payment method config (cached per component mount)
-    let config = paymentConfig;
-    if (!config) {
-      try {
-        config = await getPaymentMethodConfig();
-        setPaymentConfig(config);
-      } catch {
-        // Fail open with defaults
-        config = { toyyibpayEnabled: true, billplzEnabled: false };
-      }
+    // Always fetch fresh config so admin changes take effect immediately
+    let config: PaymentMethodConfig;
+    try {
+      config = await getPaymentMethodConfig();
+      setPaymentConfig(config);
+    } catch {
+      // Fail open: use cached value if available, else default to ToyyibPay only
+      config = paymentConfig ?? { toyyibpayEnabled: true, billplzEnabled: false };
     }
 
     const { toyyibpayEnabled, billplzEnabled } = config;

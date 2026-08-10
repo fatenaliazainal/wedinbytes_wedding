@@ -91,6 +91,7 @@ type PaymentHistoryItem = {
   paymentStatus: string;
   paymentReference?: string | null;
   gatewayRefNo?: string | null;
+  paymentGateway?: string | null;
   paidAt?: string | null;
   createdAt: string;
   packageName?: string | null;
@@ -376,17 +377,22 @@ export default function BusinessDashboardPage() {
     }
   };
 
-  const reconcileStatus = async (orderId: number) => {
+  const reconcileStatus = async (orderId: number, gateway?: string | null) => {
     try {
-      const res = await fetch(`${BASE}/api/payment/toyyibpay/status?orderId=${orderId}`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const gw = (gateway ?? "toyyibpay").toLowerCase();
+      const endpoint = gw === "billplz"
+        ? `${BASE}/api/payment/billplz/status?orderId=${orderId}`
+        : `${BASE}/api/payment/toyyibpay/status?orderId=${orderId}`;
+      const res = await fetch(endpoint, { credentials: "include", cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json() as { status?: string };
       if (data.status === "PAID") {
-        const histRes = await fetch(`${BASE}/api/business/payment-history`, { credentials: "include", cache: "no-store" });
+        const [histRes, invRes] = await Promise.all([
+          fetch(`${BASE}/api/business/payment-history`, { credentials: "include", cache: "no-store" }),
+          fetch(`${BASE}/api/business/invitations`, { credentials: "include", cache: "no-store" }),
+        ]);
         if (histRes.ok) setPaymentHistory(await histRes.json());
+        if (invRes.ok) setInvitations(await invRes.json());
         toast.success("Payment confirmed! Your invitation is now active.");
       } else {
         toast.info("Payment is still pending. Please check again in a few minutes.");
@@ -411,11 +417,9 @@ export default function BusinessDashboardPage() {
       }
     }
 
-    let config = paymentConfig;
-    if (!config) {
-      try { config = await getPaymentMethodConfig(); setPaymentConfig(config); }
-      catch { config = { toyyibpayEnabled: true, billplzEnabled: false }; }
-    }
+    let config: PaymentMethodConfig;
+    try { config = await getPaymentMethodConfig(); setPaymentConfig(config); }
+    catch { config = paymentConfig ?? { toyyibpayEnabled: true, billplzEnabled: false }; }
 
     const { toyyibpayEnabled, billplzEnabled } = config;
     if (!toyyibpayEnabled && !billplzEnabled) {
@@ -1043,7 +1047,7 @@ export default function BusinessDashboardPage() {
                               ? (
                                 <div className="flex items-center gap-2">
                                   <span className="rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-semibold text-yellow-700">Pending</span>
-                                  <button onClick={() => void reconcileStatus(payment.id)} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 underline underline-offset-2 hover:text-gray-800 disabled:opacity-50">Check Status</button>
+                                  <button onClick={() => void reconcileStatus(payment.id, payment.paymentGateway)} disabled={paymentStartingFor === payment.id} className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 underline underline-offset-2 hover:text-gray-800 disabled:opacity-50">Check Status</button>
                                 </div>
                               )
                               : payment.paymentStatus.toUpperCase() === "EXPIRED"

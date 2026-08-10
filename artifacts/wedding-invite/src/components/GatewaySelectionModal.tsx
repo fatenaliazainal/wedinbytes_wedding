@@ -9,19 +9,13 @@ interface Props {
 
 function ToyyibPayLogo() {
   return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="36" height="36" rx="8" fill="#1A7F3C" />
-      <text x="18" y="24" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="Arial, sans-serif">T</text>
-    </svg>
+    <img src="/toyyibpay-logo.png" alt="ToyyibPay" className="h-8 w-auto object-contain" />
   );
 }
 
 function BillplzLogo() {
   return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="36" height="36" rx="8" fill="#1565C0" />
-      <text x="18" y="24" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" fontFamily="Arial, sans-serif">BPZ</text>
-    </svg>
+    <img src="/billplz-logo.png" alt="Billplz" className="h-8 w-auto object-contain" />
   );
 }
 
