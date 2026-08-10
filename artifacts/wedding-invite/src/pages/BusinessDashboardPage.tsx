@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
+import GatewaySelectionModal from "@/components/GatewaySelectionModal";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import { publicInvitePathOrToken } from "@/lib/invite-url";
 
@@ -1066,24 +1067,10 @@ export default function BusinessDashboardPage() {
 
       {/* Gateway selection modal */}
       {gatewayModalInput && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setGatewayModalInput(null)}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-900">Choose Payment Method</h2>
-              <button onClick={() => setGatewayModalInput(null)} className="text-gray-400 hover:text-gray-700"><X size={18} /></button>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => void executePayment(gatewayModalInput, "toyyibpay")} className="flex items-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-left transition hover:border-gray-900 hover:bg-gray-50">
-                <CreditCard size={20} className="shrink-0 text-gray-600" />
-                <div><p className="text-sm font-semibold text-gray-900">ToyyibPay</p><p className="text-xs text-gray-500">FPX / DuitNow QR</p></div>
-              </button>
-              <button onClick={() => void executePayment(gatewayModalInput, "billplz")} className="flex items-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-left transition hover:border-gray-900 hover:bg-gray-50">
-                <CreditCard size={20} className="shrink-0 text-gray-600" />
-                <div><p className="text-sm font-semibold text-gray-900">Billplz</p><p className="text-xs text-gray-500">FPX / Online Banking</p></div>
-              </button>
-            </div>
-          </div>
-        </div>
+        <GatewaySelectionModal
+          onSelect={(gateway) => void executePayment(gatewayModalInput, gateway)}
+          onClose={() => setGatewayModalInput(null)}
+        />
       )}
     </div>
   );

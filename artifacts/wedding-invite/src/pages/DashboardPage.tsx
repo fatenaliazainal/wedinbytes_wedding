@@ -20,6 +20,7 @@ import { publicInvitePath, publicInvitePathOrToken } from "@/lib/invite-url";
 import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
+import GatewaySelectionModal from "@/components/GatewaySelectionModal";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -1221,36 +1222,10 @@ export default function DashboardPage() {
 
       {/* ── Gateway selection modal ── */}
       {gatewayModalInput && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setGatewayModalInput(null)}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900">Choose Payment Method</h2>
-              <button onClick={() => setGatewayModalInput(null)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => void executePayment(gatewayModalInput, "toyyibpay")}
-                className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-left transition hover:border-slate-900 hover:bg-slate-50"
-              >
-                <CreditCard size={20} className="shrink-0 text-slate-600" />
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">ToyyibPay</p>
-                  <p className="text-xs text-slate-500">FPX / DuitNow QR</p>
-                </div>
-              </button>
-              <button
-                onClick={() => void executePayment(gatewayModalInput, "billplz")}
-                className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-left transition hover:border-slate-900 hover:bg-slate-50"
-              >
-                <CreditCard size={20} className="shrink-0 text-slate-600" />
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Billplz</p>
-                  <p className="text-xs text-slate-500">FPX / Online Banking</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
+        <GatewaySelectionModal
+          onSelect={(gateway) => void executePayment(gatewayModalInput, gateway)}
+          onClose={() => setGatewayModalInput(null)}
+        />
       )}
     </div>
   );
