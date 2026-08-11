@@ -93,6 +93,7 @@ export default function MarketingHomePage() {
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
+  const [heroVideoError, setHeroVideoError] = useState(false);
 
   const goToEditor = useCallback((code?: string) => {
     if (code) navigate(`/editor?new=1&designCode=${encodeURIComponent(code)}`);
@@ -444,15 +445,22 @@ export default function MarketingHomePage() {
                     className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                     style={{ width: 84, height: 24, borderRadius: "0 0 16px 16px" }}
                   />
-                  {/* Video — autoplay, loop, muted */}
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                    src={resolveImageUrl("DisplayWebsiteMockup/DIGITAL_INVITATION.mp4")}
-                  />
+                  {/* Video — autoplay, loop, muted; falls back to logo on R2 error */}
+                  {heroVideoError ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5f0]">
+                      <img src="/logo-wedinbytes.png" alt="Wedinstudio" className="w-24 h-24 object-contain opacity-70" />
+                    </div>
+                  ) : (
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover"
+                      src={resolveImageUrl("DisplayWebsiteMockup/DIGITAL_INVITATION.mp4")}
+                      onError={() => setHeroVideoError(true)}
+                    />
+                  )}
                 </div>
               </div>
             </div>

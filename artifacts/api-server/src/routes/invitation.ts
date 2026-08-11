@@ -151,6 +151,16 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
       business = profile;
     }
   }
+  // Strip package-gated fields from the public response when the
+  // invitation's package does not include those features.
+  if (!isDemoToken(row.token)) {
+    const hasDressCode = await invitationHasFeature(row, "Dress Code");
+    if (!hasDressCode) {
+      (safe as Record<string, unknown>).dresscode = null;
+      (safe as Record<string, unknown>).dresscodeTheme = null;
+      (safe as Record<string, unknown>).dresscodeColors = [];
+    }
+  }
   return { ...safe, isLocked: Boolean(row.lockPinHash), business: business };
 }
 
