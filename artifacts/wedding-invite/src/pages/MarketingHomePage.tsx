@@ -451,7 +451,7 @@ export default function MarketingHomePage() {
                     muted
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover"
-                    src={resolveImageUrl("DisplayWebsiteMockup/WIB59 ETERNAL BLOSSOM.mp4")}
+                    src={resolveImageUrl("DisplayWebsiteMockup/DIGITAL_INVITATION.mp4")}
                   />
                 </div>
               </div>
