@@ -270,12 +270,20 @@ export default function MarketingHomePage() {
                   The invitation's own 28 px internal top padding clears the 24 px notch.
                 */}
                 <div className="absolute inset-0 overflow-hidden flex items-start justify-center">
-                  {demoInvitation && designs[0] ? (
-                    <div style={{ width: 232, height: 413, transform: "scale(1.157)", transformOrigin: "top center", flexShrink: 0, position: "relative" }}>
-                      <CardThumbnail invitation={demoInvitation} design={designs[0]} containerWidth={232} />
+                  {heroVideoError ? (
+                    <div className="w-full h-full flex items-center justify-center bg-[#f5f5f0]">
+                      <img src="/logo-wedinbytes.png" alt="Wedinstudio" className="w-24 h-24 object-contain opacity-70" />
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-[#f6f1e7]" />
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                      src={resolveImageUrl("DisplayWebsiteMockup/DIGITAL_INVITATION.mp4")}
+                      onError={() => setHeroVideoError(true)}
+                    />
                   )}
                 </div>
               </button>
@@ -445,22 +453,15 @@ export default function MarketingHomePage() {
                     className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-gray-900"
                     style={{ width: 84, height: 24, borderRadius: "0 0 16px 16px" }}
                   />
-                  {/* Video — autoplay, loop, muted; falls back to logo on R2 error */}
-                  {heroVideoError ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5f0]">
-                      <img src="/logo-wedinbytes.png" alt="Wedinstudio" className="w-24 h-24 object-contain opacity-70" />
-                    </div>
-                  ) : (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover"
-                      src={resolveImageUrl("DisplayWebsiteMockup/DIGITAL_INVITATION.mp4")}
-                      onError={() => setHeroVideoError(true)}
-                    />
-                  )}
+                  {/* Video — autoplay, loop, muted */}
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src={resolveImageUrl("DisplayWebsiteMockup/WIB59 ETERNAL BLOSSOM.mp4")}
+                  />
                 </div>
               </div>
             </div>
