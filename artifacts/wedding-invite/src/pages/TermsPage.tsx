@@ -149,13 +149,6 @@ export default function TermsPage() {
           </div>
         </section>
 
-        {/* Disclaimer banner */}
-        <section className="mx-auto max-w-3xl px-4 pt-8 sm:px-6">
-          <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-            Dokumen ini adalah untuk tujuan maklumat sahaja dan tidak merupakan nasihat undang-undang. Sila rujuk peguam yang berkelayakan untuk hal-hal undang-undang yang spesifik.
-          </div>
-        </section>
-
         {/* Terms body */}
         <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
           <div className="space-y-8">
