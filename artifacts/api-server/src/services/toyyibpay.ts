@@ -22,6 +22,9 @@ type DuitNowQrStatusResponse = {
 
 let duitNowQrStatusCache: { activated: boolean; checkedAt: number } | undefined;
 const DUITNOW_QR_STATUS_CACHE_MS = 5 * 60 * 1000;
+// Set to true when createBill itself rejects the DuitNow QR flag so subsequent
+// requests skip the flag entirely for the lifetime of this process.
+let duitNowQrRejectedByGateway = false;
 
 function getConfig() {
   const isProduction = process.env.NODE_ENV === "production";
@@ -186,13 +189,15 @@ export async function createToyyibPayBill(input: {
 }) {
   const { userSecretKey, categoryCode, baseUrl } = getConfig();
   let duitNowQrActivated = false;
-  try {
-    duitNowQrActivated = await isDuitNowQrActivated();
-  } catch {
-    // DuitNow QR is an optional channel; keep the established FPX checkout available
-    // if ToyyibPay's capability check is temporarily unavailable.
+  if (!duitNowQrRejectedByGateway) {
+    try {
+      duitNowQrActivated = await isDuitNowQrActivated();
+    } catch {
+      // DuitNow QR is an optional channel; keep the established FPX checkout available
+      // if ToyyibPay's capability check is temporarily unavailable.
+    }
   }
-  const response = await postForm("createBill", {
+  const basePayload = {
     userSecretKey,
     categoryCode,
     billName: cleanBillText(input.billName, 30),
@@ -208,13 +213,34 @@ export async function createToyyibPayBill(input: {
     billPhone: input.payerPhone?.trim() || "",
     billPaymentChannel: "0",
     billExpiryDays: "3",
-    ...(duitNowQrActivated
-      ? { enableDuitNowQR: "1", chargeDuitNowQR: "0" }
-      : {}),
-  });
+  };
 
-  const bill = Array.isArray(response) ? response[0] as Record<string, unknown> | undefined : undefined;
-  const billCode = String(bill?.BillCode ?? bill?.billCode ?? "");
+  // Try with DuitNow QR first (if activated), then fall back without it if the
+  // account rejects the flag — avoids a hard failure when the activation check
+  // reports true but the account hasn't completed POS registration.
+  const attempts = duitNowQrActivated
+    ? [
+        { ...basePayload, enableDuitNowQR: "1", chargeDuitNowQR: "0" },
+        basePayload,
+      ]
+    : [basePayload];
+
+  let response: unknown;
+  let billCode = "";
+  for (const payload of attempts) {
+    response = await postForm("createBill", payload);
+    const bill = Array.isArray(response) ? response[0] as Record<string, unknown> | undefined : undefined;
+    billCode = String(bill?.BillCode ?? bill?.billCode ?? "");
+    if (billCode) break;
+    // createBill rejected the DuitNow QR flag — mark it disabled for the
+    // entire process lifetime so we stop adding an extra round-trip.
+    if (duitNowQrActivated) {
+      duitNowQrRejectedByGateway = true;
+      duitNowQrStatusCache = { activated: false, checkedAt: Date.now() };
+      duitNowQrActivated = false;
+    }
+  }
+
   if (!billCode) {
     throw new Error(`ToyyibPay createBill failed: ${getToyyibPayResponseMessage(response)}`);
   }
