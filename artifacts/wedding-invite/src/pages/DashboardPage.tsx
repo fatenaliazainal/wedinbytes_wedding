@@ -864,6 +864,9 @@ export default function DashboardPage() {
           <button onClick={() => setActiveSection('orders')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'orders' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Dashboard
           </button>
+          <button onClick={() => setActiveSection('paymentHistory')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'paymentHistory' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
+            Payment History
+          </button>
           <button onClick={() => setActiveSection('profile')} className={`pb-3 text-sm font-bold tracking-wide transition-colors ${activeSection === 'profile' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>
             Profile Settings
           </button>
@@ -1086,6 +1089,36 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {activeSection === "paymentHistory" && (
+          <div className="space-y-6" data-testid="buyer-payment-history-page">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <FileText size={13} className="text-slate-900" />
+                Payment records
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="buyer-payment-history-title">Payment History</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                View your completed payments for wedding invitations.
+              </p>
+            </div>
+            <PaymentMethodsNotice />
+            <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm" data-testid="buyer-payment-history-card">
+              <PaymentHistoryTable
+                payments={paymentHistory}
+                onDownloadReceipt={downloadReceipt}
+                onPayNow={(payment) => {
+                  if (payment.paymentStatus.toUpperCase() === "EXPIRED" && payment.invitation?.id) {
+                    void startPayment({ invitationId: payment.invitation.id });
+                  } else {
+                    void startPayment({ orderId: payment.id });
+                  }
+                }}
+                onRefreshStatus={(payment) => void reconcileStatus(payment.id)}
+              />
+            </div>
           </div>
         )}
 
