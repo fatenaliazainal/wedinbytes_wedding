@@ -1622,6 +1622,18 @@ export default function EditorPage({
       });
       if (r.ok) {
         toast.success("Details saved successfully!");
+        // Package is now persisted in DB — remove ?package= URL param so
+        // loadData re-reads the saved value instead of the stale URL param.
+        const savedParams = new URLSearchParams(window.location.search);
+        if (savedParams.has("package")) {
+          savedParams.delete("package");
+          const nextQuery = savedParams.toString();
+          window.history.replaceState(
+            window.history.state,
+            "",
+            `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`,
+          );
+        }
         await loadData(true);
       } else {
         const errorData = await r.json().catch(() => ({}));
