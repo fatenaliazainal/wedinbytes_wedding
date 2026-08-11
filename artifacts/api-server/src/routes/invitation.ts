@@ -151,6 +151,23 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
       business = profile;
     }
   }
+  // Strip package-gated fields so Standard buyers don't see Premium-only
+  // sections (Dress Code, Gallery) on their public invitation.
+  // Demo invitation (no packageId) keeps all fields for showcase purposes.
+  if (row.packageId !== null) {
+    const [hasDressCode, hasPhotoGallery] = await Promise.all([
+      invitationHasFeature(row, "Dress Code"),
+      invitationHasFeature(row, "Photo Gallery"),
+    ]);
+    if (!hasDressCode) {
+      (safe as Record<string, unknown>).dresscode = null;
+      (safe as Record<string, unknown>).dresscodeTheme = null;
+      (safe as Record<string, unknown>).dresscodeColors = [];
+    }
+    if (!hasPhotoGallery) {
+      (safe as Record<string, unknown>).galleryImages = [];
+    }
+  }
   return { ...safe, isLocked: Boolean(row.lockPinHash), business: business };
 }
 
