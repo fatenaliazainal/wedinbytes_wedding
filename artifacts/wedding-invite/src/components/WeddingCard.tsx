@@ -957,7 +957,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {rsvpCount && (rsvpCount.attending > 0 || rsvpCount.notAttending > 0) && (
               <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-4">
                 <div className="text-center">
-                  <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.attending}</p>
+                  <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.totalGuests}</p>
                   <p className="text-xs uppercase tracking-wider text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.attendingLabel}</p>
                 </div>
                 <div className="text-center">

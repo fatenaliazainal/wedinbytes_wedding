@@ -1,0 +1,82 @@
+Please investigate and fix the RSVP guest count calculation.
+
+IMPORTANT:
+Do NOT change the existing RSVP form UI, styling, layout, or unrelated functionality.
+Do NOT modify the database schema unless absolutely necessary.
+First inspect the existing RSVP submission flow, database fields, API response, and the code that calculates/displays the RSVP total.
+
+CURRENT ISSUE:
+In the RSVP form, the guest count field allows the user to enter the number of guests attending.
+
+Example:
+- Guest name: Ali
+- Attendance: Ya
+- Bilangan tetamu: 3
+
+The RSVP summary/dashboard is currently showing 1 pax because it appears to be counting the number of RSVP submissions instead of the actual number entered in "Bilangan tetamu".
+
+EXPECTED BEHAVIOUR:
+If one person submits:
+Name: Ali
+Attendance: Ya
+Guest count: 3
+
+The total attending should be:
+3 pax
+
+NOT:
+1 pax
+
+Another example:
+RSVP 1:
+- Ali
+- Ya
+- Guest count: 3
+
+RSVP 2:
+- Siti
+- Ya
+- Guest count: 2
+
+Total attending = 5 pax
+
+The calculation should be:
+
+Total attending pax = SUM(guestCount) for all RSVP responses where attendance = "Ya"
+
+Do NOT simply count the number of RSVP records.
+
+ALSO HANDLE:
+- If attendance = "Tidak", guestCount must NOT be included in the attending total.
+- If guestCount is missing/null/invalid, safely treat it as 0 or the existing intended default.
+- Make sure the guest count is parsed as a number, not concatenated as a string.
+- Check whether the frontend is calculating the total or whether the backend/API is already returning an incorrect total.
+- Fix the calculation at the correct source so all RSVP statistics use the correct value.
+
+BEFORE CHANGING CODE:
+1. Trace where RSVP submissions are saved.
+2. Identify the exact database field storing "Bilangan tetamu".
+3. Identify where the RSVP total/pax count is calculated.
+4. Confirm whether the current logic is counting RSVP records instead of summing guestCount.
+5. Explain the root cause briefly.
+
+THEN:
+- Apply the smallest possible fix.
+- Preserve all existing RSVP functionality.
+- Do not refactor unrelated code.
+- Do not change the RSVP form design.
+- Do not change existing API contracts unless required.
+- Verify with test cases.
+
+TEST CASES:
+1. One RSVP, Ya, guestCount = 3 → total = 3 pax
+2. Two RSVPs: 3 + 2 → total = 5 pax
+3. One RSVP, Tidak, guestCount = 3 → attending total = 0 pax
+4. Three RSVPs: Ya 4 + Tidak 2 + Ya 1 → attending total = 5 pax
+5. guestCount = 1 → total = 1 pax
+
+After fixing, tell me:
+- Which file(s) were changed
+- What the root cause was
+- What calculation was changed
+- Whether the database/schema was modified

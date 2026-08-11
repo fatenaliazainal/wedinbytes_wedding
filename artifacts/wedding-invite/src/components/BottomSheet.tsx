@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -35,17 +35,6 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const dragY = useMotionValue(0);
 
-  // Track whether the inner content has been scrolled down.
-  // When scrolled, we disable the drag-to-dismiss gesture so the user can
-  // scroll the content freely. Touch-action is updated in sync so the browser
-  // processes pan-y events instead of handing them to Framer Motion.
-  const [isContentScrolled, setIsContentScrolled] = useState(false);
-
-  // Reset scroll state whenever the sheet closes so next open starts fresh.
-  useEffect(() => {
-    if (!isOpen) setIsContentScrolled(false);
-  }, [isOpen]);
-
   // Prevent background scroll while sheet is open
   useEffect(() => {
     if (!isOpen || previewMode) return;
@@ -61,27 +50,19 @@ export function BottomSheet({
     info: { offset: { y: number }; velocity: { y: number } },
   ) => {
     if (info.offset.y > 80 || info.velocity.y > 450) {
-      // Snap inner position back to 0 so outer exit animation is clean
       dragY.set(0);
       onClose();
     }
-    // Otherwise Framer Motion springs the inner div back to y=0 automatically
   };
 
   /** The visible sheet panel — shared across all render paths. */
   const sheetPanel = (
     <motion.div
-      drag={isContentScrolled ? false : "y"}
+      drag="y"
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0.03, bottom: 0.55 }}
-      style={{
-        y: dragY,
-        // When content is scrolled: allow pan-y so the inner scroller works.
-        // When at top: none so Framer Motion can intercept the vertical gesture
-        // for drag-to-dismiss.
-        touchAction: isContentScrolled ? "pan-y" : "none",
-      }}
-      onDragEnd={isContentScrolled ? undefined : handleDragEnd}
+      style={{ y: dragY, touchAction: "none" }}
+      onDragEnd={handleDragEnd}
       className="w-full rounded-t-[26px] bg-card shadow-2xl border border-primary/10 border-b-0"
     >
       {/* ── Drag handle ── */}
@@ -107,22 +88,22 @@ export function BottomSheet({
         </button>
       </div>
 
-      {/* ── Scrollable content ── */}
+      {/* ── Scrollable content ──
+          onPointerDown stopPropagation is the key fix:
+          Framer Motion listens for pointerdown on the motion.div to start drag.
+          By stopping bubbling here, touches inside the content area never reach
+          the drag handler — the browser handles them as normal scroll instead.
+          The drag-to-dismiss still works from the handle and header above. */}
       <div
         className="overflow-y-auto overscroll-contain px-5"
         style={{
           maxHeight: "calc(75vh - 76px)",
           paddingBottom: "max(20px, env(safe-area-inset-bottom))",
-          // Always allow pan-y on the content div itself so iOS Safari
-          // doesn't block scroll when the parent's touchAction is "none".
           touchAction: "pan-y",
           WebkitOverflowScrolling: "touch",
           ...style,
         } as React.CSSProperties}
-        onScroll={(e) => {
-          const scrolled = e.currentTarget.scrollTop > 2;
-          setIsContentScrolled(scrolled);
-        }}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         {children}
       </div>
