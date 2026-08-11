@@ -88,7 +88,7 @@ const ALLOWED_FIELDS = [
   "packageId",
 ];
 
-async function publicInvitation(row: typeof invitationTable.$inferSelect) {
+async function publicInvitation(row: typeof invitationTable.$inferSelect, ownerView = false) {
   const {
     lockPinHash: _lockPinHash,
     userId: _userId,
@@ -151,9 +151,9 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect) {
       business = profile;
     }
   }
-  // Strip package-gated fields from the public response when the
-  // invitation's package does not include those features.
-  if (!isDemoToken(row.token)) {
+  // Strip package-gated fields from guest-facing responses only.
+  // Owner/admin views (editor) keep the full data so saved values are not lost.
+  if (!isDemoToken(row.token) && !ownerView) {
     const hasDressCode = await invitationHasFeature(row, "Dress Code");
     if (!hasDressCode) {
       (safe as Record<string, unknown>).dresscode = null;
@@ -239,7 +239,7 @@ router.get("/invitations-by-user/:userId", async (req, res) => {
       .from(invitationTable)
       .where(eq(invitationTable.userId, userId))
       .orderBy(invitationTable.createdAt);
-    res.json(await Promise.all(rows.map(publicInvitation)));
+    res.json(await Promise.all(rows.map((r) => publicInvitation(r, true))));
   } catch (err) {
     req.log.error({ err }, "Failed to list invitations by user");
     res.status(500).json({ error: "Internal server error" });
@@ -268,8 +268,13 @@ router.get("/invitation/:token", async (req, res) => {
       res.status(410).json({ error: "Invitation expired" });
       return;
     }
-    // Return full row (merge extra fields beyond what api-zod knows)
-     res.json(await publicInvitation(row));
+    // Return full row (merge extra fields beyond what api-zod knows).
+    // Pass ownerView=true when the authenticated user is the owner or admin
+    // so package-gated fields are not stripped in the editor.
+    const isOwner =
+      req.session?.role === "admin" ||
+      (req.session?.userId != null && req.session.userId === row.userId);
+    res.json(await publicInvitation(row, isOwner));
   } catch (err) {
     req.log.error({ err }, "Failed to get invitation");
     res.status(500).json({ error: "Internal server error" });
