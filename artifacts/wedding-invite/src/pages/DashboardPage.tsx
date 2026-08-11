@@ -675,7 +675,13 @@ export default function DashboardPage() {
       return;
     }
 
-    // ToyyibPay is the default — use it directly when available, fall back to Billplz
+    // If both are enabled, show gateway selection modal
+    if (toyyibpayEnabled && billplzEnabled) {
+      setGatewayModalInput(input);
+      return;
+    }
+
+    // Only one gateway enabled — start directly
     await executePayment(input, toyyibpayEnabled ? "toyyibpay" : "billplz");
   };
 

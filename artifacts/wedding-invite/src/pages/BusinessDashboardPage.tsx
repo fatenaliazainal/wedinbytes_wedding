@@ -426,7 +426,7 @@ export default function BusinessDashboardPage() {
       toast.error("No payment methods are currently available. Please contact support.");
       return;
     }
-    // ToyyibPay is the default — use it directly when available, fall back to Billplz
+    if (toyyibpayEnabled && billplzEnabled) { setGatewayModalInput(input); return; }
     await executePayment(input, toyyibpayEnabled ? "toyyibpay" : "billplz");
   };
 
