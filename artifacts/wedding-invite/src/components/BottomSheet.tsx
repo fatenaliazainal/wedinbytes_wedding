@@ -143,9 +143,9 @@ export function BottomSheet({
             />
             <motion.div
               key="bs-panel-inset"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
               transition={SPRING}
               className="w-full relative z-50"
             >
@@ -173,9 +173,9 @@ export function BottomSheet({
           />
           <motion.div
             key="bs-panel"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
             transition={SPRING}
             className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
           >
