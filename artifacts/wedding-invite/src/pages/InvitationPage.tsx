@@ -386,6 +386,10 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!isOpened) {
       setShowBottomNav(false);
+    } else {
+      // Reset card scroll to top when envelope opens so back-navigation
+      // doesn't restore a mid-scroll position that shows blank content.
+      if (cardScrollRef.current) cardScrollRef.current.scrollTop = 0;
     }
   }, [isOpened]);
 

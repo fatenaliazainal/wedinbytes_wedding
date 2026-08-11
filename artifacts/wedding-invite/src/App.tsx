@@ -41,8 +41,25 @@ function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.body.style.overflow = "";
+    // Only clear body overflow for non-invitation pages.
+    // Invitation page manages its own scroll and BottomSheet manages body overflow;
+    // clearing it here would race with BottomSheet's cleanup on those routes.
+    if (!location.startsWith("/invite/")) {
+      document.body.style.overflow = "";
+    }
   }, [location]);
+
+  // Handle BFCache restore (browser back/forward from cached page).
+  // If a modal was open when the user navigated away, body overflow may be
+  // stuck as "hidden" in the restored snapshot — clear it on pageshow.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) document.body.style.overflow = "";
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   return null;
 }
 
