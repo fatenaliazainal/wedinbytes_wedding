@@ -999,21 +999,16 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             </RevealOnScroll>
           )}
 
+          {Array.isArray(inv.galleryImages) && (inv.galleryImages as string[]).length > 0 && (
           <RevealOnScroll>
-          {/* Gallery */}
+          {/* Gallery — only rendered when images exist; hidden for packages without gallery feature */}
           <div className={detailBlock}>
             <p className={sectionTitleCls} style={sectionTitleStyle}>{t.galleryLabel}</p>
             <OrnamentDivider />
-            {(() => {
-              const images = Array.isArray(inv.galleryImages) ? (inv.galleryImages as string[]) : [];
-              return images.length > 0 ? (
-                <GalleryCarousel images={images} label={t.galleryLabel} />
-              ) : (
-                <p className="text-sm text-foreground/70">{t.galleryLabel}.</p>
-              );
-            })()}
+            <GalleryCarousel images={inv.galleryImages as string[]} label={t.galleryLabel} />
           </div>
           </RevealOnScroll>
+          )}
 
           {/* Footer / Branding */}
           {inv.showFooter !== false && (

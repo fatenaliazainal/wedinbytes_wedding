@@ -4149,7 +4149,11 @@ export default function EditorPage({
                 }
               >
                 <WeddingCard
-                  invitation={inv}
+                  invitation={
+                    mode !== "demo" && activePackageId !== null && !activeFeatureNames.has("Dress Code")
+                      ? { ...inv, dresscode: "", dresscodeTheme: "", dresscodeColors: [] }
+                      : inv
+                  }
                   cardImageUrl={resolveImageUrl(
                     design.cardImageUrl ||
                       "wed_card_design/20260531-041903-27796.jpg",
