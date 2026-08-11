@@ -34,19 +34,19 @@ const BUILT_FOR = [
     icon: ClipboardList,
     title: "DEDICATED CLIENT FORM",
     description:
-      "Share a form with your client. They fill in the details themselves, no more collecting info through WhatsApp.",
+      "Each client gets their own form link. They fill in the details — you skip the back-and-forth entirely.",
   },
   {
     icon: Monitor,
-    title: "AUTO CREATED INVITATION",
+    title: "INVITATION BUILT INSTANTLY",
     description:
-      "Once details are submitted, the invitation is automatically generated in our editor as a live website.",
+      "The moment they submit, a live invitation website is created and ready to preview in your dashboard.",
   },
   {
     icon: LayoutDashboard,
-    title: "ORGANISE ALL CLIENTS",
+    title: "ONE DASHBOARD, ALL CLIENTS",
     description:
-      "Manage all your clients and their invitation websites in one organised dashboard.",
+      "Track every client, every invitation, and every upcoming event date — all in one organised place.",
   },
 ];
 
@@ -55,38 +55,38 @@ const HOW_IT_WORKS = [
     step: 1,
     icon: UserPlus,
     title: "Add Your Client",
-    description: "Create a new client in your planner dashboard.",
+    description: "Select a package and add a new client to your dashboard in seconds.",
   },
   {
     step: 2,
     icon: Send,
-    title: "Share Their Form",
+    title: "Share the Form",
     description:
-      "Send your client their dedicated form link to complete the details.",
+      "Copy their unique form link and send it — WhatsApp, email, however you like.",
   },
   {
     step: 3,
     icon: ClipboardCheck,
-    title: "Client Submits Details",
+    title: "They Fill It In",
     description:
-      "Your client fills in everything they need for the invitation.",
+      "Your client fills in all their details at their own pace. No chasing required.",
   },
   {
     step: 4,
     icon: Wand2,
-    title: "Invitation Auto Created",
+    title: "Invitation Goes Live",
     description:
-      "The invitation is instantly generated in the editor as a live website.",
+      "Their invitation website is instantly created. Preview, refine, and share.",
   },
 ];
 
 const PARTNER_BENEFITS = [
-  "Exclusive partner pricing",
-  "Dedicated form for each client",
-  "Auto created invitation website",
-  "Organised client management",
-  "Instant updates & preview",
-  "Collaborator exposure",
+  "Partner pricing per package",
+  "Unique form link per client",
+  "Invitation created automatically",
+  "Dashboard to manage all clients",
+  "Edit & preview anytime, instantly",
+  "Listed as a featured collaborator",
 ];
 
 export default function BusinessProposalPage() {
@@ -163,14 +163,14 @@ export default function BusinessProposalPage() {
         <div className="mx-auto max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-500 mb-5">
-              FOR EVENT PLANNERS
+              FOR WEDDING PROFESSIONALS
             </p>
             <h1 className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-gray-900 mb-6">
               You Handle the Event.<br />
               <em className="not-italic text-[#3d5a3e]">We Simplify the Invitation.</em>
             </h1>
             <p className="text-sm leading-7 text-gray-500 max-w-md mb-8">
-              A smarter way to manage your clients' digital invitations. Your client fills in the details, and the invitation is automatically created in our editor — as a live website.
+              Stop collecting details over WhatsApp. Give each client their own form, and watch their invitation build itself — live, shareable, and ready to send.
             </p>
             <button
               onClick={() => navigate("/register/business")}
@@ -210,7 +210,7 @@ export default function BusinessProposalPage() {
       <section className="bg-gray-50 border-y border-gray-100 px-6 py-14 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <p className="text-center text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-10">
-            BUILT FOR EVENT PLANNERS
+            BUILT FOR WEDDING PROFESSIONALS
           </p>
           <div className="grid gap-8 sm:grid-cols-3">
             {BUILT_FOR.map(({ icon: Icon, title, description }) => (
@@ -260,19 +260,19 @@ export default function BusinessProposalPage() {
         <div className="mx-auto max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-4">
-              AUTO CREATED AS A LIVE WEBSITE
+              READY THE MOMENT THEY SUBMIT
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold leading-[1.15] text-gray-900 mb-5">
               They Fill In.<br />The Invitation<br />Builds Itself.
             </h2>
             <p className="text-sm leading-7 text-gray-500 mb-6">
-              As soon as the details are submitted, the invitation is automatically created in the editor — as a live website.
+              No copy-pasting, no manual setup. The moment your client submits their details, a complete invitation website is live in your dashboard — ready to preview, edit, and share.
             </p>
             <ul className="space-y-2.5 mb-6">
               {[
-                "You and your client can preview it anytime",
-                "Edit and update instantly",
-                "No manual setup, no waiting",
+                "Preview together with your client before publishing",
+                "Make edits anytime — changes reflect instantly",
+                "Share a direct link or RSVP link straight away",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2.5 text-sm text-gray-700">
                   <Check size={14} className="text-[#3d5a3e] shrink-0" />
@@ -285,7 +285,7 @@ export default function BusinessProposalPage() {
                 <Heart size={13} className="text-[#3d5a3e]" />
               </div>
               <p className="text-xs leading-5 text-gray-500">
-                It's your client's information. Our system turns it into a beautiful invitation website.
+                Their details, your finishing touch — a beautiful invitation website that reflects the couple's big day.
               </p>
             </div>
           </div>
@@ -376,13 +376,13 @@ export default function BusinessProposalPage() {
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-8">
           <div>
             <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-white/50 mb-3">
-              READY TO WORK TOGETHER?
+              READY TO GET STARTED?
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Let Us Simplify the Invitation Process.
+              Less Admin. More Events.
             </h2>
             <p className="text-sm text-white/60 max-w-sm leading-6">
-              Save time, stay organised, and give your clients a better invitation experience.
+              Join wedding professionals already using WedinBytes to deliver polished invitations — faster, with zero back-and-forth.
             </p>
           </div>
           <div className="flex flex-col items-center gap-4 shrink-0">
@@ -390,7 +390,7 @@ export default function BusinessProposalPage() {
               onClick={() => navigate("/register/business")}
               className="inline-flex items-center gap-2 bg-white text-[#2d3d2e] text-xs font-bold px-6 py-3 rounded hover:bg-gray-100 transition-colors tracking-widest whitespace-nowrap"
             >
-              BECOME A WEDINSTUDIO PARTNER <ArrowRight size={13} />
+              BECOME A PARTNER <ArrowRight size={13} />
             </button>
             <p className="text-xs text-white/40 italic">You handle the event. We simplify the invitation.</p>
           </div>
