@@ -252,6 +252,25 @@ export default function BusinessProposalPage() {
               </div>
             ))}
           </div>
+
+          {/* CTA after How It Works */}
+          <div className="mt-14 text-center">
+            <button
+              onClick={() => navigate("/register/business")}
+              className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-7 py-3 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
+            >
+              START AS A PARTNER <ArrowRight size={13} />
+            </button>
+            <p className="mt-3 text-xs text-gray-400">
+              Already have an account?{" "}
+              <button
+                onClick={() => navigate("/login")}
+                className="text-[#3d5a3e] font-bold hover:underline"
+              >
+                Log in
+              </button>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -341,7 +360,7 @@ export default function BusinessProposalPage() {
             <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-6">
               PARTNER BENEFITS
             </p>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-7">
               {PARTNER_BENEFITS.map((benefit) => (
                 <div key={benefit} className="flex items-center gap-2 text-sm text-gray-700">
                   <Check size={14} className="text-[#3d5a3e] shrink-0" />
@@ -349,6 +368,12 @@ export default function BusinessProposalPage() {
                 </div>
               ))}
             </div>
+            <button
+              onClick={() => navigate("/register/business")}
+              className="inline-flex items-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold px-6 py-2.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest"
+            >
+              JOIN AS A PARTNER <ArrowRight size={13} />
+            </button>
           </div>
           {/* Collaborators */}
           <div>
@@ -359,7 +384,7 @@ export default function BusinessProposalPage() {
               Your Brand Deserves Visibility Too.
             </h2>
             <p className="text-sm leading-7 text-gray-500 mb-6">
-              We feature our Event Planner partners in our Collaborators section with your logo and social media link.
+              We feature our wedding professional partners in our Collaborators section with your logo and social media link.
             </p>
             <button
               onClick={() => navigate("/collaborators")}
@@ -398,6 +423,22 @@ export default function BusinessProposalPage() {
       </section>
 
       <SiteFooter />
+
+      {/* ── Sticky mobile CTA bar ── */}
+      {!user && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-lg">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-gray-900 truncate">Ready to simplify invitations?</p>
+            <p className="text-[10px] text-gray-400">Join as a partner — it's free to start</p>
+          </div>
+          <button
+            onClick={() => navigate("/register/business")}
+            className="shrink-0 inline-flex items-center gap-1.5 bg-[#3d5a3e] text-white text-[11px] font-bold px-4 py-2.5 rounded hover:bg-[#2d4330] transition-colors tracking-widest whitespace-nowrap"
+          >
+            GET STARTED <ArrowRight size={11} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
