@@ -230,6 +230,8 @@ export default function InvitationPage() {
   // ── YouTube IFrame API player ────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
+  const ytPlayerReadyRef = useRef(false);   // true once onReady fires
+  const pendingPlayRef = useRef(false);      // play was requested before ready
   const [isPlaying, setIsPlaying] = useState(false);
   const hasUserMutedRef = useRef(false);
   // Holds the first-interaction handler so we can clean it up if needed.
@@ -263,6 +265,14 @@ export default function InvitationPage() {
           fs: 0,
         },
         events: {
+          onReady: () => {
+            ytPlayerReadyRef.current = true;
+            // User tapped before the player finished loading — play now.
+            if (pendingPlayRef.current) {
+              pendingPlayRef.current = false;
+              try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+            }
+          },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -497,8 +507,10 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
-            else { playAudioNow(); }
+            if (isYouTubeMusic) {
+              if (ytPlayerReadyRef.current) { try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ } }
+              else { pendingPlayRef.current = true; }
+            } else { playAudioNow(); }
             setIsOpened(true);
           }}
           initialsImageUrl={initialsImageUrl || undefined}
@@ -512,8 +524,10 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
-            else { playAudioNow(); }
+            if (isYouTubeMusic) {
+              if (ytPlayerReadyRef.current) { try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ } }
+              else { pendingPlayRef.current = true; }
+            } else { playAudioNow(); }
             setIsOpened(true);
           }}
           initialsImageUrl={initialsImageUrl || undefined}
