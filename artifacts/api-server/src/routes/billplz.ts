@@ -172,8 +172,8 @@ async function applyBillplzPayment(
       ? (() => {
           const slugify = (s: string) =>
             s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-          const g = slugify(inv.groomName || inv.coverGroomName || "");
-          const b = slugify(inv.brideName || inv.coverBrideName || "");
+          const g = slugify(inv.coverGroomName || inv.groomName || "");
+          const b = slugify(inv.coverBrideName || inv.brideName || "");
           return g && b ? `${g}-${b}` : null;
         })()
       : null;

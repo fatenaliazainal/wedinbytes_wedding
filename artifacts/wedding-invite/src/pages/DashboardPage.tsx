@@ -912,7 +912,7 @@ export default function DashboardPage() {
                 {effectiveViewMode === "grid" ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {invitations.map((card, index) => {
-                      const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
+                      const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design ?? null;
                       const cardInviteLink = inviteLinkFor(card);
                       const actions = actionButtonsFor(card);
                       const expired = isExpired(card.createdAt);
@@ -1011,7 +1011,7 @@ export default function DashboardPage() {
                        </thead>
                        <tbody className="divide-y divide-slate-100">
                          {invitations.map(card => {
-                           const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? null;
+                           const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design ?? null;
                            const cardInviteLink = inviteLinkFor(card);
                            const actions = actionButtonsFor(card);
                            const expired = isExpired(card.createdAt);

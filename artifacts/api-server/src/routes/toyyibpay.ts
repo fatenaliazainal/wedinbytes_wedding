@@ -221,9 +221,9 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
     const slugSnapshot = inv && !inv.lockedSlug
       ? (() => {
           const slugify = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-          // Mirror frontend logic: prefer cover name, fall back to main groom/bride name
-          const g = slugify(inv.groomName || inv.coverGroomName || "");
-          const b = slugify(inv.brideName || inv.coverBrideName || "");
+          // Cover name takes priority over full name for the URL slug.
+          const g = slugify(inv.coverGroomName || inv.groomName || "");
+          const b = slugify(inv.coverBrideName || inv.brideName || "");
           return g && b ? `${g}-${b}` : null;
         })()
       : null;

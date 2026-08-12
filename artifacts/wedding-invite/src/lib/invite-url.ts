@@ -40,8 +40,8 @@ export function publicInvitePath(invitation: {
   const nameSlug =
     invitation.lockedSlug ||
     inviteNameSlug(
-      invitation.groomName || invitation.coverGroomName,
-      invitation.brideName || invitation.coverBrideName,
+      invitation.coverGroomName || invitation.groomName,
+      invitation.coverBrideName || invitation.brideName,
     );
   return nameSlug ? `/invite/${dateCode}/${nameSlug}` : null;
 }
