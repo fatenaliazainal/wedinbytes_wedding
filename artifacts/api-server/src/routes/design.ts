@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { GetActiveDesignResponse, ListDesignsResponse, ActivateDesignResponse } from "@workspace/api-zod";
 import { db, cardDesignTable } from "@workspace/db";
-import { eq, ilike, and, or, sql, type SQL } from "drizzle-orm";
+import { eq, ilike, and, or, sql, desc, type SQL } from "drizzle-orm";
 import multer from "multer";
 import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-admin";
 import { auditEvent, requireAdmin } from "../lib/security";
@@ -147,7 +147,10 @@ router.get("/design", async (req, res) => {
       .select()
       .from(cardDesignTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(cardDesignTable.id);
+      // Newest design first (highest ID = most recently added).
+      // TODO: when purchase data exists, surface the 10 most-bought designs
+      // at the top (desc purchaseCount), then the rest ascending by id.
+      .orderBy(desc(cardDesignTable.id));
 
     // Filter by color in JS — jsonb @> requires a cast and the array is small
     const filtered = color?.trim()
