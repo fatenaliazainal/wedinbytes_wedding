@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, Component, type ReactNode } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
@@ -36,6 +36,39 @@ import BusinessRegisterPage from "@/pages/BusinessRegisterPage";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
 import TermsPage from "@/pages/TermsPage";
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gray-50 px-4 text-center">
+          <p className="text-4xl">⚠️</p>
+          <h1 className="text-lg font-semibold text-gray-800">Ralat berlaku</h1>
+          <p className="text-sm text-gray-500 max-w-xs">Cuba muat semula halaman atau kembali ke laman utama.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => { this.setState({ error: null }); window.location.reload(); }}
+              className="px-5 py-2 rounded-full bg-[#3d5a3e] text-white text-sm font-medium hover:bg-[#2d4330] transition-colors"
+            >
+              Muat Semula
+            </button>
+            <a href="/" className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors">
+              Laman Utama
+            </a>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -137,16 +170,18 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "") }>
-            <Router />
-          </WouterRouter>
-          <Toaster position="top-center" />
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "") }>
+              <Router />
+            </WouterRouter>
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
