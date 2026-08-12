@@ -2586,7 +2586,7 @@ export default function EditorPage({
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     {inv.dresscodeColors.map((color, index) => (
-                      <div key={`${color}-${index}`} className="relative">
+                      <div key={index} className="relative">
                         <HexColorInput
                           value={color}
                           compact
