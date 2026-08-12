@@ -245,7 +245,12 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!youtubeVideoId) return undefined;
 
+    // Guards against stale callbacks firing after this component unmounts.
+    // Using a closure variable (not a ref) so each effect run has its own flag.
+    let mounted = true;
+
     const initYTPlayer = () => {
+      if (!mounted) return;           // component already unmounted
       if (ytPlayerRef.current) return; // already initialised
       const el = document.getElementById("yt-bg-player");
       if (!el) return;
@@ -266,6 +271,7 @@ export default function InvitationPage() {
         },
         events: {
           onReady: () => {
+            if (!mounted) return;
             ytPlayerReadyRef.current = true;
             // User tapped before the player finished loading — play now.
             if (pendingPlayRef.current) {
@@ -275,6 +281,7 @@ export default function InvitationPage() {
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
+            if (!mounted) return;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
@@ -316,15 +323,19 @@ export default function InvitationPage() {
     }
 
     return () => {
+      // Signal all pending callbacks that this component is gone.
+      mounted = false;
+
       if (firstInteractionRef.current) {
         document.removeEventListener("click",       firstInteractionRef.current);
         document.removeEventListener("touchstart",  firstInteractionRef.current);
         document.removeEventListener("pointerdown", firstInteractionRef.current);
         firstInteractionRef.current = null;
       }
+      // Destroy the player — this may fire onStateChange synchronously, but
+      // the mounted=false guard above prevents any setState calls.
       try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
       ytPlayerRef.current = null;
-      setIsPlaying(false);
     };
   }, [youtubeVideoId]);
 

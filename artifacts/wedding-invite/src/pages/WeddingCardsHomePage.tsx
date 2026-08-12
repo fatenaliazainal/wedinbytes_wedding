@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { Search, Heart, X, ChevronLeft, ChevronRight, User } from "lucide-react";
-import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
+import { useListDesigns } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
 import { CatalogDesignCard } from "@/components/CatalogDesignCard";
 import SiteFooter from "@/components/SiteFooter";
@@ -64,7 +64,6 @@ export default function WeddingCardsHomePage() {
   }), [query, colorFilter, categoryFilter]);
 
   const { data: designs = [], isLoading, isError } = useListDesigns(filterParams);
-  const { data: demoInvitation } = useGetInvitation("demo");
 
   const hasFilters = !!(query || colorFilter || categoryFilter);
   const totalPages = Math.ceil(designs.length / CARDS_PER_PAGE);
