@@ -380,7 +380,7 @@ function CodeBadge({ code }: { code: string }) {
 
 // ── Design Form (Add / Edit) ───────────────────────────────────────────────────
 
-const ANIMATION_OPTIONS = ["doors", "envelope", "fade", "none"];
+const ANIMATION_OPTIONS = ["doors", "fade", "none"];
 
 const SCRIPT_FONT_OPTIONS = [
   { value: "Dancing Script", label: "Dancing Script" },

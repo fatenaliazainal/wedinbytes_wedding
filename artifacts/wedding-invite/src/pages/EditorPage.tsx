@@ -82,7 +82,6 @@ const TAB_FEATURE_MAP: Record<string, string[]> = {
 
 const OPENING_ANIMS = [
   { value: "doors", label: "Doors" },
-  { value: "envelope", label: "Envelope" },
   { value: "window", label: "Window" },
 ];
 
