@@ -52,6 +52,10 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
           <p className="text-4xl">⚠️</p>
           <h1 className="text-lg font-semibold text-gray-800">Ralat berlaku</h1>
           <p className="text-sm text-gray-500 max-w-xs">Cuba muat semula halaman atau kembali ke laman utama.</p>
+          <details className="max-w-sm text-left">
+            <summary className="text-xs text-gray-400 cursor-pointer">Butiran ralat</summary>
+            <pre className="mt-2 text-[10px] text-red-600 bg-red-50 rounded p-2 overflow-auto max-h-32 whitespace-pre-wrap">{this.state.error.message}{"\n"}{this.state.error.stack}</pre>
+          </details>
           <div className="flex gap-3">
             <button
               onClick={() => { this.setState({ error: null }); window.location.reload(); }}
