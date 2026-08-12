@@ -1926,7 +1926,7 @@ export default function EditorPage({
     inv.groomShortName && inv.brideShortName
       ? `${inv.groomShortName} & ${inv.brideShortName}`
       : inv.shortCoupleName ||
-        `${inv.brideName} & ${inv.groomName}` ||
+        `${inv.coverGroomName} & ${inv.coverBrideName}` ||
         "Ain & Hidayat";
   const fontSize = Number(design.nameFontSize) || 38;
   const fontFamily = fontFamilyStack(design.nameFontFamily);
