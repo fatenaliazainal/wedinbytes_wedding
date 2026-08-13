@@ -1001,7 +1001,10 @@ export default function DashboardPage() {
 
                              <div className="mt-3 text-xs text-slate-500 space-y-1.5 mb-4">
                                 <div className="flex items-center gap-1.5"><Calendar size={12} className="text-slate-400" /> <span>Created {formatCreatedDate(card)}</span></div>
-                                <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400" /> <span>Expires {formatExpiryDate(card)}</span></div>
+                                {card.isPurchased
+                                  ? <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400" /> <span>Expires {formatExpiryDate(card)}</span></div>
+                                  : <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-300" /> <span className="text-slate-400 italic">Expires 3 months after wedding date, upon payment</span></div>
+                                }
                              </div>
 
                              <div className="mt-auto">
@@ -1113,7 +1116,10 @@ export default function DashboardPage() {
                                </td>
                                <td className="px-4 py-4 whitespace-nowrap">
                                   <div className="text-xs text-slate-900 font-medium">C: {formatCreatedDate(card)}</div>
-                                  <div className="text-[10px] text-slate-500 mt-0.5">E: {formatExpiryDate(card)}</div>
+                                  {card.isPurchased
+                                    ? <div className="text-[10px] text-slate-500 mt-0.5">E: {formatExpiryDate(card)}</div>
+                                    : <div className="text-[10px] text-slate-400 italic mt-0.5">3 months after wedding date</div>
+                                  }
                                </td>
                                <td className="px-4 py-4 min-w-[200px]">
                                   <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 shadow-sm transition-colors group-hover:border-slate-300">
