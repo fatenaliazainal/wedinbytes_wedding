@@ -2100,15 +2100,7 @@ export default function EditorPage({
             *This preview may not be an exact match of the final product
           </p>
 
-          {customerEditLocked && (
-            <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              This paid invitation is locked because its event date has passed.
-              You can still view the invitation and preview, but editing is no
-              longer available.
-            </div>
-          )}
-
-          <fieldset disabled={customerEditLocked} className="space-y-5 min-w-0">
+          <fieldset className="space-y-5 min-w-0">
             {/* ── MUKA DEPAN ── */}
             {activeTab === "muka-depan" && (
               <>
@@ -2374,6 +2366,7 @@ export default function EditorPage({
                       type="date"
                       className={inputCls}
                       value={inv.eventDate}
+                      min={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setI("eventDate")(e.target.value)}
                     />
                   </Field>
