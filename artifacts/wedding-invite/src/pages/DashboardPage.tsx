@@ -1003,7 +1003,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center gap-1.5"><Calendar size={12} className="text-slate-400" /> <span>Created {formatCreatedDate(card)}</span></div>
                                 {card.isPurchased
                                   ? <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400" /> <span>Expires {formatExpiryDate(card)}</span></div>
-                                  : <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-300" /> <span className="text-slate-400 italic">Expires 3 months after wedding date, upon payment</span></div>
+                                  : <div className="flex items-center gap-1.5"><Clock size={12} className="text-slate-300" /> <span className="text-slate-400 italic">Watermark will be removed after payment, and your invitation link will remain active for 3 months after your event date.</span></div>
                                 }
                              </div>
 
@@ -1118,7 +1118,7 @@ export default function DashboardPage() {
                                   <div className="text-xs text-slate-900 font-medium">C: {formatCreatedDate(card)}</div>
                                   {card.isPurchased
                                     ? <div className="text-[10px] text-slate-500 mt-0.5">E: {formatExpiryDate(card)}</div>
-                                    : <div className="text-[10px] text-slate-400 italic mt-0.5">3 months after wedding date</div>
+                                    : <div className="text-[10px] text-slate-400 italic mt-0.5">Active for 3 months after event date</div>
                                   }
                                </td>
                                <td className="px-4 py-4 min-w-[200px]">
