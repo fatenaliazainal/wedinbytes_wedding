@@ -295,7 +295,7 @@ router.get("/invitation/public/:dateCode/:slug", publicInvitationRateLimit, asyn
 
     let row: typeof invitationTable.$inferSelect | undefined;
 
-    if (byLockedSlug && publicDateCode(byLockedSlug.eventDate) === dateCode) {
+    if (byLockedSlug && (byLockedSlug.lockedDateCode === dateCode || publicDateCode(byLockedSlug.eventDate) === dateCode)) {
       row = byLockedSlug;
     } else {
       // Narrow path: reconstruct the event date from the 6-digit dateCode (YYMMDD)

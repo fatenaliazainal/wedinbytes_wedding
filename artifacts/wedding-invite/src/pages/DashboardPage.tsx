@@ -56,6 +56,8 @@ interface Invitation {
   createdAt: string;
   colorPrimary?: string;
   designCode?: string;
+  lockedSlug?: string | null;
+  lockedDateCode?: string | null;
 }
 
 interface Design {

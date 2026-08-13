@@ -78,6 +78,7 @@ const INVITE_SELECT = {
   eventTitle: invitationTable.eventTitle,
   designCode: invitationTable.designCode,
   lockedSlug: invitationTable.lockedSlug,
+  lockedDateCode: invitationTable.lockedDateCode,
 } as const;
 
 /**
@@ -131,7 +132,7 @@ async function findBySlug(dateCode: string, slug: string): Promise<InvitationOgD
     .where(eq(invitationTable.lockedSlug, slug))
     .limit(1);
 
-  if (byLocked.length && publicDateCode(byLocked[0].eventDate) === dateCode) {
+  if (byLocked.length && (byLocked[0].lockedDateCode === dateCode || publicDateCode(byLocked[0].eventDate) === dateCode)) {
     return toOgData(byLocked[0]);
   }
 

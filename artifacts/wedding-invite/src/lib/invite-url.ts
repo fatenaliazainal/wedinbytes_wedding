@@ -28,12 +28,15 @@ export function inviteNameSlug(
 export function publicInvitePath(invitation: {
   eventDate?: string | null;
   lockedSlug?: string | null;
+  lockedDateCode?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
   groomName?: string | null;
   brideName?: string | null;
 }): string | null {
-  const dateCode = inviteDateCode(invitation.eventDate);
+  // Use the frozen date code (set at payment time) when available so the URL
+  // never changes even if the customer updates their event date after paying.
+  const dateCode = invitation.lockedDateCode || inviteDateCode(invitation.eventDate);
   if (!dateCode) return null;
   // Prefer the locked slug (set at payment time — most reliable);
   // fall back to cover names, then main groom/bride names.
@@ -55,6 +58,7 @@ export function publicInvitePathOrToken(invitation: {
   token?: string | null;
   eventDate?: string | null;
   lockedSlug?: string | null;
+  lockedDateCode?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
   groomName?: string | null;

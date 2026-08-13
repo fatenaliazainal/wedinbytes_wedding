@@ -215,8 +215,8 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
   const wasAlreadyPaid = order.paymentStatus === "PAID";
 
   if (paymentStatus === "PAID" && order.invitationId) {
-    // Snapshot the URL slug at the moment of first payment so it never changes
-    // even if cover names are edited later.
+    // Snapshot the URL slug and date code at the moment of first payment so they
+    // never change even if cover names or the event date are edited later.
     const [inv] = await db.select().from(invitationTable).where(eq(invitationTable.id, order.invitationId)).limit(1);
     const slugSnapshot = inv && !inv.lockedSlug
       ? (() => {
@@ -227,9 +227,19 @@ async function verifyAndApplyOrder(order: typeof orderTable.$inferSelect, billCo
           return g && b ? `${g}-${b}` : null;
         })()
       : null;
+    const dateSnapshot = inv && !inv.lockedDateCode
+      ? (() => {
+          const m = inv.eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          return m ? `${m[1].slice(2)}${m[2]}${m[3]}` : null;
+        })()
+      : null;
     await db
       .update(invitationTable)
-      .set({ isPurchased: true, ...(slugSnapshot ? { lockedSlug: slugSnapshot } : {}) })
+      .set({
+        isPurchased: true,
+        ...(slugSnapshot ? { lockedSlug: slugSnapshot } : {}),
+        ...(dateSnapshot ? { lockedDateCode: dateSnapshot } : {}),
+      })
       .where(eq(invitationTable.id, order.invitationId));
 
     // Send confirmation email only on the first transition to PAID

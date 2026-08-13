@@ -177,10 +177,20 @@ async function applyBillplzPayment(
           return g && b ? `${g}-${b}` : null;
         })()
       : null;
+    const dateSnapshot = inv && !inv.lockedDateCode
+      ? (() => {
+          const m = inv.eventDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          return m ? `${m[1].slice(2)}${m[2]}${m[3]}` : null;
+        })()
+      : null;
 
     await db
       .update(invitationTable)
-      .set({ isPurchased: true, ...(slugSnapshot ? { lockedSlug: slugSnapshot } : {}) })
+      .set({
+        isPurchased: true,
+        ...(slugSnapshot ? { lockedSlug: slugSnapshot } : {}),
+        ...(dateSnapshot ? { lockedDateCode: dateSnapshot } : {}),
+      })
       .where(eq(invitationTable.id, order.invitationId));
 
     if (!wasAlreadyPaid) {

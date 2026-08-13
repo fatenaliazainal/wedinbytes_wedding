@@ -2338,8 +2338,6 @@ export default function EditorPage({
                       value={inv.groomName}
                       onChange={(e) => setI("groomName")(e.target.value)}
                       placeholder={t("placeholders.groomFullName")}
-                      disabled={identityLocked}
-                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                   <Field label="Nama Penuh Pengantin Perempuan">
@@ -2348,14 +2346,9 @@ export default function EditorPage({
                       value={inv.brideName}
                       onChange={(e) => setI("brideName")(e.target.value)}
                       placeholder={t("placeholders.brideFullName")}
-                      disabled={identityLocked}
-                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
                   </Field>
                 </div>
-                {identityLocked && (
-                  <p className="flex items-center gap-1.5 text-xs text-amber-600"><Lock size={11} />Nama pengantin tidak boleh ditukar selepas pembayaran.</p>
-                )}
                 <Field label="Inisial Halaman 2">
                   <input
                     className={inputCls}
