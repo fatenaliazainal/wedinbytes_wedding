@@ -39,17 +39,13 @@ interface Props {
 }
 
 export default function ReviewPromptModal({ defaultName = "", onClose, onReviewed }: Props) {
-  const [visible, setVisible] = useState(() => !hasReviewed() && !hasDismissedThisSession());
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ customerName: defaultName, rating: 0, reviewText: "", weddingDate: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  if (!visible) return null;
-
   function dismiss() {
     markDismissedThisSession();
-    setVisible(false);
     onClose?.();
   }
 
