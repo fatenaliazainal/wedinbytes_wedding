@@ -2907,6 +2907,26 @@ export default function AdminPage() {
           <p className="text-xs text-muted-foreground">Orders, Customers &amp; Card Design Management</p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href="https://search.google.com/search-console"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Google Search Console"
+          >
+            <ExternalLink size={14} />
+            <span className="hidden sm:inline">Search Console</span>
+          </a>
+          <a
+            href="https://analytics.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Google Analytics"
+          >
+            <BarChart3 size={14} />
+            <span className="hidden sm:inline">Analytics</span>
+          </a>
           <button
             type="button"
             onClick={() => navigate("/")}
