@@ -21,6 +21,7 @@ import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import GatewaySelectionModal from "@/components/GatewaySelectionModal";
+import ReviewPromptModal, { hasReviewed, hasDismissedThisSession } from "@/components/ReviewPromptModal";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -717,8 +718,11 @@ export default function DashboardPage() {
     { label: "FOR BUSINESS", href: "/for-business" },
   ];
 
+  const hasPaidInvitation = invitations.some(i => i.isPurchased);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      {hasPaidInvitation && <ReviewPromptModal defaultName={user.name ?? ""} />}
       <SiteHeader
         navItems={NAV_ITEMS}
         navOpen={navOpen}

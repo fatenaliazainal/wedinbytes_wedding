@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { CheckCircle2, Clock3, Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import ReviewPromptModal, { hasReviewed, hasDismissedThisSession } from "@/components/ReviewPromptModal";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -106,6 +107,7 @@ export default function BillplzReturnPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      {status === "PAID" && <ReviewPromptModal defaultName={user?.name ?? ""} />}
       <section className="w-full max-w-lg rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm sm:p-10">
         <Icon className={`mx-auto h-14 w-14 ${iconClass} ${isLoading ? "animate-spin" : ""}`} />
         <h1 className="mt-5 text-2xl font-bold text-slate-900">{heading}</h1>
