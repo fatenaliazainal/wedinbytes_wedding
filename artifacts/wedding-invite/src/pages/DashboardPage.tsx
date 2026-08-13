@@ -255,6 +255,16 @@ const addThreeMonths = (dateStr: string): Date => {
   return target;
 };
 
+const isEventPassed = (card: Invitation) => {
+  if (!card.eventDate || !card.isPurchased) return false;
+  const parts = card.eventDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!parts) return false;
+  const event = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  event.setHours(0, 0, 0, 0);
+  return today.getTime() > event.getTime();
+};
+
 const isExpired = (card: Invitation) => {
   if (!card.eventDate) return false;
   return addThreeMonths(card.eventDate) < new Date();
@@ -492,8 +502,10 @@ export default function DashboardPage() {
 
   const actionButtonsFor = (card: Invitation) => {
     const path = publicInvitePathOrToken(card);
+    const eventPassed = isEventPassed(card);
     return [
-    { icon: Edit2,  label: "Edit",  onClick: () => {
+    { icon: Edit2,  label: "Edit",  disabled: eventPassed, onClick: () => {
+        if (eventPassed) { toast.info("Tarikh majlis telah berlalu. Editor tidak boleh diakses."); return; }
         const params = new URLSearchParams({ token: card.token });
         if (!card.isPurchased && card.packageId) params.set("package", String(card.packageId));
         navigate(`/editor?${params.toString()}`);
@@ -983,6 +995,7 @@ export default function DashboardPage() {
                       const cardInviteLink = inviteLinkFor(card);
                       const actions = actionButtonsFor(card);
                       const expired = isExpired(card);
+                      const eventPassed = isEventPassed(card);
 
                       return (
                         <motion.article
@@ -1004,6 +1017,8 @@ export default function DashboardPage() {
                                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider border border-slate-200">{card.eventType}</span>
                                      {expired ? (
                                         <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200">Expired</span>
+                                     ) : eventPassed ? (
+                                        <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-wider border border-orange-200">Tarikh Berlalu</span>
                                      ) : card.isPurchased ? (
                                         <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider border border-green-200">Active</span>
                                      ) : (
@@ -1103,6 +1118,7 @@ export default function DashboardPage() {
                            const cardInviteLink = inviteLinkFor(card);
                            const actions = actionButtonsFor(card);
                            const expired = isExpired(card);
+                           const eventPassed = isEventPassed(card);
 
                            return (
                              <tr key={card.token} className="hover:bg-slate-50/80 transition-colors group">
@@ -1121,6 +1137,8 @@ export default function DashboardPage() {
                                   <div className="flex items-center gap-2">
                                      {expired ? (
                                         <span className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-wider border border-red-200">Expired</span>
+                                     ) : eventPassed ? (
+                                        <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-wider border border-orange-200">Tarikh Berlalu</span>
                                      ) : card.isPurchased ? (
                                         <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider border border-green-200">Active</span>
                                      ) : (

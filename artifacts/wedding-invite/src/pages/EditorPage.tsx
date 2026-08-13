@@ -1414,6 +1414,16 @@ export default function EditorPage({
     isEventDatePassed(inv.eventDate);
   // Lock the 3 identity fields after payment so the invitation cannot be repurposed for a different event
   const identityLocked = mode !== "admin" && mode !== "demo" && inv.isPurchased;
+
+  // Redirect customer to dashboard if event date has passed — editor is no longer accessible.
+  useEffect(() => {
+    if (dataLoading || !inv.token) return;
+    if (customerEditLocked) {
+      navigate(dashboardPathForUser(user));
+      toast.info("Tarikh majlis telah berlalu. Editor tidak boleh diakses.");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerEditLocked, dataLoading, inv.token]);
   const coverNamesEmpty = !inv.coverGroomName?.trim() || !inv.coverBrideName?.trim();
   const publicPath = publicInvitePathOrToken(inv);
   const previewReady = Boolean(inv.token);
@@ -2366,7 +2376,6 @@ export default function EditorPage({
                       type="date"
                       className={inputCls}
                       value={inv.eventDate}
-                      min={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setI("eventDate")(e.target.value)}
                     />
                   </Field>
