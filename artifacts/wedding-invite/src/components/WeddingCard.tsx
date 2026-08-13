@@ -223,23 +223,22 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 function OrnamentDivider() {
   return (
     <div className="flex items-center justify-center w-full my-1 text-accent">
-      <svg width="160" height="10" viewBox="0 0 160 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="fadeL" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0"/>
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0.45"/>
-          </linearGradient>
-          <linearGradient id="fadeR" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.45"/>
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-        <line x1="0" y1="5" x2="68" y2="5" stroke="url(#fadeL)" strokeWidth="0.7"/>
-        <circle cx="80" cy="5" r="1.2" fill="currentColor" fillOpacity="0.5"/>
-        <circle cx="73" cy="5" r="0.6" fill="currentColor" fillOpacity="0.3"/>
-        <circle cx="87" cy="5" r="0.6" fill="currentColor" fillOpacity="0.3"/>
-        <line x1="92" y1="5" x2="160" y2="5" stroke="url(#fadeR)" strokeWidth="0.7"/>
-      </svg>
+      <div
+        style={{
+          width: '220px',
+          height: '18.7px', // 220 / (6247/531) to preserve aspect ratio
+          backgroundColor: 'currentColor',
+          opacity: 0.4,
+          WebkitMaskImage: 'url(/ornament-divider.png)',
+          maskImage: 'url(/ornament-divider.png)',
+          WebkitMaskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          maskSize: 'contain',
+        }}
+      />
     </div>
   );
 }
