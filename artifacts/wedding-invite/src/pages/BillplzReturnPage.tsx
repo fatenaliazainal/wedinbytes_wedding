@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { CheckCircle2, Clock3, Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import ReviewPromptModal, { hasReviewed, hasDismissedThisSession } from "@/components/ReviewPromptModal";
+import ReviewPromptModal from "@/components/ReviewPromptModal";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 

@@ -8,7 +8,7 @@ import {
   User, Plus, Copy, Check, QrCode, X, Trash2,
   Calendar, Clock, CreditCard, Link2,
   LayoutGrid, List as ListIcon, Activity, AlertCircle, FileText,
-  EyeOff, Save, KeyRound, Download, ReceiptText, RefreshCw
+  EyeOff, Save, KeyRound, Download, ReceiptText, RefreshCw, Star
 } from "lucide-react";
 import { toast } from "sonner";
 import SiteHeader from "@/components/SiteHeader";
@@ -21,7 +21,8 @@ import { startToyyibPayCheckout } from "@/lib/toyyibpay";
 import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig } from "@/lib/billplz";
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import GatewaySelectionModal from "@/components/GatewaySelectionModal";
-import ReviewPromptModal, { hasReviewed, hasDismissedThisSession } from "@/components/ReviewPromptModal";
+import ReviewPromptModal from "@/components/ReviewPromptModal";
+import { hasReviewed } from "@/lib/review-status";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -328,6 +329,8 @@ export default function DashboardPage() {
   const [paymentStartingFor, setPaymentStartingFor] = useState<number | null>(null);
   const [paymentConfig, setPaymentConfig] = useState<PaymentMethodConfig | null>(null);
   const [gatewayModalInput, setGatewayModalInput] = useState<{ invitationId?: number; orderId?: number } | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewed, setReviewed] = useState(() => hasReviewed());
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -722,7 +725,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      {hasPaidInvitation && <ReviewPromptModal defaultName={user.name ?? ""} />}
+      {showReviewModal && (
+        <ReviewPromptModal
+          defaultName={user.name ?? ""}
+          onClose={() => setShowReviewModal(false)}
+          onReviewed={() => { setReviewed(true); setShowReviewModal(false); }}
+        />
+      )}
       <SiteHeader
         navItems={NAV_ITEMS}
         navOpen={navOpen}
@@ -981,6 +990,18 @@ export default function DashboardPage() {
                                   </p>
                                 )}
 
+                               {/* Review alert */}
+                                {card.isPurchased && !reviewed && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowReviewModal(true)}
+                                    className="mb-3 w-full flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs text-amber-800 transition hover:bg-amber-100"
+                                  >
+                                    <Star size={13} className="fill-amber-400 text-amber-400 shrink-0" />
+                                    <span className="flex-1">Happy with Wedinstudio? <strong>Leave a review</strong></span>
+                                    <span className="text-amber-500">→</span>
+                                  </button>
+                                )}
                                {/* Action Row */}
                                 <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 overflow-x-auto">
                                   {actions.map(({ icon: Icon, label, onClick, disabled }: any) => (
@@ -1070,6 +1091,16 @@ export default function DashboardPage() {
                                    )}
                                </td>
                                <td className="px-4 py-4 whitespace-nowrap text-right">
+                                   {card.isPurchased && !reviewed && (
+                                     <button
+                                       type="button"
+                                       onClick={() => setShowReviewModal(true)}
+                                       className="mb-2 flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800 transition hover:bg-amber-100 ml-auto"
+                                     >
+                                       <Star size={11} className="fill-amber-400 text-amber-400 shrink-0" />
+                                       <span>Leave a review →</span>
+                                     </button>
+                                   )}
                                    <div className="flex items-center justify-end gap-1 w-max ml-auto">
                                      {actions.map(({ icon: Icon, label, onClick, disabled }: any) => (
                                       <button

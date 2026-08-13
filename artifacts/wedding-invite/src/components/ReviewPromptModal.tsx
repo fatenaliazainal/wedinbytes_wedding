@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { Star, X } from "lucide-react";
+import { hasReviewed, hasDismissedThisSession, markReviewed, markDismissedThisSession } from "@/lib/review-status";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-const LS_KEY = "wedinstudio_reviewed";
-const SS_KEY = "wedinstudio_review_dismissed";
-
-export function hasReviewed(): boolean {
-  return localStorage.getItem(LS_KEY) === "1";
-}
-
-export function hasDismissedThisSession(): boolean {
-  return sessionStorage.getItem(SS_KEY) === "1";
-}
 
 function StarInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const [hover, setHover] = useState(0);
@@ -42,11 +33,12 @@ function StarInput({ value, onChange }: { value: number; onChange: (n: number) =
 }
 
 interface Props {
-  /** Name pre-filled from user account (optional) */
   defaultName?: string;
+  onClose?: () => void;
+  onReviewed?: () => void;
 }
 
-export default function ReviewPromptModal({ defaultName = "" }: Props) {
+export default function ReviewPromptModal({ defaultName = "", onClose, onReviewed }: Props) {
   const [visible, setVisible] = useState(() => !hasReviewed() && !hasDismissedThisSession());
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ customerName: defaultName, rating: 0, reviewText: "", weddingDate: "" });
@@ -56,15 +48,16 @@ export default function ReviewPromptModal({ defaultName = "" }: Props) {
   if (!visible) return null;
 
   function dismiss() {
-    sessionStorage.setItem(SS_KEY, "1");
+    markDismissedThisSession();
     setVisible(false);
+    onClose?.();
   }
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!form.customerName.trim()) e.customerName = "Nama diperlukan.";
-    if (form.rating < 1) e.rating = "Sila pilih rating.";
-    if (!form.reviewText.trim()) e.reviewText = "Review diperlukan.";
+    if (!form.customerName.trim()) e.customerName = "Name is required.";
+    if (form.rating < 1) e.rating = "Please select a rating.";
+    if (!form.reviewText.trim()) e.reviewText = "Review is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -86,77 +79,72 @@ export default function ReviewPromptModal({ defaultName = "" }: Props) {
         }),
       });
       if (res.ok) {
-        localStorage.setItem(LS_KEY, "1");
+        markReviewed();
         setSubmitted(true);
+        onReviewed?.();
       } else {
         const data = await res.json().catch(() => ({})) as { error?: string };
-        setErrors({ submit: data.error || "Gagal hantar review. Cuba lagi." });
+        setErrors({ submit: data.error || "Failed to submit review. Please try again." });
       }
     } catch {
-      setErrors({ submit: "Ralat rangkaian. Cuba lagi." });
+      setErrors({ submit: "Network error. Please try again." });
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    /* Backdrop */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
 
-        {/* Close (dismiss for session) */}
         <button
           type="button"
           onClick={dismiss}
           className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          aria-label="Tutup"
+          aria-label="Close"
         >
           <X size={18} />
         </button>
 
         {submitted ? (
-          /* ── Thank-you state ── */
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
               <Star size={28} className="fill-emerald-500 text-emerald-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Terima kasih! 🎉</h2>
+            <h2 className="text-xl font-bold text-gray-900">Thank you! 🎉</h2>
             <p className="mt-2 text-sm text-gray-500 leading-relaxed">
-              Review anda telah dihantar dan sedang dalam semakan. Kami sangat hargai maklum balas anda!
+              Your review has been submitted and is pending approval. We really appreciate your feedback!
             </p>
             <button
               type="button"
-              onClick={() => { localStorage.setItem(LS_KEY, "1"); setVisible(false); }}
+              onClick={() => { markReviewed(); setVisible(false); onClose?.(); }}
               className="mt-6 w-full rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white transition hover:opacity-80"
             >
-              Tutup
+              Close
             </button>
           </div>
         ) : (
-          /* ── Form state ── */
           <>
             <div className="mb-5 text-center">
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50">
                 <Star size={24} className="fill-amber-400 text-amber-400" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Kongsi pengalaman anda!</h2>
+              <h2 className="text-xl font-bold text-gray-900">Share your experience!</h2>
               <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
-                Pembayaran anda berjaya 🎊 Bantu pasangan lain dengan meninggalkan ulasan ringkas.
+                Help other couples by leaving a quick review.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Star rating */}
               <div>
                 <StarInput value={form.rating} onChange={(n) => setForm((f) => ({ ...f, rating: n }))} />
                 {errors.rating && <p className="mt-1 text-center text-xs text-red-500">{errors.rating}</p>}
               </div>
 
-              {/* Name */}
               <div>
                 <input
                   type="text"
-                  placeholder="Nama anda"
+                  placeholder="Your name"
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gray-400 focus:ring-0"
@@ -164,11 +152,10 @@ export default function ReviewPromptModal({ defaultName = "" }: Props) {
                 {errors.customerName && <p className="mt-1 text-xs text-red-500">{errors.customerName}</p>}
               </div>
 
-              {/* Review text */}
               <div>
                 <textarea
                   rows={3}
-                  placeholder="Ceritakan pengalaman anda menggunakan Wedinstudio…"
+                  placeholder="Tell us about your experience with Wedinstudio…"
                   value={form.reviewText}
                   onChange={(e) => setForm((f) => ({ ...f, reviewText: e.target.value }))}
                   className="w-full resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gray-400 focus:ring-0"
@@ -176,10 +163,9 @@ export default function ReviewPromptModal({ defaultName = "" }: Props) {
                 {errors.reviewText && <p className="mt-1 text-xs text-red-500">{errors.reviewText}</p>}
               </div>
 
-              {/* Wedding date (optional) */}
               <input
                 type="text"
-                placeholder="Tarikh perkahwinan (contoh: Jun 2025) — pilihan"
+                placeholder="Wedding date (e.g. June 2025) — optional"
                 value={form.weddingDate}
                 onChange={(e) => setForm((f) => ({ ...f, weddingDate: e.target.value }))}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gray-400 focus:ring-0"
@@ -192,17 +178,16 @@ export default function ReviewPromptModal({ defaultName = "" }: Props) {
                 disabled={submitting}
                 className="w-full rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white transition hover:opacity-80 disabled:opacity-50"
               >
-                {submitting ? "Menghantar…" : "Hantar Review"}
+                {submitting ? "Submitting…" : "Submit Review"}
               </button>
             </form>
 
-            {/* Soft dismiss */}
             <button
               type="button"
               onClick={dismiss}
               className="mt-3 w-full text-center text-xs text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline"
             >
-              Mungkin nanti
+              Maybe later
             </button>
           </>
         )}

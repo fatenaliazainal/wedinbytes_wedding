@@ -960,6 +960,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
           )}
           </RevealOnScroll>
 
+          {inv.rsvpEnabled !== false && (
           <RevealOnScroll>
           {/* RSVP */}
           <div className={detailBlock}>
@@ -987,11 +988,12 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
               >
-                {inv.rsvpEnabled === false ? "RSVP Ditutup" : "Sahkan Kehadiran"}
+                Sahkan Kehadiran
               </motion.button>
             )}
           </div>
           </RevealOnScroll>
+          )}
 
           {guestWishes && guestWishes.length > 0 && (
             <RevealOnScroll>
