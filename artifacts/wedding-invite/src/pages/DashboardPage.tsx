@@ -49,6 +49,7 @@ interface Invitation {
   venueName?: string | null;
   venueAddress?: string | null;
   venueMapUrl?: string | null;
+  language?: string | null;
   isPurchased: boolean;
   isLocked?: boolean;
   packageId?: number | null;

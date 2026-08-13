@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Copy, Check } from "lucide-react";
+import { X, Copy, Check, ShieldCheck } from "lucide-react";
 
 interface Invitation {
   groomName: string;
@@ -16,6 +16,7 @@ interface Invitation {
   venueName?: string | null;
   venueAddress?: string | null;
   venueMapUrl?: string | null;
+  language?: string | null;
 }
 
 interface Props {
@@ -30,26 +31,32 @@ const MALAY_MONTHS: Record<number, string> = {
   9: "September", 10: "Oktober", 11: "November", 12: "Disember",
 };
 
-function formatDate(dateStr: string | null | undefined): string {
+const ENGLISH_MONTHS: Record<number, string> = {
+  1: "January", 2: "February", 3: "March", 4: "April",
+  5: "May", 6: "June", 7: "July", 8: "August",
+  9: "September", 10: "October", 11: "November", 12: "December",
+};
+
+function formatDate(dateStr: string | null | undefined, months: Record<number, string>): string {
   if (!dateStr) return "";
   const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return dateStr;
   const [, y, m, d] = match;
-  return `${parseInt(d)} ${MALAY_MONTHS[parseInt(m)]} ${y}`;
+  return `${parseInt(d)} ${months[parseInt(m)]} ${y}`;
 }
 
-function buildTemplate(card: Invitation, inviteUrl: string): string {
-  const groomName  = card.coverGroomName || card.groomName || "";
-  const brideName  = card.coverBrideName || card.brideName || "";
-  const eventTitle = (card.eventType || "WALIMATULURUS").toUpperCase();
-  const day        = card.eventDay || "";
-  const date       = formatDate(card.eventDate);
-  const dateStr    = day ? `${day}, ${date}` : date;
-  const venue      = [card.venueName, card.venueAddress].filter(Boolean).join(", ");
-  const startTime  = card.eventStartTime || "";
-  const endTime    = card.eventEndTime   || "";
-  const timeStr    = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime || "";
-  const mapUrl     = card.venueMapUrl || "";
+function buildMalayTemplate(card: Invitation, inviteUrl: string): string {
+  const groomName    = card.coverGroomName || card.groomName || "";
+  const brideName    = card.coverBrideName || card.brideName || "";
+  const eventTitle   = (card.eventType || "WALIMATULURUS").toUpperCase();
+  const day          = card.eventDay || "";
+  const date         = formatDate(card.eventDate, MALAY_MONTHS);
+  const dateStr      = day && date ? `${day}, ${date}` : date;
+  const venue        = [card.venueName, card.venueAddress].filter(Boolean).join(", ");
+  const startTime    = card.eventStartTime || "";
+  const endTime      = card.eventEndTime   || "";
+  const timeStr      = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime || "";
+  const mapUrl       = card.venueMapUrl || "";
   const groomParents = card.groomParents || "";
   const brideParents = card.brideParents || "";
 
@@ -76,10 +83,10 @@ function buildTemplate(card: Invitation, inviteUrl: string): string {
   lines.push(brideName);
   lines.push("");
 
-  if (dateStr)  lines.push(`🗓 Pada hari ${dateStr}`);
-  if (venue)    lines.push(`🏠 Bertempat di ${venue}`);
-  if (mapUrl)   lines.push(`📍 ${mapUrl}`);
-  if (timeStr)  lines.push(`⏰ Waktu Majlis: ${timeStr}`);
+  if (dateStr) lines.push(`🗓 Pada hari ${dateStr}`);
+  if (venue)   lines.push(`🏠 Bertempat di ${venue}`);
+  if (mapUrl)  lines.push(`📍 ${mapUrl}`);
+  if (timeStr) lines.push(`⏰ Waktu Majlis: ${timeStr}`);
 
   lines.push("");
   lines.push("Semoga dengan kehadiran para tetamu serta iringan doa kalian");
@@ -87,12 +94,63 @@ function buildTemplate(card: Invitation, inviteUrl: string): string {
   lines.push("");
   lines.push("Sekian, terima kasih 🌹");
 
-  if (inviteUrl) {
-    lines.push("");
-    lines.push(inviteUrl);
-  }
+  if (inviteUrl) { lines.push(""); lines.push(inviteUrl); }
 
   return lines.join("\n");
+}
+
+function buildEnglishTemplate(card: Invitation, inviteUrl: string): string {
+  const groomName    = card.coverGroomName || card.groomName || "";
+  const brideName    = card.coverBrideName || card.brideName || "";
+  const date         = formatDate(card.eventDate, ENGLISH_MONTHS);
+  const day          = card.eventDay || "";
+  const dateStr      = day && date ? `${day}, ${date}` : date;
+  const venue        = [card.venueName, card.venueAddress].filter(Boolean).join(", ");
+  const startTime    = card.eventStartTime || "";
+  const endTime      = card.eventEndTime   || "";
+  const timeStr      = startTime && endTime ? `${startTime} – ${endTime}` : startTime || endTime || "";
+  const mapUrl       = card.venueMapUrl || "";
+  const groomParents = card.groomParents || "";
+  const brideParents = card.brideParents || "";
+
+  const lines: string[] = [
+    "🤍 WEDDING INVITATION 🤍",
+    "",
+    "Together with their families,",
+    "",
+    groomName,
+    "&",
+    brideName,
+    "",
+    "joyfully invite you to celebrate their wedding.",
+    "",
+  ];
+
+  if (dateStr) lines.push(`🗓 Date: ${dateStr}`);
+  if (venue)   lines.push(`📍 Venue: ${venue}`);
+  if (mapUrl)  lines.push(`📌 Location: ${mapUrl}`);
+  if (timeStr) lines.push(`⏰ Time: ${timeStr}`);
+
+  lines.push("");
+  lines.push("Your presence would mean so much to us as we begin this new chapter together.");
+  lines.push("We look forward to celebrating with you.");
+  lines.push("");
+  lines.push("With love and gratitude,");
+
+  if (groomParents) lines.push(groomParents);
+  if (groomParents && brideParents) lines.push("&");
+  if (brideParents) lines.push(brideParents);
+
+  if (inviteUrl) { lines.push(""); lines.push(inviteUrl); }
+
+  return lines.join("\n");
+}
+
+function buildTemplate(card: Invitation, inviteUrl: string): string {
+  const isEnglish = (card.language || "").toLowerCase().includes("en");
+  return isEnglish
+    ? buildEnglishTemplate(card, inviteUrl)
+    : buildMalayTemplate(card, inviteUrl);
 }
 
 export default function ShareModal({ card, inviteUrl, onClose }: Props) {
@@ -111,12 +169,15 @@ export default function ShareModal({ card, inviteUrl, onClose }: Props) {
       <div className="relative w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="text-sm font-bold text-slate-900">Share Invitation</h2>
+        <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Share with Your Guests</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Review and personalise your invitation message before sharing.</p>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            className="rounded-full p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition mt-0.5 flex-shrink-0"
             aria-label="Close"
           >
             <X size={18} />
@@ -124,18 +185,24 @@ export default function ShareModal({ card, inviteUrl, onClose }: Props) {
         </div>
 
         {/* Editable text */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <p className="text-xs text-slate-400 mb-2">You can edit the text below before copying.</p>
+        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-2">
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
             rows={18}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-700 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-[#3d5a3e]/30 focus:border-[#3d5a3e]"
           />
+          {/* Tip */}
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
+            <span className="text-lg leading-none">💡</span>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              Tip: You can personalise the message to make it more meaningful for your guests.
+            </p>
+          </div>
         </div>
 
         {/* Copy button */}
-        <div className="px-6 py-4 border-t border-slate-100">
+        <div className="px-6 pt-3 pb-4 border-t border-slate-100">
           <button
             type="button"
             onClick={handleCopy}
@@ -143,8 +210,12 @@ export default function ShareModal({ card, inviteUrl, onClose }: Props) {
           >
             {copied
               ? <><Check size={16} /> Copied!</>
-              : <><Copy size={16} /> Copy Text</>}
+              : <><Copy size={16} /> Copy Invitation</>}
           </button>
+          <p className="flex items-center justify-center gap-1.5 mt-2 text-xs text-slate-400">
+            <ShieldCheck size={13} className="text-[#3d5a3e]" />
+            Your message is ready to share
+          </p>
         </div>
       </div>
     </div>
