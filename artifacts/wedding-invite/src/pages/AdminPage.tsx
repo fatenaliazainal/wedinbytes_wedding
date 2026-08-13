@@ -2105,7 +2105,7 @@ function OrdersTab() {
   const [invitationStatus, setInvitationStatus] = useState("");
   const [selected, setSelected] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
-  const [togglingStatus, setTogglingStatus] = useState(false);
+  const [togglingStatusId, setTogglingStatusId] = useState<number | null>(null);
   const [patchingPayment, setPatchingPayment] = useState(false);
 
   const load = async () => {
@@ -2148,7 +2148,7 @@ function OrdersTab() {
     if (!order.invitation) return;
     const currentStatus = order.invitation.websiteStatus;
     const newStatus = currentStatus === "DISABLED" ? "ACTIVE" : "DISABLED";
-    setTogglingStatus(true);
+    setTogglingStatusId(order.id);
     try {
       const res = await fetch(`${BASE}/api/admin/invitations/${order.invitation.id}/status`, {
         method: "PATCH",
@@ -2159,12 +2159,11 @@ function OrdersTab() {
       if (!res.ok) throw new Error("Failed to update website status");
       toast.success(`Website ${newStatus === "ACTIVE" ? "activated" : "disabled"}.`);
       await load();
-      // Refresh the selected order state
-      setSelected(null);
+      setSelected(prev => prev?.id === order.id ? { ...prev, invitation: { ...prev.invitation!, websiteStatus: newStatus } } : prev);
     } catch {
       toast.error("Failed to update website status.");
     } finally {
-      setTogglingStatus(false);
+      setTogglingStatusId(null);
     }
   };
 
@@ -2208,7 +2207,22 @@ function OrdersTab() {
             <tbody className="divide-y divide-border">{orders.map((order) => <tr key={order.id} onClick={() => setSelected(order)} className="cursor-pointer hover:bg-muted/40">
               <td className="px-2.5 py-2 font-mono text-[11px]">#{order.id}</td><td className="px-2.5 py-2"><p className="font-medium">{order.customer?.name ?? "Unknown"}</p><p className="text-[10px] text-muted-foreground">{order.customer?.email}</p></td>
               <td className="px-2.5 py-2"><p>{order.invitation ? `${order.invitation.coverGroomName ?? order.invitation.groomName} & ${order.invitation.coverBrideName ?? order.invitation.brideName}` : "—"}</p><p className="text-[10px] text-muted-foreground">{order.package?.name ?? "—"}</p></td>
-              <td className="px-2.5 py-2">{order.amount}</td><td className="px-2.5 py-2"><StatusBadge value={order.paymentStatus} /></td><td className="px-2.5 py-2"><StatusBadge value={order.invitation?.websiteStatus ?? "DISABLED"} /></td><td className="px-2.5 py-2 text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
+              <td className="px-2.5 py-2">{order.amount}</td><td className="px-2.5 py-2"><StatusBadge value={order.paymentStatus} /></td>
+              <td className="px-2.5 py-2" onClick={(e) => e.stopPropagation()}>
+                <button
+                  disabled={togglingStatusId === order.id || !order.invitation}
+                  onClick={() => handleToggleWebsiteStatus(order)}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors disabled:opacity-50 ${
+                    order.invitation?.websiteStatus === "ACTIVE" ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    : order.invitation?.websiteStatus === "DISABLED" ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                    : "border-border bg-muted text-muted-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  {togglingStatusId === order.id ? <Loader2 size={9} className="animate-spin" /> : null}
+                  {order.invitation?.websiteStatus ?? "—"}
+                </button>
+              </td>
+              <td className="px-2.5 py-2 text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("ms-MY")}</td>
             </tr>)}</tbody>
           </table>
         )}
@@ -2277,7 +2291,7 @@ function OrdersTab() {
                     <StatusBadge value={selected.invitation.websiteStatus} />
                   </div>
                   <button
-                    disabled={togglingStatus}
+                    disabled={togglingStatusId === selected?.id}
                     onClick={() => handleToggleWebsiteStatus(selected)}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors disabled:opacity-40 ${
                       selected.invitation.websiteStatus === "DISABLED"
@@ -2285,7 +2299,7 @@ function OrdersTab() {
                         : "bg-green-50 text-[#3d5a3e] border-green-200 hover:bg-green-100"
                     }`}
                   >
-                    {togglingStatus ? <Loader2 size={12} className="animate-spin" /> : selected.invitation.websiteStatus === "DISABLED" ? <CheckCircle2 size={12} /> : <Ban size={12} />}
+                    {togglingStatusId === selected?.id ? <Loader2 size={12} className="animate-spin" /> : selected.invitation.websiteStatus === "DISABLED" ? <CheckCircle2 size={12} /> : <Ban size={12} />}
                     {selected.invitation.websiteStatus === "DISABLED" ? "Activate" : "Disable"}
                   </button>
                 </div>
