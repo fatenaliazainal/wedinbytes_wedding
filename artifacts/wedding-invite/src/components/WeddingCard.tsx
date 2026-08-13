@@ -222,7 +222,7 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 
 function OrnamentDivider() {
   return (
-    <div className="flex items-center justify-center w-full mt-0 -mb-2 text-accent">
+    <div className="flex items-center justify-center w-full my-1 text-accent">
       <div
         style={{
           width: '220px',
