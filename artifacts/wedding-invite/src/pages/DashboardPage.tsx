@@ -246,10 +246,18 @@ function PaymentHistoryTable({
   );
 }
 
-const isExpired = (createdAt?: string) => {
-  if (!createdAt) return false;
-  const expiry = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
-  return expiry < new Date();
+/** Mirrors server logic: invitation expires 3 calendar months after the event date. */
+const addThreeMonths = (dateStr: string): Date => {
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return new Date(NaN);
+  const [, y, m, d] = match.map(Number);
+  const target = new Date(Date.UTC(y, m - 1 + 3, d));
+  return target;
+};
+
+const isExpired = (card: Invitation) => {
+  if (!card.eventDate) return false;
+  return addThreeMonths(card.eventDate) < new Date();
 };
 
 function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 }: { card: Invitation, design: Design | null, width?: number, height?: number, scale?: number }) {
@@ -417,9 +425,9 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     return {
       total: invitations.length,
-      active: invitations.filter(i => i.isPurchased && !isExpired(i.createdAt)).length,
+      active: invitations.filter(i => i.isPurchased && !isExpired(i)).length,
       pending: invitations.filter(i => !i.isPurchased).length,
-      expired: invitations.filter(i => isExpired(i.createdAt)).length,
+      expired: invitations.filter(i => isExpired(i)).length,
       rsvp: 0
     };
   }, [invitations]);
@@ -448,9 +456,12 @@ export default function DashboardPage() {
       day: "2-digit", month: "2-digit", year: "numeric",
     });
 
-  const formatExpiryDate = (card: Invitation) =>
-    new Date(new Date(card.createdAt).getTime() + 365 * 24 * 60 * 60 * 1000)
-      .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const formatExpiryDate = (card: Invitation) => {
+    if (!card.eventDate) return "—";
+    const d = addThreeMonths(card.eventDate);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+  };
 
   if (authLoading || (loading && !!user)) {
     return (
@@ -954,7 +965,7 @@ export default function DashboardPage() {
                       const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design ?? null;
                       const cardInviteLink = inviteLinkFor(card);
                       const actions = actionButtonsFor(card);
-                      const expired = isExpired(card.createdAt);
+                      const expired = isExpired(card);
 
                       return (
                         <motion.article
@@ -1071,7 +1082,7 @@ export default function DashboardPage() {
                            const cardDesign = designs.find((item) => item.designCode === card.designCode) ?? design ?? null;
                            const cardInviteLink = inviteLinkFor(card);
                            const actions = actionButtonsFor(card);
-                           const expired = isExpired(card.createdAt);
+                           const expired = isExpired(card);
 
                            return (
                              <tr key={card.token} className="hover:bg-slate-50/80 transition-colors group">
