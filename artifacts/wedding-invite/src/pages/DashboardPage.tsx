@@ -23,6 +23,7 @@ import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import GatewaySelectionModal from "@/components/GatewaySelectionModal";
 import ReviewPromptModal from "@/components/ReviewPromptModal";
 import QRModal from "@/components/QRModal";
+import ShareModal from "@/components/ShareModal";
 import { hasReviewed } from "@/lib/review-status";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -34,12 +35,20 @@ interface Invitation {
   brideName: string;
   eventType: string;
   eventDate?: string | null;
+  eventDay?: string | null;
+  eventStartTime?: string | null;
+  eventEndTime?: string | null;
   coverBrideName?: string | null;
   coverGroomName?: string | null;
   brideShortName?: string | null;
   groomShortName?: string | null;
   brideInitial?: string | null;
   groomInitial?: string | null;
+  groomParents?: string | null;
+  brideParents?: string | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  venueMapUrl?: string | null;
   isPurchased: boolean;
   isLocked?: boolean;
   packageId?: number | null;
@@ -333,6 +342,7 @@ export default function DashboardPage() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewed, setReviewed] = useState(() => hasReviewed());
   const [qrCard, setQrCard] = useState<Invitation | null>(null);
+  const [shareCard, setShareCard] = useState<Invitation | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -461,7 +471,7 @@ export default function DashboardPage() {
       } },
     { icon: Eye,    label: "View",  onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : undefined },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
-    { icon: Share2, label: "Share", onClick: () => copyLink(card) },
+    { icon: Share2, label: "Share", onClick: () => setShareCard(card) },
     { icon: QrCode, label: "QR",    onClick: () => card.isPurchased ? setQrCard(card) : toast.info("Pay to unlock QR code."), disabled: !card.isPurchased },
     { icon: Lock,   label: "Lock",  onClick: () => {
       setInvitation(card);
@@ -739,6 +749,13 @@ export default function DashboardPage() {
           url={inviteLinkFor(qrCard)}
           coupleName={`${qrCard.coverGroomName || qrCard.groomName} & ${qrCard.coverBrideName || qrCard.brideName}`}
           onClose={() => setQrCard(null)}
+        />
+      )}
+      {shareCard && (
+        <ShareModal
+          card={shareCard}
+          inviteUrl={inviteLinkFor(shareCard)}
+          onClose={() => setShareCard(null)}
         />
       )}
       <SiteHeader
