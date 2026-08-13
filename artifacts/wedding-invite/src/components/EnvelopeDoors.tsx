@@ -23,7 +23,7 @@ export function EnvelopeDoors({
   waxSealImageUrl,
   cardMaxWidth,
 }: EnvelopeDoorsProps) {
-  const maxWidth = cardMaxWidth || "420px";
+  const maxWidth = cardMaxWidth || "462px";
 
   // Both panels open simultaneously with the same timing — unchanged
   const panelTransition = { duration: 0.9, ease: [0.25, 1, 0.5, 1] as const };

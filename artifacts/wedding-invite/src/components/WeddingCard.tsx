@@ -660,7 +660,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
   if (!invitation) return null;
 
-  const maxWidth = cardMaxWidth || "420px";
+  const maxWidth = cardMaxWidth || "462px";
   const inv = invitation as unknown as Record<string, unknown>;
   const lang = (inv.language as "ms" | "en") || "ms";
   const t = CARD_TEXT[lang];

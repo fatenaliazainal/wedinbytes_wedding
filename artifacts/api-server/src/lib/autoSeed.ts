@@ -57,7 +57,7 @@ const cardDesignValues = {
   colorBackground: "142 20% 96%",
   fontHeading: "Playfair Display",
   fontBody: "Lato",
-  cardMaxWidth: "420px",
+  cardMaxWidth: "462px",
   openingAnimation: "doors",
 };
 

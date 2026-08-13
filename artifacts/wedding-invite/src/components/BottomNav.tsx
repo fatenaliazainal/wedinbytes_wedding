@@ -43,7 +43,7 @@ const NAV_ITEMS: {
   { icon: MessageSquare, label: "RSVP",     isRsvp: true },
 ];
 
-export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "420px", showRsvp = true, showGift = false }: BottomNavProps & { showRsvp?: boolean; showGift?: boolean }) {
+export function BottomNav({ activeTab, isMuted, onTabClick, onRsvpClick, isVisible = false, cardMaxWidth = "462px", showRsvp = true, showGift = false }: BottomNavProps & { showRsvp?: boolean; showGift?: boolean }) {
   return (
     <>
       <style>{`
