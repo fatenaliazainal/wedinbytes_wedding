@@ -2375,12 +2375,7 @@ export default function EditorPage({
                       className={inputCls}
                       value={inv.eventDate}
                       onChange={(e) => setI("eventDate")(e.target.value)}
-                      disabled={identityLocked}
-                      title={identityLocked ? "Cannot change after payment" : undefined}
                     />
-                    {identityLocked && (
-                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-600"><Lock size={11} />Tarikh tidak boleh ditukar selepas pembayaran.</p>
-                    )}
                   </Field>
                   <Field label="Hari (auto)">
                     <input

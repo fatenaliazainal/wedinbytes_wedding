@@ -12,7 +12,7 @@ import { db, invitationTable, cardDesignTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const SITE_URL = "https://wedinstudio.com";
-const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
+const FALLBACK_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
 /** Malay + English month name → 1-based month number */
 const MONTH_NAMES: Record<string, number> = {
@@ -96,11 +96,12 @@ async function toOgData(row: {
   let designCardImageUrl: string | null = null;
   if (row.designCode) {
     const designs = await db
-      .select({ cardImageUrl: cardDesignTable.cardImageUrl })
+      .select({ cardImageUrl: cardDesignTable.cardImageUrl, envelopeImageUrl: cardDesignTable.envelopeImageUrl })
       .from(cardDesignTable)
       .where(eq(cardDesignTable.designCode, row.designCode))
       .limit(1);
-    designCardImageUrl = designs[0]?.cardImageUrl ?? null;
+    // Prefer card cover image; fall back to envelope image if cover isn't set
+    designCardImageUrl = designs[0]?.cardImageUrl || designs[0]?.envelopeImageUrl || null;
   }
 
   return {
