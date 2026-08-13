@@ -5,8 +5,8 @@ import { logger } from "./logger";
 import { DEFAULT_BUSINESS_FORM_CONFIG } from "./business-package";
 
 const invitationBase = {
-  groomName: "Hidayat",
-  brideName: "Ain",
+  groomName: "Nasser",
+  brideName: "Alia",
   eventType: "Walimatul Urus",
   eventDate: "15 November 2025",
   eventDay: "Sabtu",
@@ -19,7 +19,7 @@ const invitationBase = {
   groomParents: "Encik Razali bin Hamid & Puan Rohani binti Yusof",
   brideParents: "Encik Sulaiman bin Othman & Puan Norzahra binti Abdul Rahman",
   contactPhone: "0123456789",
-  contacts: [{ name: "Ain", phone: "0123456789" }],
+  contacts: [{ name: "Alia", phone: "0123456789" }],
   dresscode: "Hijau Sage & Pink",
   message:
     "Dengan penuh kesyukuran ke hadrat Ilahi, kami menjemput Tuan/Puan hadir ke majlis perkahwinan kami.",
@@ -35,8 +35,8 @@ const invitationBase = {
   schedule:
     "11:00 pagi – Ketibaan tetamu\n12:00 tengahari – Majlis makan\n1:00 petang – Bersanding\n3:00 petang – Tamat majlis",
   // Cover
-  shortCoupleName: "Ain & Hidayat",
-  groomInitial: "H",
+  shortCoupleName: "Alia & Nasser",
+  groomInitial: "N",
   brideInitial: "A",
   coverDateText: "15 . 11 . 2025",
   showFrontText: true,
@@ -61,7 +61,8 @@ const cardDesignValues = {
   openingAnimation: "doors",
 };
 
-const DEMO_TOKENS = ["demo", "ain-hidayat-2025"] as const;
+const DEMO_TOKENS = ["demo", "alia-nasser-2025"] as const;
+const LEGACY_DEMO_TOKEN = "ain-hidayat-2025";
 
 export async function autoSeedIfEmpty() {
   try {
@@ -100,13 +101,38 @@ export async function autoSeedIfEmpty() {
     }
 
     // --- Demo invitations: check per-token so existing buyer data never blocks seeding ---
+    // --- Rename legacy demo token if it exists ---
+    const legacyRow = await db
+      .select({ id: invitationTable.id })
+      .from(invitationTable)
+      .where(eq(invitationTable.token, LEGACY_DEMO_TOKEN))
+      .limit(1);
+    if (legacyRow.length > 0) {
+      const newTokenExists = await db
+        .select({ id: invitationTable.id })
+        .from(invitationTable)
+        .where(eq(invitationTable.token, "alia-nasser-2025"))
+        .limit(1);
+      if (newTokenExists.length === 0) {
+        await db
+          .update(invitationTable)
+          .set({ token: "alia-nasser-2025", groomName: "Nasser", brideName: "Alia", shortCoupleName: "Alia & Nasser", groomInitial: "N", brideInitial: "A", contacts: [{ name: "Alia", phone: "0123456789" }] })
+          .where(eq(invitationTable.id, legacyRow[0]!.id));
+        logger.info("Auto-seed: renamed legacy demo token ain-hidayat-2025 → alia-nasser-2025.");
+      } else {
+        await db.delete(invitationTable).where(eq(invitationTable.id, legacyRow[0]!.id));
+        logger.info("Auto-seed: removed duplicate legacy demo token ain-hidayat-2025.");
+      }
+    }
+
+    // --- Demo invitations: check per-token so existing buyer data never blocks seeding ---
     const existingTokenRows = await db
       .select({ token: invitationTable.token })
       .from(invitationTable)
       .where(
         or(
           eq(invitationTable.token, "demo"),
-          eq(invitationTable.token, "ain-hidayat-2025"),
+          eq(invitationTable.token, "alia-nasser-2025"),
         ),
       );
     const existingTokenSet = new Set(existingTokenRows.map((r) => r.token));
@@ -132,7 +158,7 @@ export async function autoSeedIfEmpty() {
         .where(
           or(
             eq(invitationTable.token, "demo"),
-            eq(invitationTable.token, "ain-hidayat-2025"),
+            eq(invitationTable.token, "alia-nasser-2025"),
           ),
         );
       for (const row of existingRows) {

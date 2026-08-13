@@ -67,8 +67,8 @@ async function seed() {
   console.log("Seeding invitation...");
 
   const invitationBase = {
-    groomName: "Hidayat",
-    brideName: "Ain",
+    groomName: "Nasser",
+    brideName: "Alia",
     eventType: "Walimatul Urus",
     eventDate: "15 November 2025",
     eventDay: "Sabtu",
@@ -88,7 +88,7 @@ async function seed() {
   await db
     .insert(invitationTable)
     .values([
-      { token: "ain-hidayat-2025", ...invitationBase },
+      { token: "alia-nasser-2025", ...invitationBase },
       { token: "demo", ...invitationBase },
     ])
     .onConflictDoUpdate({ 

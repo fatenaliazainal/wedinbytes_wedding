@@ -13,11 +13,6 @@ uri = "file://screenshots/pricing-page-final.jpg"
 type = "image"
 title = "Public Pricing Page"
 
-[[outputs]]
-id = "WSku5haKu9n5kdyfa5c3x"
-uri = "file://screenshots/kadkahwinmy-preview.png"
-type = "image"
-title = "Kad Kahwin My Preview"
 
 [[outputs]]
 id = "uuM-WYi-mBd6lbW8-anwq"

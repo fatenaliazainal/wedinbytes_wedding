@@ -17,7 +17,7 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 ## Seed accounts (auto-created on first startup)
 
 - **Admin**: `admin@wedinbytes.com` / password = value of `SEED_SECRET` env var (currently `wedding-seed-2025`)
-- **Demo invitation**: token `demo`, token `ain-hidayat-2025`
+- **Demo invitation**: token `demo`, token `alia-nasser-2025`
 
 ## Stack
 
@@ -61,7 +61,7 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 ## User preferences
 
 - Malay UI labels (Bahasa Malaysia) throughout the buyer-facing UI
-- Brand name: **Wedinstudio** (not KadKahwin.my)
+- Brand name: **Wedinstudio**
 
 ## Gotchas
 
