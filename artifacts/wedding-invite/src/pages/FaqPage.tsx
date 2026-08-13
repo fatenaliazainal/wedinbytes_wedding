@@ -358,10 +358,10 @@ export default function FaqPage() {
         <section className="py-12 px-4 sm:px-6 bg-white text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Ada soalan lain?
+              Still have questions?
             </h2>
             <p className="mt-3 text-sm text-gray-500 max-w-md mx-auto">
-              Hubungi kami terus melalui WhatsApp — kami sedia bantu dari Isnin hingga Sabtu.
+              Contact us directly on WhatsApp — we're available Monday to Saturday.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <a
@@ -370,13 +370,13 @@ export default function FaqPage() {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-[#3d5a3e] text-white text-xs font-bold tracking-widest px-8 py-4 rounded hover:bg-[#2d4330] transition-colors"
               >
-                Hubungi Kami di WhatsApp
+                Contact Us on WhatsApp
               </a>
               <button
                 onClick={() => navigate("/editor")}
                 className="inline-flex items-center justify-center gap-2 border border-gray-200 text-gray-700 text-xs font-bold tracking-widest px-8 py-4 rounded hover:bg-gray-50 transition-colors"
               >
-                Buat Kad Kahwin Saya
+                Create My Invitation
                 <ArrowRight size={14} />
               </button>
             </div>

@@ -56,25 +56,59 @@ export default function QRModal({ url, coupleName, onClose }: Props) {
       // Draw QR from the visible canvas
       ctx.drawImage(canvasRef.current!, PADDING, HEADER, QR_SIZE, QR_SIZE);
 
-      // Footer URL text — truncate to fit canvas width
-      ctx.fillStyle = "#64748b";
-      ctx.font = "11px sans-serif";
-      const maxWidth = SIZE - 16;
-      let shortUrl = url.replace(/^https?:\/\//, "");
-      while (ctx.measureText(shortUrl).width > maxWidth && shortUrl.length > 10) {
-        shortUrl = shortUrl.slice(0, -1);
-      }
-      if (shortUrl !== url.replace(/^https?:\/\//, "")) shortUrl += "…";
-      ctx.fillText(shortUrl, SIZE / 2, HEADER + QR_SIZE + 22);
+      // Center logo overlay
+      const LOGO_SIZE = 54;
+      const logoX = PADDING + QR_SIZE / 2 - LOGO_SIZE / 2;
+      const logoY = HEADER + QR_SIZE / 2 - LOGO_SIZE / 2;
+      const RADIUS = 8;
 
-      // Bottom dot decoration
-      ctx.fillStyle = "#3d5a3e";
-      ctx.beginPath();
-      ctx.arc(SIZE / 2, HEADER + QR_SIZE + 50, 3, 0, Math.PI * 2);
-      ctx.fill();
+      const drawLogo = () => {
+        // White rounded-rect background
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.roundRect(logoX - 4, logoY - 4, LOGO_SIZE + 8, LOGO_SIZE + 8, RADIUS + 2);
+        ctx.fill();
 
-      const url2 = offscreen.toDataURL("image/png");
-      setDataUrl(url2);
+        // Logo image clipped to rounded rect
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(logoX, logoY, LOGO_SIZE, LOGO_SIZE, RADIUS);
+        ctx.clip();
+        ctx.drawImage(logo, logoX, logoY, LOGO_SIZE, LOGO_SIZE);
+        ctx.restore();
+      };
+
+      const logo = new Image();
+      logo.onload = () => {
+        drawLogo();
+        finalize();
+      };
+      logo.onerror = () => {
+        // skip logo if it fails to load
+        finalize();
+      };
+      logo.src = "/logo-wedinbytes.png";
+
+      const finalize = () => {
+        // Footer URL text — truncate to fit canvas width
+        ctx.fillStyle = "#64748b";
+        ctx.font = "11px sans-serif";
+        const maxWidth = SIZE - 16;
+        let shortUrl = url.replace(/^https?:\/\//, "");
+        while (ctx.measureText(shortUrl).width > maxWidth && shortUrl.length > 10) {
+          shortUrl = shortUrl.slice(0, -1);
+        }
+        if (shortUrl !== url.replace(/^https?:\/\//, "")) shortUrl += "…";
+        ctx.fillText(shortUrl, SIZE / 2, HEADER + QR_SIZE + 22);
+
+        // Bottom dot decoration
+        ctx.fillStyle = "#3d5a3e";
+        ctx.beginPath();
+        ctx.arc(SIZE / 2, HEADER + QR_SIZE + 50, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        setDataUrl(offscreen.toDataURL("image/png"));
+      };
     });
   }, [url, coupleName]);
 
