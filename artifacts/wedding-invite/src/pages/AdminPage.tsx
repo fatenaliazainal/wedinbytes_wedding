@@ -498,6 +498,7 @@ interface DesignFormData {
   waxSealId: string;
   colors: string[];
   category: string;
+  cardMaxWidth: string;
 }
 
 const EMPTY_FORM: DesignFormData = {
@@ -513,6 +514,7 @@ const EMPTY_FORM: DesignFormData = {
   waxSealId: "",
   colors: [],
   category: "",
+  cardMaxWidth: "462px",
 };
 
 function DesignForm({
@@ -681,6 +683,7 @@ function DesignForm({
         waxSealId: form.waxSealId ? parseInt(form.waxSealId, 10) : null,
         colors: (form.colors ?? []).length > 0 ? form.colors : null,
         category: form.category || null,
+        cardMaxWidth: form.cardMaxWidth || "462px",
       };
       const url = mode === "add"
         ? `${BASE}/api/design`
@@ -901,6 +904,18 @@ function DesignForm({
             >
               {ANIMATION_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
+          </div>
+
+          {/* Card max width */}
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Card Max Width</label>
+            <p className="text-[11px] text-muted-foreground mb-2">Controls how wide the invitation card appears. Default is 462px. Increase if the card image appears cut off on wider screens.</p>
+            <input
+              className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+              value={form.cardMaxWidth}
+              onChange={(e) => set("cardMaxWidth")(e.target.value)}
+              placeholder="e.g. 462px"
+            />
           </div>
 
           {/* Wax Seal — default seal for this design's envelope face */}
@@ -1494,6 +1509,7 @@ function DesignsTab() {
                     waxSealId: d.waxSealId ? String(d.waxSealId) : "",
                     colors: Array.isArray((d as Record<string,unknown>).colors) ? (d as Record<string,unknown>).colors as string[] : [],
                     category: (d as Record<string,unknown>).category as string ?? "",
+                    cardMaxWidth: (d as Record<string,unknown>).cardMaxWidth as string ?? "462px",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
                 >
