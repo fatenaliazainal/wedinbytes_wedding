@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Copy, Check, ShieldCheck } from "lucide-react";
+import { X, Copy, Check } from "lucide-react";
 
 interface Invitation {
   groomName: string;
@@ -206,16 +206,11 @@ export default function ShareModal({ card, inviteUrl, onClose }: Props) {
           <button
             type="button"
             onClick={handleCopy}
-            className="w-full flex items-center justify-center gap-2 bg-[#3d5a3e] text-white text-sm font-bold py-3 rounded-xl hover:bg-[#2d4330] transition"
+            className="w-full flex items-center justify-center bg-[#3d5a3e] text-white py-3 rounded-xl hover:bg-[#2d4330] transition"
+            title="Copy Invitation"
           >
-            {copied
-              ? <><Check size={16} /> Copied!</>
-              : <><Copy size={16} /> Copy Invitation</>}
+            {copied ? <Check size={18} /> : <Copy size={18} />}
           </button>
-          <p className="flex items-center justify-center gap-1.5 mt-2 text-xs text-slate-400">
-            <ShieldCheck size={13} className="text-[#3d5a3e]" />
-            Your message is ready to share
-          </p>
         </div>
       </div>
     </div>
