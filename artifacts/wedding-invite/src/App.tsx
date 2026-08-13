@@ -127,10 +127,19 @@ function AdminEditorRedirect() {
   return null;
 }
 
+// Wraps the route Switch so the ErrorBoundary key changes on every navigation.
+// This guarantees that even if a component crashes mid-transition the user sees
+// the next page cleanly rather than a stuck error screen.
+function LocationBoundary({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+  return <ErrorBoundary key={location}>{children}</ErrorBoundary>;
+}
+
 function Router() {
   return (
     <>
     <ScrollToTop />
+    <LocationBoundary>
     <Switch>
       <Route path="/" component={MarketingHomePage} />
       <Route path="/invite" component={HomePage} />
@@ -168,6 +177,7 @@ function Router() {
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />
     </Switch>
+    </LocationBoundary>
     </>
   );
 }
