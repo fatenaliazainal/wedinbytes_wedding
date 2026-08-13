@@ -284,7 +284,9 @@ export default function WeddingCardsHomePage() {
           )}
 
           {!hasFilters && totalPages > 1 && (
-            <div className="mt-10 flex items-center justify-center gap-2">
+            <div className="mt-10 flex flex-col items-center gap-3">
+            <p className="text-xs text-gray-400">{designs.length} designs available</p>
+            <div className="flex items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => goToPage(currentPage - 1)}
@@ -319,6 +321,7 @@ export default function WeddingCardsHomePage() {
               >
                 <ChevronRight size={16} />
               </button>
+            </div>
             </div>
           )}
         </div>
