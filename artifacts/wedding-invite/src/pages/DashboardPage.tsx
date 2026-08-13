@@ -300,7 +300,7 @@ function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 
           {/* diagonal ribbon across the full card */}
           <div
             className="absolute flex items-center justify-center shadow-md"
-            style={{ background: design?.colorPrimary ? `hsl(${design.colorPrimary})` : "hsl(142 71% 45%)" }}
+            style={{ background: "#3d5a3e" }}
             style={{
               width: "160%",
               height: "22%",
