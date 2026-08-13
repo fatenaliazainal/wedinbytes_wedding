@@ -1825,8 +1825,9 @@ function RawCardTab() {
             >
               ← Previous
             </button>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground text-center">
               Page <span className="font-semibold text-foreground">{currentPage}</span> / {totalPages}
+              <span className="ml-2 text-[11px] text-muted-foreground/70">({cards.length} designs)</span>
             </p>
             <button
               disabled={currentPage >= totalPages}
