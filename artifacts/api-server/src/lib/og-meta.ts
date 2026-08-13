@@ -207,4 +207,54 @@ export function injectOgTags(
   return result;
 }
 
+/**
+ * Build a lightweight standalone HTML page that contains only OG/Twitter
+ * meta tags plus an immediate JS/meta redirect for real browsers.
+ *
+ * Used in development (where dist/index.html doesn't exist) and as a
+ * fallback so crawlers always get personalised tags even in dev mode.
+ */
+export function buildStandaloneOgHtml(data: InvitationOgData, canonicalUrl: string): string {
+  const groomName   = data.groomDisplayName || "";
+  const brideName   = data.brideName || "";
+  const couple      = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
+  const dateStr     = formatEventDate(data.eventDate);
+  const title       = couple
+    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
+    : "Jemputan Perkahwinan Digital | Wedinstudio";
+  const description = couple && dateStr
+    ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
+    : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
+  const image = ogImageUrl(data.designCardImageUrl);
+
+  return `<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8" />
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}" />
+<link rel="canonical" href="${esc(canonicalUrl)}" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="${esc(canonicalUrl)}" />
+<meta property="og:title" content="${esc(title)}" />
+<meta property="og:description" content="${esc(description)}" />
+<meta property="og:image" content="${esc(image)}" />
+<meta property="og:site_name" content="Wedinstudio" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${esc(title)}" />
+<meta name="twitter:description" content="${esc(description)}" />
+<meta name="twitter:image" content="${esc(image)}" />
+<meta http-equiv="refresh" content="0; url=${esc(canonicalUrl)}" />
+<script>window.location.replace(${JSON.stringify(canonicalUrl)});</script>
+</head>
+<body></body>
+</html>`;
+}
+
+/** Returns true when the User-Agent belongs to a link-preview crawler. */
+export function isCrawler(ua: string | undefined): boolean {
+  if (!ua) return false;
+  return /whatsapp|facebookexternalhit|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|applebot|googlebot|bingbot|duckduckbot|baiduspider|yandexbot|ia_archiver/i.test(ua);
+}
+
 export { findBySlug, findByToken };

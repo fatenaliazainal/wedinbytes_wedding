@@ -11,7 +11,9 @@ import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { globalRateLimit, uploadConcurrencyGuard } from "./lib/security";
-import { findBySlug, findByToken, injectOgTags } from "./lib/og-meta";
+import { findBySlug, findByToken, injectOgTags, buildStandaloneOgHtml, isCrawler } from "./lib/og-meta";
+
+const SITE_URL = "https://wedinstudio.com";
 
 const PgSession = connectPgSimple(session);
 
@@ -136,6 +138,43 @@ app.use((req, res, next) => {
 });
 
 app.use("/api", globalRateLimit, router);
+
+// ── OG meta injection for social crawlers (dev + prod) ───────────────────────
+// WhatsApp, Telegram, Facebook etc. do not run JS, so we intercept their
+// requests to invitation URLs and serve a lightweight HTML page with the
+// correct OG tags. Regular browsers call next() and get the full SPA.
+
+const serveOgForCrawler = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+  data: Awaited<ReturnType<typeof findBySlug>>,
+  canonicalUrl: string,
+) => {
+  if (!data || !isCrawler(req.headers["user-agent"])) return next();
+  const html = buildStandaloneOgHtml(data, canonicalUrl);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.send(html);
+};
+
+app.get("/invite/:dateCode/:slug", async (req, res, next) => {
+  try {
+    const data = await findBySlug(req.params.dateCode, req.params.slug);
+    const origin = req.headers.host ? `https://${req.headers.host}` : SITE_URL;
+    const canonical = `${origin}/invite/${req.params.dateCode}/${req.params.slug}`;
+    await serveOgForCrawler(req, res, next, data, canonical);
+  } catch { next(); }
+});
+
+app.get("/invite/:token", async (req, res, next) => {
+  try {
+    const data = await findByToken(req.params.token);
+    const origin = req.headers.host ? `https://${req.headers.host}` : SITE_URL;
+    const canonical = `${origin}/invite/${req.params.token}`;
+    await serveOgForCrawler(req, res, next, data, canonical);
+  } catch { next(); }
+});
 
 if (process.env.NODE_ENV !== "production") {
   // In development, Vite runs on port 8080 and the API server runs on port 24366.
