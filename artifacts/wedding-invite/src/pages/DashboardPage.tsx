@@ -470,7 +470,6 @@ export default function DashboardPage() {
         if (!card.isPurchased && card.packageId) params.set("package", String(card.packageId));
         navigate(`/editor?${params.toString()}`);
       } },
-    { icon: Eye,    label: "View",  onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : undefined },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: () => setShareCard(card) },
     { icon: QrCode, label: "QR",    onClick: () => card.isPurchased ? setQrCard(card) : toast.info("Pay to unlock QR code."), disabled: !card.isPurchased },
@@ -1001,10 +1000,16 @@ export default function DashboardPage() {
                                     <Link2 size={12} className="text-slate-400" />
                                  </div>
                                   <input readOnly value={cardInviteLink} placeholder="Complete Cover names to generate URL" className="flex-1 bg-transparent text-xs text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text placeholder:text-slate-400" onClick={e => e.currentTarget.select()} />
-                                  <button onClick={() => copyLink(card)} disabled={!cardInviteLink} title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy link"} className="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-40">
-                                   {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
-                                   <span>Copy</span>
-                                 </button>
+                                  <div className="flex items-center gap-1">
+                                    {cardInviteLink && (
+                                      <button onClick={() => window.open(cardInviteLink, "_blank")} title="View invitation" className="p-1.5 bg-white border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
+                                        <Eye size={12} />
+                                      </button>
+                                    )}
+                                    <button onClick={() => copyLink(card)} disabled={!cardInviteLink} title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy link"} className="p-1.5 bg-white border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-40">
+                                      {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                    </button>
+                                  </div>
                                </div>
                                 {!cardInviteLink && (
                                   <p className="-mt-2 mb-3 text-[11px] leading-relaxed text-slate-400">
@@ -1102,9 +1107,16 @@ export default function DashboardPage() {
                                <td className="px-4 py-4 min-w-[200px]">
                                   <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 shadow-sm transition-colors group-hover:border-slate-300">
                                       <input readOnly value={cardInviteLink} placeholder="Complete Cover names to generate URL" className="flex-1 bg-transparent text-[11px] text-slate-600 outline-none min-w-0 font-medium px-1 cursor-text placeholder:text-slate-400" onClick={e => e.currentTarget.select()} />
-                                      <button onClick={() => copyLink(card)} disabled={!cardInviteLink} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-40" title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy Link"}>
-                                       {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
-                                     </button>
+                                      <div className="flex items-center gap-1">
+                                        {cardInviteLink && (
+                                          <button onClick={() => window.open(cardInviteLink, "_blank")} title="View invitation" className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm">
+                                            <Eye size={12} />
+                                          </button>
+                                        )}
+                                        <button onClick={() => copyLink(card)} disabled={!cardInviteLink} className="p-1 bg-slate-50 border border-slate-200 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-40" title={!cardInviteLink ? "Enter both Cover names and the event date first" : "Copy Link"}>
+                                          {copiedToken === card.token ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                                        </button>
+                                      </div>
                                   </div>
                                    {!cardInviteLink && (
                                      <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
