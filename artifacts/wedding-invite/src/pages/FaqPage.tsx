@@ -127,12 +127,12 @@ const FAQS = [
       {
         question: "Can I edit my invitation details after paying?",
         answer:
-          "Yes. You can freely update your wedding details — venue, time, music, gallery, RSVP settings, and more — at any time before your event date. Once the event date has passed, the invitation is automatically locked to read-only.",
+          "Yes. Everything is editable — couple names, event date, venue, time, music, gallery, RSVP settings, and more — right up until your event date. Once the event date has passed, the editor is closed and the invitation becomes view-only for guests until it expires three months later.",
       },
       {
-        question: "Can I change the couple names after paying?",
+        question: "Will my invitation link change if I update the names or event date?",
         answer:
-          "The names displayed inside the invitation can be changed at any time. However, the Cover Names — which form your invitation's public URL — cannot be changed after payment. This ensures the link you've already shared with guests remains valid.",
+          "No. Your public link is permanently locked at the moment of payment, based on the names and date you had at that time. You can freely edit names and the event date afterwards — the link shared with your guests will never change.",
       },
       {
         question: "Can I choose the language for my invitation?",
