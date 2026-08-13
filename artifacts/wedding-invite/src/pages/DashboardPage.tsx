@@ -998,7 +998,7 @@ export default function DashboardPage() {
                                     className="mb-3 w-full flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs text-amber-800 transition hover:bg-amber-100"
                                   >
                                     <Star size={13} className="fill-amber-400 text-amber-400 shrink-0" />
-                                    <span className="flex-1">Happy with Wedinstudio? <strong>Leave a review</strong></span>
+                                    <span className="flex-1">We'd Love to Hear From You <strong>Leave a review</strong></span>
                                     <span className="text-amber-500">→</span>
                                   </button>
                                 )}
