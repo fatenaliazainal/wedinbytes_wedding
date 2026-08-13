@@ -15,22 +15,24 @@ export default function QRModal({ url, coupleName, onClose }: Props) {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    // Draw branded QR onto canvas
-    const SIZE = 320;
-    const PADDING = 24;
-    const QR_SIZE = SIZE - PADDING * 2;
 
+    // Render at 2× for sharp gallery saves
+    const S = 2;
+    const SIZE   = 320 * S;   // 640px
+    const PAD    = 24  * S;
+    const QR_SIZE = SIZE - PAD * 2;
+    const HEADER = 64  * S;
+    const FOOTER = 72  * S;
+
+    // Generate QR at full 2× size
     QRCode.toCanvas(canvasRef.current, url, {
       width: QR_SIZE,
       margin: 1,
       color: { dark: "#1e293b", light: "#ffffff" },
       errorCorrectionLevel: "H",
     }).then(() => {
-      // Compose final branded image on an offscreen canvas
       const offscreen = document.createElement("canvas");
-      const HEADER = 64;
-      const FOOTER = 72;
-      offscreen.width = SIZE;
+      offscreen.width  = SIZE;
       offscreen.height = HEADER + QR_SIZE + FOOTER;
       const ctx = offscreen.getContext("2d")!;
 
@@ -40,75 +42,66 @@ export default function QRModal({ url, coupleName, onClose }: Props) {
 
       // Top accent bar
       ctx.fillStyle = "#3d5a3e";
-      ctx.fillRect(0, 0, SIZE, 6);
+      ctx.fillRect(0, 0, SIZE, 6 * S);
 
-      // Header text — Wedinstudio
+      // Header — WEDINSTUDIO
       ctx.fillStyle = "#3d5a3e";
-      ctx.font = "bold 13px sans-serif";
+      ctx.font = `bold ${13 * S}px sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText("WEDINSTUDIO", SIZE / 2, 30);
+      ctx.fillText("WEDINSTUDIO", SIZE / 2, 30 * S);
 
       // Couple name
       ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 15px sans-serif";
-      ctx.fillText(coupleName, SIZE / 2, 52);
+      ctx.font = `bold ${15 * S}px sans-serif`;
+      ctx.fillText(coupleName, SIZE / 2, 52 * S);
 
-      // Draw QR from the visible canvas
-      ctx.drawImage(canvasRef.current!, PADDING, HEADER, QR_SIZE, QR_SIZE);
+      // QR
+      ctx.drawImage(canvasRef.current!, PAD, HEADER, QR_SIZE, QR_SIZE);
 
-      // Center logo overlay
-      const LOGO_SIZE = 54;
-      const logoX = PADDING + QR_SIZE / 2 - LOGO_SIZE / 2;
+      // Center logo
+      const LOGO_SIZE = 54 * S;
+      const logoX = PAD + QR_SIZE / 2 - LOGO_SIZE / 2;
       const logoY = HEADER + QR_SIZE / 2 - LOGO_SIZE / 2;
-      const RADIUS = 8;
+      const RADIUS = 8 * S;
 
-      const drawLogo = () => {
-        // White rounded-rect background
+      const drawLogo = (img: HTMLImageElement) => {
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.roundRect(logoX - 4, logoY - 4, LOGO_SIZE + 8, LOGO_SIZE + 8, RADIUS + 2);
+        ctx.roundRect(logoX - 4 * S, logoY - 4 * S, LOGO_SIZE + 8 * S, LOGO_SIZE + 8 * S, RADIUS + 2 * S);
         ctx.fill();
-
-        // Logo image clipped to rounded rect
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(logoX, logoY, LOGO_SIZE, LOGO_SIZE, RADIUS);
         ctx.clip();
-        ctx.drawImage(logo, logoX, logoY, LOGO_SIZE, LOGO_SIZE);
+        ctx.drawImage(img, logoX, logoY, LOGO_SIZE, LOGO_SIZE);
         ctx.restore();
       };
 
-      const logo = new Image();
-      logo.onload = () => {
-        drawLogo();
-        finalize();
-      };
-      logo.onerror = () => {
-        // skip logo if it fails to load
-        finalize();
-      };
-      logo.src = "/logo-wedinbytes.png";
-
       const finalize = () => {
-        // Footer URL text — truncate to fit canvas width
+        // Footer URL — truncate to fit
         ctx.fillStyle = "#64748b";
-        ctx.font = "11px sans-serif";
-        const maxWidth = SIZE - 16;
+        ctx.font = `${11 * S}px sans-serif`;
+        const maxW = SIZE - 16 * S;
         let shortUrl = url.replace(/^https?:\/\//, "");
-        while (ctx.measureText(shortUrl).width > maxWidth && shortUrl.length > 10) {
+        while (ctx.measureText(shortUrl).width > maxW && shortUrl.length > 10) {
           shortUrl = shortUrl.slice(0, -1);
         }
         if (shortUrl !== url.replace(/^https?:\/\//, "")) shortUrl += "…";
-        ctx.fillText(shortUrl, SIZE / 2, HEADER + QR_SIZE + 22);
+        ctx.fillText(shortUrl, SIZE / 2, HEADER + QR_SIZE + 22 * S);
 
-        // Bottom dot decoration
+        // Bottom dot
         ctx.fillStyle = "#3d5a3e";
         ctx.beginPath();
-        ctx.arc(SIZE / 2, HEADER + QR_SIZE + 50, 3, 0, Math.PI * 2);
+        ctx.arc(SIZE / 2, HEADER + QR_SIZE + 50 * S, 3 * S, 0, Math.PI * 2);
         ctx.fill();
 
         setDataUrl(offscreen.toDataURL("image/png"));
       };
+
+      const logo = new Image();
+      logo.onload  = () => { drawLogo(logo); finalize(); };
+      logo.onerror = () => finalize();
+      logo.src = "/logo-wedinbytes.png";
     });
   }, [url, coupleName]);
 
