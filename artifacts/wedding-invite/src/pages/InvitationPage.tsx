@@ -600,11 +600,11 @@ export default function InvitationPage() {
           // invitation width. DetailPanel stacks above BottomNav so the footer
           // is never covered by the popup.
           <div
-            className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
+            className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
           >
             <div
-              className="w-full flex flex-col pointer-events-auto"
-              style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "420px" }}
+              className="w-full mx-auto flex flex-col pointer-events-auto"
+              style={{ maxWidth: templateDesign?.cardMaxWidth ?? design?.cardMaxWidth ?? "462px" }}
             >
               <RsvpModal
                 isOpen={isRsvpModalOpen}
