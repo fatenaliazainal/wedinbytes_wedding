@@ -296,9 +296,25 @@ function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 
         />
       </div>
       {!card.isPurchased && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-slate-900/10 backdrop-blur-[1px]">
-          <div style={{ transform: "rotate(-45deg)" }} className="bg-white/95 px-4 py-1 shadow-lg border border-white/50 backdrop-blur-md">
-            <span className="text-slate-900 font-bold tracking-[0.2em] select-none uppercase text-[8px]">PREVIEW</span>
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* diagonal ribbon across the full card */}
+          <div
+            className="absolute flex items-center justify-center bg-green-600 shadow-md"
+            style={{
+              width: "160%",
+              height: "22%",
+              top: "38%",
+              left: "-30%",
+              transform: "rotate(-35deg)",
+              transformOrigin: "center center",
+            }}
+          >
+            <span
+              className="text-white font-black tracking-[0.35em] select-none uppercase"
+              style={{ fontSize: Math.max(7, width * 0.075) }}
+            >
+              PREVIEW
+            </span>
           </div>
         </div>
       )}
