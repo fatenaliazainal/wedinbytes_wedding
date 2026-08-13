@@ -58,25 +58,6 @@ export default function QRModal({ url, coupleName, onClose }: Props) {
       // QR
       ctx.drawImage(canvasRef.current!, PAD, HEADER, QR_SIZE, QR_SIZE);
 
-      // Center logo
-      const LOGO_SIZE = 54 * S;
-      const logoX = PAD + QR_SIZE / 2 - LOGO_SIZE / 2;
-      const logoY = HEADER + QR_SIZE / 2 - LOGO_SIZE / 2;
-      const RADIUS = 8 * S;
-
-      const drawLogo = (img: HTMLImageElement) => {
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.roundRect(logoX - 4 * S, logoY - 4 * S, LOGO_SIZE + 8 * S, LOGO_SIZE + 8 * S, RADIUS + 2 * S);
-        ctx.fill();
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(logoX, logoY, LOGO_SIZE, LOGO_SIZE, RADIUS);
-        ctx.clip();
-        ctx.drawImage(img, logoX, logoY, LOGO_SIZE, LOGO_SIZE);
-        ctx.restore();
-      };
-
       const finalize = () => {
         // Footer URL — truncate to fit
         ctx.fillStyle = "#64748b";
@@ -98,10 +79,7 @@ export default function QRModal({ url, coupleName, onClose }: Props) {
         setDataUrl(offscreen.toDataURL("image/png"));
       };
 
-      const logo = new Image();
-      logo.onload  = () => { drawLogo(logo); finalize(); };
-      logo.onerror = () => finalize();
-      logo.src = "/logo-wedinbytes.png";
+      finalize();
     });
   }, [url, coupleName]);
 
