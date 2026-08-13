@@ -7,6 +7,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -131,6 +132,11 @@ function ReviewCard({ review }: { review: Review }) {
 }
 
 export default function ReviewsPage() {
+  usePageMeta({
+    title: "Ulasan & Testimoni Pelanggan | Wedinstudio",
+    description: "Baca ulasan dan testimoni daripada pasangan Malaysia yang telah menggunakan Wedinstudio untuk kad kahwin digital mereka. Kepuasan pelanggan adalah keutamaan kami.",
+    canonical: "https://wedinstudio.com/reviews",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);

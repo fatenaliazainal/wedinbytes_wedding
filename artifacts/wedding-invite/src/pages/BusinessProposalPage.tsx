@@ -19,6 +19,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -90,6 +91,11 @@ const PARTNER_BENEFITS = [
 ];
 
 export default function BusinessProposalPage() {
+  usePageMeta({
+    title: "Untuk Event Planner & Wedding Vendor | Wedinstudio Business",
+    description: "Sertai Wedinstudio sebagai partner bisnes. Uruskan kad kahwin digital pelanggan anda dari satu dashboard. Daftar percuma, tanpa had pelanggan.",
+    canonical: "https://wedinstudio.com/for-business",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);

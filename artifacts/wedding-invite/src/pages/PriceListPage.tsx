@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useListPricing } from "@workspace/api-client-react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/context/AuthContext";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -183,6 +184,11 @@ function PricingCard({
 }
 
 export default function PriceListPage() {
+  usePageMeta({
+    title: "Harga & Package Kad Kahwin Digital | Wedinstudio",
+    description: "Package kad kahwin digital bermula dari RM55. Bayar sekali, tanpa langganan bulanan. Pilih Standard, Premium atau Signature — semua termasuk RSVP, Maps, dan Music.",
+    canonical: "https://wedinstudio.com/pricing",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);

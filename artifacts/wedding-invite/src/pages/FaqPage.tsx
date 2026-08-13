@@ -8,6 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const PACKAGE_SUPPORT_WHATSAPP = "https://wa.me/601128134211";
 
@@ -177,6 +178,11 @@ function FaqItem({ question, answer }: { question: string; answer: React.ReactNo
 }
 
 export default function FaqPage() {
+  usePageMeta({
+    title: "Soalan Lazim (FAQ) Kad Kahwin Digital | Wedinstudio",
+    description: "Jawapan kepada soalan-soalan lazim tentang kad kahwin digital Wedinstudio — cara buat, harga, RSVP, editing, tempoh aktif, dan lebih banyak lagi.",
+    canonical: "https://wedinstudio.com/faq",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);

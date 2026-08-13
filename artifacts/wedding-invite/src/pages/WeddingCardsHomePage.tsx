@@ -11,6 +11,7 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const CARDS_PER_PAGE = 15;
 
@@ -32,6 +33,11 @@ function getParam(name: string): string {
 }
 
 export default function WeddingCardsHomePage() {
+  usePageMeta({
+    title: "Katalog Design Kad Kahwin Digital | Wedinstudio",
+    description: "Browse koleksi design kad kahwin digital eksklusif — tema Melayu tradisional, moden minimalist, floral romantik dan lebih banyak lagi. Preview sebelum pilih.",
+    canonical: "https://wedinstudio.com/weddingcards/home",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);

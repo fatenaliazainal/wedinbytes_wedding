@@ -13,6 +13,7 @@ import type { SiteNavItem } from "@/components/SiteHeader";
 import { resolveImageUrl } from "@/lib/r2-url";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
 import { normalizeBusinessHomepageLink } from "@/lib/business-link";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -89,6 +90,11 @@ function FeatureIconStrip() {
 }
 
 export default function MarketingHomePage() {
+  usePageMeta({
+    title: "Kad Jemputan Kahwin Digital | Wedinstudio — E-Invitation Online Malaysia",
+    description: "Cipta kad jemputan kahwin digital yang cantik dalam minit. Pilih dari koleksi reka bentuk eksklusif, kongsi pautan unik, dan jejak RSVP tetamu secara masa nyata.",
+    canonical: "https://wedinstudio.com/",
+  });
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
