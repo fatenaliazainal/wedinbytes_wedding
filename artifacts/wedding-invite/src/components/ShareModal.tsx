@@ -63,18 +63,13 @@ function buildTemplate(card: Invitation, inviteUrl: string): string {
     "",
   ];
 
-  if (groomParents || brideParents) {
-    if (groomParents) lines.push(groomParents);
-    if (groomParents && brideParents) lines.push("&");
-    if (brideParents) lines.push(brideParents);
-    lines.push("");
-    lines.push("menjemput YBhg. Dato'/Datin/Tuan/Puan sekeluarga");
-    lines.push("bagi meraikan Majlis Perkahwinan putera/puteri kami dengan pasangannya,");
-  } else {
-    lines.push("menjemput YBhg. Dato'/Datin/Tuan/Puan sekeluarga");
-    lines.push("bagi meraikan Majlis Perkahwinan");
-  }
+  if (groomParents) lines.push(groomParents);
+  if (groomParents && brideParents) lines.push("&");
+  if (brideParents) lines.push(brideParents);
+  if (groomParents || brideParents) lines.push("");
 
+  lines.push("menjemput YBhg. Dato'/Datin/Tuan/Puan sekeluarga");
+  lines.push("bagi meraikan Majlis Perkahwinan putera/puteri kami dengan pasangannya,");
   lines.push("");
   lines.push(groomName);
   lines.push("❤️");
