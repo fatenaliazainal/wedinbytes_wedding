@@ -36,186 +36,186 @@ const FAQS = [
     category: "General",
     items: [
       {
-        question: "Apa itu Wedinstudio?",
+        question: "What is Wedinstudio?",
         answer:
-          "Wedinstudio ialah platform kad kahwin digital Malaysia. Anda boleh cipta, edit, dan kongsikan jemputan kahwin anda melalui link — tanpa perlu cetak, pos, atau whatsapp satu per satu secara manual.",
+          "Wedinstudio is a Malaysian digital wedding invitation platform. You can create, customise, and share a beautiful online invitation with your guests via a link — no printing, no postage, no hassle.",
       },
       {
-        question: "Apa bezanya kad kahwin digital dengan kad kahwin biasa?",
+        question: "What is the difference between a digital invitation and a physical card?",
         answer:
-          "Kad kahwin digital dikongsi melalui link. Tetamu buka link tu dalam telefon atau komputer mereka, dan akan nampak jemputan yang cantik dengan animasi, muzik latar, butang lokasi GPS, dan RSVP online. Tiada kos cetak, tiada kad yang tertinggal di rumah.",
+          "A digital invitation is shared as a link. Guests open it on their phone or computer and see a beautifully animated card with background music, a GPS location button, and an online RSVP. No printing costs, and no card left behind at home.",
       },
     ],
   },
   {
-    category: "Cara Guna",
+    category: "Getting Started",
     items: [
       {
-        question: "Macam mana nak buat kad kahwin digital saya?",
+        question: "How do I create my digital wedding invitation?",
         answer: (
           <>
-            Mudah sahaja — ikut 4 langkah ini:
+            It's simple — just follow these 4 steps:
             <ol className="mt-2 space-y-1 list-decimal list-inside">
-              <li>Pilih pakej yang sesuai (Standard, Premium, atau Signature)</li>
-              <li>Isi maklumat majlis — nama pengantin, tarikh, tempat, dan lain-lain</li>
-              <li>Buat pembayaran untuk aktifkan kad</li>
-              <li>Kongsi link unik anda kepada tetamu melalui WhatsApp atau media sosial</li>
+              <li>Choose a package (Standard, Premium, or Signature)</li>
+              <li>Fill in your wedding details — couple names, date, venue, and more</li>
+              <li>Complete payment to activate your invitation</li>
+              <li>Share your unique link with guests via WhatsApp or social media</li>
             </ol>
           </>
         ),
       },
       {
-        question: "Adakah saya perlu tahu coding atau IT untuk guna Wedinstudio?",
+        question: "Do I need any technical knowledge?",
         answer:
-          "Langsung tidak perlu. Semua dilakukan melalui borang isian yang mudah. Anda cuma perlu taip maklumat majlis anda, dan Wedinstudio akan hasilkan kad yang cantik secara automatik.",
+          "Not at all. Everything is done through simple forms. Just type in your wedding details and Wedinstudio will generate your beautiful invitation automatically.",
       },
       {
-        question: "Boleh saya tengok dulu macam mana rupanya sebelum bayar?",
+        question: "Can I preview my invitation before paying?",
         answer:
-          "Boleh. Selepas daftar dan isi maklumat asas, anda akan dapat preview kad anda secara percuma. Bayaran hanya diperlukan untuk aktifkan dan kongsikan link kepada tetamu.",
-      },
-    ],
-  },
-  {
-    category: "Ciri-Ciri Kad",
-    items: [
-      {
-        question: "Adakah tetamu boleh RSVP melalui kad kahwin digital?",
-        answer:
-          "Ya. Tetamu boleh sahkan kehadiran mereka terus melalui kad — pilih sama ada hadir atau tidak, nyatakan bilangan tetamu, dan tinggalkan nama mereka. Semua respons akan dikumpul dalam dashboard anda.",
-      },
-      {
-        question: "Boleh tetamu tinggalkan ucapan untuk pengantin?",
-        answer:
-          "Ya. Terdapat ruangan ucapan khas dalam kad. Tetamu boleh tulis kata-kata tahniah atau doa restu, dan semuanya akan tersimpan dalam kad anda untuk anda baca bila-bila masa.",
-      },
-      {
-        question: "Adakah saya dapat notifikasi email bila tetamu RSVP?",
-        answer:
-          "Ya — setiap kali tetamu hantar RSVP, anda akan terima notifikasi ke emel yang didaftarkan. Ciri ini aktif sebaik sahaja anda selesai bayaran.",
-      },
-      {
-        question: "Boleh saya tambah muzik latar dalam kad?",
-        answer:
-          "Ya. Muzik latar tersedia dalam semua pakej — Standard, Premium, dan Signature. Tetamu boleh mute atau unmute ikut pilihan mereka.",
-      },
-      {
-        question: "Boleh saya tambah galeri gambar?",
-        answer:
-          "Ya — Galeri Foto tersedia dalam pakej Premium dan Signature. Anda boleh muat naik gambar-gambar kenangan untuk dipaparkan dalam kad.",
-      },
-      {
-        question: "Adakah ada ciri Dress Code dalam kad?",
-        answer:
-          "Ya — Dress Code tersedia dalam pakej Premium dan Signature. Anda boleh tetapkan warna atau tema pakaian untuk tetamu, lengkap dengan paparan palet warna.",
-      },
-      {
-        question: "Boleh saya tambah ciri Money Gift atau QR bank?",
-        answer:
-          "Ya — Money Gift tersedia dalam pakej Premium dan Signature. Anda boleh muatnaik QR code akaun bank atau e-wallet untuk memudahkan tetamu menghantar hadiah wang.",
-      },
-      {
-        question: "Apa itu Gift Corner dan Gift Registry?",
-        answer:
-          "Gift Corner dan Gift Registry adalah ciri eksklusif pakej Signature. Gift Corner membolehkan anda senaraikan item hadiah yang diingini, manakala Gift Registry membolehkan tetamu 'tandakan' hadiah yang mereka akan bawa — elakkan hadiah berganda.",
+          "Yes. After registering and filling in your basic details, you can preview your invitation for free. Payment is only required to activate and share the link with guests.",
       },
     ],
   },
   {
-    category: "Edit & Penyesuaian",
+    category: "Features",
     items: [
       {
-        question: "Boleh saya edit maklumat kad selepas bayar?",
+        question: "Can my guests RSVP through the invitation?",
         answer:
-          "Ya. Anda bebas edit maklumat majlis — tempat, masa, muzik, galeri, tetapan RSVP, dan banyak lagi — bila-bila masa sebelum tarikh majlis. Selepas tarikh majlis berlalu, kad akan dikunci secara automatik (hanya baca sahaja).",
+          "Yes. Guests can confirm their attendance directly through the card — selecting whether they'll attend, stating the number of guests, and leaving their name. All responses are collected in your dashboard.",
       },
       {
-        question: "Boleh saya tukar nama pengantin selepas bayar?",
+        question: "Can guests leave wishes for the couple?",
         answer:
-          "Untuk nama kandungan (yang terpapar dalam kad), boleh ditukar bila-bila masa. Tetapi Cover Name — iaitu nama yang digunakan untuk membentuk link URL anda — tidak boleh ditukar selepas bayaran. Ini untuk memastikan link yang sudah dikongsi kepada tetamu tidak rosak atau digunakan semula.",
+          "Yes. There is a dedicated wishes section in the invitation. Guests can write congratulatory messages or prayers, and everything is saved in your card for you to read anytime.",
       },
       {
-        question: "Boleh saya pilih bahasa untuk kad saya?",
+        question: "Will I receive an email notification when a guest RSVPs?",
         answer:
-          "Ya. Anda boleh pilih sama ada Bahasa Melayu atau English untuk teks dalam kad anda.",
+          "Yes — every time a guest submits an RSVP, you will receive a notification to your registered email address. This feature is active as soon as your payment is completed.",
       },
       {
-        question: "Berapa lama kad saya aktif?",
+        question: "Can I add background music?",
         answer:
-          "Kad anda akan aktif selama tiga bulan selepas tarikh majlis anda. Contohnya, jika majlis pada 1 Ogos 2026, kad anda akan tamat tempoh pada 1 November 2026. Ini membolehkan tetamu yang terlewat membuka kad tetap dapat akses selepas majlis.",
+          "Yes. Background music is available in all packages — Standard, Premium, and Signature. Guests can mute or unmute it as they prefer.",
+      },
+      {
+        question: "Can I add a photo gallery?",
+        answer:
+          "Yes — Photo Gallery is available in the Premium and Signature packages. You can upload cherished photos to be displayed beautifully inside the invitation.",
+      },
+      {
+        question: "Is there a Dress Code feature?",
+        answer:
+          "Yes — Dress Code is available in the Premium and Signature packages. You can set a colour theme or attire guideline for guests, complete with a colour palette display.",
+      },
+      {
+        question: "Can I add a Money Gift or bank QR code?",
+        answer:
+          "Yes — Money Gift is available in the Premium and Signature packages. You can upload a QR code for your bank account or e-wallet to make it easy for guests to send gifts.",
+      },
+      {
+        question: "What are Gift Corner and Gift Registry?",
+        answer:
+          "Gift Corner and Gift Registry are exclusive to the Signature package. Gift Corner lets you list items you'd love to receive, while Gift Registry lets guests 'claim' a gift they plan to bring — preventing duplicates.",
       },
     ],
   },
   {
-    category: "Perkongsian",
+    category: "Editing & Customisation",
     items: [
       {
-        question: "Macam mana nak kongsi kad kahwin digital saya kepada tetamu?",
+        question: "Can I edit my invitation details after paying?",
         answer:
-          "Anda akan dapat satu link unik seperti wedinstudio.com/invite/260814/amirul-amira. Kongsi link tu melalui WhatsApp, Telegram, Instagram, atau mana-mana platform mesej. Tetamu tekan link, kad terus terbuka — tiada app yang perlu dipasang.",
+          "Yes. You can freely update your wedding details — venue, time, music, gallery, RSVP settings, and more — at any time before your event date. Once the event date has passed, the invitation is automatically locked to read-only.",
       },
       {
-        question: "Adakah kad boleh dibuka dalam telefon?",
+        question: "Can I change the couple names after paying?",
         answer:
-          "Ya. Kad Wedinstudio direka khas untuk telefon bimbit. Ia juga berfungsi pada tablet dan komputer. Tetamu tidak perlu muat turun sebarang aplikasi.",
+          "The names displayed inside the invitation can be changed at any time. However, the Cover Names — which form your invitation's public URL — cannot be changed after payment. This ensures the link you've already shared with guests remains valid.",
+      },
+      {
+        question: "Can I choose the language for my invitation?",
+        answer:
+          "Yes. You can choose between Bahasa Melayu or English for the text displayed in your invitation.",
+      },
+      {
+        question: "How long is my invitation active?",
+        answer:
+          "Your invitation stays active for three months after your event date. For example, if your wedding is on 1 August 2026, your invitation will expire on 1 November 2026. This gives late-opening guests time to still access the card after the event.",
       },
     ],
   },
   {
-    category: "Pakej & Bayaran",
+    category: "Sharing",
     items: [
       {
-        question: "Apakah pakej yang tersedia dan berapakah harganya?",
+        question: "How do I share my digital invitation with guests?",
+        answer:
+          "You will have a unique link such as wedinstudio.com/invite/260814/amirul-amira. Share it via WhatsApp, Telegram, Instagram, or any messaging platform. Guests simply tap the link and the invitation opens instantly — no app required.",
+      },
+      {
+        question: "Can guests open the invitation on their phones?",
+        answer:
+          "Yes. Wedinstudio invitations are designed specifically for mobile phones. They also work on tablets and computers. Guests do not need to download anything.",
+      },
+    ],
+  },
+  {
+    category: "Packages & Payment",
+    items: [
+      {
+        question: "What packages are available and how much do they cost?",
         answer: (
           <>
-            Kami menawarkan tiga pakej:
+            We offer three packages:
             <ul className="mt-2 space-y-1.5">
-              <li><span className="font-semibold text-gray-800">Standard — RM50:</span> RSVP &amp; Ucapan, Lokasi GPS, Countdown, Muzik Latar, Kalendar</li>
-              <li><span className="font-semibold text-gray-800">Premium — RM60:</span> Semua Standard + Galeri Foto, Money Gift, Dress Code</li>
-              <li><span className="font-semibold text-gray-800">Signature — RM70:</span> Semua Premium + Gift Corner &amp; Gift Registry</li>
+              <li><span className="font-semibold text-gray-800">Standard — RM50:</span> RSVP &amp; Wishes, GPS Location, Countdown, Background Music, Calendar</li>
+              <li><span className="font-semibold text-gray-800">Premium — RM60:</span> Everything in Standard + Photo Gallery, Money Gift, Dress Code</li>
+              <li><span className="font-semibold text-gray-800">Signature — RM70:</span> Everything in Premium + Gift Corner &amp; Gift Registry</li>
             </ul>
-            <p className="mt-2">Lawati halaman <a href="/pricing" className="font-semibold text-[#3d5a3e] underline underline-offset-2">Pakej</a> untuk perbandingan lengkap.</p>
+            <p className="mt-2">Visit our <a href="/pricing" className="font-semibold text-[#3d5a3e] underline underline-offset-2">Packages</a> page for a full feature comparison.</p>
           </>
         ),
       },
       {
-        question: "Apa bezanya Standard, Premium, dan Signature?",
+        question: "What is the difference between Standard, Premium, and Signature?",
         answer:
-          "Standard merangkumi semua ciri asas untuk jemputan yang lengkap. Premium menambah Galeri Foto, Money Gift, dan Dress Code — sesuai untuk pasangan yang mahu lebih personalisasi. Signature pula menambah Gift Corner dan Gift Registry untuk pengalaman jemputan yang paling lengkap.",
+          "Standard covers all the essentials for a complete invitation. Premium adds Photo Gallery, Money Gift, and Dress Code — ideal for couples who want more personalisation. Signature goes further with Gift Corner and Gift Registry for the most complete invitation experience.",
       },
       {
-        question: "Apa yang perlu saya isi sebelum boleh buat bayaran?",
+        question: "What do I need to complete before I can make payment?",
         answer:
-          "Sebelum bayaran, anda perlu lengkapkan nama pengantin lelaki, nama pengantin perempuan, dan tarikh majlis dalam bahagian Edit. Maklumat ini diperlukan untuk menjana link URL unik kad anda. Selepas bayaran selesai, link URL tidak boleh diubah.",
+          "Before payment, you need to fill in the groom's name, bride's name, and the official event date in the Edit section. This information is needed to generate your unique invitation URL. Once payment is made, the URL cannot be changed.",
       },
       {
-        question: "Apakah kaedah pembayaran yang diterima?",
+        question: "What payment methods are accepted?",
         answer:
-          "Kami menerima pembayaran melalui FPX (semua bank Malaysia utama), kad kredit/debit, dan e-wallet melalui gateway pembayaran ToyyibPay dan Billplz. Pembayaran selamat dan serta-merta.",
+          "We accept payment via FPX (all major Malaysian banks), credit/debit card, and e-wallet through the ToyyibPay and Billplz payment gateways. Payment is secure and processed instantly.",
       },
       {
-        question: "Boleh saya tukar pakej selepas bayar?",
+        question: "Can I change my package after paying?",
         answer: (
           <>
-            Pakej tidak boleh ditukar selepas pembayaran dibuat. Jika anda perlukan bantuan lanjut, sila hubungi kami melalui {WA}.
+            Package changes are not available after payment has been made. For further assistance, please contact us on {WA}.
           </>
         ),
       },
       {
-        question: "Adakah ada caj tambahan selepas bayaran pertama?",
+        question: "Are there any recurring charges after the first payment?",
         answer:
-          "Tidak. Bayaran adalah sekali sahaja. Tiada yuran bulanan, tiada caj tersembunyi. Kad anda akan kekal aktif sehingga tiga bulan selepas tarikh majlis.",
+          "No. It is a one-time payment. There are no monthly fees or hidden charges. Your invitation remains active until three months after your event date.",
       },
     ],
   },
   {
-    category: "Sokongan",
+    category: "Support",
     items: [
       {
-        question: "Macam mana nak hubungi Wedinstudio jika ada masalah?",
+        question: "How do I contact Wedinstudio if I have a problem?",
         answer: (
           <>
-            Anda boleh hubungi kami terus melalui {WA}. Kami sedia membantu dari Isnin hingga Sabtu.
+            You can reach us directly via {WA}. We are available Monday to Saturday.
           </>
         ),
       },
@@ -331,9 +331,9 @@ export default function FaqPage() {
         {/* Hero */}
         <section className="bg-white py-6 px-4 sm:px-6 text-center">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">Soalan Lazim (FAQ)</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">Frequently Asked Questions</h1>
             <p className="mt-2 text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
-              Semua yang anda perlu tahu tentang kad kahwin digital Wedinstudio.
+              Everything you need to know about creating and sharing your digital wedding invitation.
             </p>
           </div>
         </section>

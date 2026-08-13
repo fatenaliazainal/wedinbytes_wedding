@@ -22,6 +22,7 @@ import { startBillplzCheckout, getPaymentMethodConfig, type PaymentMethodConfig 
 import PaymentMethodsNotice from "@/components/PaymentMethodsNotice";
 import GatewaySelectionModal from "@/components/GatewaySelectionModal";
 import ReviewPromptModal from "@/components/ReviewPromptModal";
+import QRModal from "@/components/QRModal";
 import { hasReviewed } from "@/lib/review-status";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -331,6 +332,7 @@ export default function DashboardPage() {
   const [gatewayModalInput, setGatewayModalInput] = useState<{ invitationId?: number; orderId?: number } | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewed, setReviewed] = useState(() => hasReviewed());
+  const [qrCard, setQrCard] = useState<Invitation | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -460,7 +462,7 @@ export default function DashboardPage() {
     { icon: Eye,    label: "View",  onClick: () => path ? window.open(`${BASE}${path}`, "_blank") : undefined },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
     { icon: Share2, label: "Share", onClick: () => copyLink(card) },
-    { icon: QrCode, label: "QR",    onClick: () => toast.info("Coming soon!") },
+    { icon: QrCode, label: "QR",    onClick: () => card.isPurchased ? setQrCard(card) : toast.info("Pay to unlock QR code."), disabled: !card.isPurchased },
     { icon: Lock,   label: "Lock",  onClick: () => {
       setInvitation(card);
       setProtectCard(Boolean(card.isLocked));
@@ -730,6 +732,13 @@ export default function DashboardPage() {
           defaultName={user.name ?? ""}
           onClose={() => setShowReviewModal(false)}
           onReviewed={() => { setReviewed(true); setShowReviewModal(false); }}
+        />
+      )}
+      {qrCard && (
+        <QRModal
+          url={inviteLinkFor(qrCard)}
+          coupleName={`${qrCard.coverGroomName || qrCard.groomName} & ${qrCard.coverBrideName || qrCard.brideName}`}
+          onClose={() => setQrCard(null)}
         />
       )}
       <SiteHeader
