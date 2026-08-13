@@ -14,14 +14,48 @@ import { eq } from "drizzle-orm";
 const SITE_URL = "https://wedinstudio.com";
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
 
+/** Malay + English month name → 1-based month number */
+const MONTH_NAMES: Record<string, number> = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  januari: 1, februari: 2, mac: 3, mei: 5, jun: 6, julai: 7,
+  ogos: 8, oktober: 10, disember: 12,
+};
+
+/**
+ * Parse an event date stored in any supported format and return { year, month, day }.
+ * Supports ISO (2026-08-11), DD/MM/YYYY, and "11 Ogos 2026" / "11 August 2026".
+ * Uses UTC values to avoid timezone drift between server and stored dates.
+ */
+function parseDateUtc(value: string | null | undefined): { year: number; month: number; day: number } | null {
+  const s = (value ?? "").trim();
+  if (!s) return null;
+
+  // ISO: 2026-08-11
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return { year: +m[1], month: +m[2], day: +m[3] };
+
+  // DD/MM/YYYY or DD-MM-YYYY
+  m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) return { year: +m[3], month: +m[2], day: +m[1] };
+
+  // "11 Ogos 2026" / "11 August 2026"
+  m = s.toLowerCase().match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/);
+  if (m) {
+    const monthNum = MONTH_NAMES[m[2]];
+    if (monthNum) return { year: +m[3], month: monthNum, day: +m[1] };
+  }
+
+  return null;
+}
+
 /** The 6-digit YYMMDD code used in public invitation URLs */
 function publicDateCode(eventDate: string | null | undefined): string | null {
-  if (!eventDate) return null;
-  const d = new Date(eventDate);
-  if (isNaN(d.getTime())) return null;
-  const yy = String(d.getFullYear()).slice(2);
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  const d = parseDateUtc(eventDate);
+  if (!d) return null;
+  const yy = String(d.year).slice(2);
+  const mm = String(d.month).padStart(2, "0");
+  const dd = String(d.day).padStart(2, "0");
   return `${yy}${mm}${dd}`;
 }
 
@@ -125,11 +159,16 @@ async function findByToken(token: string): Promise<InvitationOgData | null> {
   return toOgData(rows[0]);
 }
 
-/** Build the public R2 image URL from a stored card_design key */
+/** All prefixes the /api/r2 proxy accepts — keep in sync with cards.ts allowedPrefixes */
+const R2_ALLOWED_PREFIXES = [
+  "wed_card_design/", "gallery/", "initials/", "logos/",
+  "business-logos/", "gift-qr/", "wax_seals/", "registry-thumb/", "DisplayWebsiteMockup/",
+];
+
+/** Build the public R2 image URL from a stored R2 key */
 function ogImageUrl(designCardImageUrl: string | null | undefined): string {
   if (!designCardImageUrl) return FALLBACK_IMAGE;
-  // card_design.card_image_url keys use the wed_card_design/ prefix — publicly accessible via /api/r2
-  if (designCardImageUrl.startsWith("wed_card_design/")) {
+  if (R2_ALLOWED_PREFIXES.some((p) => designCardImageUrl.startsWith(p))) {
     return `${SITE_URL}/api/r2?key=${encodeURIComponent(designCardImageUrl)}`;
   }
   return FALLBACK_IMAGE;

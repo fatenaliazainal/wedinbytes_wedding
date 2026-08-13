@@ -300,8 +300,8 @@ function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 
           {/* diagonal ribbon across the full card */}
           <div
             className="absolute flex items-center justify-center shadow-md"
-            style={{ background: "#3d5a3e" }}
             style={{
+              background: "#3d5a3e",
               width: "160%",
               height: "22%",
               top: "38%",
@@ -499,7 +499,7 @@ export default function DashboardPage() {
         navigate(`/editor?${params.toString()}`);
       } },
     { icon: Users,  label: "RSVP",  onClick: () => navigate("/rsvp") },
-    { icon: Share2, label: "Share", onClick: () => setShareCard(card) },
+    { icon: Share2, label: "Share", onClick: () => card.isPurchased ? setShareCard(card) : toast.info("Pay to unlock sharing."), disabled: !card.isPurchased },
     { icon: QrCode, label: "QR",    onClick: () => card.isPurchased ? setQrCard(card) : toast.info("Pay to unlock QR code."), disabled: !card.isPurchased },
     { icon: Lock,   label: "Lock",  onClick: () => {
       setInvitation(card);
