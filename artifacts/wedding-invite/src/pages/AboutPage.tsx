@@ -50,7 +50,7 @@ export default function AboutPage() {
             About Us
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Beautiful invitations, made in Malaysia.
+            More than an invitation, it&apos;s the beginning.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-gray-500 sm:text-base">
             Wedinstudio helps couples create stunning digital wedding invitations — with RSVP tracking, guest messages, and everything they need for their celebration, all in one place.
