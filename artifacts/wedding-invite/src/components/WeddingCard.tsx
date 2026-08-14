@@ -222,19 +222,23 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 
 function OrnamentDivider() {
   return (
-    <div className="flex items-center justify-center w-full my-1">
-      <svg
-        viewBox="190 4 120 24"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-[140px] text-accent opacity-50 shrink-0"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M190 16L198 8L206 16L198 24Z"/>
-        <path d="M294 16L302 8L310 16L302 24Z"/>
-        <path d="M206 16 C218 16 224 10 232 10 C240 10 244 16 250 16 C256 16 260 10 268 10 C276 10 282 16 294 16 C282 16 276 22 268 22 C260 22 256 16 250 16 C244 16 240 22 232 22 C224 22 218 16 206 16Z"/>
-        <circle cx="250" cy="16" r="2.5"/>
-      </svg>
+    <div className="flex items-center justify-center w-full my-1 text-accent">
+      <div
+        style={{
+          width: '160px',
+          height: '80px',
+          backgroundColor: 'currentColor',
+          opacity: 0.5,
+          WebkitMaskImage: 'url(/ornament-divider2.png)',
+          maskImage: 'url(/ornament-divider2.png)',
+          WebkitMaskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          maskSize: 'contain',
+        }}
+      />
     </div>
   );
 }
