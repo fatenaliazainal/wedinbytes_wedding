@@ -66,7 +66,6 @@ interface InvitationOgData {
   eventDate: string | null;
   /** R2 key from card_design.card_image_url for the design used by this invitation */
   designCardImageUrl: string | null;
-  eventTitle: string | null;
 }
 
 const INVITE_SELECT = {
@@ -75,7 +74,6 @@ const INVITE_SELECT = {
   groomName: invitationTable.groomName,
   brideName: invitationTable.brideName,
   eventDate: invitationTable.eventDate,
-  eventTitle: invitationTable.eventTitle,
   designCode: invitationTable.designCode,
   lockedSlug: invitationTable.lockedSlug,
   lockedDateCode: invitationTable.lockedDateCode,
@@ -91,7 +89,6 @@ async function toOgData(row: {
   groomName: string | null;
   brideName: string | null;
   eventDate: string | null;
-  eventTitle: string | null;
   designCode: string | null;
 }): Promise<InvitationOgData> {
   let designCardImageUrl: string | null = null;
@@ -110,7 +107,6 @@ async function toOgData(row: {
     brideName: row.coverBrideName || row.brideName || "",
     eventDate: row.eventDate,
     designCardImageUrl,
-    eventTitle: row.eventTitle,
   };
 }
 
@@ -207,10 +203,9 @@ export function injectOgTags(
   const brideName = data.brideName || "";
   const couple = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr = formatEventDate(data.eventDate);
-  const eventLabel = data.eventTitle || "Jemputan Perkahwinan";
   const title = couple
-    ? `${eventLabel} ${couple} | Wedinstudio`
-    : `${eventLabel} | Wedinstudio`;
+    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
+    : `Jemputan Perkahwinan | Wedinstudio`;
   const description = couple && dateStr
     ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
     : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
@@ -261,10 +256,9 @@ export function buildStandaloneOgHtml(data: InvitationOgData, canonicalUrl: stri
   const brideName   = data.brideName || "";
   const couple      = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr     = formatEventDate(data.eventDate);
-  const eventLabel  = data.eventTitle || "Jemputan Perkahwinan";
   const title       = couple
-    ? `${eventLabel} ${couple} | Wedinstudio`
-    : `${eventLabel} | Wedinstudio`;
+    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
+    : `Jemputan Perkahwinan | Wedinstudio`;
   const description = couple && dateStr
     ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
     : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
