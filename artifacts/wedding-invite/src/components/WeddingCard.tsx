@@ -22,6 +22,12 @@ interface WeddingCardProps {
   contentOverlayColor?: string;
   /** Opacity 0–100 for the content overlay (defaults to 55). */
   contentOverlayOpacity?: string;
+  /**
+   * Per-design cover layout config. Different designs have different
+   * decorative boundaries; each can supply its own zone constraints.
+   * Defaults to DEFAULT_COVER_LAYOUT when omitted.
+   */
+  coverLayout?: CoverLayoutConfig;
 }
 
 const MONTH_MAP: Record<string, string> = {
@@ -219,6 +225,31 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 
   return `${datePart}T${timePart}`;
 }
+
+/**
+ * CoverLayoutConfig — per-design zone constraints for the cover page.
+ * Different card designs have different decorative boundaries and available
+ * text areas; each design can supply its own config.
+ *
+ * All units:
+ *   namesZoneMaxVh  — max height of the couple-name group as a fraction of vh
+ *                     (e.g. 0.42 = 42 vh). Prevents names from pushing
+ *                     the date section downward.
+ *   nameFontMaxWidthPx — px width at which FitName starts reducing font size.
+ *   nameMinFontPx      — smallest allowed font size before word-wrap kicks in.
+ */
+export interface CoverLayoutConfig {
+  namesZoneMaxVh: number;
+  nameFontMaxWidthPx: number;
+  nameMinFontPx: number;
+}
+
+/** Default config — matches the current short-name appearance exactly. */
+export const DEFAULT_COVER_LAYOUT: CoverLayoutConfig = {
+  namesZoneMaxVh: 0.42,
+  nameFontMaxWidthPx: 360,
+  nameMinFontPx: 20,
+};
 
 /**
  * FitName — renders a single name that scales its font size down to fit within
@@ -725,7 +756,8 @@ const CARD_TEXT = {
   },
 };
 
-export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity, overlayEnabled = true }: WeddingCardProps) {
+export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMaxWidth, guestWishes, rsvpCount, onRsvpClick, hideFirstPageContent = false, contentOverlayColor, contentOverlayOpacity, overlayEnabled = true, coverLayout }: WeddingCardProps) {
+  const cl = { ...DEFAULT_COVER_LAYOUT, ...coverLayout };
   // Animation hooks — must be called before any conditional returns
   const shouldReduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
@@ -861,14 +893,23 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {/* Eyebrow — event type; subordinate to hero names */}
             <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
 
-            {/* Hero names — FitName scales font down before wrapping for long names */}
-            <div className="mt-10 flex flex-col items-center w-full">
+            {/* ── COUPLE NAME ZONE ─────────────────────────────────────────
+                maxHeight is the zone boundary — prevents names from ever
+                pushing the date section downward regardless of name length.
+                FitName shrinks the font within the zone; at the minimum
+                font size it allows word-wrap. Short names look identical
+                to the pre-zone design because they never approach maxHeight.
+            ─────────────────────────────────────────────────────────── */}
+            <div
+              className="mt-10 flex flex-col items-center justify-center w-full"
+              style={{ maxHeight: `${cl.namesZoneMaxVh * 100}vh`, overflow: "hidden" }}
+            >
               <FitName
                 text={coverGroomName}
                 baseStyle={nameStyle}
                 className="leading-tight drop-shadow-sm"
-                maxWidthPx={360}
-                minFontPx={20}
+                maxWidthPx={cl.nameFontMaxWidthPx}
+                minFontPx={cl.nameMinFontPx}
               />
               {(coverBrideName && coverGroomName) && (
                 <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary drop-shadow-sm">
@@ -879,18 +920,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 text={coverBrideName}
                 baseStyle={nameStyle}
                 className="leading-tight drop-shadow-sm"
-                maxWidthPx={360}
-                minFontPx={20}
+                maxWidthPx={cl.nameFontMaxWidthPx}
+                minFontPx={cl.nameMinFontPx}
               />
             </div>
 
-            {/* Day + Date — own group, tightly spaced internally */}
+            {/* ── DATE ZONE — always at fixed distance below names zone ── */}
             <div className="mt-9 flex flex-col items-center space-y-1">
               <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase" style={{ fontFamily: bodyFontFamily }}>{invitation.eventDay}</p>
               <p className="text-sm text-foreground/80 tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
             </div>
 
-            {/* Hashtag — own group, moderate breathing room from Day+Date */}
+            {/* ── HASHTAG ZONE ── */}
             {hashtag && (
               <p className="text-xs italic text-primary/80 mt-5" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
             )}
