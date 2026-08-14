@@ -13,6 +13,7 @@ import toyyibPayRouter from "./toyyibpay";
 import billplzRouter from "./billplz";
 import waxSealsRouter from "./wax-seals";
 import giftRegistryRouter from "./gift-registry";
+import siteSettingsRouter from "./site-settings";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(toyyibPayRouter);
 router.use(billplzRouter);
 router.use(waxSealsRouter);
 router.use(giftRegistryRouter);
+router.use(siteSettingsRouter);
 
 export default router;

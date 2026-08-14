@@ -8,3 +8,4 @@ export * from "./business";
 export * from "./wax-seal";
 export * from "./gift-registry";
 export * from "./payment-method-config";
+export * from "./site-settings";

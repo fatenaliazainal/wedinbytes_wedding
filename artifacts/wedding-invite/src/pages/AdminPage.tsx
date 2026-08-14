@@ -26,7 +26,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
 
-type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users" | "website";
 
 type RawCard = {
   id: number;
@@ -2933,6 +2933,140 @@ function RevenueTab() {
   );
 }
 
+// ── Site Settings Tab ─────────────────────────────────────────────────────────
+
+type QuickLink  = { label: string; url: string };
+type SocialLink = { platform: string; icon: string; url: string; enabled: boolean };
+
+function SiteSettingsTab() {
+  const [quickLinks,  setQuickLinks]  = useState<QuickLink[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${BASE}/api/site-settings`, { credentials: "include" });
+      if (r.ok) {
+        const d = await r.json() as { quickLinks: QuickLink[]; socialLinks: SocialLink[] };
+        setQuickLinks(d.quickLinks  ?? []);
+        setSocialLinks(d.socialLinks ?? []);
+      }
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const r = await fetch(`${BASE}/api/site-settings`, {
+        method: "PATCH", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quickLinks, socialLinks }),
+      });
+      if (r.ok) toast.success("Site settings saved");
+      else toast.error("Failed to save settings");
+    } finally { setSaving(false); }
+  };
+
+  // ── Quick Links ─────────────────────────────────────────────────────────────
+  const addQuickLink = () => setQuickLinks(prev => [...prev, { label: "", url: "" }]);
+  const updateQuickLink = (i: number, field: keyof QuickLink, val: string) =>
+    setQuickLinks(prev => prev.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
+  const removeQuickLink = (i: number) =>
+    setQuickLinks(prev => prev.filter((_, idx) => idx !== i));
+
+  // ── Social Links ────────────────────────────────────────────────────────────
+  const updateSocialLink = (i: number, field: keyof SocialLink, val: string | boolean) =>
+    setSocialLinks(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+      <Loader2 className="animate-spin mr-2" size={16} /> Loading…
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 max-w-2xl">
+
+      {/* Quick Links */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-foreground">Quick Links</h3>
+          <button onClick={addQuickLink} className="flex items-center gap-1 text-xs text-primary hover:underline">
+            <Plus size={13} /> Add link
+          </button>
+        </div>
+        <div className="space-y-2">
+          {quickLinks.map((link, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <input
+                value={link.label}
+                onChange={e => updateQuickLink(i, "label", e.target.value)}
+                placeholder="Label (e.g. About Us)"
+                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <input
+                value={link.url}
+                onChange={e => updateQuickLink(i, "url", e.target.value)}
+                placeholder="URL (e.g. /about)"
+                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button onClick={() => removeQuickLink(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+          {quickLinks.length === 0 && (
+            <p className="text-xs text-muted-foreground">No quick links. Click "Add link" to add one.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Social Links */}
+      <section>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Follow Us — Social Links</h3>
+        <div className="space-y-2">
+          {socialLinks.map((s, i) => (
+            <div key={s.platform} className="flex gap-2 items-center">
+              <img src={s.icon} alt={s.platform} className="h-7 w-7 rounded-full border border-border bg-white object-cover p-0.5 shrink-0" />
+              <span className="w-24 text-xs text-muted-foreground shrink-0">{s.platform}</span>
+              <input
+                value={s.url}
+                onChange={e => updateSocialLink(i, "url", e.target.value)}
+                placeholder={`${s.platform} URL`}
+                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={() => updateSocialLink(i, "enabled", !s.enabled)}
+                className={`shrink-0 text-xs px-2 py-1 rounded border font-medium transition-colors ${
+                  s.enabled
+                    ? "border-green-200 bg-green-50 text-green-700"
+                    : "border-border bg-muted text-muted-foreground"
+                }`}
+                title={s.enabled ? "Shown in footer" : "Hidden in footer"}
+              >
+                {s.enabled ? "Shown" : "Hidden"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <button
+        onClick={save}
+        disabled={saving}
+        className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity"
+      >
+        {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+        {saving ? "Saving…" : "Save Changes"}
+      </button>
+    </div>
+  );
+}
+
 // ── Admin Page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -3016,7 +3150,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["website", "Website"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -3040,6 +3174,7 @@ export default function AdminPage() {
       {tab === "orders" && <OrdersTab />}
       {tab === "revenue" && <RevenueTab />}
       {tab === "users" && <UsersTab />}
+      {tab === "website" && <SiteSettingsTab />}
       </div>
     </div>
   );
