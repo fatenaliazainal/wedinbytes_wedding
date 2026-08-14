@@ -207,9 +207,10 @@ export function injectOgTags(
   const brideName = data.brideName || "";
   const couple = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr = formatEventDate(data.eventDate);
+  const eventLabel = data.eventTitle || "Jemputan Perkahwinan";
   const title = couple
-    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
-    : "Jemputan Perkahwinan Digital | Wedinstudio";
+    ? `${eventLabel} ${couple} | Wedinstudio`
+    : `${eventLabel} | Wedinstudio`;
   const description = couple && dateStr
     ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
     : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
@@ -260,9 +261,10 @@ export function buildStandaloneOgHtml(data: InvitationOgData, canonicalUrl: stri
   const brideName   = data.brideName || "";
   const couple      = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr     = formatEventDate(data.eventDate);
+  const eventLabel  = data.eventTitle || "Jemputan Perkahwinan";
   const title       = couple
-    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
-    : "Jemputan Perkahwinan Digital | Wedinstudio";
+    ? `${eventLabel} ${couple} | Wedinstudio`
+    : `${eventLabel} | Wedinstudio`;
   const description = couple && dateStr
     ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
     : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
