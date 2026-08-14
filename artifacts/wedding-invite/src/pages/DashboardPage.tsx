@@ -274,66 +274,61 @@ const isExpired = (card: Invitation) => {
 };
 
 function ThumbnailView({ card, design, size = 100 }: { card: Invitation, design: Design | null, size?: number, width?: number, height?: number, scale?: number }) {
-  const fallbackImg = resolveImageUrl(design?.cardImageUrl || design?.envelopeImageUrl || "");
-  const inviteUrl   = publicInvitePathOrToken(card);
-
-  // Portrait dimensions — invitation pages are tall like a phone screen
-  const W = size;
-  const H = Math.round(size * 1.65);
-
-  // iframe is rendered at mobile width then CSS-scaled down to fit W
-  const IW    = 390;
-  const IH    = Math.round(IW * (H / W)); // maintain aspect ratio
-  const scale = W / IW;
-
+  const imgUrl = resolveImageUrl(design?.cardImageUrl || design?.envelopeImageUrl || "");
+  const logoSize = Math.round(size * 0.52);
   return (
     <div
       className="bg-slate-100 shadow-sm shrink-0 relative overflow-hidden"
-      style={{ width: W, height: H, borderRadius: 10, border: "2.5px solid #0f172a", flexShrink: 0 }}
+      style={{ width: size, height: size, borderRadius: 10, border: "3px solid #0f172a", flexShrink: 0 }}
     >
-      {/* Fallback design image — shown while iframe loads or when no URL */}
-      {fallbackImg ? (
+      {imgUrl ? (
         <img
-          src={fallbackImg}
+          src={imgUrl}
           alt=""
           draggable={false}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
       ) : (
-        <div className="absolute inset-0 bg-slate-200 flex items-center justify-center">
-          <span className="text-slate-400" style={{ fontSize: Math.max(7, size * 0.09) }}>No design</span>
+        <div className="w-full h-full bg-slate-200 flex items-center justify-center">
+          <span className="text-slate-400" style={{ fontSize: Math.max(8, size * 0.1) }}>No design</span>
         </div>
       )}
-
-      {/* Scaled live iframe — renders the actual invitation in its initial (cover) state */}
-      {inviteUrl && (
+      {/* Centered logo watermark */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
         <div
-          style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}
-          aria-hidden
+          style={{
+            width: logoSize,
+            height: logoSize,
+            borderRadius: logoSize * 0.18,
+            background: "rgba(255,255,255,0.82)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            padding: logoSize * 0.06,
+          }}
         >
-          <div style={{ width: IW, height: IH, transform: `scale(${scale})`, transformOrigin: "top left" }}>
-            <iframe
-              src={`${inviteUrl}?thumbnail=1`}
-              width={IW}
-              height={IH}
-              style={{ border: "none", display: "block" }}
-              tabIndex={-1}
-              scrolling="no"
-            />
-          </div>
+          <img
+            src={logoWedinstudio}
+            alt="Wedinstudio"
+            draggable={false}
+            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+          />
         </div>
-      )}
-
-      {/* PREVIEW ribbon overlay for unpaid invitations */}
+      </div>
       {!card.isPurchased && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* diagonal ribbon across the full card */}
           <div
             className="absolute flex items-center justify-center shadow-md"
             style={{
               background: "#3d5a3e",
               width: "160%",
-              height: "16%",
-              top: "42%",
+              height: "22%",
+              top: "38%",
               left: "-30%",
               transform: "rotate(-35deg)",
               transformOrigin: "center center",
@@ -341,7 +336,7 @@ function ThumbnailView({ card, design, size = 100 }: { card: Invitation, design:
           >
             <span
               className="text-white font-black tracking-[0.35em] select-none uppercase"
-              style={{ fontSize: Math.max(6, size * 0.07) }}
+              style={{ fontSize: Math.max(7, size * 0.075) }}
             >
               PREVIEW
             </span>
