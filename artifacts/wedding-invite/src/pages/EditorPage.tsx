@@ -2146,7 +2146,7 @@ export default function EditorPage({
             {/* ── MUKA DEPAN ── */}
             {activeTab === "muka-depan" && (
               <>
-                <Field label="Tajuk Majlis">
+                <Field label="Event Title">
                   <input
                     className={inputCls}
                     value={inv.coverTitle}
@@ -2155,7 +2155,7 @@ export default function EditorPage({
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nama Penuh Pengantin Lelaki">
+                  <Field label="Groom's Full Name">
                     <input
                       className={inputCls}
                       value={inv.groomName}
@@ -2163,7 +2163,7 @@ export default function EditorPage({
                       placeholder={t("placeholders.groomFullName")}
                     />
                   </Field>
-                  <Field label="Nama Penuh Pengantin Perempuan">
+                  <Field label="Bride's Full Name">
                     <input
                       className={inputCls}
                       value={inv.brideName}
@@ -2173,7 +2173,7 @@ export default function EditorPage({
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nama Cover Pengantin Lelaki">
+                  <Field label="Cover Groom Name">
                     <input
                       className={inputCls}
                       value={inv.coverGroomName}
@@ -2181,7 +2181,7 @@ export default function EditorPage({
                       placeholder="Contoh: M"
                     />
                   </Field>
-                  <Field label="Nama Cover Pengantin Perempuan">
+                  <Field label="Cover Bride Name">
                     <input
                       className={inputCls}
                       value={inv.coverBrideName}
@@ -2191,17 +2191,16 @@ export default function EditorPage({
                   </Field>
                 </div>
                 {identityLocked ? (
-                  <p className="flex items-center gap-1.5 -mt-2 text-xs text-blue-600"><Lock size={11} />URL link jemputan anda telah dikunci selepas pembayaran. Nama Cover boleh ditukar tetapi URL kekal sama.</p>
+                  <p className="flex items-center gap-1.5 -mt-2 text-xs text-blue-600"><Lock size={11} />Your invitation URL is locked after payment. Cover names can still be edited but the URL stays the same.</p>
                 ) : (
                   <p className={`-mt-2 text-xs leading-relaxed ${coverNamesEmpty ? "text-red-500 font-medium" : "text-gray-500"}`}>
-                    {coverNamesEmpty ? "⚠ " : ""}URL jemputan anda dijana daripada Nama Cover Pengantin Lelaki dan
-                    Nama Cover Pengantin Perempuan di atas.{" "}
+                    {coverNamesEmpty ? "⚠ " : ""}Your invitation URL is generated from the Cover Groom Name and Cover Bride Name above.{" "}
                     {coverNamesEmpty
-                      ? "Kedua-dua nama wajib diisi sebelum boleh simpan."
-                      : "Pastikan kedua-dua nama diisi dengan betul sebelum berkongsi link."}
+                      ? "Both names are required before you can save."
+                      : "Make sure both names are correct before sharing your link."}
                   </p>
                 )}
-                <Field label="Inisial Cover (Pilihan)">
+                <Field label="Cover Initials (Optional)">
                   <input
                     className={inputCls}
                     value={inv.envelopeInitials}
@@ -2209,11 +2208,10 @@ export default function EditorPage({
                     placeholder="Contoh: S & H"
                   />
                   <p className="text-xs text-gray-400">
-                    Teks ini dipaparkan dalam bulatan jika tiada artwork
-                    initials.
+                    This text is shown in the circle if no initials artwork is uploaded.
                   </p>
                   <label className="mt-3 block text-xs text-gray-500">
-                    Saiz inisial cover: {Number(inv.envelopeInitialsSize) || 24}
+                    Cover initials size: {Number(inv.envelopeInitialsSize) || 24}
                     px
                     <input
                       type="range"
@@ -2231,7 +2229,7 @@ export default function EditorPage({
                     />
                   </label>
                 </Field>
-                <Field label="Upload Logo (Pilihan)">
+                <Field label="Upload Logo (Optional)">
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <span>
                       {uploadingInitials
@@ -2266,7 +2264,7 @@ export default function EditorPage({
                         }}
                       />
                       <label className="mt-3 block text-xs text-gray-500">
-                        Saiz logo: {inv.initialsImageScale}%
+                        Logo size: {inv.initialsImageScale}%
                         <input
                           type="range"
                           min="50"
@@ -2325,7 +2323,7 @@ export default function EditorPage({
             {/* ── AYAT JEMPUTAN ── */}
             {activeTab === "ayat-undangan" && (
               <>
-                <Field label="Teks Greeting">
+                <Field label="Greeting Text">
                   <RichTextEditor
                     value={inv.greetingText}
                     onChange={(v) => setI("greetingText")(v)}
@@ -2334,7 +2332,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Nama Ibu Bapa Pengantin Lelaki" helperText="Dipaparkan di bahagian detail kad">
+                <Field label="Groom's Parents" helperText="Shown in the invitation detail section">
                   <RichTextEditor
                     value={inv.groomParents}
                     onChange={(v) => setI("groomParents")(v)}
@@ -2344,7 +2342,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Nama Ibu Bapa Pengantin Perempuan" helperText="Dipaparkan di bahagian detail kad">
+                <Field label="Bride's Parents" helperText="Shown in the invitation detail section">
                   <RichTextEditor
                     value={inv.brideParents}
                     onChange={(v) => setI("brideParents")(v)}
@@ -2354,7 +2352,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Teks Jemputan">
+                <Field label="Invitation Text">
                   <RichTextEditor
                     value={inv.invitationText}
                     onChange={(v) => setI("invitationText")(v)}
@@ -2364,7 +2362,7 @@ export default function EditorPage({
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nama Penuh Pengantin Lelaki">
+                  <Field label="Groom's Full Name">
                     <input
                       className={inputCls}
                       value={inv.groomName}
@@ -2372,7 +2370,7 @@ export default function EditorPage({
                       placeholder={t("placeholders.groomFullName")}
                     />
                   </Field>
-                  <Field label="Nama Penuh Pengantin Perempuan">
+                  <Field label="Bride's Full Name">
                     <input
                       className={inputCls}
                       value={inv.brideName}
@@ -2381,7 +2379,7 @@ export default function EditorPage({
                     />
                   </Field>
                 </div>
-                <Field label="Inisial Halaman 2">
+                <Field label="Page 2 Initials">
                   <input
                     className={inputCls}
                     value={inv.page2Initials}
@@ -2396,7 +2394,7 @@ export default function EditorPage({
             {activeTab === "tarikh-lokasi" && (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Tarikh">
+                  <Field label="Date">
                     <input
                       type="date"
                       className={inputCls}
@@ -2404,7 +2402,7 @@ export default function EditorPage({
                       onChange={(e) => setI("eventDate")(e.target.value)}
                     />
                   </Field>
-                  <Field label="Hari (auto)">
+                  <Field label="Day (auto)">
                     <input
                       className={inputCls}
                       value={inv.eventDay}
@@ -2414,7 +2412,7 @@ export default function EditorPage({
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Masa Mula">
+                  <Field label="Start Time">
                     <input
                       type="time"
                       className={inputCls}
@@ -2422,7 +2420,7 @@ export default function EditorPage({
                       onChange={(e) => setI("eventStartTime")(e.target.value)}
                     />
                   </Field>
-                  <Field label="Masa Tamat">
+                  <Field label="End Time">
                     <input
                       type="time"
                       className={inputCls}
@@ -2431,7 +2429,7 @@ export default function EditorPage({
                     />
                   </Field>
                 </div>
-                <Field label="Masa (Teks)">
+                <Field label="Time (Text)">
                   <input
                     className={inputCls}
                     value={inv.eventTime}
@@ -2439,7 +2437,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.timeFromStartEnd")}
                   />
                 </Field>
-                <Field label="Nama Tempat Majlis">
+                <Field label="Venue Name">
                   <input
                     className={inputCls}
                     value={inv.venueName}
@@ -2447,7 +2445,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.venueName")}
                   />
                 </Field>
-                <Field label="Alamat Majlis">
+                <Field label="Venue Address">
                   <RichTextEditor
                     value={inv.venueAddress}
                     onChange={(v) => setI("venueAddress")(v)}
@@ -2461,7 +2459,7 @@ export default function EditorPage({
                     }}
                   />
                 </Field>
-                <Field label="Tarikh Hijri">
+                <Field label="Hijri Date">
                   <input
                     className={inputCls}
                     value={inv.venueHijriDate}
@@ -2469,7 +2467,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.islamicDate")}
                   />
                 </Field>
-                <Field label="Link Google Maps">
+                <Field label="Google Maps Link">
                   <input
                     className={inputCls}
                     value={inv.venueMapUrl}
@@ -2477,7 +2475,7 @@ export default function EditorPage({
                     placeholder="https://maps.google.com/..."
                   />
                 </Field>
-                <Field label="Link Waze">
+                <Field label="Waze Link">
                   <input
                     className={inputCls}
                     value={(inv as any).venueWazeUrl}
@@ -2667,7 +2665,7 @@ export default function EditorPage({
 
             {/* ── DOA ── */}
             {activeTab === "doa" && (
-              <Field label="Doa">
+              <Field label="Prayer / Doa">
                 <RichTextEditor
                   value={inv.doaText}
                   onChange={(v) => setI("doaText")(v)}
@@ -3148,7 +3146,7 @@ export default function EditorPage({
                     <option value="no">No</option>
                   </select>
                 </Field>
-                <Field label="Ayat RSVP">
+                <Field label="RSVP Message">
                   <RichTextEditor
                     value={inv.rsvpIntroText}
                     onChange={(v) =>
@@ -3160,7 +3158,7 @@ export default function EditorPage({
                     inputStyle={{ textAlign: "left" }}
                   />
                 </Field>
-                <Field label="Tarikh Akhir RSVP">
+                <Field label="RSVP Deadline">
                   <input
                     type="datetime-local"
                     className={inputCls}
@@ -3170,7 +3168,7 @@ export default function EditorPage({
                     }
                   />
                 </Field>
-                <Field label="Had Keseluruhan Tetamu*">
+                <Field label="Total Guest Limit*">
                   <input
                     type="number"
                     min={1}
@@ -3187,7 +3185,7 @@ export default function EditorPage({
                     }
                   />
                 </Field>
-                <Field label="Had Tetamu Setiap Jemputan*">
+                <Field label="Per-Invitation Guest Limit*">
                   <input
                     type="number"
                     min={1}
@@ -3205,7 +3203,7 @@ export default function EditorPage({
                   />
                 </Field>
                 <Field
-                  label="Email Notifikasi RSVP"
+                  label="RSVP Email Notification"
                   hint="Salinan RSVP akan dihantar ke email ini"
                 >
                   <input
@@ -3220,7 +3218,7 @@ export default function EditorPage({
                 </Field>
                 {inv.rsvpEmail && (
                   <Field
-                    label="Hantar Email Notifikasi"
+                    label="Send Email Notification"
                     hint="Nyahaktif untuk berhenti terima email apabila tetamu RSVP"
                   >
                     <div className="flex items-center gap-3">
@@ -3282,7 +3280,7 @@ export default function EditorPage({
                 </div>
 
                 {inv.contacts.length === 0 && (
-                  <Field label="Nombor Telefon">
+                  <Field label="Phone Number">
                     <input
                       className={inputCls}
                       value={inv.contactPhone}
@@ -3379,7 +3377,7 @@ export default function EditorPage({
                     Show footer branding
                   </label>
                 </div>
-                <Field label="Teks Footer">
+                <Field label="Footer Text">
                   <input
                     className={inputCls}
                     value={inv.footerText}
@@ -3387,7 +3385,7 @@ export default function EditorPage({
                     placeholder={t("placeholders.footerText")}
                   />
                 </Field>
-                <Field label="URL Footer">
+                <Field label="Footer URL">
                   <input
                     className={inputCls}
                     value={inv.footerUrl}
@@ -3763,7 +3761,7 @@ export default function EditorPage({
                 {(mode === "buyer" || mode === "business") && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <Field label="Font Nama">
+                      <Field label="Name Font">
                         <select
                           className={selectCls}
                           value={normalizeFont(design.nameFontFamily)}
@@ -3786,7 +3784,7 @@ export default function EditorPage({
                           ))}
                         </select>
                       </Field>
-                      <Field label="Font Kandungan">
+                      <Field label="Body Font">
                         <select
                           className={selectCls}
                           value={normalizeFont(design.bodyFontFamily)}
@@ -3811,7 +3809,7 @@ export default function EditorPage({
                       </Field>
                     </div>
                     <Field
-                      label={`Saiz Name Font — ${design.nameFontSize || 38}px`}
+                      label={`Name Font Size — ${design.nameFontSize || 38}px`}
                     >
                       <input
                         type="range"
@@ -3828,7 +3826,7 @@ export default function EditorPage({
                       />
                     </Field>
                     <Field
-                      label={`Saiz Tajuk Section — ${design.badgeFontSize || 24}px`}
+                      label={`Section Title Size — ${design.badgeFontSize || 24}px`}
                     >
                       <input
                         type="range"
@@ -3846,7 +3844,7 @@ export default function EditorPage({
                       />
                     </Field>
                     <Field
-                      label={`Saiz Greeting & Nama Detail — ${design.greetingFontSize || 16}px`}
+                      label={`Greeting & Detail Names Size — ${design.greetingFontSize || 16}px`}
                     >
                       <input
                         type="range"
@@ -3863,25 +3861,25 @@ export default function EditorPage({
                         className="w-full accent-blue-500"
                       />
                     </Field>
-                    <Field label={`Saiz Eyebrow — ${design.eyebrowFontSize || 10}px`}>
+                    <Field label={`Eyebrow Size — ${design.eyebrowFontSize || 10}px`}>
                       <input type="range" min={8} max={20} step={1}
                         value={Number(design.eyebrowFontSize) || 10}
                         onChange={(e) => setDesign((p) => ({ ...p, eyebrowFontSize: e.target.value }))}
                         className="w-full accent-blue-500" />
                     </Field>
-                    <Field label={`Saiz Hari — ${design.dayFontSize || 11}px`}>
+                    <Field label={`Day Size — ${design.dayFontSize || 11}px`}>
                       <input type="range" min={8} max={24} step={1}
                         value={Number(design.dayFontSize) || 11}
                         onChange={(e) => setDesign((p) => ({ ...p, dayFontSize: e.target.value }))}
                         className="w-full accent-blue-500" />
                     </Field>
-                    <Field label={`Saiz Tarikh — ${design.dateFontSize || 11}px`}>
+                    <Field label={`Date Size — ${design.dateFontSize || 11}px`}>
                       <input type="range" min={8} max={24} step={1}
                         value={Number(design.dateFontSize) || 11}
                         onChange={(e) => setDesign((p) => ({ ...p, dateFontSize: e.target.value }))}
                         className="w-full accent-blue-500" />
                     </Field>
-                    <Field label={`Saiz Hashtag — ${design.hashtagFontSize || 10}px`}>
+                    <Field label={`Hashtag Size — ${design.hashtagFontSize || 10}px`}>
                       <input type="range" min={8} max={20} step={1}
                         value={Number(design.hashtagFontSize) || 10}
                         onChange={(e) => setDesign((p) => ({ ...p, hashtagFontSize: e.target.value }))}
@@ -3889,16 +3887,16 @@ export default function EditorPage({
                     </Field>
                     {/* Theme Colours — grouped to match Admin design editor */}
                     <p className="text-xs font-semibold text-foreground pt-1">
-                      Warna Tema
+                      Theme Colours
                     </p>
 
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      1 · Teks
+                      1 · Text
                     </p>
                     <HexColorInput
                       value={design.nameColor || "20 50% 20%"}
-                      label="Nama Utama"
-                      helperText="Nama pasangan & teks script"
+                      label="Couple Names"
+                      helperText="Couple names & script text"
                       preview={{
                         type: "text",
                         sample: "Ahmad & Siti",
@@ -3914,8 +3912,8 @@ export default function EditorPage({
                     />
                     <HexColorInput
                       value={design.greetingColor || ""}
-                      label="Greeting, Nama Parents & Nama Detail"
-                      helperText="Assalamualaikum & nama pasangan dalam bahagian detail"
+                      label="Greeting, Parents & Detail Names"
+                      helperText="Greeting text & partner names in detail section"
                       preview={{
                         type: "text",
                         sample: "Assalamualaikum",
@@ -3934,8 +3932,8 @@ export default function EditorPage({
                         inheritedColors.colorHeading ||
                         ""
                       }
-                      label="Tajuk Section"
-                      helperText="Tajuk setiap bahagian jemputan"
+                      label="Section Title"
+                      helperText="Heading for each invitation section"
                       preview={{
                         type: "text",
                         sample: "ATUR CARA",
@@ -3951,8 +3949,8 @@ export default function EditorPage({
                     />
                     <HexColorInput
                       value={design.colorForeground || "0 0% 10%"}
-                      label="Teks Kandungan"
-                      helperText="Butiran, tarikh & kandungan utama"
+                      label="Body Text"
+                      helperText="Details, date & main content"
                       preview={{
                         type: "text",
                         sample: "11:00 AM  Ketibaan Tetamu",
@@ -3969,8 +3967,8 @@ export default function EditorPage({
                       value={
                         design.colorMuted || inheritedColors.colorMuted || ""
                       }
-                      label="Teks Kecil"
-                      helperText="Nota, kapsyen & teks sampingan"
+                      label="Muted Text"
+                      helperText="Notes, captions & supporting text"
                       preview={{
                         type: "text",
                         sample: "Sila tiba 15 min awal",
@@ -3986,12 +3984,12 @@ export default function EditorPage({
                     />
 
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">
-                      2 · Butang &amp; Hiasan
+                      2 · Buttons &amp; Accents
                     </p>
                     <HexColorInput
                       value={design.colorPrimary || "142 45% 35%"}
-                      label="Butang Utama"
-                      helperText="RSVP, Buka Jemputan & tindakan utama"
+                      label="Primary Button"
+                      helperText="RSVP, Open Invitation & primary actions"
                       preview={{ type: "button", sample: "RSVP" }}
                       testId="editor-primary-color"
                       onChange={(hex) =>
@@ -4003,8 +4001,8 @@ export default function EditorPage({
                     />
                     <HexColorInput
                       value={design.colorSecondary || "142 30% 92%"}
-                      label="Butang Kedua"
-                      helperText="Maps & tindakan sokongan"
+                      label="Secondary Button"
+                      helperText="Maps & secondary actions"
                       preview={{ type: "button", sample: "Maps" }}
                       testId="editor-secondary-color"
                       onChange={(hex) =>
@@ -4017,7 +4015,7 @@ export default function EditorPage({
                     <HexColorInput
                       value={design.colorAccent || "142 30% 92%"}
                       label="Hiasan / Accent"
-                      helperText="Garisan, ikon & ornamen"
+                      helperText="Lines, icons & ornaments"
                       preview={{ type: "ornament", sample: "— ✦ —" }}
                       testId="editor-accent-color"
                       onChange={(hex) =>
@@ -4029,12 +4027,12 @@ export default function EditorPage({
                     />
 
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-1">
-                      3 · Latar Belakang
+                      3 · Backgrounds
                     </p>
                     <HexColorInput
                       value={design.colorBackground || "142 20% 96%"}
-                      label="Latar Halaman"
-                      helperText="Latar belakang utama jemputan"
+                      label="Page Background"
+                      helperText="Main invitation background"
                       preview={{ type: "surface", sample: "Page" }}
                       testId="editor-background-color"
                       onChange={(hex) =>
@@ -4046,8 +4044,8 @@ export default function EditorPage({
                     />
                     <HexColorInput
                       value={design.colorCard || "0 0% 100%"}
-                      label="Latar Kad / Popup"
-                      helperText="Kad, popup & panel dalam"
+                      label="Card / Popup Background"
+                      helperText="Card, popup & inner panels"
                       preview={{ type: "surface", sample: "Card" }}
                       testId="editor-card-color"
                       onChange={(hex) =>
@@ -4059,7 +4057,7 @@ export default function EditorPage({
                     />
                   </>
                 )}
-                <Field label="Link Lagu (YouTube)">
+                <Field label="Music Link (YouTube)">
                   <input
                     className={inputCls}
                     value={design.musicUrl}
@@ -4099,7 +4097,7 @@ export default function EditorPage({
           <div className="mt-8 pt-4 border-t border-gray-100 space-y-2">
             {coverNamesEmpty && !customerEditLocked && (
               <p className="text-xs text-red-500 flex items-center gap-1">
-                <Lock size={11} /> Sila isi <strong>Nama Cover Pengantin Lelaki</strong> dan <strong>Nama Cover Pengantin Perempuan</strong> untuk simpan.
+                <Lock size={11} /> Please fill in <strong>Cover Groom Name</strong> and <strong>Cover Bride Name</strong> to save.
               </p>
             )}
             <div className="flex gap-3">
