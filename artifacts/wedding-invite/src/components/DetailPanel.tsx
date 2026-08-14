@@ -153,13 +153,13 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Date</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
-        <p className="font-bold text-[13px] text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
+        <p className="font-bold text-[13px] text-foreground" style={{ fontFamily: nameFont }}>{invitation?.eventDay}</p>
         <div className="w-10 h-px bg-primary/30 mx-auto" />
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Date</p>
         <p className="text-[16px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDate}</p>
         <div className="w-10 h-px bg-primary/30 mx-auto" />
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Time</p>
-        <p className="text-[12px] text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventTime}</p>
+        <p className="text-[12px] text-foreground" style={{ fontFamily: nameFont }}>{invitation?.eventTime}</p>
       </div>
       <a
         href={mapsCalUrl}
@@ -184,13 +184,13 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Venue</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
-        <p className="text-[12px] font-bold text-foreground">
+        <p className="text-[12px] font-bold text-foreground" style={{ fontFamily: nameFont }}>
           {invitation?.venueName}
         </p>
-        <p className="text-[11px] text-muted-foreground"
+        <p className="text-[11px] text-muted-foreground" style={{ fontFamily: nameFont }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation?.venueAddress) }}
         />
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground" style={{ fontFamily: nameFont }}>
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
       </div>
@@ -271,7 +271,7 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
               className={`${INVITATION_PANEL_CARD_CLASS} flex items-center justify-between gap-2`}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-[12px] font-semibold text-foreground truncate" style={{ fontFamily: nameFont }}>
                   {contact.name || "Contact"}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
