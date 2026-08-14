@@ -499,6 +499,10 @@ interface DesignFormData {
   colors: string[];
   category: string;
   cardMaxWidth: string;
+  eyebrowFontSize: string;
+  dayFontSize: string;
+  dateFontSize: string;
+  hashtagFontSize: string;
 }
 
 const EMPTY_FORM: DesignFormData = {
@@ -515,6 +519,10 @@ const EMPTY_FORM: DesignFormData = {
   colors: [],
   category: "",
   cardMaxWidth: "462px",
+  eyebrowFontSize: "10",
+  dayFontSize: "11",
+  dateFontSize: "11",
+  hashtagFontSize: "10",
 };
 
 function DesignForm({
@@ -684,6 +692,10 @@ function DesignForm({
         colors: (form.colors ?? []).length > 0 ? form.colors : null,
         category: form.category || null,
         cardMaxWidth: form.cardMaxWidth || "462px",
+        eyebrowFontSize: form.eyebrowFontSize || "10",
+        dayFontSize: form.dayFontSize || "11",
+        dateFontSize: form.dateFontSize || "11",
+        hashtagFontSize: form.hashtagFontSize || "10",
       };
       const url = mode === "add"
         ? `${BASE}/api/design`
@@ -1100,6 +1112,26 @@ function DesignForm({
                   className="mt-2 w-full accent-primary"
                 />
               </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Eyebrow Size — {form.eyebrowFontSize || 10}px
+                <input type="range" min="8" max="20" value={Number(form.eyebrowFontSize) || 10}
+                  onChange={(e) => set("eyebrowFontSize")(e.target.value)} className="mt-2 w-full accent-primary" />
+              </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Day Size — {form.dayFontSize || 11}px
+                <input type="range" min="8" max="24" value={Number(form.dayFontSize) || 11}
+                  onChange={(e) => set("dayFontSize")(e.target.value)} className="mt-2 w-full accent-primary" />
+              </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Date Size — {form.dateFontSize || 11}px
+                <input type="range" min="8" max="24" value={Number(form.dateFontSize) || 11}
+                  onChange={(e) => set("dateFontSize")(e.target.value)} className="mt-2 w-full accent-primary" />
+              </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                Hashtag Size — {form.hashtagFontSize || 10}px
+                <input type="range" min="8" max="20" value={Number(form.hashtagFontSize) || 10}
+                  onChange={(e) => set("hashtagFontSize")(e.target.value)} className="mt-2 w-full accent-primary" />
+              </label>
             </div>
           </div>
 
@@ -1510,6 +1542,10 @@ function DesignsTab() {
                     colors: Array.isArray((d as Record<string,unknown>).colors) ? (d as Record<string,unknown>).colors as string[] : [],
                     category: (d as Record<string,unknown>).category as string ?? "",
                     cardMaxWidth: (d as Record<string,unknown>).cardMaxWidth as string ?? "462px",
+                    eyebrowFontSize: (d as Record<string,unknown>).eyebrowFontSize as string ?? "10",
+                    dayFontSize: (d as Record<string,unknown>).dayFontSize as string ?? "11",
+                    dateFontSize: (d as Record<string,unknown>).dateFontSize as string ?? "11",
+                    hashtagFontSize: (d as Record<string,unknown>).hashtagFontSize as string ?? "10",
                   })}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
                 >

@@ -74,7 +74,7 @@ const ALLOWED_FIELDS = [
   // Buyer design overrides
   "designCode","openingAnimation","openButtonText","waxSealId",
   "colorPrimary","colorSecondary","colorAccent","colorBackground","colorCard","colorForeground","colorHeading","colorMuted",
-  "nameFontFamily","nameFontSize","badgeFontSize","greetingFontSize","nameColor","greetingColor",
+  "nameFontFamily","nameFontSize","badgeFontSize","greetingFontSize","eyebrowFontSize","dayFontSize","dateFontSize","hashtagFontSize","nameColor","greetingColor",
   "bodyFontFamily",
   // Music
   "musicUrl","musicTitle","musicArtist",

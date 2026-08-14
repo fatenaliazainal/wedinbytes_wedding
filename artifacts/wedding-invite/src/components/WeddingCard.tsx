@@ -785,7 +785,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             }}
           >
             {/* Eyebrow — contextual label; smallest visual level */}
-            <p className="text-xs font-medium tracking-[0.30em] text-foreground/75 uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
+            <p className="font-medium tracking-[0.30em] text-foreground/75 uppercase" style={{ fontFamily: bodyFontFamily, fontSize: "var(--eyebrow-font-size, 10px)" }}>{coverTitle}</p>
 
             {/* Hero names — dynamic: nameFontFamily / nameFontSize / nameColor */}
             <div className="mt-10 flex flex-col items-center">
@@ -798,15 +798,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverBrideName}</h1>
             </div>
 
-            {/* Day + Date — ONE unified information group; same font, size, weight, tracking; only opacity differs */}
+            {/* Day + Date — ONE unified information group; same font, weight, tracking; only size + opacity differ */}
             <div className="mt-9 flex flex-col items-center space-y-1">
-              <p className="text-[11px] font-normal tracking-[0.20em] text-foreground/58 uppercase" style={{ fontFamily: bodyFontFamily }}>{invitation.eventDay}</p>
-              <p className="text-[11px] font-normal tracking-[0.20em] text-foreground/78" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
+              <p className="font-normal tracking-[0.20em] text-foreground/58 uppercase" style={{ fontFamily: bodyFontFamily, fontSize: "var(--day-font-size, 11px)" }}>{invitation.eventDay}</p>
+              <p className="font-normal tracking-[0.20em] text-foreground/78" style={{ fontFamily: bodyFontFamily, fontSize: "var(--date-font-size, 11px)" }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
             </div>
 
             {/* Hashtag — subordinate, decorative; smallest level */}
             {hashtag && (
-              <p className="text-[10px] italic tracking-[0.04em] text-foreground/62 mt-5" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
+              <p className="italic tracking-[0.04em] text-foreground/62 mt-5" style={{ fontFamily: bodyFontFamily, fontSize: "var(--hashtag-font-size, 10px)" }}>{hashtag}</p>
             )}
           </div>
         )}

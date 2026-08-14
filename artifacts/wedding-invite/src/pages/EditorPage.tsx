@@ -295,6 +295,10 @@ interface DesignData {
   nameFontSize: string;
   badgeFontSize: string;
   greetingFontSize: string;
+  eyebrowFontSize: string;
+  dayFontSize: string;
+  dateFontSize: string;
+  hashtagFontSize: string;
   nameColor: string;
   greetingColor: string;
   colorForeground: string;
@@ -606,6 +610,10 @@ export default function EditorPage({
     nameFontSize: "38",
     badgeFontSize: "24",
     greetingFontSize: "16",
+    eyebrowFontSize: "10",
+    dayFontSize: "11",
+    dateFontSize: "11",
+    hashtagFontSize: "10",
     nameColor: "0 0% 20%",
     greetingColor: "",
     colorForeground: "0 0% 10%",
@@ -822,6 +830,10 @@ export default function EditorPage({
             nameFontSize: tpl.nameFontSize ?? "38",
             badgeFontSize: tpl.badgeFontSize ?? "24",
             greetingFontSize: (tpl as any).greetingFontSize ?? "16",
+            eyebrowFontSize: (tpl as any).eyebrowFontSize ?? "10",
+            dayFontSize: (tpl as any).dayFontSize ?? "11",
+            dateFontSize: (tpl as any).dateFontSize ?? "11",
+            hashtagFontSize: (tpl as any).hashtagFontSize ?? "10",
             nameColor: tpl.nameColor ?? "0 0% 20%",
             greetingColor: (tpl as any).greetingColor ?? "",
             colorForeground: tpl.colorForeground ?? "0 0% 10%",
@@ -1098,6 +1110,18 @@ export default function EditorPage({
             greetingFontSize: invitationOwnsStyle
               ? (d.greetingFontSize ?? (tpl as any).greetingFontSize ?? "16")
               : ((tpl as any).greetingFontSize ?? "16"),
+            eyebrowFontSize: invitationOwnsStyle
+              ? (d.eyebrowFontSize ?? (tpl as any).eyebrowFontSize ?? "10")
+              : ((tpl as any).eyebrowFontSize ?? "10"),
+            dayFontSize: invitationOwnsStyle
+              ? (d.dayFontSize ?? (tpl as any).dayFontSize ?? "11")
+              : ((tpl as any).dayFontSize ?? "11"),
+            dateFontSize: invitationOwnsStyle
+              ? (d.dateFontSize ?? (tpl as any).dateFontSize ?? "11")
+              : ((tpl as any).dateFontSize ?? "11"),
+            hashtagFontSize: invitationOwnsStyle
+              ? (d.hashtagFontSize ?? (tpl as any).hashtagFontSize ?? "10")
+              : ((tpl as any).hashtagFontSize ?? "10"),
             greetingColor: invitationOwnsStyle
               ? (d.greetingColor ?? (tpl as any).greetingColor ?? "")
               : ((tpl as any).greetingColor ?? ""),
@@ -1170,6 +1194,10 @@ export default function EditorPage({
             nameFontSize: tplFallback.nameFontSize,
             badgeFontSize: tplFallback.badgeFontSize,
             greetingFontSize: (tplFallback as any).greetingFontSize ?? "16",
+            eyebrowFontSize: (tplFallback as any).eyebrowFontSize ?? "10",
+            dayFontSize: (tplFallback as any).dayFontSize ?? "11",
+            dateFontSize: (tplFallback as any).dateFontSize ?? "11",
+            hashtagFontSize: (tplFallback as any).hashtagFontSize ?? "10",
             greetingColor: (tplFallback as any).greetingColor ?? "",
             nameColor: tplFallback.nameColor,
             colorForeground: tplFallback.colorForeground,
@@ -1567,6 +1595,10 @@ export default function EditorPage({
         nameFontSize: design.nameFontSize || null,
         badgeFontSize: design.badgeFontSize || null,
         greetingFontSize: design.greetingFontSize || null,
+        eyebrowFontSize: design.eyebrowFontSize || null,
+        dayFontSize: design.dayFontSize || null,
+        dateFontSize: design.dateFontSize || null,
+        hashtagFontSize: design.hashtagFontSize || null,
         greetingColor: design.greetingColor || null,
         bodyFontFamily: design.bodyFontFamily || null,
         // Always persist the exact resolved colour so the public invitation page
@@ -3584,6 +3616,14 @@ export default function EditorPage({
                                 picked.badgeFontSize ?? p.badgeFontSize,
                               greetingFontSize:
                                 (picked as any).greetingFontSize ?? p.greetingFontSize,
+                              eyebrowFontSize:
+                                (picked as any).eyebrowFontSize ?? p.eyebrowFontSize,
+                              dayFontSize:
+                                (picked as any).dayFontSize ?? p.dayFontSize,
+                              dateFontSize:
+                                (picked as any).dateFontSize ?? p.dateFontSize,
+                              hashtagFontSize:
+                                (picked as any).hashtagFontSize ?? p.hashtagFontSize,
                               greetingColor:
                                 (picked as any).greetingColor ?? p.greetingColor,
                               bodyFontFamily: normalizeFont(
@@ -3822,6 +3862,30 @@ export default function EditorPage({
                         }
                         className="w-full accent-blue-500"
                       />
+                    </Field>
+                    <Field label={`Saiz Eyebrow — ${design.eyebrowFontSize || 10}px`}>
+                      <input type="range" min={8} max={20} step={1}
+                        value={Number(design.eyebrowFontSize) || 10}
+                        onChange={(e) => setDesign((p) => ({ ...p, eyebrowFontSize: e.target.value }))}
+                        className="w-full accent-blue-500" />
+                    </Field>
+                    <Field label={`Saiz Hari — ${design.dayFontSize || 11}px`}>
+                      <input type="range" min={8} max={24} step={1}
+                        value={Number(design.dayFontSize) || 11}
+                        onChange={(e) => setDesign((p) => ({ ...p, dayFontSize: e.target.value }))}
+                        className="w-full accent-blue-500" />
+                    </Field>
+                    <Field label={`Saiz Tarikh — ${design.dateFontSize || 11}px`}>
+                      <input type="range" min={8} max={24} step={1}
+                        value={Number(design.dateFontSize) || 11}
+                        onChange={(e) => setDesign((p) => ({ ...p, dateFontSize: e.target.value }))}
+                        className="w-full accent-blue-500" />
+                    </Field>
+                    <Field label={`Saiz Hashtag — ${design.hashtagFontSize || 10}px`}>
+                      <input type="range" min={8} max={20} step={1}
+                        value={Number(design.hashtagFontSize) || 10}
+                        onChange={(e) => setDesign((p) => ({ ...p, hashtagFontSize: e.target.value }))}
+                        className="w-full accent-blue-500" />
                     </Field>
                     {/* Theme Colours — grouped to match Admin design editor */}
                     <p className="text-xs font-semibold text-foreground pt-1">
@@ -4124,6 +4188,10 @@ export default function EditorPage({
                   "--badge-font-size": `${Number(design.badgeFontSize) || 24}px`,
                   "--section-title-font-size": `${Number(design.badgeFontSize) || 24}px`,
                   "--greeting-font-size": `${Number(design.greetingFontSize) || 16}px`,
+                  "--eyebrow-font-size": `${Number(design.eyebrowFontSize) || 10}px`,
+                  "--day-font-size": `${Number(design.dayFontSize) || 11}px`,
+                  "--date-font-size": `${Number(design.dateFontSize) || 11}px`,
+                  "--hashtag-font-size": `${Number(design.hashtagFontSize) || 10}px`,
                   "--greeting-color": design.greetingColor ? `hsl(${design.greetingColor})` : undefined,
                   "--name-color": design.nameColor
                     ? `hsl(${design.nameColor})`

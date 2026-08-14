@@ -59,6 +59,10 @@ const cardDesignValues = {
   fontBody: "Lato",
   cardMaxWidth: "462px",
   openingAnimation: "doors",
+  eyebrowFontSize: "10",
+  dayFontSize: "11",
+  dateFontSize: "11",
+  hashtagFontSize: "10",
 };
 
 const DEMO_TOKENS = ["demo", "alia-nasser-2025"] as const;

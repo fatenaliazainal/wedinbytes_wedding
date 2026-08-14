@@ -1,0 +1,164 @@
+Update the invitation typography system so that ALL text sizes shown in the hero section remain dynamically editable by the user/admin.
+
+IMPORTANT:
+Do NOT hardcode fixed font sizes such as `10px`, `11px`, or `text-xs` for elements that have a user-configurable font-size setting.
+
+The typography system should define STYLE relationships, while the actual SIZE must come from the corresponding dynamic user setting.
+
+### Dynamic font sizes
+
+The following elements must use their own dynamic font-size values:
+
+* `eyebrowFontSize`
+* `nameFontSize`
+* `dayFontSize`
+* `dateFontSize`
+* `hashtagFontSize`
+
+If these settings already exist under different variable/property names, reuse the existing names instead of creating duplicate settings.
+
+### HERO TYPOGRAPHY
+
+#### Eyebrow
+
+Use the user's dynamic `eyebrowFontSize`.
+
+Keep:
+
+* `font-medium`
+* `tracking-[0.30em]`
+* opacity: `75%`
+* uppercase
+
+Do NOT hardcode the font size.
+
+#### Couple Names
+
+Continue using:
+
+* `nameFontSize`
+* `nameFontFamily`
+* `nameColor`
+
+This remains the main hero element.
+
+#### "&" Connector
+
+The connector size should remain proportional to the user's dynamic name size.
+
+Use:
+
+`font-size: nameFontSize × 0.42`
+
+Keep:
+
+* same `nameFontFamily`
+* same `nameColor`
+* opacity: `62%`
+
+Do not create a separate manually editable font-size setting for `&` unless the existing system already supports one.
+
+### DAY + DATE
+
+Treat Day and Date as ONE unified typography style.
+
+They may have separate dynamic font sizes:
+
+* `dayFontSize`
+* `dateFontSize`
+
+However, they MUST share the same:
+
+* font family
+* font weight
+* letter spacing
+* line-height approach
+* general text colour
+
+Use:
+
+* letter spacing around `0.20em`
+* Day opacity: `58%`
+* Date opacity: `78%`
+
+Do NOT force Day and Date to have the same numerical font size.
+
+The user must remain able to independently change their sizes.
+
+Example:
+
+```text
+Day = 11px
+Date = 13px
+```
+
+is valid.
+
+Also valid:
+
+```text
+Day = 13px
+Date = 13px
+```
+
+The system should preserve the unified visual style in both cases.
+
+The hierarchy between Day and Date should primarily come from opacity, not from forcing a fixed size relationship.
+
+### HASHTAG
+
+Use the user's dynamic `hashtagFontSize`.
+
+Keep:
+
+* italic
+* foreground opacity around `62%`
+* `tracking-[0.04em]`
+
+Do NOT hardcode `10px`.
+
+### IMPORTANT DESIGN RULE
+
+Separate TYPOGRAPHIC STYLE from FONT SIZE.
+
+User controls:
+
+* font family
+* font size
+* colour
+
+Design system controls:
+
+* weight
+* tracking
+* opacity
+* proportional relationship where appropriate
+* spacing
+* hierarchy
+
+Do not override user-selected font sizes with Tailwind classes such as:
+
+* `text-xs`
+* `text-sm`
+* `text-[10px]`
+* `text-[11px]`
+
+when a dynamic font-size value exists.
+
+### Responsive behaviour
+
+Make sure the dynamic values continue to work responsively.
+
+Do not use hardcoded mobile font sizes that override the user's selected values.
+
+If responsive scaling is necessary, scale the dynamic value proportionally rather than replacing it with a fixed size.
+
+### FINAL GOAL
+
+The user should feel that they have full control over typography size, while WIB113 still maintains a consistent premium typography system.
+
+The design system should control HOW the text behaves visually.
+
+The user controls HOW BIG the text is.
+
+Do not change the existing layout, artwork, colours, flowers, background, or content.
