@@ -62,6 +62,7 @@ export default function InvitationPage() {
   const search = useSearch();
   const urlParams = new URLSearchParams(search);
   const overrideDesignCode = urlParams.get("designCode");
+  const isThumbnail = urlParams.get("thumbnail") === "1";
   const {
     data: invitation,
     isLoading: invitationLoading,
@@ -191,7 +192,7 @@ export default function InvitationPage() {
 
   // Pre-create + preload HTML5 audio so iOS Safari allows .play() inside a gesture.
   useEffect(() => {
-    if (!musicUrl || isYouTubeMusic) return undefined;
+    if (!musicUrl || isYouTubeMusic || isThumbnail) return undefined;
     const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.35;
