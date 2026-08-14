@@ -2935,23 +2935,35 @@ function RevenueTab() {
 
 // ── Site Settings Tab ─────────────────────────────────────────────────────────
 
-type QuickLink  = { label: string; url: string };
-type SocialLink = { platform: string; icon: string; url: string; enabled: boolean };
+type QuickLink    = { label: string; url: string };
+type SocialLink   = { platform: string; icon: string; url: string; enabled: boolean };
+type FaqItem      = { question: string; answer: string };
+type FaqCategory  = { category: string; items: FaqItem[] };
+type TermsSection = { title: string; body: string };
+type SiteSection  = "links" | "faq" | "terms";
 
 function SiteSettingsTab() {
-  const [quickLinks,  setQuickLinks]  = useState<QuickLink[]>([]);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
+  const [section, setSection] = useState<SiteSection>("links");
+  const [quickLinks,     setQuickLinks]     = useState<QuickLink[]>([]);
+  const [socialLinks,    setSocialLinks]    = useState<SocialLink[]>([]);
+  const [faqItems,       setFaqItems]       = useState<FaqCategory[]>([]);
+  const [termsSections,  setTermsSections]  = useState<TermsSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving,  setSaving]  = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
       const r = await fetch(`${BASE}/api/site-settings`, { credentials: "include" });
       if (r.ok) {
-        const d = await r.json() as { quickLinks: QuickLink[]; socialLinks: SocialLink[] };
-        setQuickLinks(d.quickLinks  ?? []);
+        const d = await r.json() as {
+          quickLinks: QuickLink[]; socialLinks: SocialLink[];
+          faqItems: FaqCategory[]; termsSections: TermsSection[];
+        };
+        setQuickLinks(d.quickLinks ?? []);
         setSocialLinks(d.socialLinks ?? []);
+        setFaqItems(d.faqItems ?? []);
+        setTermsSections(d.termsSections ?? []);
       }
     } finally { setLoading(false); }
   };
@@ -2964,23 +2976,42 @@ function SiteSettingsTab() {
       const r = await fetch(`${BASE}/api/site-settings`, {
         method: "PATCH", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quickLinks, socialLinks }),
+        body: JSON.stringify({ quickLinks, socialLinks, faqItems, termsSections }),
       });
       if (r.ok) toast.success("Site settings saved");
       else toast.error("Failed to save settings");
     } finally { setSaving(false); }
   };
 
-  // ── Quick Links ─────────────────────────────────────────────────────────────
-  const addQuickLink = () => setQuickLinks(prev => [...prev, { label: "", url: "" }]);
-  const updateQuickLink = (i: number, field: keyof QuickLink, val: string) =>
-    setQuickLinks(prev => prev.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
-  const removeQuickLink = (i: number) =>
-    setQuickLinks(prev => prev.filter((_, idx) => idx !== i));
+  // ── Quick Links helpers ──────────────────────────────────────────────────────
+  const addQuickLink    = () => setQuickLinks(p => [...p, { label: "", url: "" }]);
+  const updateQuickLink = (i: number, f: keyof QuickLink, v: string) =>
+    setQuickLinks(p => p.map((l, idx) => idx === i ? { ...l, [f]: v } : l));
+  const removeQuickLink = (i: number) => setQuickLinks(p => p.filter((_, idx) => idx !== i));
 
-  // ── Social Links ────────────────────────────────────────────────────────────
-  const updateSocialLink = (i: number, field: keyof SocialLink, val: string | boolean) =>
-    setSocialLinks(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
+  // ── Social Links helpers ─────────────────────────────────────────────────────
+  const updateSocialLink = (i: number, f: keyof SocialLink, v: string | boolean) =>
+    setSocialLinks(p => p.map((s, idx) => idx === i ? { ...s, [f]: v } : s));
+
+  // ── FAQ helpers ──────────────────────────────────────────────────────────────
+  const addFaqCategory    = () => setFaqItems(p => [...p, { category: "New Category", items: [] }]);
+  const updateFaqCategory = (ci: number, v: string) =>
+    setFaqItems(p => p.map((c, i) => i === ci ? { ...c, category: v } : c));
+  const removeFaqCategory = (ci: number) => setFaqItems(p => p.filter((_, i) => i !== ci));
+  const addFaqItem        = (ci: number) =>
+    setFaqItems(p => p.map((c, i) => i === ci ? { ...c, items: [...c.items, { question: "", answer: "" }] } : c));
+  const updateFaqItem     = (ci: number, ii: number, f: keyof FaqItem, v: string) =>
+    setFaqItems(p => p.map((c, i) => i === ci
+      ? { ...c, items: c.items.map((item, j) => j === ii ? { ...item, [f]: v } : item) }
+      : c));
+  const removeFaqItem     = (ci: number, ii: number) =>
+    setFaqItems(p => p.map((c, i) => i === ci ? { ...c, items: c.items.filter((_, j) => j !== ii) } : c));
+
+  // ── Terms helpers ────────────────────────────────────────────────────────────
+  const addTermsSection    = () => setTermsSections(p => [...p, { title: "", body: "" }]);
+  const updateTermsSection = (i: number, f: keyof TermsSection, v: string) =>
+    setTermsSections(p => p.map((s, idx) => idx === i ? { ...s, [f]: v } : s));
+  const removeTermsSection = (i: number) => setTermsSections(p => p.filter((_, idx) => idx !== i));
 
   if (loading) return (
     <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
@@ -2988,76 +3019,139 @@ function SiteSettingsTab() {
     </div>
   );
 
+  const inputCls = "w-full border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary";
+  const subBtnCls = (active: boolean) =>
+    `px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`;
+
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-5 max-w-2xl">
 
-      {/* Quick Links */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-foreground">Quick Links</h3>
-          <button onClick={addQuickLink} className="flex items-center gap-1 text-xs text-primary hover:underline">
-            <Plus size={13} /> Add link
-          </button>
-        </div>
-        <div className="space-y-2">
-          {quickLinks.map((link, i) => (
-            <div key={i} className="flex gap-2 items-center">
-              <input
-                value={link.label}
-                onChange={e => updateQuickLink(i, "label", e.target.value)}
-                placeholder="Label (e.g. About Us)"
-                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <input
-                value={link.url}
-                onChange={e => updateQuickLink(i, "url", e.target.value)}
-                placeholder="URL (e.g. /about)"
-                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <button onClick={() => removeQuickLink(i)} className="text-muted-foreground hover:text-destructive shrink-0">
-                <Trash2 size={14} />
+      {/* Sub-nav */}
+      <div className="flex gap-2">
+        <button className={subBtnCls(section === "links")} onClick={() => setSection("links")}>Footer Links</button>
+        <button className={subBtnCls(section === "faq")}   onClick={() => setSection("faq")}>FAQ</button>
+        <button className={subBtnCls(section === "terms")} onClick={() => setSection("terms")}>Terms &amp; Conditions</button>
+      </div>
+
+      {/* ── LINKS section ──────────────────────────────────────────────────── */}
+      {section === "links" && (
+        <div className="space-y-8">
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Quick Links</h3>
+              <button onClick={addQuickLink} className="flex items-center gap-1 text-xs text-primary hover:underline">
+                <Plus size={13} /> Add link
               </button>
             </div>
-          ))}
-          {quickLinks.length === 0 && (
-            <p className="text-xs text-muted-foreground">No quick links. Click "Add link" to add one.</p>
-          )}
-        </div>
-      </section>
+            <div className="space-y-2">
+              {quickLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input value={link.label} onChange={e => updateQuickLink(i, "label", e.target.value)}
+                    placeholder="Label (e.g. About Us)"
+                    className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
+                  <input value={link.url} onChange={e => updateQuickLink(i, "url", e.target.value)}
+                    placeholder="URL (e.g. /about)"
+                    className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
+                  <button onClick={() => removeQuickLink(i)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={14} /></button>
+                </div>
+              ))}
+              {quickLinks.length === 0 && <p className="text-xs text-muted-foreground">No quick links yet.</p>}
+            </div>
+          </section>
 
-      {/* Social Links */}
-      <section>
-        <h3 className="text-sm font-semibold text-foreground mb-3">Follow Us — Social Links</h3>
-        <div className="space-y-2">
-          {socialLinks.map((s, i) => (
-            <div key={s.platform} className="flex gap-2 items-center">
-              <img src={s.icon} alt={s.platform} className="h-7 w-7 rounded-full border border-border bg-white object-cover p-0.5 shrink-0" />
-              <span className="w-24 text-xs text-muted-foreground shrink-0">{s.platform}</span>
-              <input
-                value={s.url}
-                onChange={e => updateSocialLink(i, "url", e.target.value)}
-                placeholder={`${s.platform} URL`}
-                className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <button
-                onClick={() => updateSocialLink(i, "enabled", !s.enabled)}
-                className={`shrink-0 text-xs px-2 py-1 rounded border font-medium transition-colors ${
-                  s.enabled
-                    ? "border-green-200 bg-green-50 text-green-700"
-                    : "border-border bg-muted text-muted-foreground"
-                }`}
-                title={s.enabled ? "Shown in footer" : "Hidden in footer"}
-              >
-                {s.enabled ? "Shown" : "Hidden"}
-              </button>
+          <section>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Social Links</h3>
+            <div className="space-y-2">
+              {socialLinks.map((s, i) => (
+                <div key={s.platform} className="flex gap-2 items-center">
+                  <img src={s.icon} alt={s.platform} className="h-7 w-7 rounded-full border border-border bg-white object-cover p-0.5 shrink-0" />
+                  <span className="w-24 text-xs text-muted-foreground shrink-0">{s.platform}</span>
+                  <input value={s.url} onChange={e => updateSocialLink(i, "url", e.target.value)}
+                    placeholder={`${s.platform} URL`}
+                    className="flex-1 min-w-0 border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
+                  <button onClick={() => updateSocialLink(i, "enabled", !s.enabled)}
+                    className={`shrink-0 text-xs px-2 py-1 rounded border font-medium transition-colors ${s.enabled ? "border-green-200 bg-green-50 text-green-700" : "border-border bg-muted text-muted-foreground"}`}
+                  >{s.enabled ? "Shown" : "Hidden"}</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ── FAQ section ────────────────────────────────────────────────────── */}
+      {section === "faq" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Changes here update the public FAQ page immediately after saving.</p>
+            <button onClick={addFaqCategory} className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0 ml-4">
+              <Plus size={13} /> Add category
+            </button>
+          </div>
+          {faqItems.map((cat, ci) => (
+            <div key={ci} className="border border-border rounded-lg p-4 space-y-3">
+              {/* Category header */}
+              <div className="flex gap-2 items-center">
+                <input value={cat.category} onChange={e => updateFaqCategory(ci, e.target.value)}
+                  placeholder="Category name"
+                  className={`flex-1 font-semibold ${inputCls}`} />
+                <button onClick={() => removeFaqCategory(ci)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={14} /></button>
+              </div>
+              {/* Items */}
+              <div className="space-y-3 pl-2 border-l-2 border-border ml-1">
+                {cat.items.map((item, ii) => (
+                  <div key={ii} className="space-y-1.5">
+                    <div className="flex gap-2 items-center">
+                      <input value={item.question} onChange={e => updateFaqItem(ci, ii, "question", e.target.value)}
+                        placeholder="Question"
+                        className={`flex-1 ${inputCls}`} />
+                      <button onClick={() => removeFaqItem(ci, ii)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={13} /></button>
+                    </div>
+                    <textarea value={item.answer} onChange={e => updateFaqItem(ci, ii, "answer", e.target.value)}
+                      placeholder="Answer (use new lines for lists)"
+                      rows={3}
+                      className={`resize-y ${inputCls}`} />
+                  </div>
+                ))}
+                <button onClick={() => addFaqItem(ci)} className="flex items-center gap-1 text-xs text-primary hover:underline">
+                  <Plus size={12} /> Add question
+                </button>
+              </div>
             </div>
           ))}
+          {faqItems.length === 0 && <p className="text-xs text-muted-foreground">No FAQ categories yet. Click "Add category" to start.</p>}
         </div>
-      </section>
+      )}
 
-      <button
-        onClick={save}
-        disabled={saving}
+      {/* ── TERMS section ──────────────────────────────────────────────────── */}
+      {section === "terms" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Changes here update the public Terms &amp; Conditions page immediately after saving.</p>
+            <button onClick={addTermsSection} className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0 ml-4">
+              <Plus size={13} /> Add section
+            </button>
+          </div>
+          {termsSections.map((s, i) => (
+            <div key={i} className="border border-border rounded-lg p-4 space-y-2">
+              <div className="flex gap-2 items-center">
+                <input value={s.title} onChange={e => updateTermsSection(i, "title", e.target.value)}
+                  placeholder="Section title (e.g. 1. Acceptance of Terms)"
+                  className={`flex-1 font-semibold ${inputCls}`} />
+                <button onClick={() => removeTermsSection(i)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={14} /></button>
+              </div>
+              <textarea value={s.body} onChange={e => updateTermsSection(i, "body", e.target.value)}
+                placeholder="Section body text"
+                rows={4}
+                className={`resize-y ${inputCls}`} />
+            </div>
+          ))}
+          {termsSections.length === 0 && <p className="text-xs text-muted-foreground">No sections yet. Click "Add section" to start.</p>}
+        </div>
+      )}
+
+      {/* Save */}
+      <button onClick={save} disabled={saving}
         className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity"
       >
         {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
