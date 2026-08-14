@@ -66,6 +66,8 @@ interface InvitationOgData {
   eventDate: string | null;
   /** R2 key from card_design.card_image_url for the design used by this invitation */
   designCardImageUrl: string | null;
+  eventTitle: string | null;
+  language: string;
 }
 
 const INVITE_SELECT = {
@@ -74,6 +76,8 @@ const INVITE_SELECT = {
   groomName: invitationTable.groomName,
   brideName: invitationTable.brideName,
   eventDate: invitationTable.eventDate,
+  eventTitle: invitationTable.eventTitle,
+  language: invitationTable.language,
   designCode: invitationTable.designCode,
   lockedSlug: invitationTable.lockedSlug,
   lockedDateCode: invitationTable.lockedDateCode,
@@ -89,6 +93,8 @@ async function toOgData(row: {
   groomName: string | null;
   brideName: string | null;
   eventDate: string | null;
+  eventTitle: string | null;
+  language: string | null;
   designCode: string | null;
 }): Promise<InvitationOgData> {
   let designCardImageUrl: string | null = null;
@@ -107,6 +113,8 @@ async function toOgData(row: {
     brideName: row.coverBrideName || row.brideName || "",
     eventDate: row.eventDate,
     designCardImageUrl,
+    eventTitle: row.eventTitle,
+    language: row.language || "ms",
   };
 }
 
@@ -203,12 +211,18 @@ export function injectOgTags(
   const brideName = data.brideName || "";
   const couple = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr = formatEventDate(data.eventDate);
+  const isEn = data.language === "en";
+  const eventLabel = data.eventTitle || (isEn ? "Wedding Invitation" : "Jemputan Perkahwinan");
   const title = couple
-    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
-    : `Jemputan Perkahwinan | Wedinstudio`;
-  const description = couple && dateStr
-    ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
-    : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
+    ? `${eventLabel} ${couple} | Wedinstudio`
+    : `${eventLabel} | Wedinstudio`;
+  const description = isEn
+    ? (couple && dateStr
+        ? `You are invited to the wedding of ${couple} on ${dateStr}. Open your digital invitation here.`
+        : "You are invited! Open your digital wedding invitation here.")
+    : (couple && dateStr
+        ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
+        : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.");
   const image = ogImageUrl(data.designCardImageUrl);
 
   const replacements: [RegExp, string][] = [
@@ -256,12 +270,18 @@ export function buildStandaloneOgHtml(data: InvitationOgData, canonicalUrl: stri
   const brideName   = data.brideName || "";
   const couple      = groomName && brideName ? `${groomName} & ${brideName}` : groomName || brideName;
   const dateStr     = formatEventDate(data.eventDate);
+  const isEn        = data.language === "en";
+  const eventLabel  = data.eventTitle || (isEn ? "Wedding Invitation" : "Jemputan Perkahwinan");
   const title       = couple
-    ? `Jemputan Perkahwinan ${couple} | Wedinstudio`
-    : `Jemputan Perkahwinan | Wedinstudio`;
-  const description = couple && dateStr
-    ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
-    : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.";
+    ? `${eventLabel} ${couple} | Wedinstudio`
+    : `${eventLabel} | Wedinstudio`;
+  const description = isEn
+    ? (couple && dateStr
+        ? `You are invited to the wedding of ${couple} on ${dateStr}. Open your digital invitation here.`
+        : "You are invited! Open your digital wedding invitation here.")
+    : (couple && dateStr
+        ? `Anda dijemput ke majlis perkahwinan ${couple} pada ${dateStr}. Buka jemputan digital anda di sini.`
+        : "Anda dijemput! Buka jemputan perkahwinan digital anda di sini.");
   const image = ogImageUrl(data.designCardImageUrl);
 
   return `<!DOCTYPE html>

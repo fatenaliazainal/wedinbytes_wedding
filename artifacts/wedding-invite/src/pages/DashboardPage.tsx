@@ -272,41 +272,25 @@ const isExpired = (card: Invitation) => {
   return addThreeMonths(card.eventDate) < new Date();
 };
 
-function ThumbnailView({ card, design, width = 100, height = 180, scale = 0.219 }: { card: Invitation, design: Design | null, width?: number, height?: number, scale?: number }) {
+function ThumbnailView({ card, design, width = 100, height = 180 }: { card: Invitation, design: Design | null, width?: number, height?: number, scale?: number }) {
+  const imgUrl = resolveImageUrl(design?.cardImageUrl || design?.envelopeImageUrl || "");
   return (
     <div
-      className="bg-slate-900 shadow-sm shrink-0 relative overflow-hidden"
+      className="bg-slate-100 shadow-sm shrink-0 relative overflow-hidden"
       style={{ width, height, borderRadius: 12, border: "4px solid #0f172a" }}
     >
-      <div
-        style={{
-          width: 420,
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          "--card-viewport-height": `${Math.round((height - 8) / scale)}px`,
-          "--primary": design?.colorPrimary || "221 83% 53%",
-          "--primary-foreground": "0 0% 100%",
-          "--secondary": design?.colorSecondary || "210 40% 96.1%",
-          "--background": design?.colorBackground || "0 0% 100%",
-          "--card": design?.colorCard || "0 0% 100%",
-          "--popover": design?.colorCard || "0 0% 100%",
-          "--border": "214.3 31.8% 91.4%",
-          "--muted": "210 40% 96.1%",
-          "--muted-foreground": "215.4 16.3% 46.9%",
-          "--name-font-family": `'${design?.nameFontFamily || "Dancing Script"}', cursive`,
-          "--name-font-size": `${Number(design?.nameFontSize) || 38}px`,
-          "--name-color": design?.nameColor ? `hsl(${design.nameColor})` : "hsl(221 83% 53%)",
-          "--body-font-family": `'${design?.bodyFontFamily || "Dancing Script"}', cursive`,
-        } as React.CSSProperties}
-      >
-        <WeddingCard
-          invitation={card as any}
-          cardImageUrl={resolveImageUrl(design?.cardImageUrl || "")}
-          envelopeImageUrl={resolveImageUrl(design?.envelopeImageUrl || design?.cardImageUrl || "")}
-          cardMaxWidth={design?.cardMaxWidth || "420px"}
-          rsvpCount={{ attending: 0, notAttending: 0, totalGuests: 0 }}
+      {imgUrl ? (
+        <img
+          src={imgUrl}
+          alt=""
+          draggable={false}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
-      </div>
+      ) : (
+        <div className="w-full h-full bg-slate-200 flex items-center justify-center">
+          <span className="text-slate-400" style={{ fontSize: Math.max(8, width * 0.1) }}>No design</span>
+        </div>
+      )}
       {!card.isPurchased && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* diagonal ribbon across the full card */}

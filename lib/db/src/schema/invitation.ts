@@ -63,6 +63,7 @@ export const invitationTable = pgTable("invitation", {
   coverDateText: text("cover_date_text"),
   additionalInfo: text("additional_info"),
   coverTitle: text("cover_title"),
+  eventTitle: text("event_title"),
   hashtag: text("hashtag"),
   showFrontText: boolean("show_front_text").default(true),
   // Ayat undangan fields
