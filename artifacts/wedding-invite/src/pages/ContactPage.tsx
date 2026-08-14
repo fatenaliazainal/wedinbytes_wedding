@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -7,6 +7,8 @@ import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
@@ -17,13 +19,46 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "FOR BUSINESS", href: "/for-business" },
 ];
 
-const WHATSAPP_NUMBER = "601128134211";
-const SUPPORT_EMAIL = "wedinbytestudio@gmail.com";
+type ContactInfo = {
+  contactWhatsapp: string;
+  contactEmail: string;
+  contactCompany: string;
+  contactRegNo: string;
+  contactHours: string;
+};
+
+const DEFAULTS: ContactInfo = {
+  contactWhatsapp: "601128134211",
+  contactEmail:    "wedinbytestudio@gmail.com",
+  contactCompany:  "WEDINBYTES ENTERPRISE",
+  contactRegNo:    "IP0629841-X",
+  contactHours:    "Monday – Friday, 9:00 AM – 6:00 PM",
+};
 
 export default function ContactPage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [info, setInfo] = useState<ContactInfo>(DEFAULTS);
+
+  useEffect(() => {
+    fetch(`${BASE}/api/site-settings`)
+      .then(r => r.ok ? r.json() : null)
+      .then((d: Partial<ContactInfo> | null) => {
+        if (!d) return;
+        setInfo({
+          contactWhatsapp: d.contactWhatsapp || DEFAULTS.contactWhatsapp,
+          contactEmail:    d.contactEmail    || DEFAULTS.contactEmail,
+          contactCompany:  d.contactCompany  || DEFAULTS.contactCompany,
+          contactRegNo:    d.contactRegNo    || DEFAULTS.contactRegNo,
+          contactHours:    d.contactHours    || DEFAULTS.contactHours,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  // Parse hours into lines for the card
+  const hoursLines = info.contactHours.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -62,47 +97,57 @@ export default function ContactPage() {
 
         {/* Contact cards */}
         <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-
-          {/* Company name */}
-          <p className="mb-8 text-sm font-semibold text-gray-700">
-            WEDINBYTES ENTERPRISE <span className="font-normal text-gray-500">(IP0629841-X)</span>
-          </p>
+          {info.contactCompany && (
+            <p className="mb-8 text-sm font-semibold text-gray-700">
+              {info.contactCompany}
+              {info.contactRegNo && (
+                <span className="font-normal text-gray-500"> ({info.contactRegNo})</span>
+              )}
+            </p>
+          )}
 
           <div className="grid gap-5 sm:grid-cols-3">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noreferrer"
-              className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
-            >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
-                <img src="/icons/whatsapp2.png" alt="WhatsApp" className="h-6 w-6 object-contain brightness-0 invert" />
-              </div>
-              <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
-              <p className="mt-1 text-xs text-gray-500">+{WHATSAPP_NUMBER}</p>
-              <p className="mt-3 text-xs font-medium text-[#3d5a3e] group-hover:underline">Chat with us →</p>
-            </a>
+            {info.contactWhatsapp && (
+              <a
+                href={`https://wa.me/${info.contactWhatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                  <img src="/icons/whatsapp2.png" alt="WhatsApp" className="h-6 w-6 object-contain brightness-0 invert" />
+                </div>
+                <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
+                <p className="mt-1 text-xs text-gray-500">+{info.contactWhatsapp}</p>
+                <p className="mt-3 text-xs font-medium text-[#3d5a3e] group-hover:underline">Chat with us →</p>
+              </a>
+            )}
 
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
-            >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
-                <img src="/icons/email2.png" alt="Email" className="h-6 w-6 object-contain brightness-0 invert" />
-              </div>
-              <p className="text-sm font-semibold text-gray-900">Email</p>
-              <p className="mt-1 text-xs text-gray-500">{SUPPORT_EMAIL}</p>
-              <p className="mt-3 text-xs font-medium text-[#3d5a3e] group-hover:underline">Send an email →</p>
-            </a>
+            {info.contactEmail && (
+              <a
+                href={`mailto:${info.contactEmail}`}
+                className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all hover:shadow-md"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                  <img src="/icons/email2.png" alt="Email" className="h-6 w-6 object-contain brightness-0 invert" />
+                </div>
+                <p className="text-sm font-semibold text-gray-900">Email</p>
+                <p className="mt-1 text-xs text-gray-500">{info.contactEmail}</p>
+                <p className="mt-3 text-xs font-medium text-[#3d5a3e] group-hover:underline">Send an email →</p>
+              </a>
+            )}
 
-            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
-                <Clock size={22} strokeWidth={1.8} className="text-white" />
+            {info.contactHours && (
+              <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3d5a3e] shadow-sm">
+                  <Clock size={22} strokeWidth={1.8} className="text-white" />
+                </div>
+                <p className="text-sm font-semibold text-gray-900">Response Time</p>
+                {hoursLines.map((line, i) => (
+                  <p key={i} className="mt-1 text-xs text-gray-500">{line}</p>
+                ))}
               </div>
-              <p className="text-sm font-semibold text-gray-900">Response Time</p>
-              <p className="mt-1 text-xs text-gray-500">Monday – Friday</p>
-              <p className="mt-1 text-xs text-gray-500">9:00 AM – 6:00 PM</p>
-            </div>
+            )}
           </div>
 
           {/* FAQ nudge */}

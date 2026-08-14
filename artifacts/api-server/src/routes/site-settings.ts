@@ -103,6 +103,14 @@ const DEFAULT_TERMS_SECTIONS: TermsSection[] = [
   { title: "14. Contact", body: "If you have any questions about these Terms and Conditions, please contact us via WhatsApp at +601128134211 or by email at support@wedinstudio.com." },
 ];
 
+const DEFAULT_CONTACT = {
+  contactWhatsapp: "601128134211",
+  contactEmail:    "wedinbytestudio@gmail.com",
+  contactCompany:  "WEDINBYTES ENTERPRISE",
+  contactRegNo:    "IP0629841-X",
+  contactHours:    "Monday – Friday, 9:00 AM – 6:00 PM",
+};
+
 async function getOrCreate() {
   const rows = await db.select().from(siteSettingsTable).limit(1);
   if (rows.length === 0) {
@@ -113,6 +121,7 @@ async function getOrCreate() {
         socialLinks:   DEFAULT_SOCIAL_LINKS,
         faqItems:      DEFAULT_FAQ_ITEMS,
         termsSections: DEFAULT_TERMS_SECTIONS,
+        ...DEFAULT_CONTACT,
       })
       .returning();
     return inserted[0];
@@ -124,6 +133,11 @@ async function getOrCreate() {
   if (!row.socialLinks?.length)   patch.socialLinks   = DEFAULT_SOCIAL_LINKS;
   if (!row.faqItems?.length)      patch.faqItems      = DEFAULT_FAQ_ITEMS;
   if (!row.termsSections?.length) patch.termsSections = DEFAULT_TERMS_SECTIONS;
+  if (!row.contactWhatsapp)       patch.contactWhatsapp = DEFAULT_CONTACT.contactWhatsapp;
+  if (!row.contactEmail)          patch.contactEmail    = DEFAULT_CONTACT.contactEmail;
+  if (!row.contactCompany)        patch.contactCompany  = DEFAULT_CONTACT.contactCompany;
+  if (!row.contactRegNo)          patch.contactRegNo    = DEFAULT_CONTACT.contactRegNo;
+  if (!row.contactHours)          patch.contactHours    = DEFAULT_CONTACT.contactHours;
   if (Object.keys(patch).length === 0) return row;
   const updated = await db
     .update(siteSettingsTable)
@@ -146,18 +160,31 @@ router.get("/site-settings", async (_req, res) => {
 // ── Admin ────────────────────────────────────────────────────────────────────
 router.patch("/site-settings", requireAdmin, async (req, res) => {
   try {
-    const { quickLinks, socialLinks, faqItems, termsSections } = req.body as {
-      quickLinks?:    QuickLink[];
-      socialLinks?:   SocialLink[];
-      faqItems?:      FaqCategory[];
-      termsSections?: TermsSection[];
+    const {
+      quickLinks, socialLinks, faqItems, termsSections,
+      contactWhatsapp, contactEmail, contactCompany, contactRegNo, contactHours,
+    } = req.body as {
+      quickLinks?:       QuickLink[];
+      socialLinks?:      SocialLink[];
+      faqItems?:         FaqCategory[];
+      termsSections?:    TermsSection[];
+      contactWhatsapp?:  string;
+      contactEmail?:     string;
+      contactCompany?:   string;
+      contactRegNo?:     string;
+      contactHours?:     string;
     };
     const settings = await getOrCreate();
     const patch: Record<string, unknown> = { updatedAt: new Date() };
-    if (quickLinks    !== undefined) patch.quickLinks    = quickLinks;
-    if (socialLinks   !== undefined) patch.socialLinks   = socialLinks;
-    if (faqItems      !== undefined) patch.faqItems      = faqItems;
-    if (termsSections !== undefined) patch.termsSections = termsSections;
+    if (quickLinks        !== undefined) patch.quickLinks        = quickLinks;
+    if (socialLinks       !== undefined) patch.socialLinks       = socialLinks;
+    if (faqItems          !== undefined) patch.faqItems          = faqItems;
+    if (termsSections     !== undefined) patch.termsSections     = termsSections;
+    if (contactWhatsapp   !== undefined) patch.contactWhatsapp   = contactWhatsapp;
+    if (contactEmail      !== undefined) patch.contactEmail      = contactEmail;
+    if (contactCompany    !== undefined) patch.contactCompany    = contactCompany;
+    if (contactRegNo      !== undefined) patch.contactRegNo      = contactRegNo;
+    if (contactHours      !== undefined) patch.contactHours      = contactHours;
     const updated = await db
       .update(siteSettingsTable)
       .set(patch)

@@ -2940,14 +2940,19 @@ type SocialLink   = { platform: string; icon: string; url: string; enabled: bool
 type FaqItem      = { question: string; answer: string };
 type FaqCategory  = { category: string; items: FaqItem[] };
 type TermsSection = { title: string; body: string };
-type SiteSection  = "links" | "faq" | "terms";
+type SiteSection  = "links" | "faq" | "terms" | "contact";
 
 function SiteSettingsTab() {
   const [section, setSection] = useState<SiteSection>("links");
-  const [quickLinks,     setQuickLinks]     = useState<QuickLink[]>([]);
-  const [socialLinks,    setSocialLinks]    = useState<SocialLink[]>([]);
-  const [faqItems,       setFaqItems]       = useState<FaqCategory[]>([]);
-  const [termsSections,  setTermsSections]  = useState<TermsSection[]>([]);
+  const [quickLinks,        setQuickLinks]        = useState<QuickLink[]>([]);
+  const [socialLinks,       setSocialLinks]       = useState<SocialLink[]>([]);
+  const [faqItems,          setFaqItems]          = useState<FaqCategory[]>([]);
+  const [termsSections,     setTermsSections]     = useState<TermsSection[]>([]);
+  const [contactWhatsapp,   setContactWhatsapp]   = useState("");
+  const [contactEmail,      setContactEmail]      = useState("");
+  const [contactCompany,    setContactCompany]    = useState("");
+  const [contactRegNo,      setContactRegNo]      = useState("");
+  const [contactHours,      setContactHours]      = useState("");
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState(false);
 
@@ -2959,11 +2964,18 @@ function SiteSettingsTab() {
         const d = await r.json() as {
           quickLinks: QuickLink[]; socialLinks: SocialLink[];
           faqItems: FaqCategory[]; termsSections: TermsSection[];
+          contactWhatsapp: string; contactEmail: string;
+          contactCompany: string; contactRegNo: string; contactHours: string;
         };
         setQuickLinks(d.quickLinks ?? []);
         setSocialLinks(d.socialLinks ?? []);
         setFaqItems(d.faqItems ?? []);
         setTermsSections(d.termsSections ?? []);
+        setContactWhatsapp(d.contactWhatsapp ?? "");
+        setContactEmail(d.contactEmail ?? "");
+        setContactCompany(d.contactCompany ?? "");
+        setContactRegNo(d.contactRegNo ?? "");
+        setContactHours(d.contactHours ?? "");
       }
     } finally { setLoading(false); }
   };
@@ -2976,7 +2988,7 @@ function SiteSettingsTab() {
       const r = await fetch(`${BASE}/api/site-settings`, {
         method: "PATCH", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quickLinks, socialLinks, faqItems, termsSections }),
+        body: JSON.stringify({ quickLinks, socialLinks, faqItems, termsSections, contactWhatsapp, contactEmail, contactCompany, contactRegNo, contactHours }),
       });
       if (r.ok) toast.success("Site settings saved");
       else toast.error("Failed to save settings");
@@ -3028,9 +3040,10 @@ function SiteSettingsTab() {
 
       {/* Sub-nav */}
       <div className="flex gap-2">
-        <button className={subBtnCls(section === "links")} onClick={() => setSection("links")}>Footer Links</button>
-        <button className={subBtnCls(section === "faq")}   onClick={() => setSection("faq")}>FAQ</button>
-        <button className={subBtnCls(section === "terms")} onClick={() => setSection("terms")}>Terms &amp; Conditions</button>
+        <button className={subBtnCls(section === "links")}   onClick={() => setSection("links")}>Footer Links</button>
+        <button className={subBtnCls(section === "faq")}     onClick={() => setSection("faq")}>FAQ</button>
+        <button className={subBtnCls(section === "terms")}   onClick={() => setSection("terms")}>Terms &amp; Conditions</button>
+        <button className={subBtnCls(section === "contact")} onClick={() => setSection("contact")}>Contact Us</button>
       </div>
 
       {/* ── LINKS section ──────────────────────────────────────────────────── */}
@@ -3147,6 +3160,32 @@ function SiteSettingsTab() {
             </div>
           ))}
           {termsSections.length === 0 && <p className="text-xs text-muted-foreground">No sections yet. Click "Add section" to start.</p>}
+        </div>
+      )}
+
+      {/* ── CONTACT section ────────────────────────────────────────────────── */}
+      {section === "contact" && (
+        <div className="space-y-3 max-w-lg">
+          <p className="text-xs text-muted-foreground mb-1">Changes here update the public Contact Us page immediately after saving.</p>
+          {(
+            [
+              ["WhatsApp Number", contactWhatsapp, setContactWhatsapp, "e.g. 601128134211 (no + or spaces)"],
+              ["Email Address",   contactEmail,    setContactEmail,    "e.g. support@wedinstudio.com"],
+              ["Company Name",    contactCompany,  setContactCompany,  "e.g. WEDINBYTES ENTERPRISE"],
+              ["Reg. No.",        contactRegNo,    setContactRegNo,    "e.g. IP0629841-X"],
+              ["Response Hours",  contactHours,    setContactHours,    "e.g. Monday – Friday, 9:00 AM – 6:00 PM"],
+            ] as [string, string, (v: string) => void, string][]
+          ).map(([label, value, setter, placeholder]) => (
+            <div key={label}>
+              <label className="block text-xs font-medium text-foreground mb-1">{label}</label>
+              <input
+                value={value}
+                onChange={e => setter(e.target.value)}
+                placeholder={placeholder}
+                className="w-full border border-border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          ))}
         </div>
       )}
 
