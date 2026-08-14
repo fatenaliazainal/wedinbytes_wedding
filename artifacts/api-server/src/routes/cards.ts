@@ -10,6 +10,38 @@ import { isEventDatePassed } from "../lib/invitation-expiration";
 
 const router: IRouter = Router();
 
+// ── In-memory R2 image cache ─────────────────────────────────────────────────
+// Avoids a round-trip to Cloudflare R2 on every request for the same image.
+// Design/card images are effectively static; 30-minute TTL is conservative.
+const R2_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const R2_CACHE_MAX_ENTRIES = 200;
+interface R2CacheEntry {
+  buffer: Buffer;
+  contentType: string;
+  etag: string;
+  cachedAt: number;
+}
+const r2Cache = new Map<string, R2CacheEntry>();
+
+function r2CacheGet(key: string): R2CacheEntry | null {
+  const entry = r2Cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.cachedAt > R2_CACHE_TTL_MS) {
+    r2Cache.delete(key);
+    return null;
+  }
+  return entry;
+}
+
+function r2CacheSet(key: string, entry: R2CacheEntry): void {
+  // Evict oldest entries when at capacity
+  if (r2Cache.size >= R2_CACHE_MAX_ENTRIES) {
+    const oldest = [...r2Cache.entries()].sort((a, b) => a[1].cachedAt - b[1].cachedAt)[0];
+    if (oldest) r2Cache.delete(oldest[0]);
+  }
+  r2Cache.set(key, entry);
+}
+
 // ── Multer configuration (memory storage) ────────────────────────────────────
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -57,9 +89,40 @@ router.get("/r2", r2RateLimit, async (req, res) => {
     return;
   }
   try {
+    // 1. Check server-side cache first
+    const cached = r2CacheGet(key);
+    const etag = cached?.etag ?? null;
+
+    // 2. Honour If-None-Match — return 304 without touching R2
+    const clientEtag = req.headers["if-none-match"];
+    if (etag && clientEtag && clientEtag === etag) {
+      res.setHeader("ETag", etag);
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.status(304).end();
+      return;
+    }
+
+    // 3. Serve from cache (no R2 call)
+    if (cached) {
+      res.setHeader("Content-Type", cached.contentType);
+      res.setHeader("ETag", cached.etag);
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.send(cached.buffer);
+      return;
+    }
+
+    // 4. Cache miss — fetch from R2 and populate cache
     const image = await downloadImage(key);
+    const newEtag = image.etag ?? `"${image.size}-${Date.now()}"`;
+    r2CacheSet(key, {
+      buffer: image.buffer,
+      contentType: image.contentType,
+      etag: newEtag,
+      cachedAt: Date.now(),
+    });
     res.setHeader("Content-Type", image.contentType);
-    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.setHeader("ETag", newEtag);
+    res.setHeader("Cache-Control", "public, max-age=86400");
     res.send(image.buffer);
   } catch (err) {
     req.log.error({ err, key }, "Failed to serve R2 image");

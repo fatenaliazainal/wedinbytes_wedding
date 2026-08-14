@@ -106,6 +106,8 @@ export interface ImageDownloadResult {
   buffer: Buffer;
   contentType: string;
   size: number;
+  /** ETag returned by R2 (quoted string, e.g. '"abc123"') */
+  etag: string | null;
 }
 
 /**
@@ -159,6 +161,7 @@ export async function downloadImage(fileKey: string): Promise<ImageDownloadResul
       buffer,
       contentType: response.ContentType || "application/octet-stream",
       size: buffer.length,
+      etag: response.ETag ?? null,
     };
   } catch (error) {
     console.error("Error downloading image from R2:", error);
