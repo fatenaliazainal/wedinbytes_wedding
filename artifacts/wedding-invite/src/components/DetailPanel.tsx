@@ -309,6 +309,7 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
 function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation; registryItems?: RegistryItem[] }) {
   const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
   const [tempahSet, setTempahSet] = useState<Set<number>>(new Set());
+  const [giftTab, setGiftTab] = useState<"qr" | "registry">("qr");
   const data = (invitation ?? {}) as Invitation & Record<string, unknown>;
   const qrCodes = Array.isArray(data.giftQrCodes)
     ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
@@ -396,54 +397,67 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
   }
 
   const hasMoneyGift = qrCodes.length > 0 || Boolean(recipient) || Boolean(bankName) || Boolean(accountNumber);
+  const showTabs = hasMoneyGift && registryItems.length > 0;
 
   return (
     <div className="flex flex-col items-center gap-3.5 py-1.5">
-      {/* ── Money Gift ── */}
-      {qrCodes.length > 0 && (
-        <div className="flex w-full flex-col items-center gap-3">
-          {qrCodes.map((url, index) => (
-            <div key={`${url}-${index}`} className="w-full max-w-[220px] text-center">
-              <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full rounded-lg border border-primary/10 bg-white p-2 object-contain" />
-              <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/20 px-3.5 py-1.5 text-xs font-semibold text-primary">
-                <Download size={13} /> Save QR
-              </a>
-            </div>
-          ))}
-        </div>
-      )}
-      {(recipient || bankName || accountNumber) && (
-        <div className="w-full space-y-1.5 text-center" style={{ fontFamily: bodyFont }}>
-          {recipient && <p className="text-[12px] font-semibold text-foreground">{recipient}</p>}
-          {bankName && <p className="text-[11px] text-muted-foreground">{bankName}</p>}
-          {accountNumber && (
-            <>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Account Number</p>
-              <p className="text-[12px] font-semibold tracking-wide text-foreground">{accountNumber}</p>
-              <button type="button" onClick={() => void copyAccount()} className="mt-0.5 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
-                <Copy size={13} /> Copy account number
-              </button>
-            </>
-          )}
+      {/* ── Tab navigation (only when both sections have content) ── */}
+      {showTabs && (
+        <div className="flex w-full border-b border-primary/15 -mb-1">
+          <button
+            type="button"
+            onClick={() => setGiftTab("qr")}
+            className={`flex-1 pb-2 text-xs font-semibold transition-colors ${giftTab === "qr" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+            style={{ fontFamily: bodyFont }}
+          >
+            QR
+          </button>
+          <button
+            type="button"
+            onClick={() => setGiftTab("registry")}
+            className={`flex-1 pb-2 text-xs font-semibold transition-colors ${giftTab === "registry" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+            style={{ fontFamily: bodyFont }}
+          >
+            Registry
+          </button>
         </div>
       )}
 
-      {/* ── Ornament divider (only when both sections exist) ── */}
-      {hasMoneyGift && registryItems.length > 0 && (
-        <div className="flex w-full items-center gap-3 py-1">
-          <div className="h-px flex-1 bg-primary/20" />
-          <svg viewBox="0 0 60 20" className="w-14 shrink-0 text-primary/50" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <rect x="0" y="9.2" width="22" height="1.6" rx="0.8" opacity="0.4" />
-            <path d="M30 4 L35.5 10 L30 16 L24.5 10 Z" opacity="0.55" />
-            <circle cx="30" cy="10" r="1.4" opacity="0.85" />
-            <rect x="38" y="9.2" width="22" height="1.6" rx="0.8" opacity="0.4" />
-          </svg>
-          <div className="h-px flex-1 bg-primary/20" />
-        </div>
+      {/* ── Money Gift ── */}
+      {(!showTabs || giftTab === "qr") && (
+        <>
+          {qrCodes.length > 0 && (
+            <div className="flex w-full flex-col items-center gap-3">
+              {qrCodes.map((url, index) => (
+                <div key={`${url}-${index}`} className="w-full max-w-[220px] text-center">
+                  <img src={resolveImageUrl(url)} alt={`Money gift QR ${index + 1}`} onError={(event) => fallbackToR2Proxy(event, url)} className="mx-auto aspect-square w-full rounded-lg border border-primary/10 bg-white p-2 object-contain" />
+                  <a href={resolveImageUrl(url)} download={`gift-qr-${index + 1}`} className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/20 px-3.5 py-1.5 text-xs font-semibold text-primary">
+                    <Download size={13} /> Save QR
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+          {(recipient || bankName || accountNumber) && (
+            <div className="w-full space-y-1.5 text-center" style={{ fontFamily: bodyFont }}>
+              {recipient && <p className="text-[12px] font-semibold text-foreground">{recipient}</p>}
+              {bankName && <p className="text-[11px] text-muted-foreground">{bankName}</p>}
+              {accountNumber && (
+                <>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Account Number</p>
+                  <p className="text-[12px] font-semibold tracking-wide text-foreground">{accountNumber}</p>
+                  <button type="button" onClick={() => void copyAccount()} className="mt-0.5 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
+                    <Copy size={13} /> Copy account number
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Gift Registry items ── */}
-      {registryItems.length > 0 && (
+      {(!showTabs || giftTab === "registry") && registryItems.length > 0 && (
         <div className="w-full flex flex-col">
           {registryItems.map((item, idx) => (
             <div key={item.id}>
