@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useLayoutEffect, useState, useCallback } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { type Invitation } from "@workspace/api-client-react";
@@ -218,6 +218,80 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
   }
 
   return `${datePart}T${timePart}`;
+}
+
+/**
+ * FitName — renders a single name that scales its font size down to fit within
+ * maxWidthPx before allowing word-wrap at minFontPx. Short names look identical
+ * to the current design; long names shrink gracefully then wrap.
+ */
+function FitName({
+  text,
+  baseStyle,
+  className,
+  maxWidthPx = 360,
+  minFontPx = 20,
+}: {
+  text: string;
+  baseStyle: React.CSSProperties;
+  className?: string;
+  maxWidthPx?: number;
+  minFontPx?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [overridePx, setOverridePx] = useState<number | null>(null);
+  const [allowWrap, setAllowWrap] = useState(false);
+
+  const measure = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Reset to CSS-variable size, single line for accurate measurement
+    el.style.fontSize = "";
+    el.style.whiteSpace = "nowrap";
+
+    const basePx = parseFloat(getComputedStyle(el).fontSize);
+    if (!basePx || isNaN(basePx) || el.scrollWidth <= maxWidthPx) {
+      setOverridePx(null);
+      setAllowWrap(false);
+      return;
+    }
+
+    // Step down 1px at a time until it fits or hits the minimum
+    let size = basePx;
+    while (el.scrollWidth > maxWidthPx && size > minFontPx) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+
+    const needsWrap = el.scrollWidth > maxWidthPx;
+    setOverridePx(size < basePx ? size : null);
+    setAllowWrap(needsWrap);
+  }, [maxWidthPx, minFontPx]);
+
+  useLayoutEffect(() => {
+    measure();
+    // Re-measure once web fonts finish loading (Dancing Script etc.)
+    document.fonts?.ready.then(measure);
+  }, [text, measure]);
+
+  return (
+    <span
+      ref={ref}
+      className={className}
+      style={{
+        ...baseStyle,
+        display: "block",
+        textAlign: "center",
+        ...(overridePx !== null ? { fontSize: `${overridePx}px` } : {}),
+        ...(allowWrap
+          ? { whiteSpace: "normal", overflowWrap: "break-word", wordBreak: "break-word" }
+          : { whiteSpace: "nowrap" }),
+      }}
+    >
+      {text}
+    </span>
+  );
 }
 
 function OrnamentDivider() {
@@ -787,15 +861,27 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {/* Eyebrow — event type; subordinate to hero names */}
             <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
 
-            {/* Hero names — fully editor-controlled: nameFontFamily / nameFontSize / nameColor */}
-            <div className="mt-10 flex flex-col items-center">
-              <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
+            {/* Hero names — FitName scales font down before wrapping for long names */}
+            <div className="mt-10 flex flex-col items-center w-full">
+              <FitName
+                text={coverGroomName}
+                baseStyle={nameStyle}
+                className="leading-tight drop-shadow-sm"
+                maxWidthPx={360}
+                minFontPx={20}
+              />
               {(coverBrideName && coverGroomName) && (
                 <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary drop-shadow-sm">
                   &amp;
                 </span>
               )}
-              <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverBrideName}</h1>
+              <FitName
+                text={coverBrideName}
+                baseStyle={nameStyle}
+                className="leading-tight drop-shadow-sm"
+                maxWidthPx={360}
+                minFontPx={20}
+              />
             </div>
 
             {/* Day + Date — own group, tightly spaced internally */}
