@@ -2144,6 +2144,8 @@ function OrdersTab() {
   const [loading, setLoading] = useState(true);
   const [togglingStatusId, setTogglingStatusId] = useState<number | null>(null);
   const [patchingPayment, setPatchingPayment] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<AdminOrder | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -2178,6 +2180,25 @@ function OrdersTab() {
       toast.error("Failed to update payment status.");
     } finally {
       setPatchingPayment(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${BASE}/api/admin/orders/${confirmDelete.id}`, {
+        method: "DELETE", credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed");
+      toast.success(`Order #${confirmDelete.id} deleted.`);
+      setConfirmDelete(null);
+      setSelected(null);
+      await load();
+    } catch {
+      toast.error("Failed to delete order.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -2269,7 +2290,16 @@ function OrdersTab() {
           <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-semibold">Order #{selected.id}</h2>
-              <button onClick={() => setSelected(null)}><X size={18} /></button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setConfirmDelete(selected)}
+                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
+                  title="Delete this order"
+                >
+                  <Trash2 size={12} /> Delete
+                </button>
+                <button onClick={() => setSelected(null)}><X size={18} /></button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -2359,6 +2389,45 @@ function OrdersTab() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirmation dialog ──────────────────────────────────── */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => !deleting && setConfirmDelete(null)}>
+          <div className="w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 shrink-0">
+                <Trash2 size={18} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Delete Order #{confirmDelete.id}?</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {confirmDelete.customer?.name ?? "Unknown"} · {confirmDelete.paymentStatus}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-5">
+              This will permanently remove the order record. The linked invitation (if any) will <strong>not</strong> be deleted. This action cannot be undone.
+            </p>
+            <div className="flex gap-2">
+              <button
+                disabled={deleting}
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting}
+                onClick={() => void handleDeleteOrder()}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                {deleting ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

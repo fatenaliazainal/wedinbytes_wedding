@@ -655,6 +655,26 @@ router.patch("/admin/orders/:id", async (req, res) => {
   }
 });
 
+router.delete("/admin/orders/:id", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "Invalid order id" });
+    return;
+  }
+  try {
+    const [deleted] = await db.delete(orderTable).where(eq(orderTable.id, id)).returning();
+    if (!deleted) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete order");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.patch("/admin/invitations/:id/status", async (req, res) => {
   if (!adminGuard(req, res)) return;
   const id = Number(req.params.id);
