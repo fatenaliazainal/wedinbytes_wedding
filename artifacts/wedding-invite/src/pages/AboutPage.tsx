@@ -61,10 +61,38 @@ export default function AboutPage() {
         <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
           <h2 className="text-xl font-semibold text-gray-900">Our Story</h2>
           <p className="mt-4 text-sm leading-7 text-gray-600">
-            Wedinstudio was born from a simple idea: wedding invitations should be beautiful, easy to share, and stress-free to manage. We saw couples spending hours printing cards, chasing RSVPs, and worrying about guests who never received their invitations. We built Wedinstudio to change that.
+            Wedinstudio started with{" "}
+            <a href="https://wedinbytes.com" target="_blank" rel="noreferrer" className="font-medium text-[#3d5a3e] underline underline-offset-2 hover:text-[#2d4330]">Wedinbytes</a>
+            , creating beautiful motion and digital wedding invitations for couples who wanted something simple, beautiful, and easy to share.
           </p>
           <p className="mt-4 text-sm leading-7 text-gray-600">
-            Today, hundreds of couples across Malaysia use Wedinstudio to share their special day with the people they love — through a simple link on WhatsApp, Instagram, or any messaging app.
+            Our journey began with Canva-based designs. But as more couples started using our invitations, we kept receiving the same requests again and again.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600 italic text-gray-500">
+            "Can we have RSVP?"<br />
+            "Can our guests leave wishes?"<br />
+            "Can we customise the website ourselves?"
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600">
+            And eventually, we thought:
+          </p>
+          <p className="mt-2 text-sm font-semibold text-gray-900">
+            Why not build it ourselves?
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600">
+            We realised couples didn't just need a digital invitation. They needed a simple space where they could create, customise, and manage their own wedding website — all in one place.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600">
+            That idea became Wedinstudio.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600">
+            What started with templates has now grown into a platform designed to make wedding invitations more personal, interactive, and effortless.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-600">
+            Today, Wedinstudio brings everything together in one beautiful link — from wedding details, RSVP, maps and music to gifts and live wishes — making it easier for couples to share their special day with the people who matter most.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-gray-500 italic">
+            Built from the requests we heard every day, and created to make wedding invitations easier to create, share, and manage.
           </p>
         </section>
 
