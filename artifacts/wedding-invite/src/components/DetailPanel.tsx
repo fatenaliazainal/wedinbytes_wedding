@@ -66,8 +66,8 @@ function MuzikPanel({
 
       <div className="w-full bg-background/80 rounded-2xl p-3 border border-primary/10 text-center space-y-1">
         <p className="text-[10px] text-muted-foreground">Theme Song</p>
-        <p className="text-[14px] text-foreground" style={{ fontFamily: nameFont }}>"{musicTitle ?? "Sempurna"}"</p>
-        <p className="text-[10px] text-muted-foreground">{musicArtist ?? "Andra & The Backbone"}</p>
+        <p className="text-[14px] text-primary" style={{ fontFamily: nameFont }}>"{musicTitle ?? "Sempurna"}"</p>
+        <p className="text-[10px] text-primary/60">{musicArtist ?? "Andra & The Backbone"}</p>
       </div>
 
       <div className="w-full flex items-center justify-center gap-3 bg-primary/5 rounded-2xl p-2.5 border border-primary/10">
@@ -153,13 +153,13 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Date</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
-        <p className="font-bold text-[13px] text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventDay}</p>
+        <p className="font-bold text-[13px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDay}</p>
         <div className="w-10 h-px bg-primary/30 mx-auto" />
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Date</p>
         <p className="text-[16px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDate}</p>
         <div className="w-10 h-px bg-primary/30 mx-auto" />
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Time</p>
-        <p className="text-[12px] text-foreground" style={{ fontFamily: bodyFont }}>{invitation?.eventTime}</p>
+        <p className="text-[12px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventTime}</p>
       </div>
       <a
         href={mapsCalUrl}
@@ -184,13 +184,13 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Venue</p>
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
-        <p className="text-[12px] font-bold text-foreground">
+        <p className="text-[12px] font-bold text-primary" style={{ fontFamily: nameFont }}>
           {invitation?.venueName}
         </p>
-        <p className="text-[11px] text-muted-foreground"
+        <p className="text-[11px] text-primary/70" style={{ fontFamily: nameFont }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation?.venueAddress) }}
         />
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[11px] text-primary/70" style={{ fontFamily: nameFont }}>
           {invitation?.venueCity}, {invitation?.venueState}
         </p>
       </div>
@@ -271,10 +271,10 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
               className={`${INVITATION_PANEL_CARD_CLASS} flex items-center justify-between gap-2`}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-semibold text-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-[12px] font-semibold text-primary truncate" style={{ fontFamily: nameFont }}>
                   {contact.name || "Contact"}
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate" style={{ fontFamily: bodyFont }}>
+                <p className="text-[11px] text-primary/60 truncate" style={{ fontFamily: bodyFont }}>
                   {contact.phone}
                 </p>
               </div>
@@ -337,7 +337,7 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
           ← Kembali
         </button>
         <div className="text-center">
-          <p className="text-xl font-bold text-foreground" style={{ fontFamily: nameFont }}>Tempah Hadiah</p>
+          <p className="text-xl font-bold text-primary" style={{ fontFamily: nameFont }}>Tempah Hadiah</p>
           <div className="mt-2 h-px w-full bg-primary/15" />
         </div>
         {selectedItem.thumbnailUrl && (
@@ -350,7 +350,7 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
             />
           </div>
         )}
-        <p className="text-center text-base font-bold text-foreground leading-snug" style={{ fontFamily: bodyFont }}>
+        <p className="text-center text-base font-bold text-primary leading-snug" style={{ fontFamily: nameFont }}>
           {selectedItem.name}
         </p>
         {selectedItem.url && (
@@ -377,19 +377,19 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
         {selectedItem.notes && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nota Tambahan</p>
-            <p className="text-[12px] text-foreground">{selectedItem.notes}</p>
+            <p className="text-[12px] text-primary">{selectedItem.notes}</p>
           </div>
         )}
         {registryRecipientName && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nama penerima</p>
-            <p className="text-[12px] text-foreground">{registryRecipientName}</p>
+            <p className="text-[12px] text-primary">{registryRecipientName}</p>
           </div>
         )}
         {registryRecipientAddress && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Alamat Penerima</p>
-            <p className="text-[12px] text-foreground whitespace-pre-line">{registryRecipientAddress}</p>
+            <p className="text-[12px] text-primary whitespace-pre-line">{registryRecipientAddress}</p>
           </div>
         )}
       </div>
@@ -440,12 +440,12 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
           )}
           {(recipient || bankName || accountNumber) && (
             <div className="w-full space-y-1.5 text-center" style={{ fontFamily: bodyFont }}>
-              {recipient && <p className="text-[12px] font-semibold text-foreground">{recipient}</p>}
-              {bankName && <p className="text-[11px] text-muted-foreground">{bankName}</p>}
+              {recipient && <p className="text-[12px] font-semibold text-primary">{recipient}</p>}
+              {bankName && <p className="text-[11px] text-primary/60">{bankName}</p>}
               {accountNumber && (
                 <>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Account Number</p>
-                  <p className="text-[12px] font-semibold tracking-wide text-foreground">{accountNumber}</p>
+                  <p className="text-[12px] font-semibold tracking-wide text-primary">{accountNumber}</p>
                   <button type="button" onClick={() => void copyAccount()} className="mt-0.5 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
                     <Copy size={13} /> Copy account number
                   </button>
@@ -475,7 +475,7 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
                     <span className="text-2xl">🎁</span>
                   </div>
                 )}
-                <p className="min-w-0 flex-1 text-[12px] font-medium text-foreground leading-snug line-clamp-2" style={{ fontFamily: bodyFont }}>
+                <p className="min-w-0 flex-1 text-[12px] font-medium text-primary leading-snug line-clamp-2" style={{ fontFamily: nameFont }}>
                   {item.name}
                 </p>
                 <button
