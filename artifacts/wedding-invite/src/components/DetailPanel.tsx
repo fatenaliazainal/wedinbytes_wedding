@@ -42,6 +42,23 @@ interface DetailPanelProps {
 const nameFont = "var(--name-font-family, 'Dancing Script', serif)";
 const bodyFont = "var(--body-font-family, Poppins, sans-serif)";
 
+function OrnamentDivider() {
+  return (
+    <svg
+      viewBox="190 4 120 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-full max-w-[140px] text-primary opacity-60 shrink-0"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M190 16L198 8L206 16L198 24Z"/>
+      <path d="M294 16L302 8L310 16L302 24Z"/>
+      <path d="M206 16 C218 16 224 10 232 10 C240 10 244 16 250 16 C256 16 260 10 268 10 C276 10 282 16 294 16 C282 16 276 22 268 22 C260 22 256 16 250 16 C244 16 240 22 232 22 C224 22 218 16 206 16Z"/>
+      <circle cx="250" cy="16" r="2.5"/>
+    </svg>
+  );
+}
+
 function MuzikPanel({
   isMuted,
   onToggleMute,
@@ -63,6 +80,7 @@ function MuzikPanel({
       </div>
 
       <p className="text-[16px] text-primary text-center" style={{ fontFamily: nameFont }}>Wedding Music</p>
+      <OrnamentDivider />
 
       <div className="w-full bg-background/80 rounded-2xl p-3 border border-primary/10 text-center space-y-1">
         <p className="text-[10px] text-muted-foreground">Theme Song</p>
@@ -151,6 +169,7 @@ function KalendarPanel({ invitation }: { invitation?: Invitation }) {
         <Calendar size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Date</p>
+      <OrnamentDivider />
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase" style={{ fontFamily: bodyFont }}>Day</p>
         <p className="font-bold text-[13px] text-primary" style={{ fontFamily: nameFont }}>{invitation?.eventDay}</p>
@@ -183,6 +202,7 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
         <MapPin size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Event Venue</p>
+      <OrnamentDivider />
       <div className={`${INVITATION_PANEL_CARD_CLASS} space-y-1`}>
         <p className="text-[12px] font-bold text-primary" style={{ fontFamily: nameFont }}>
           {invitation?.venueName}
@@ -255,7 +275,7 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
         <Phone size={26} className="text-primary" />
       </div>
       <p className={INVITATION_PANEL_SECTION_TITLE_CLASS} style={{ fontFamily: nameFont }}>Contact Us</p>
-
+      <OrnamentDivider />
       <div className="w-full space-y-1.5">
         {contacts.length === 0 && (
           <div className={`${INVITATION_PANEL_CARD_CLASS} text-xs text-muted-foreground`}>
@@ -338,7 +358,7 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
         </button>
         <div className="text-center">
           <p className="text-xl font-bold text-primary" style={{ fontFamily: nameFont }}>Tempah Hadiah</p>
-          <div className="mt-2 h-px w-full bg-primary/15" />
+          <OrnamentDivider />
         </div>
         {selectedItem.thumbnailUrl && (
           <div className="mx-auto w-full max-w-[220px]">
