@@ -784,29 +784,29 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               transition: hideFirstPageContent ? "none" : "opacity 0.7s ease",
             }}
           >
-            {/* Eyebrow — event type; subordinate to hero names */}
-            <p className="text-xs font-semibold tracking-[0.35em] text-foreground uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
+            {/* Eyebrow — contextual label; smallest visual level */}
+            <p className="text-xs font-medium tracking-[0.30em] text-foreground/75 uppercase" style={{ fontFamily: bodyFontFamily }}>{coverTitle}</p>
 
-            {/* Hero names — fully editor-controlled: nameFontFamily / nameFontSize / nameColor */}
+            {/* Hero names — dynamic: nameFontFamily / nameFontSize / nameColor */}
             <div className="mt-10 flex flex-col items-center">
               <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverGroomName}</h1>
               {(coverBrideName && coverGroomName) && (
-                <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.5)" }} className="text-primary drop-shadow-sm">
+                <span style={{ ...nameStyle, fontSize: "calc(var(--name-font-size, 3rem) * 0.42)", opacity: 0.62 }} className="drop-shadow-sm">
                   &amp;
                 </span>
               )}
               <h1 style={nameStyle} className="leading-tight drop-shadow-sm">{coverBrideName}</h1>
             </div>
 
-            {/* Day + Date — own group, tightly spaced internally */}
+            {/* Day + Date — ONE unified information group; same font, size, weight, tracking; only opacity differs */}
             <div className="mt-9 flex flex-col items-center space-y-1">
-              <p className="text-xs tracking-[0.22em] text-foreground/60 uppercase" style={{ fontFamily: bodyFontFamily }}>{invitation.eventDay}</p>
-              <p className="text-sm text-foreground/80 tracking-widest" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
+              <p className="text-[11px] font-normal tracking-[0.20em] text-foreground/58 uppercase" style={{ fontFamily: bodyFontFamily }}>{invitation.eventDay}</p>
+              <p className="text-[11px] font-normal tracking-[0.20em] text-foreground/78" style={{ fontFamily: bodyFontFamily }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
             </div>
 
-            {/* Hashtag — own group, moderate breathing room from Day+Date */}
+            {/* Hashtag — subordinate, decorative; smallest level */}
             {hashtag && (
-              <p className="text-xs italic text-primary/80 mt-5" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
+              <p className="text-[10px] italic tracking-[0.04em] text-foreground/62 mt-5" style={{ fontFamily: bodyFontFamily }}>{hashtag}</p>
             )}
           </div>
         )}

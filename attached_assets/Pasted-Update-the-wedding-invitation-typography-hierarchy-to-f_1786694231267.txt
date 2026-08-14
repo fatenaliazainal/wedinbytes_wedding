@@ -1,0 +1,96 @@
+Update the wedding invitation typography hierarchy to feel more premium, elegant, and visually consistent.
+
+Important: `nameFontSize`, `nameFontFamily`, and `nameColor` are dynamic user/admin settings, so DO NOT hardcode the hero name typography.
+
+### Typography hierarchy
+
+**1. Eyebrow — “WEDDING INVITATION”**
+
+* Keep it as the smallest contextual text.
+* Use the existing body font.
+* `text-xs`
+* `uppercase`
+* `tracking-[0.30em]`
+* `font-medium`
+* opacity around `70–80%`
+* Do not make it visually dominant.
+
+**2. Hero Names — couple names**
+
+* Keep using the existing dynamic:
+
+  * `nameFontSize`
+  * `nameFontFamily`
+  * `nameColor`
+* This must remain the main visual focus.
+* Names should use normal/regular weight unless the selected font requires otherwise.
+* The `&` must belong visually to the same name block but be subordinate:
+
+  * approximately `40–45%` of the dynamic name font size
+  * opacity around `60–65%`
+  * same `nameFontFamily`
+  * same `nameColor`
+* Do not introduce a separate decorative font for `&`.
+
+**3. Day + Date — treat them as ONE information group**
+This is important.
+
+Do NOT use different font families, font styles, or noticeably different font sizes for the day and date.
+
+Both must share:
+
+* the same font family
+* the same font size
+* the same weight
+* the same tracking style
+* the same general color
+
+Recommended:
+
+* `text-[10px]` or `text-[11px]`
+* `tracking-[0.20em]`
+* normal/regular weight
+* same foreground/text color
+
+Only differentiate the hierarchy using opacity:
+
+* Day: `55–60%`
+* Date: `75–80%`
+
+Layout:
+
+```text
+JUMAAT
+14 | OGOS | 2026
+```
+
+Keep them tightly grouped with approximately `space-y-1` / `4–6px` spacing.
+
+The date should NOT become larger than the day. The hierarchy should come from opacity, not different typography.
+
+**4. Hashtag**
+
+* Keep it optional and decorative.
+* Same general body font family.
+* `text-[10px]`
+* italic
+* opacity around `60–65%`
+* subtle tracking around `0.04em`
+* maintain approximately `18–22px` top spacing from the date group.
+* It should remain subordinate to all other content.
+
+### Overall design principle
+
+Simplify the entire typography system into only 3 visual levels:
+
+1. Eyebrow — contextual
+2. Names — hero
+3. Supporting information — Day + Date + Hashtag
+
+Do not create unnecessary typography variations.
+
+The Day and Date MUST feel like one unified information block rather than two separate text styles.
+
+The hero names are the only element whose font size can change dynamically. The supporting typography should remain visually stable when the user changes `nameFontSize`.
+
+Preserve the existing layout and design. Only refine typography, hierarchy, spacing, opacity, and consistency. Do not change the flowers, background, ornaments, colors, or overall composition.
