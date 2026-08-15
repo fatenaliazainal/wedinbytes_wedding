@@ -258,8 +258,6 @@ export default function InvitationPage() {
   // ── YouTube IFrame API player ────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
-  const ytPlayerReadyRef = useRef(false);   // true once onReady fires
-  const pendingPlayRef = useRef(false);      // play was requested before ready
   const [isPlaying, setIsPlaying] = useState(false);
   const hasUserMutedRef = useRef(false);
   // Holds the first-interaction handler so we can clean it up if needed.
@@ -273,12 +271,7 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!youtubeVideoId) return undefined;
 
-    // Guards against stale callbacks firing after this component unmounts.
-    // Using a closure variable (not a ref) so each effect run has its own flag.
-    let mounted = true;
-
     const initYTPlayer = () => {
-      if (!mounted) return;           // component already unmounted
       if (ytPlayerRef.current) return; // already initialised
       const el = document.getElementById("yt-bg-player");
       if (!el) return;
@@ -287,12 +280,8 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay=0: we do NOT use YouTube's own autoplay feature because it
-          // checks player visibility and refuses to fire for hidden/tiny elements.
-          // Instead, we call player.playVideo() from onReady — that API call works
-          // even on a 1×1 px hidden player and is always allowed for muted content.
+          // autoplay:0 — we call playVideo() manually inside the tap gesture.
           autoplay: 0,
-          mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -302,36 +291,13 @@ export default function InvitationPage() {
           fs: 0,
         },
         events: {
-          onReady: () => {
-            if (!mounted) return;
-            ytPlayerReadyRef.current = true;
-            // Kick off muted playback via API — always allowed for muted content,
-            // even on a hidden player. This is different from autoplay=1 in
-            // playerVars which YouTube restricts for invisible/tiny elements.
-            try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
-            // If the user already opened the envelope before the player was ready,
-            // unmute immediately. No gesture required — unmuting a playing video
-            // is always allowed.
-            if (pendingPlayRef.current && !hasUserMutedRef.current) {
-              pendingPlayRef.current = false;
-              try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-              setIsMuted(false);
-            }
-          },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
-            if (!mounted) return;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
-              // Handle the race where the user tapped open AFTER onReady fired but
-              // BEFORE the PLAYING event — pendingPlayRef is still set in that window.
-              if (pendingPlayRef.current && !hasUserMutedRef.current) {
-                pendingPlayRef.current = false;
-                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                setIsMuted(false);
-              }
+              // Music started — remove any pending first-interaction fallback.
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
                 document.removeEventListener("touchstart",  firstInteractionRef.current);
@@ -368,19 +334,15 @@ export default function InvitationPage() {
     }
 
     return () => {
-      // Signal all pending callbacks that this component is gone.
-      mounted = false;
-
       if (firstInteractionRef.current) {
         document.removeEventListener("click",       firstInteractionRef.current);
         document.removeEventListener("touchstart",  firstInteractionRef.current);
         document.removeEventListener("pointerdown", firstInteractionRef.current);
         firstInteractionRef.current = null;
       }
-      // Destroy the player — this may fire onStateChange synchronously, but
-      // the mounted=false guard above prevents any setState calls.
       try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
       ytPlayerRef.current = null;
+      setIsPlaying(false);
     };
   }, [youtubeVideoId]);
 
@@ -554,18 +516,8 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) {
-              if (ytPlayerReadyRef.current) {
-                // Video already playing muted — just unmute. No gesture required.
-                if (!hasUserMutedRef.current) {
-                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                  setIsMuted(false);
-                }
-              } else {
-                // Player still loading — flag so onReady unmutes it.
-                pendingPlayRef.current = true;
-              }
-            } else { playAudioNow(); }
+            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            else { playAudioNow(); }
             setIsOpened(true);
           }}
           initialsImageUrl={initialsImageUrl || undefined}
@@ -579,18 +531,8 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) {
-              if (ytPlayerReadyRef.current) {
-                // Video already playing muted — just unmute. No gesture required.
-                if (!hasUserMutedRef.current) {
-                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                  setIsMuted(false);
-                }
-              } else {
-                // Player still loading — flag so onReady unmutes it.
-                pendingPlayRef.current = true;
-              }
-            } else { playAudioNow(); }
+            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            else { playAudioNow(); }
             setIsOpened(true);
           }}
           initialsImageUrl={initialsImageUrl || undefined}
@@ -642,8 +584,7 @@ export default function InvitationPage() {
         {youtubeVideoId && (
           <div
             id="yt-bg-player"
-            className="fixed pointer-events-none"
-            style={{ left: "-9999px", top: "0", width: "200px", height: "150px", opacity: 0.001 }}
+            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none overflow-hidden"
             aria-hidden="true"
           />
         )}
