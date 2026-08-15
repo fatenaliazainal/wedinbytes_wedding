@@ -287,11 +287,11 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay=1 + mute=1: browsers always allow muted autoplay.
-          // Video starts playing silently the moment the player loads.
-          // On envelope open we only call unMute() — unmuting an already-playing
-          // video requires NO user gesture on any browser including iOS Safari.
-          autoplay: 1,
+          // autoplay=0: we do NOT use YouTube's own autoplay feature because it
+          // checks player visibility and refuses to fire for hidden/tiny elements.
+          // Instead, we call player.playVideo() from onReady — that API call works
+          // even on a 1×1 px hidden player and is always allowed for muted content.
+          autoplay: 0,
           mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
@@ -305,8 +305,13 @@ export default function InvitationPage() {
           onReady: () => {
             if (!mounted) return;
             ytPlayerReadyRef.current = true;
-            // If the user already opened the envelope before the player finished
-            // loading, unmute now. No gesture required — unmuting is always allowed.
+            // Kick off muted playback via API — always allowed for muted content,
+            // even on a hidden player. This is different from autoplay=1 in
+            // playerVars which YouTube restricts for invisible/tiny elements.
+            try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+            // If the user already opened the envelope before the player was ready,
+            // unmute immediately. No gesture required — unmuting a playing video
+            // is always allowed.
             if (pendingPlayRef.current && !hasUserMutedRef.current) {
               pendingPlayRef.current = false;
               try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
@@ -320,6 +325,13 @@ export default function InvitationPage() {
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
+              // Handle the race where the user tapped open AFTER onReady fired but
+              // BEFORE the PLAYING event — pendingPlayRef is still set in that window.
+              if (pendingPlayRef.current && !hasUserMutedRef.current) {
+                pendingPlayRef.current = false;
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                setIsMuted(false);
+              }
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
                 document.removeEventListener("touchstart",  firstInteractionRef.current);
