@@ -206,22 +206,49 @@ export default function InvitationPage() {
     };
   }, [musicUrl, isYouTubeMusic]);
 
+  // Attach a one-time interaction listener so audio starts on the very next
+  // tap/click after a blocked autoplay — covers iOS Safari where play() inside
+  // a gesture still gets rejected if the audio context was never unlocked.
+  const attachInteractionRetry = useCallback(() => {
+    const retry = () => {
+      if (!audioRef.current || audioStartedRef.current) return;
+      audioRef.current.play().catch(() => {});
+      audioStartedRef.current = true;
+    };
+    document.addEventListener("touchstart", retry, { once: true, capture: true });
+    document.addEventListener("click",      retry, { once: true, capture: true });
+  }, []);
+
   // Called in the envelope tap handler — plays the pre-loaded HTML5 audio.
   const playAudioNow = useCallback(() => {
     if (!audioRef.current || audioStartedRef.current) return;
-    audioRef.current.play().catch(() => {});
+    const promise = audioRef.current.play();
     audioStartedRef.current = true;
-  }, []);
+    if (promise !== undefined) {
+      promise.catch(() => {
+        // Play was blocked (iOS autoplay policy) — retry on next interaction.
+        audioStartedRef.current = false;
+        attachInteractionRetry();
+      });
+    }
+  }, [attachInteractionRetry]);
 
-  // Desktop fallback for HTML5 audio when there's no tap (openingAnimation="none").
+  // Fallback for openingAnimation="none" (no envelope to tap): try autoplay
+  // immediately; if the browser blocks it, wait for the first interaction.
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     if (!audioStartedRef.current && audioRef.current) {
-      audioRef.current.play().catch(() => {});
+      const promise = audioRef.current.play();
       audioStartedRef.current = true;
+      if (promise !== undefined) {
+        promise.catch(() => {
+          audioStartedRef.current = false;
+          attachInteractionRetry();
+        });
+      }
     }
     return undefined;
-  }, [isOpened, musicUrl, isYouTubeMusic]);
+  }, [isOpened, musicUrl, isYouTubeMusic, attachInteractionRetry]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted;
