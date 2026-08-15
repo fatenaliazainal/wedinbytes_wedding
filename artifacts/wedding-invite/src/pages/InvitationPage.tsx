@@ -271,13 +271,19 @@ export default function InvitationPage() {
   // at that moment, onReady will unmute as soon as the player initialises.
   const ytShouldUnmuteRef = useRef(false);
 
-  // Unmute the YouTube player and mark music as audibly playing.
+  // Called synchronously inside the envelope tap gesture.
+  // Covers two cases:
+  //   A) autoplay:1+mute:1 succeeded → player is playing muted → unMute() makes it audible.
+  //   B) autoplay didn't start (slow load, browser held it) → playVideo() starts it inside
+  //      the gesture context (works on Chrome desktop & Android; iOS Safari may still block
+  //      cross-frame play, but unMute() on an already-playing player always works there).
   const ytUnmute = useCallback(() => {
     ytShouldUnmuteRef.current = true;
     const player = ytPlayerRef.current;
     if (!player) return; // onReady will pick this up
     player.unMute();
     player.setVolume(100);
+    player.playVideo(); // no-op if already playing; unlocks if not yet started
     setIsMuted(false);
   }, []);
 
@@ -597,15 +603,25 @@ export default function InvitationPage() {
           }
         />
 
-        {/* YouTube IFrame API player mount point — must be off-screen but
-            real-sized (≥200×200). YouTube detects 1×1 / opacity-0 players
-            and blocks playVideo() even inside a genuine user gesture.
-            Using a real size placed far off-screen passes YouTube's
-            visibility checks while remaining invisible to the user. */}
+        {/* YouTube IFrame API player mount point.
+            MUST be within the viewport — YouTube uses IntersectionObserver
+            and will not autoplay if the element is at -9999px or otherwise
+            out of view. opacity:0 hides it visually while keeping it
+            "visible" to the browser for media-policy purposes.
+            z-index:-1 keeps it behind all content. */}
         {youtubeVideoId && (
           <div
             id="yt-bg-player"
-            style={{ position: "fixed", left: "-9999px", top: "0", width: "320px", height: "180px", pointerEvents: "none" }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "320px",
+              height: "180px",
+              opacity: 0,
+              pointerEvents: "none",
+              zIndex: -1,
+            }}
             aria-hidden="true"
           />
         )}
