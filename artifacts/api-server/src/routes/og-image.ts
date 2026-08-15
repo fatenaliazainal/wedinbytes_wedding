@@ -17,6 +17,7 @@ import { r2RateLimit } from "../lib/security";
 
 const router: IRouter = Router();
 
+// In dev and production, __dirname = dist/ so ../assets/ = artifacts/api-server/assets/
 const LOGO_PATH = path.join(__dirname, "..", "assets", "logo-wedinstudio.png");
 const OG_SIZE = 1200;          // square px
 const LOGO_SIZE = Math.round(OG_SIZE * 0.28); // ~336 px

@@ -237,9 +237,9 @@ export function injectOgTags(
     [/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${esc(description)}" />`],
     // og:image
     [/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${esc(image)}" />`],
-    // og:image:width / og:image:height — remove fixed dimensions since images vary
-    [/<meta property="og:image:width"[^>]*>\s*/, ""],
-    [/<meta property="og:image:height"[^>]*>\s*/, ""],
+    // og:image:width / og:image:height — square 1200×1200 for WhatsApp square thumbnail
+    [/<meta property="og:image:width"[^>]*>/, `<meta property="og:image:width" content="1200" />`],
+    [/<meta property="og:image:height"[^>]*>/, `<meta property="og:image:height" content="1200" />`],
     // og:url
     [/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${esc(canonicalUrl)}" />`],
     // og:type
@@ -299,6 +299,8 @@ export function buildStandaloneOgHtml(data: InvitationOgData, canonicalUrl: stri
 <meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(description)}" />
 <meta property="og:image" content="${esc(image)}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
 <meta property="og:site_name" content="Wedinstudio" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${esc(title)}" />
