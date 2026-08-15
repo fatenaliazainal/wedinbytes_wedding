@@ -186,7 +186,7 @@ export default function BusinessProposalPage() {
             </button>
           </div>
           {/* Right side — decorative placeholder matching the editor mockup in the image */}
-          <div className="hidden lg:flex items-center justify-center">
+          <div className="hidden {/* temporarily hidden */} items-center justify-center">
             <div className="relative w-full max-w-sm">
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 shadow-lg">
                 <div className="bg-white rounded-xl border border-gray-100 p-3 mb-2 flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function BusinessProposalPage() {
             </div>
           </div>
           {/* Editor mockup */}
-          <div className="hidden lg:block">
+          <div className="hidden {/* temporarily hidden */}">
             <div className="rounded-2xl bg-white border border-gray-200 shadow-lg overflow-hidden">
               {/* Browser bar */}
               <div className="bg-gray-50 border-b border-gray-100 px-4 py-2.5 flex items-center justify-between">
