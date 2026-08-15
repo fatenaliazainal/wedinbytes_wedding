@@ -280,31 +280,41 @@ export default function InvitationPage() {
     const initYTPlayer = () => {
       if (!mounted) return;           // component already unmounted
       if (ytPlayerRef.current) return; // already initialised
-      const el = document.getElementById("yt-bg-iframe");
+      const el = document.getElementById("yt-bg-player");
       if (!el) return;
 
-      // Connect the YT IFrame API to the already-rendered <iframe> element.
-      // We do NOT pass videoId or playerVars here — the iframe already has
-      // autoplay=1&mute=1 in its src, so the browser's native muted-autoplay
-      // policy starts playback immediately without any YouTube-side checks.
-      // The API connection gives us unMute()/mute() control only.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ytPlayerRef.current = new (window as any).YT.Player(el, {
+        videoId: youtubeVideoId,
+        playerVars: {
+          // autoplay=0: we do NOT use YouTube's own autoplay feature because it
+          // checks player visibility and refuses to fire for hidden/tiny elements.
+          // Instead, we call player.playVideo() from onReady — that API call works
+          // even on a 1×1 px hidden player and is always allowed for muted content.
+          autoplay: 0,
+          mute: 1,
+          loop: 1,
+          playlist: youtubeVideoId,
+          playsinline: 1,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          fs: 0,
+        },
         events: {
           onReady: () => {
             if (!mounted) return;
             ytPlayerReadyRef.current = true;
-            // Belt-and-suspenders: call playVideo() in case the browser blocked
-            // the iframe autoplay (e.g. some iOS configurations).
+            // Kick off muted playback via API — always allowed for muted content,
+            // even on a hidden player. This is different from autoplay=1 in
+            // playerVars which YouTube restricts for invisible/tiny elements.
             try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
             // If the user already opened the envelope before the player was ready,
-            // unmute immediately.
+            // unmute immediately. No gesture required — unmuting a playing video
+            // is always allowed.
             if (pendingPlayRef.current && !hasUserMutedRef.current) {
               pendingPlayRef.current = false;
-              try {
-                ytPlayerRef.current?.unMute();
-                ytPlayerRef.current?.setVolume(100);
-              } catch { /* ignore */ }
+              try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
               setIsMuted(false);
             }
           },
@@ -548,10 +558,7 @@ export default function InvitationPage() {
               if (ytPlayerReadyRef.current) {
                 // Video already playing muted — just unmute. No gesture required.
                 if (!hasUserMutedRef.current) {
-                  try {
-                    ytPlayerRef.current?.unMute();
-                    ytPlayerRef.current?.setVolume(100);
-                  } catch { /* ignore */ }
+                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
                   setIsMuted(false);
                 }
               } else {
@@ -576,10 +583,7 @@ export default function InvitationPage() {
               if (ytPlayerReadyRef.current) {
                 // Video already playing muted — just unmute. No gesture required.
                 if (!hasUserMutedRef.current) {
-                  try {
-                    ytPlayerRef.current?.unMute();
-                    ytPlayerRef.current?.setVolume(100);
-                  } catch { /* ignore */ }
+                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
                   setIsMuted(false);
                 }
               } else {
@@ -632,30 +636,15 @@ export default function InvitationPage() {
           }
         />
 
-        {/* YouTube background music — rendered as a real <iframe> with
-            autoplay=1&mute=1 in the URL so the browser's native muted-autoplay
-            policy starts playback immediately, bypassing YouTube's own visibility
-            / MEI checks that block the IFrame API on fresh domains.
-            enablejsapi=1 lets the YT API connect for unMute() control.
-            Positioned off-screen so it's invisible to the user. */}
+        {/* YouTube IFrame API player mount point — rendered immediately so the
+            player is fully loaded before the envelope opens. playVideo() is
+            called synchronously inside the tap handler (gesture context). */}
         {youtubeVideoId && (
-          <iframe
-            key={youtubeVideoId}
-            id="yt-bg-iframe"
-            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&enablejsapi=1&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0`}
-            allow="autoplay; encrypted-media"
-            title="background music"
+          <div
+            id="yt-bg-player"
+            className="fixed pointer-events-none"
+            style={{ left: "-9999px", top: "0", width: "200px", height: "150px", opacity: 0.001 }}
             aria-hidden="true"
-            style={{
-              position: "fixed",
-              left: "-9999px",
-              top: "0",
-              width: "320px",
-              height: "180px",
-              border: "none",
-              pointerEvents: "none",
-              opacity: 0.001,
-            }}
           />
         )}
 
