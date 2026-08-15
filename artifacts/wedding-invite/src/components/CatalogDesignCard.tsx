@@ -72,7 +72,7 @@ export function CatalogDesignCard({
       />
 
       <div className="flex flex-col items-center px-2 pb-2 pt-2 text-center sm:px-2.5 sm:pb-3">
-        <p className="text-xs font-bold leading-tight text-gray-900 sm:text-sm uppercase tracking-wide">{design.name}</p>
+        <p className="w-full truncate text-xs font-bold leading-tight text-gray-900 sm:text-sm uppercase tracking-wide">{design.name}</p>
         {design.designCode && (
           <p className="mt-0.5 font-mono text-[8px] font-semibold tracking-wider text-[#3d5a3e]">
             #{design.designCode}
