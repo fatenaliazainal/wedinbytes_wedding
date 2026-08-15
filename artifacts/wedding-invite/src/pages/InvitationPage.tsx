@@ -256,18 +256,34 @@ export default function InvitationPage() {
   }, [isMuted]);
 
   // ── YouTube IFrame API player ────────────────────────────────────────────
+  // Strategy: autoplay:1 + mute:1 — browser allows muted autoplay freely.
+  // When the user taps the envelope we call unMute() synchronously inside
+  // the gesture handler. This is the only cross-platform reliable approach
+  // (iOS Safari, Android Chrome, desktop) because:
+  //   • Muted autoplay is universally allowed (no gesture needed).
+  //   • unMute() inside a synchronous click/touch handler is allowed.
+  //   • playVideo() after a setTimeout loses gesture context and is blocked.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const hasUserMutedRef = useRef(false);
-  // Holds the first-interaction handler so we can clean it up if needed.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const firstInteractionRef = useRef<((e: any) => void) | null>(null);
+  // Set to true when the envelope is tapped. If the player isn't ready yet
+  // at that moment, onReady will unmute as soon as the player initialises.
+  const ytShouldUnmuteRef = useRef(false);
+
+  // Unmute the YouTube player and mark music as audibly playing.
+  const ytUnmute = useCallback(() => {
+    ytShouldUnmuteRef.current = true;
+    const player = ytPlayerRef.current;
+    if (!player) return; // onReady will pick this up
+    player.unMute();
+    player.setVolume(100);
+    setIsMuted(false);
+  }, []);
 
   // Load the YouTube IFrame API and initialise the player as soon as the
-  // video ID is known — BEFORE the envelope is opened — so the player is
-  // fully ready when the user taps and playVideo() can be called
-  // synchronously inside the gesture handler.
+  // video ID is known — BEFORE the envelope is opened — so the muted audio
+  // stream is buffered and ready to unmute the instant the user taps.
   useEffect(() => {
     if (!youtubeVideoId) return undefined;
 
@@ -280,8 +296,10 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay:0 — we call playVideo() manually inside the tap gesture.
-          autoplay: 0,
+          // autoplay:1 + mute:1 — starts silently immediately (no gesture needed).
+          // We unmute inside the envelope-tap gesture handler via ytUnmute().
+          autoplay: 1,
+          mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -291,19 +309,21 @@ export default function InvitationPage() {
           fs: 0,
         },
         events: {
+          onReady: () => {
+            // If the envelope was already tapped while the player was loading,
+            // unmute immediately now that the player is ready.
+            if (ytShouldUnmuteRef.current && !hasUserMutedRef.current) {
+              ytPlayerRef.current?.unMute();
+              ytPlayerRef.current?.setVolume(100);
+              setIsMuted(false);
+            }
+          },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
-              // Music started — remove any pending first-interaction fallback.
-              if (firstInteractionRef.current) {
-                document.removeEventListener("click",       firstInteractionRef.current);
-                document.removeEventListener("touchstart",  firstInteractionRef.current);
-                document.removeEventListener("pointerdown", firstInteractionRef.current);
-                firstInteractionRef.current = null;
-              }
             } else if (event.data === YT.PlayerState.PAUSED) {
               setIsPlaying(false);
             } else if (event.data === YT.PlayerState.ENDED) {
@@ -326,7 +346,7 @@ export default function InvitationPage() {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prev = (window as any).onYouTubeIframeAPIReady as (() => void) | undefined;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-integral-type];
       (window as any).onYouTubeIframeAPIReady = () => {
         if (prev) prev();
         initYTPlayer();
@@ -334,25 +354,20 @@ export default function InvitationPage() {
     }
 
     return () => {
-      if (firstInteractionRef.current) {
-        document.removeEventListener("click",       firstInteractionRef.current);
-        document.removeEventListener("touchstart",  firstInteractionRef.current);
-        document.removeEventListener("pointerdown", firstInteractionRef.current);
-        firstInteractionRef.current = null;
-      }
       try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
       ytPlayerRef.current = null;
+      ytShouldUnmuteRef.current = false;
       setIsPlaying(false);
     };
   }, [youtubeVideoId]);
 
-  // Mute / unmute via YouTube API — song keeps progressing.
+  // Mute / unmute toggle — for the button shown after envelope is opened.
   const toggleMute = useCallback(() => {
     const player = ytPlayerRef.current;
     if (player) {
-      if (player.isMuted()) {
+      if (isMuted) {
         player.unMute();
-        player.playVideo();
+        player.setVolume(100);
         setIsMuted(false);
         hasUserMutedRef.current = false;
       } else {
@@ -364,7 +379,7 @@ export default function InvitationPage() {
       // HTML5 audio path.
       setIsMuted((prev) => !prev);
     }
-  }, []);
+  }, [isMuted]);
 
   const handleTabClick = (tab: TabKey) => {
     setActiveTab((prev) => (prev === tab ? null : tab));
@@ -517,9 +532,10 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onTap={() => {
             // Called synchronously inside the click handler — gesture context intact.
-            // This is required for iOS Safari and Chrome: playVideo() / play() must
-            // be triggered directly from a user gesture, not from a setTimeout callback.
-            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            // ytUnmute() unmutes the already-playing (muted) YouTube player.
+            // playAudioNow() calls audio.play() for non-YouTube sources.
+            // Both must happen here, not inside a setTimeout.
+            if (isYouTubeMusic) { ytUnmute(); }
             else { playAudioNow(); }
           }}
           onOpen={() => { setIsOpened(true); }}
@@ -534,7 +550,7 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
+            if (isYouTubeMusic) { ytUnmute(); }
             else { playAudioNow(); }
             setIsOpened(true);
           }}
