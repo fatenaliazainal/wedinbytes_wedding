@@ -171,11 +171,14 @@ const R2_ALLOWED_PREFIXES = [
   "business-logos/", "gift-qr/", "wax_seals/", "registry-thumb/", "DisplayWebsiteMockup/",
 ];
 
-/** Build the public R2 image URL from a stored R2 key */
+/** Build the public OG thumbnail URL from a stored R2 key.
+ *  Uses /api/og-image which generates a square 1200×1200 JPEG with the
+ *  Wedinstudio logo centred — the format WhatsApp/Telegram/FB expect.
+ */
 function ogImageUrl(designCardImageUrl: string | null | undefined): string {
   if (!designCardImageUrl) return FALLBACK_IMAGE;
   if (R2_ALLOWED_PREFIXES.some((p) => designCardImageUrl.startsWith(p))) {
-    return `${SITE_URL}/api/r2?key=${encodeURIComponent(designCardImageUrl)}`;
+    return `${SITE_URL}/api/og-image?key=${encodeURIComponent(designCardImageUrl)}`;
   }
   return FALLBACK_IMAGE;
 }
