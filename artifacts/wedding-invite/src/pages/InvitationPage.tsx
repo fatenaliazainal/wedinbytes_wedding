@@ -286,8 +286,10 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay:0 — we call playVideo() manually inside the tap gesture.
+          // Start muted so iOS Safari allows playVideo() even outside a gesture
+          // (muted autoplay is permitted). We unmute once playback confirms started.
           autoplay: 0,
+          mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -300,7 +302,9 @@ export default function InvitationPage() {
           onReady: () => {
             if (!mounted) return;
             ytPlayerReadyRef.current = true;
-            // User tapped before the player finished loading — play now.
+            // User tapped before the player finished loading — start playback now.
+            // Muted play is always allowed (no gesture required), so this works on
+            // iOS Safari. onStateChange will unmute once PLAYING fires.
             if (pendingPlayRef.current) {
               pendingPlayRef.current = false;
               try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
@@ -313,6 +317,12 @@ export default function InvitationPage() {
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
+              // Unmute now that playback has started — browsers allow unmuting a
+              // video that is already playing without a new gesture.
+              if (!hasUserMutedRef.current) {
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                setIsMuted(false);
+              }
               // Music started — remove any pending first-interaction fallback.
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
@@ -550,8 +560,11 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => {
             if (isYouTubeMusic) {
-              if (ytPlayerReadyRef.current) { try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ } }
-              else { pendingPlayRef.current = true; }
+              if (ytPlayerReadyRef.current) {
+                // Player already ready — unmute (started muted) then play within gesture.
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+              } else { pendingPlayRef.current = true; }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
@@ -567,8 +580,11 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onOpen={() => {
             if (isYouTubeMusic) {
-              if (ytPlayerReadyRef.current) { try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ } }
-              else { pendingPlayRef.current = true; }
+              if (ytPlayerReadyRef.current) {
+                // Player already ready — unmute (started muted) then play within gesture.
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+              } else { pendingPlayRef.current = true; }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
