@@ -1,0 +1,114 @@
+Please investigate and FIX the wedding invitation music autoplay issue in InvitationPage.tsx.
+
+IMPORTANT:
+Do not redesign the invitation UI, envelope animation, music button, or any unrelated functionality.
+
+GOAL:
+When the user taps the envelope to open the invitation:
+- Direct MP3 music should start immediately.
+- YouTube music should start immediately where browser policy allows.
+- iOS Safari must use a graceful fallback because iOS does not allow JavaScript to bypass its media/user-gesture restrictions.
+- Do NOT claim autoplay can be forced on iOS if Safari blocks it.
+
+FIRST, DEBUG THE ACTUAL FLOW:
+1. Verify musicUrl resolution:
+   invitationStyle?.musicUrl
+   || inv?.musicUrl
+   || templateDesign?.musicUrl
+   || design?.musicUrl
+   || ""
+
+2. Verify extractYouTubeId() correctly supports:
+   - https://youtu.be/VIDEO_ID
+   - https://www.youtube.com/watch?v=VIDEO_ID
+   - https://youtube.com/watch?v=VIDEO_ID&t=...
+   - https://www.youtube.com/embed/VIDEO_ID
+   - https://www.youtube.com/shorts/VIDEO_ID
+   - URLs with query parameters such as ?si=...
+
+3. Verify isYouTubeMusic is correct.
+
+4. Verify the envelope onTap/onOpen callback actually reaches the music playback function.
+
+5. Add temporary console.debug logs around:
+   - resolved musicUrl
+   - youtubeVideoId
+   - isYouTubeMusic
+   - envelope tap
+   - ytPlay() called
+   - iframe created
+   - MP3 Audio object created
+   - audio.play() success
+   - audio.play() failure
+   - YouTube iframe URL
+
+6. For MP3:
+   - Create HTML5 Audio once when musicUrl changes.
+   - loop = true
+   - volume = 0.35
+   - preload = "auto"
+   - Do NOT mark audioStartedRef as true until audio.play() actually succeeds.
+   - Catch and log the exact play() error.
+   - Ensure muted state is correctly synchronized.
+   - Clean up the Audio object on unmount/musicUrl change.
+
+7. For YouTube:
+   Do NOT rely only on a hidden iframe positioned at left:-9999px.
+   For debugging, render the iframe visibly/minimized first so we can verify whether YouTube itself works.
+   Use:
+   https://www.youtube-nocookie.com/embed/VIDEO_ID
+   ?autoplay=1
+   &playsinline=1
+   &controls=1
+   &rel=0
+   &enablejsapi=1
+   &origin=<current-origin>
+
+   Set:
+   iframe.allow = "autoplay; encrypted-media"
+
+   Make sure the iframe has a real size and is actually inserted into the DOM.
+
+8. IMPORTANT:
+   Do not create a fake "autoplay bypass".
+   Do not use setTimeout, synthetic click, programmatic .click(), hidden 1x1 iframe, or other hacks intended to bypass browser autoplay restrictions.
+
+9. iOS Safari:
+   Detect iOS safely.
+   Do NOT pretend we can force YouTube autoplay inside an iframe on iOS.
+   If autoplay is rejected by iOS, provide the existing music button / mini-player fallback where the user directly taps the YouTube play control.
+   Keep this fallback functional and visually unobtrusive.
+
+10. Desktop/Android:
+   On the envelope's actual user gesture, attempt playback immediately and synchronously.
+   Do not delay the initial play() call with setTimeout/requestAnimationFrame.
+
+11. VERY IMPORTANT:
+   Do not break the existing envelope opening animation.
+   The envelope must still open exactly as it currently does.
+   Only connect/fix the music playback logic.
+
+12. After making the changes:
+   - Remove excessive debug logs once the issue is identified.
+   - Keep only useful error logging.
+   - Make sure TypeScript has no errors.
+   - Make sure there are no duplicate audio instances.
+   - Make sure navigating/reloading does not leave old YouTube iframes or Audio objects behind.
+
+13. Test these scenarios:
+   A. MP3 + desktop Chrome
+   B. YouTube + desktop Chrome
+   C. MP3 + Android Chrome
+   D. YouTube + Android Chrome
+   E. MP3 + iPhone Safari
+   F. YouTube + iPhone Safari
+
+At the end, give me a concise report:
+- ROOT CAUSE
+- FILES CHANGED
+- WHAT WAS FIXED
+- WHICH BROWSERS CAN AUTOPLAY
+- WHAT iOS SAFARI REQUIRES
+- Any remaining browser limitation
+
+Do not modify unrelated UI or functionality.

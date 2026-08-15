@@ -189,13 +189,28 @@ export default function InvitationPage() {
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
+  // Debug: log resolved music values every time they change.
+  // Safe to leave in production — console.debug is silent unless DevTools open.
+  React.useEffect(() => {
+    console.debug("[music] musicUrl:", musicUrl || "(none)");
+    console.debug("[music] youtubeVideoId:", youtubeVideoId ?? "(not YouTube)");
+    console.debug("[music] isYouTubeMusic:", isYouTubeMusic);
+  }, [musicUrl, youtubeVideoId, isYouTubeMusic]);
+
   // ── iOS Safari detection ─────────────────────────────────────────────────
   // iOS Safari cannot propagate user-activation from a parent frame click into
   // an iframe's audio context. We detect iOS once at mount and use a different
   // UX: a visible mini YouTube player the user taps directly instead.
+  //
+  // Newer iPads (M1/M2) report userAgent as "Macintosh" — check maxTouchPoints
+  // to catch them too.
   const isIOSSafari = useRef(
     typeof navigator !== "undefined" &&
-    /iPad|iPhone|iPod/.test(navigator.userAgent)
+    (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      // iPad Pro / Air M1+ reports as Macintosh but has touch
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    )
   );
   const [iosPlayerVisible, setIosPlayerVisible] = useState(false);
 
@@ -218,10 +233,18 @@ export default function InvitationPage() {
 
   // Retry on next interaction if .play() was blocked by autoplay policy.
   const attachInteractionRetry = useCallback(() => {
+    console.debug("[music] autoplay blocked — waiting for next user interaction to retry");
     const retry = () => {
       if (!audioRef.current || audioStartedRef.current) return;
-      audioRef.current.play().catch(() => {});
-      audioStartedRef.current = true;
+      console.debug("[music] retry: calling audio.play() on next interaction");
+      audioRef.current.play()
+        .then(() => {
+          audioStartedRef.current = true;
+          console.debug("[music] retry: audio.play() ✓ started");
+        })
+        .catch((err: Error) => {
+          console.debug("[music] retry: audio.play() ✗ still blocked:", err.name, err.message);
+        });
     };
     document.addEventListener("touchstart", retry, { once: true, capture: true });
     document.addEventListener("click",      retry, { once: true, capture: true });
@@ -229,30 +252,35 @@ export default function InvitationPage() {
 
   // Called synchronously inside the envelope tap — works on all platforms for
   // direct audio URLs (HTML5 <audio> .play() inside gesture is universally ok).
+  // Per spec: do NOT mark audioStartedRef true until play() actually resolves.
   const playAudioNow = useCallback(() => {
     if (!audioRef.current || audioStartedRef.current) return;
-    const promise = audioRef.current.play();
-    audioStartedRef.current = true;
-    if (promise !== undefined) {
-      promise.catch(() => {
-        audioStartedRef.current = false;
+    console.debug("[music] audio.play() calling...");
+    audioRef.current.play()
+      .then(() => {
+        audioStartedRef.current = true;
+        console.debug("[music] audio.play() ✓ started");
+      })
+      .catch((err: Error) => {
+        console.debug("[music] audio.play() ✗ blocked:", err.name, "-", err.message);
         attachInteractionRetry();
       });
-    }
   }, [attachInteractionRetry]);
 
-  // Fallback for openingAnimation="none" (no envelope tap): try autoplay.
+  // Fallback for openingAnimation="none" (no envelope tap): try autoplay on open.
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     if (!audioStartedRef.current && audioRef.current) {
-      const promise = audioRef.current.play();
-      audioStartedRef.current = true;
-      if (promise !== undefined) {
-        promise.catch(() => {
-          audioStartedRef.current = false;
+      console.debug("[music] fallback autoplay (no-envelope mode): calling audio.play()");
+      audioRef.current.play()
+        .then(() => {
+          audioStartedRef.current = true;
+          console.debug("[music] fallback autoplay ✓ started");
+        })
+        .catch((err: Error) => {
+          console.debug("[music] fallback autoplay ✗ blocked:", err.name, "-", err.message);
           attachInteractionRetry();
         });
-      }
     }
     return undefined;
   }, [isOpened, musicUrl, isYouTubeMusic, attachInteractionRetry]);
@@ -284,9 +312,26 @@ export default function InvitationPage() {
   }, []);
 
   const ytPlay = useCallback(() => {
-    if (isIOSSafari.current) return; // iOS: handled by mini-player button
-    if (ytStartedRef.current || !youtubeVideoId) return;
+    if (isIOSSafari.current) {
+      console.debug("[music] ytPlay: iOS detected — skipping iframe autoplay, use mini-player instead");
+      return;
+    }
+    if (ytStartedRef.current) {
+      console.debug("[music] ytPlay: already started, skipping");
+      return;
+    }
+    if (!youtubeVideoId) {
+      console.debug("[music] ytPlay: no youtubeVideoId, nothing to play");
+      return;
+    }
     ytStartedRef.current = true;
+    console.debug("[music] ytPlay: creating YouTube iframe for video", youtubeVideoId);
+
+    // origin param is required for enablejsapi=1 postMessage to work correctly
+    // and tells YouTube which domain is embedding it.
+    const origin = encodeURIComponent(window.location.origin);
+    const src = `https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1&origin=${origin}`;
+    console.debug("[music] ytPlay: iframe src =", src);
 
     // Create the iframe DYNAMICALLY inside the click handler.
     // Browsers guarantee user-activation is present for elements created and
@@ -294,16 +339,19 @@ export default function InvitationPage() {
     // a pre-existing iframe. Appended to document.body so no parent transform
     // or overflow:hidden can interfere with its fixed positioning.
     const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1`;
+    iframe.src = src;
     iframe.allow = "autoplay; encrypted-media";
     iframe.setAttribute("aria-hidden", "true");
     iframe.setAttribute("title", "Background music");
-    // Real dimensions so YouTube's player initialises; positioned far off-screen.
+    // Visible mini-player (bottom-right) so we can verify YouTube loads and plays.
+    // Keep controls=1 during debugging so it's clear whether the player starts.
+    // Once confirmed working, can be moved off-screen with controls=0.
     iframe.style.cssText =
-      "position:fixed;left:-9999px;top:0;width:320px;height:180px;border:none;pointer-events:none;";
+      "position:fixed;bottom:80px;right:8px;width:200px;height:113px;border-radius:8px;border:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);";
     document.body.appendChild(iframe);
     ytIframeRef.current = iframe;
     setIsMuted(false);
+    console.debug("[music] ytPlay: iframe appended to document.body");
   }, [youtubeVideoId]);
 
   const ytPostCommand = useCallback((func: string) => {
@@ -477,6 +525,7 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onTap={() => {
+            console.debug("[music] envelope tap (EnvelopeAnimation) — isYouTubeMusic:", isYouTubeMusic);
             if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
           }}
@@ -492,6 +541,7 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
+            console.debug("[music] envelope open (EnvelopeDoors) — isYouTubeMusic:", isYouTubeMusic);
             if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
             setIsOpened(true);
