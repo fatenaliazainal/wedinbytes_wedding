@@ -185,7 +185,7 @@ export default function InvitationPage() {
   const audioStartedRef = useRef(false);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
-  const musicUrl = (invitationStyle?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
+  const musicUrl = (invitationStyle?.musicUrl as string | undefined) || (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
