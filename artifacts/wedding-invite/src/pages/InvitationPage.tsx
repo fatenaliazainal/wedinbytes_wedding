@@ -256,45 +256,37 @@ export default function InvitationPage() {
   }, [isMuted]);
 
   // ── YouTube IFrame API player ────────────────────────────────────────────
-  // Strategy: autoplay:1 + mute:1 — browser allows muted autoplay freely.
-  // When the user taps the envelope we call unMute() synchronously inside
-  // the gesture handler. This is the only cross-platform reliable approach
-  // (iOS Safari, Android Chrome, desktop) because:
-  //   • Muted autoplay is universally allowed (no gesture needed).
-  //   • unMute() inside a synchronous click/touch handler is allowed.
-  //   • playVideo() after a setTimeout loses gesture context and is blocked.
+  // Strategy: autoplay:0 — player loads silently in the background before
+  // the envelope is opened. playVideo() is called synchronously inside the
+  // envelope tap handler (onTap for EnvelopeAnimation, onOpen for
+  // EnvelopeDoors) so it executes within the user gesture context.
+  // iOS Safari transfers media activation to cross-origin iframes that have
+  // allow="autoplay" when playVideo() is called in the same JS task as the
+  // user gesture — which is guaranteed here because onTap fires synchronously
+  // before any setTimeout.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const hasUserMutedRef = useRef(false);
-  // Set to true when the envelope is tapped. If the player isn't ready yet
-  // at that moment, onReady will unmute as soon as the player initialises.
-  const ytShouldUnmuteRef = useRef(false);
+  // True when the tap happened before the player finished loading.
+  const ytPlayPendingRef = useRef(false);
 
   // Called synchronously inside the envelope tap gesture.
-  // Covers two cases:
-  //   A) autoplay:1+mute:1 succeeded → player is playing muted → unMute() makes it audible.
-  //   B) autoplay didn't start (slow load, browser held it) → playVideo() starts it inside
-  //      the gesture context (works on Chrome desktop & Android; iOS Safari may still block
-  //      cross-frame play, but unMute() on an already-playing player always works there).
-  const ytUnmute = useCallback(() => {
-    ytShouldUnmuteRef.current = true;
+  const ytPlay = useCallback(() => {
+    ytPlayPendingRef.current = true;
     const player = ytPlayerRef.current;
-    if (!player) return; // onReady will pick this up
+    if (!player) return; // onReady will call playVideo() once ready
     player.unMute();
     player.setVolume(100);
-    player.playVideo(); // no-op if already playing; unlocks if not yet started
+    player.playVideo();
     setIsMuted(false);
   }, []);
 
-  // Load the YouTube IFrame API and initialise the player as soon as the
-  // video ID is known — BEFORE the envelope is opened — so the muted audio
-  // stream is buffered and ready to unmute the instant the user taps.
   useEffect(() => {
     if (!youtubeVideoId) return undefined;
 
     const initYTPlayer = () => {
-      if (ytPlayerRef.current) return; // already initialised
+      if (ytPlayerRef.current) return;
       const el = document.getElementById("yt-bg-player");
       if (!el) return;
 
@@ -302,10 +294,7 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay:1 + mute:1 — starts silently immediately (no gesture needed).
-          // We unmute inside the envelope-tap gesture handler via ytUnmute().
-          autoplay: 1,
-          mute: 1,
+          autoplay: 0,
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -316,11 +305,11 @@ export default function InvitationPage() {
         },
         events: {
           onReady: () => {
-            // If the envelope was already tapped while the player was loading,
-            // unmute immediately now that the player is ready.
-            if (ytShouldUnmuteRef.current && !hasUserMutedRef.current) {
+            // Tap happened before player was ready — play now.
+            if (ytPlayPendingRef.current && !hasUserMutedRef.current) {
               ytPlayerRef.current?.unMute();
               ytPlayerRef.current?.setVolume(100);
+              ytPlayerRef.current?.playVideo();
               setIsMuted(false);
             }
           },
@@ -352,7 +341,7 @@ export default function InvitationPage() {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prev = (window as any).onYouTubeIframeAPIReady as (() => void) | undefined;
-      // eslint-disable-next-line @typescript-eslint/no-integral-type];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).onYouTubeIframeAPIReady = () => {
         if (prev) prev();
         initYTPlayer();
@@ -362,7 +351,7 @@ export default function InvitationPage() {
     return () => {
       try { ytPlayerRef.current?.destroy(); } catch { /* ignore */ }
       ytPlayerRef.current = null;
-      ytShouldUnmuteRef.current = false;
+      ytPlayPendingRef.current = false;
       setIsPlaying(false);
     };
   }, [youtubeVideoId]);
@@ -538,10 +527,9 @@ export default function InvitationPage() {
           isOpened={isOpened}
           onTap={() => {
             // Called synchronously inside the click handler — gesture context intact.
-            // ytUnmute() unmutes the already-playing (muted) YouTube player.
-            // playAudioNow() calls audio.play() for non-YouTube sources.
-            // Both must happen here, not inside a setTimeout.
-            if (isYouTubeMusic) { ytUnmute(); }
+            // playVideo() runs within the same JS task as the user gesture so iOS Safari
+            // transfers media activation to the YouTube iframe (which has allow="autoplay").
+            if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
           }}
           onOpen={() => { setIsOpened(true); }}
@@ -556,7 +544,7 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
-            if (isYouTubeMusic) { ytUnmute(); }
+            if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
             setIsOpened(true);
           }}
