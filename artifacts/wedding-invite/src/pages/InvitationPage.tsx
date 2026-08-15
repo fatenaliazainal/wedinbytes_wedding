@@ -515,11 +515,14 @@ export default function InvitationPage() {
       {openingAnimation === "envelope" ? (
         <EnvelopeAnimation
           isOpened={isOpened}
-          onOpen={() => {
+          onTap={() => {
+            // Called synchronously inside the click handler — gesture context intact.
+            // This is required for iOS Safari and Chrome: playVideo() / play() must
+            // be triggered directly from a user gesture, not from a setTimeout callback.
             if (isYouTubeMusic) { ytPlayerRef.current?.playVideo(); }
             else { playAudioNow(); }
-            setIsOpened(true);
           }}
+          onOpen={() => { setIsOpened(true); }}
           initialsImageUrl={initialsImageUrl || undefined}
           initialsImageScale={initialsImageScale}
           names={envelopeInitials}

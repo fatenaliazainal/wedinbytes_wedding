@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 interface EnvelopeAnimationProps {
   isOpened: boolean;
   onOpen: () => void;
+  /** Called synchronously on tap, inside the gesture context — use for audio/video play. */
+  onTap?: () => void;
   names?: string;
   initialsSize?: string;
   initialsImageUrl?: string;
@@ -16,6 +18,7 @@ interface EnvelopeAnimationProps {
 export function EnvelopeAnimation({
   isOpened,
   onOpen,
+  onTap,
   names = "",
   initialsSize,
   initialsImageUrl,
@@ -24,9 +27,12 @@ export function EnvelopeAnimation({
 }: EnvelopeAnimationProps) {
   const [phase, setPhase] = useState<"idle" | "flap" | "done">("idle");
 
-  // unchanged — same timing as before
   const handleOpen = () => {
     if (phase !== "idle") return;
+    // Fire onTap synchronously here — still within the user gesture context.
+    // This is the only safe place to call audio/video play on iOS Safari and
+    // Chrome, because onOpen() is delayed by 1400 ms inside setTimeout below.
+    onTap?.();
     setPhase("flap");
     setTimeout(() => {
       setPhase("done");
