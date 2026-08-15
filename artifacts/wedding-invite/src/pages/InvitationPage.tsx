@@ -266,6 +266,8 @@ export default function InvitationPage() {
   // before any setTimeout.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
+  // true only after onReady fires — methods like unMute/playVideo are safe to call
+  const ytPlayerReadyRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const hasUserMutedRef = useRef(false);
   // True when the tap happened before the player finished loading.
@@ -275,7 +277,9 @@ export default function InvitationPage() {
   const ytPlay = useCallback(() => {
     ytPlayPendingRef.current = true;
     const player = ytPlayerRef.current;
-    if (!player) return; // onReady will call playVideo() once ready
+    // Guard: player object exists but onReady hasn't fired yet — methods aren't
+    // available. ytPlayPendingRef ensures onReady will call playVideo() once ready.
+    if (!player || !ytPlayerReadyRef.current) return;
     player.unMute();
     player.setVolume(100);
     player.playVideo();
@@ -305,6 +309,8 @@ export default function InvitationPage() {
         },
         events: {
           onReady: () => {
+            // Mark player as fully initialised — methods are now safe to call.
+            ytPlayerReadyRef.current = true;
             // Tap happened before player was ready — play now.
             if (ytPlayPendingRef.current && !hasUserMutedRef.current) {
               ytPlayerRef.current?.unMute();
