@@ -256,14 +256,12 @@ export default function InvitationPage() {
   }, [isMuted]);
 
   // ── YouTube IFrame API player ────────────────────────────────────────────
-  // Strategy: autoplay:0 — player loads silently in the background before
-  // the envelope is opened. playVideo() is called synchronously inside the
-  // envelope tap handler (onTap for EnvelopeAnimation, onOpen for
-  // EnvelopeDoors) so it executes within the user gesture context.
-  // iOS Safari transfers media activation to cross-origin iframes that have
-  // allow="autoplay" when playVideo() is called in the same JS task as the
-  // user gesture — which is guaranteed here because onTap fires synchronously
-  // before any setTimeout.
+  // Strategy: autoplay:1 + mute:1 — player starts playing MUTED as soon as
+  // it loads (iOS Safari allows muted autoplay, same as <video muted autoplay>).
+  // When the user taps the envelope, we call unMute() to make audio audible.
+  // Unmuting a playing-but-muted player does NOT require user gesture context —
+  // only starting audio from silence does. This bypasses iOS activation-transfer
+  // limitations entirely and works regardless of iframe cross-origin restrictions.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ytPlayerRef = useRef<any>(null);
   // true only after onReady fires — methods like unMute/playVideo are safe to call
@@ -273,15 +271,17 @@ export default function InvitationPage() {
   // True when the tap happened before the player finished loading.
   const ytPlayPendingRef = useRef(false);
 
-  // Called synchronously inside the envelope tap gesture.
+  // Called when the envelope is opened — unmutes the already-playing muted player.
+  // Also calls playVideo() as fallback in case muted autoplay was blocked.
   const ytPlay = useCallback(() => {
     ytPlayPendingRef.current = true;
     const player = ytPlayerRef.current;
     // Guard: player object exists but onReady hasn't fired yet — methods aren't
-    // available. ytPlayPendingRef ensures onReady will call playVideo() once ready.
+    // available. ytPlayPendingRef ensures onReady will unmute once ready.
     if (!player || !ytPlayerReadyRef.current) return;
     player.unMute();
     player.setVolume(100);
+    // playVideo() is a no-op if already playing; needed if muted autoplay was blocked.
     player.playVideo();
     setIsMuted(false);
   }, []);
@@ -298,7 +298,8 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          autoplay: 0,
+          autoplay: 1,  // start playing immediately — muted (see mute:1 below)
+          mute: 1,      // muted autoplay is allowed on iOS Safari
           loop: 1,
           playlist: youtubeVideoId,
           playsinline: 1,
@@ -311,7 +312,7 @@ export default function InvitationPage() {
           onReady: () => {
             // Mark player as fully initialised — methods are now safe to call.
             ytPlayerReadyRef.current = true;
-            // Tap happened before player was ready — play now.
+            // Envelope was already tapped before player was ready — unmute now.
             if (ytPlayPendingRef.current && !hasUserMutedRef.current) {
               ytPlayerRef.current?.unMute();
               ytPlayerRef.current?.setVolume(100);
