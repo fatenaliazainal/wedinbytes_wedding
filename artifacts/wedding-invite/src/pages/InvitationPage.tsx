@@ -581,13 +581,15 @@ export default function InvitationPage() {
           }
         />
 
-        {/* YouTube IFrame API player mount point — rendered immediately so the
-            player is fully loaded before the envelope opens. playVideo() is
-            called synchronously inside the tap handler (gesture context). */}
+        {/* YouTube IFrame API player mount point — must be off-screen but
+            real-sized (≥200×200). YouTube detects 1×1 / opacity-0 players
+            and blocks playVideo() even inside a genuine user gesture.
+            Using a real size placed far off-screen passes YouTube's
+            visibility checks while remaining invisible to the user. */}
         {youtubeVideoId && (
           <div
             id="yt-bg-player"
-            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none overflow-hidden"
+            style={{ position: "fixed", left: "-9999px", top: "0", width: "320px", height: "180px", pointerEvents: "none" }}
             aria-hidden="true"
           />
         )}
