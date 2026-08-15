@@ -1,0 +1,281 @@
+IMPORTANT: Extend the YouTube Music URL validation system to ALL editors that allow users to enter or change invitation music.
+
+There are THREE editor contexts that can manage Music URL:
+
+1. Admin Editor
+2. Buyer / Customer Editor
+3. Business Editor
+
+The same validation rules must apply consistently to ALL THREE.
+
+==================================================
+1. FIND ALL MUSIC URL EDITORS
+==================================================
+
+Search the entire codebase for every place where Music URL can be:
+
+- entered
+- edited
+- pasted
+- updated
+- saved
+- submitted
+- changed
+
+Search for things such as:
+
+musicUrl
+Music URL
+youtube
+YouTube
+extractYouTubeId
+invitationStyle.musicUrl
+inv.musicUrl
+templateDesign.musicUrl
+design.musicUrl
+
+Do NOT assume there is only one editor.
+
+Identify all Admin, Buyer/Customer, and Business editor implementations.
+
+==================================================
+2. CREATE ONE SHARED VALIDATION LOGIC
+==================================================
+
+Do NOT duplicate the YouTube validation logic three times.
+
+Create or reuse ONE shared validation function/hook/service.
+
+For example:
+
+validateMusicUrl()
+or
+useMusicUrlValidation()
+
+The exact name is up to the existing project architecture.
+
+All three editors must call the same validation logic.
+
+The result should be consistent across:
+
+Admin Editor
+Buyer Editor
+Business Editor
+
+==================================================
+3. SAME USER EXPERIENCE EVERYWHERE
+==================================================
+
+When a user enters a YouTube URL:
+
+Show:
+
+"Checking this video..."
+
+If valid and embeddable:
+
+"✓ This video is ready to use."
+
+If embedding is disabled:
+
+"⚠️ This YouTube video can't be played on the invitation website. Please choose another video."
+
+If unavailable:
+
+"⚠️ This YouTube video is unavailable. Please choose another video."
+
+If invalid:
+
+"⚠️ Please enter a valid YouTube video link."
+
+Do NOT expose:
+
+- error 150
+- error 101
+- iframe
+- YouTube API
+- CSP
+- autoplay policy
+
+to the customer/buyer/business user.
+
+==================================================
+4. SAVE PROTECTION IN ALL EDITORS
+==================================================
+
+Admin Editor:
+Invalid YouTube URL → cannot save.
+
+Buyer Editor:
+Invalid YouTube URL → cannot save.
+
+Business Editor:
+Invalid YouTube URL → cannot save.
+
+While validation is still running:
+→ Save/Continue must be disabled.
+
+If validation succeeds:
+→ Save/Continue enabled.
+
+If Music URL is empty:
+→ allow save because music is optional.
+
+==================================================
+5. DIRECT MP3 URL
+==================================================
+
+Do NOT run YouTube validation for direct MP3/audio URLs.
+
+Keep existing MP3 behaviour.
+
+The validation system should distinguish:
+
+YouTube URL
+→ YouTube validation
+
+Direct audio URL
+→ existing MP3/audio handling
+
+Empty URL
+→ allowed
+
+Invalid URL
+→ show appropriate validation message
+
+==================================================
+6. SAME BACKEND VALIDATION
+==================================================
+
+If all three editors save to the same backend/API/database field:
+
+Make sure the backend does not allow an invalid/untrusted Music URL to bypass the frontend validation.
+
+Do not rely ONLY on frontend validation.
+
+However, do not break existing saved invitations.
+
+Existing valid music URLs must continue working.
+
+==================================================
+7. IMPORTANT: EXISTING MUSIC URL RESOLUTION
+==================================================
+
+Do NOT change the existing invitation music resolution order:
+
+invitationStyle?.musicUrl
+|| inv?.musicUrl
+|| templateDesign?.musicUrl
+|| design?.musicUrl
+|| ""
+
+Do not break fallback behaviour.
+
+Validation applies when a user ENTERS or CHANGES the Music URL.
+
+==================================================
+8. SHARED COMPONENT IF POSSIBLE
+==================================================
+
+If the project architecture allows it, create a reusable component such as:
+
+MusicUrlInput
+
+or
+
+YouTubeMusicUrlField
+
+containing:
+
+- input
+- validation state
+- loading state
+- success state
+- error state
+
+Then use the same component in:
+
+Admin Editor
+Buyer Editor
+Business Editor
+
+If replacing the existing input component would cause unnecessary UI changes, instead share only the validation hook/function while preserving each editor's existing UI.
+
+Do not redesign the editors.
+
+==================================================
+9. DO NOT DUPLICATE YOUTUBE PLAYERS
+==================================================
+
+The validation player is temporary.
+
+Each editor must clean it up after validation.
+
+Do not leave hidden YouTube players running.
+
+Do not create multiple players for the same validation.
+
+Cancel stale validation when the user changes the URL.
+
+==================================================
+10. TEST ALL THREE EDITORS
+==================================================
+
+Test the following in EVERY editor:
+
+ADMIN:
+- valid YouTube video
+- embedding-disabled YouTube video
+- unavailable/private video
+- invalid YouTube URL
+- empty URL
+- MP3 URL
+
+BUYER:
+- valid YouTube video
+- embedding-disabled YouTube video
+- unavailable/private video
+- invalid YouTube URL
+- empty URL
+- MP3 URL
+
+BUSINESS:
+- valid YouTube video
+- embedding-disabled YouTube video
+- unavailable/private video
+- invalid YouTube URL
+- empty URL
+- MP3 URL
+
+==================================================
+11. IMPORTANT REGRESSION TEST
+==================================================
+
+Make sure:
+
+Admin saves music → invitation plays correctly.
+
+Buyer changes music → invitation plays correctly.
+
+Business changes music → invitation plays correctly.
+
+Do not break existing invitations that already have music.
+
+==================================================
+12. FINAL REPORT
+==================================================
+
+After implementation, report:
+
+- All editor locations found
+- Which shared validation function/component was created
+- Admin Editor status
+- Buyer Editor status
+- Business Editor status
+- Backend validation status
+- MP3 behaviour
+- YouTube behaviour
+- Save protection status
+- TypeScript/build status
+
+Do not modify unrelated UI or functionality.

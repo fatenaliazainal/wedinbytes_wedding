@@ -25,6 +25,7 @@ import { HexColorInput } from "@/components/HexColorInput";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { resolveImageUrl } from "@/lib/r2-url";
 import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
+import { MusicUrlInput } from "@/components/MusicUrlInput";
 
 type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users" | "website";
 
@@ -536,6 +537,7 @@ function DesignForm({
 }) {
   const [form, setForm] = useState<DesignFormData>({ ...initial });
   const [saving, setSaving] = useState(false);
+  const [musicUrlBlocking, setMusicUrlBlocking] = useState(false);
   const [activating, setActivating] = useState(false);
   const qc = useQueryClient();
   const [rawCards, setRawCards] = useState<RawCard[]>([]);
@@ -1264,7 +1266,13 @@ function DesignForm({
             <p className="text-xs font-semibold text-foreground">Background Music</p>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Music URL</label>
-              <input className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="/music/spb.mp3" value={form.musicUrl} onChange={(e) => set("musicUrl")(e.target.value)} />
+              <MusicUrlInput
+                value={form.musicUrl}
+                onChange={set("musicUrl")}
+                onValidationChange={setMusicUrlBlocking}
+                inputClassName="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="/music/spb.mp3 or https://youtu.be/..."
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -1290,7 +1298,7 @@ function DesignForm({
           </button>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || musicUrlBlocking}
             className="flex-1 rounded-full bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}

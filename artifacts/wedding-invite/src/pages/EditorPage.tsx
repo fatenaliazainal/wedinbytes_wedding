@@ -12,6 +12,7 @@ import { EnvelopeDoors } from "@/components/EnvelopeDoors";
 import { EnvelopeAnimation } from "@/components/EnvelopeAnimation";
 import { WeddingCard } from "@/components/WeddingCard";
 import { HexColorInput } from "@/components/HexColorInput";
+import { MusicUrlInput } from "@/components/MusicUrlInput";
 import { BottomNav } from "@/components/BottomNav";
 import { DetailPanel, type TabKey } from "@/components/DetailPanel";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -470,6 +471,7 @@ export default function EditorPage({
       : requestedTab;
   });
   const [saving, setSaving] = useState(false);
+  const [musicUrlBlocking, setMusicUrlBlocking] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [previewOpened, setPreviewOpened] = useState(true);
   const [previewWasOpened, setPreviewWasOpened] = useState(false);
@@ -4058,12 +4060,11 @@ export default function EditorPage({
                   </>
                 )}
                 <Field label="Music Link (YouTube)">
-                  <input
-                    className={inputCls}
+                  <MusicUrlInput
                     value={design.musicUrl}
-                    onChange={(e) =>
-                      setDesign((p) => ({ ...p, musicUrl: e.target.value }))
-                    }
+                    onChange={(v) => setDesign((p) => ({ ...p, musicUrl: v }))}
+                    onValidationChange={setMusicUrlBlocking}
+                    inputClassName={inputCls}
                     placeholder={t("placeholders.musicUrl")}
                   />
                 </Field>
@@ -4103,7 +4104,7 @@ export default function EditorPage({
             <div className="flex gap-3">
               <button
                 onClick={handleSave}
-                disabled={saving || customerEditLocked || coverNamesEmpty}
+                disabled={saving || customerEditLocked || coverNamesEmpty || musicUrlBlocking}
                 className="text-white px-6 py-2.5 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#3d5a3e" }}
               >

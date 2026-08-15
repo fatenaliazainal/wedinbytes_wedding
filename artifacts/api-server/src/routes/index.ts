@@ -15,6 +15,7 @@ import waxSealsRouter from "./wax-seals";
 import giftRegistryRouter from "./gift-registry";
 import siteSettingsRouter from "./site-settings";
 import ogImageRouter from "./og-image";
+import musicRouter from "./music";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(waxSealsRouter);
 router.use(giftRegistryRouter);
 router.use(siteSettingsRouter);
 router.use(ogImageRouter);
+router.use(musicRouter);
 
 export default router;
