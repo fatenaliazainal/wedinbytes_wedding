@@ -28,7 +28,7 @@ function fontFamilyStack(fontName?: string | null): string {
   if (normalized.includes(",")) return normalized;
   return `'${normalized}', 'Dancing Script', cursive`;
 }
-import { Volume2, VolumeX, LockKeyhole } from "lucide-react";
+import { Volume2, VolumeX, LockKeyhole, Music } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
 import { extractYouTubeId } from "@/lib/youtube";
@@ -185,6 +185,19 @@ export default function InvitationPage() {
   const audioStartedRef = useRef(false);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
+  // ── iOS Safari detection ─────────────────────────────────────────────────
+  // iOS Safari cannot propagate user-activation from a parent frame click into
+  // an iframe's audio context — `iframe.src = url` inside a click handler does
+  // NOT grant the iframe autoplay permission on iOS. We detect iOS once at mount
+  // and use a different UX: a visible mini YouTube player the user taps directly.
+  const isIOSSafari = useRef(
+    typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+  );
+
+  // Controls visibility of the iOS mini YouTube player overlay.
+  const [iosPlayerVisible, setIosPlayerVisible] = useState(false);
+
   const musicUrl = (invitationStyle?.musicUrl as string | undefined) || (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
@@ -271,9 +284,12 @@ export default function InvitationPage() {
     : "";
 
   // Called synchronously inside the envelope tap gesture (onTap / onOpen).
-  // Sets the iframe src — the browser treats this as a user-initiated navigation
-  // and grants the iframe autoplay permission with sound on iOS Safari.
+  // On iOS Safari, user activation from the parent frame does NOT transfer to an
+  // iframe's audio context — skipped; iOS uses the visible mini-player button instead.
+  // On desktop / Android, sets iframe.src (browser-level navigation inside gesture)
+  // which grants the iframe autoplay with sound.
   const ytPlay = useCallback(() => {
+    if (isIOSSafari.current) return; // iOS: mini-player button handles it
     if (!ytIframeRef.current || ytStartedRef.current || !ytEmbedSrc) return;
     ytStartedRef.current = true;
     ytIframeRef.current.src = ytEmbedSrc;
@@ -521,16 +537,25 @@ export default function InvitationPage() {
           }
         />
 
-        {/* YouTube iframe — no src until the user taps the envelope.
-            Setting src from within the tap gesture makes iOS Safari treat it
-            as user-initiated navigation and grants autoplay with sound. */}
-        {youtubeVideoId && (
+        {/* YouTube iframe — desktop/Android only.
+            Positioned far off-screen but with real dimensions (320×180) so
+            YouTube's player can fully initialize. 1×1 px was too small and
+            caused silent failure even with autoplay=1 in the URL. */}
+        {youtubeVideoId && !isIOSSafari.current && (
           <iframe
             ref={ytIframeRef}
             title="Background music"
             allow="autoplay; encrypted-media"
-            className="absolute w-px h-px opacity-0 overflow-hidden pointer-events-none"
             aria-hidden="true"
+            style={{
+              position: "fixed",
+              left: "-9999px",
+              top: "0",
+              width: "320px",
+              height: "180px",
+              border: "none",
+              pointerEvents: "none",
+            }}
           />
         )}
 
@@ -595,9 +620,16 @@ export default function InvitationPage() {
         </div>
       )}
 
-      {/* Mute button — fixed top-left, only visible when card is open */}
+      {/* Music controls — fixed top-left, only visible when card is open.
+          iOS Safari cannot autoplay YouTube audio via iframe src-swap (user
+          activation never transfers cross-frame on iOS). On iOS we show a 🎵
+          button instead; tapping it reveals a small visible YouTube player so
+          the user can tap YouTube's own play button directly (which IS a direct
+          gesture on the media element — the only thing iOS Safari permits).
+          On desktop/Android the standard mute toggle is shown because music is
+          already playing from the iframe src-swap in the envelope tap handler. */}
       <AnimatePresence>
-        {isOpened && (
+        {isOpened && musicUrl && (
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -605,14 +637,63 @@ export default function InvitationPage() {
             transition={{ delay: 1.2, duration: 0.3 }}
             className="fixed top-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto"
           >
-            <button
-              onClick={toggleMute}
-              type="button"
-              title={isMuted ? "Unmute" : "Mute music"}
-              className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
-            >
-              {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
-            </button>
+            {isIOSSafari.current && isYouTubeMusic ? (
+              /* iOS + YouTube: button that reveals the mini player */
+              <button
+                onClick={() => setIosPlayerVisible((v) => !v)}
+                type="button"
+                title={iosPlayerVisible ? "Hide music player" : "Play music"}
+                className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
+              >
+                <Music size={15} strokeWidth={2} />
+              </button>
+            ) : (
+              /* Desktop / Android / HTML5 audio: standard mute toggle */
+              <button
+                onClick={toggleMute}
+                type="button"
+                title={isMuted ? "Unmute" : "Mute music"}
+                className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
+              >
+                {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* iOS mini YouTube player — appears when user taps the 🎵 button.
+          The iframe is visible so the user taps YouTube's native play button
+          directly, which is the only way to start audio on iOS Safari. */}
+      <AnimatePresence>
+        {isIOSSafari.current && isYouTubeMusic && iosPlayerVisible && youtubeVideoId && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-20 left-4 z-50 rounded-xl overflow-hidden shadow-2xl"
+            style={{ width: 200, background: "#000" }}
+          >
+            <div className="relative">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=0&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0`}
+                width="200"
+                height="113"
+                allow="autoplay; encrypted-media"
+                title="Music player"
+                style={{ display: "block", border: "none" }}
+              />
+              <button
+                onClick={() => setIosPlayerVisible(false)}
+                type="button"
+                aria-label="Close music player"
+                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white flex items-center justify-center text-xs leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-white/50 text-[10px] text-center py-1 px-2">Tap ▶ to play music</p>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,58 +1,59 @@
 ---
-name: YouTube music iOS approach
-description: What works (and doesn't) for playing YouTube audio on iOS Safari in a cross-origin iframe invitation page
+name: YouTube music — real root causes and two-path fix
+description: Why YouTube audio fails silently on all browsers, and the correct desktop vs iOS approach
 ---
 
-# YouTube Music on iOS Safari — Invitation Page
+# YouTube Music — Root Causes and Fix
 
-## The Core Problem
-iOS Safari requires **user gesture** to start audio. For cross-origin YouTube iframes using the YT.Player JS API, `playVideo()` is sent via `postMessage`, which is **async** — by the time YouTube's JS processes it, the gesture context is gone. All `player.*()` methods (unMute, playVideo, setVolume) go through postMessage and face this.
+## Root Cause 1: Helmet CSP blocked the iframe entirely in production
 
-## Approaches that did NOT work reliably
+`artifacts/api-server/src/app.ts` had no `frameSrc` directive in its production CSP. 
+`defaultSrc: ["'self'"]` was the fallback — YouTube iframes were **blocked entirely** before loading.
 
-### 1. autoplay:0 + playVideo() in gesture handler
-Calling `ytPlayerRef.current.playVideo()` inside onClick — the call is in gesture context on our page but postMessage delivery to YouTube's iframe is async, losing gesture context.
+**Fix:** Added `frameSrc: ["https://www.youtube.com", "https://www.youtube-nocookie.com"]` to the production CSP directives.
 
-### 2. autoplay:1 + mute:1 → unMute() on tap
-Player starts muted. On tap call `unMute()` via postMessage. Also didn't work — postMessage still async.
+## Root Cause 2: 1×1px iframe prevents YouTube player from initializing
 
-### 3. YT.Player constructor race condition crash
-`new YT.Player()` returns an object immediately but `.unMute()`, `.playVideo()` etc. only exist after `onReady` fires. Calling them before `onReady` → `TypeError: player.unMute is not a function`. Fixed with `ytPlayerReadyRef`.
+The hidden iframe used `className="absolute w-px h-px opacity-0 overflow-hidden pointer-events-none"`.
+YouTube's embed player fails to initialize at 1×1px — autoplay=1 silently does nothing.
 
-## Approach that should work: direct iframe.src swap
+**Fix:** Off-screen iframe with real dimensions:
+```
+position: fixed; left: -9999px; top: 0; width: 320px; height: 180px;
+```
 
-**Why:** Setting `iframe.src` from within a click handler is a **browser-level navigation** — iOS Safari transfers user activation to the navigated frame because it's treated as user-initiated navigation, not an async postMessage. The YouTube embed URL with `autoplay=1` receives this activation and can play with sound.
+## Root Cause 3: iOS Safari never transfers user activation to iframes
 
-**Implementation:**
+On iOS Safari, setting `iframe.src = url` inside a click handler does **not** grant the iframe
+autoplay permission with audio. User activation from the parent frame is never propagated
+to the child iframe's audio context. This is a hard iOS OS restriction with no workaround.
+
+**Fix:** Two-path approach based on iOS detection:
+
+### Desktop / Android (non-iOS)
+- Off-screen properly-sized iframe (320×180, `left: -9999px`)
+- `ytPlay()` sets `iframe.src = ytEmbedSrc` on envelope tap — browser-level navigation in gesture context grants autoplay
+- Mute/unmute via `postMessage({ event: "command", func: "mute"/"unMute" })` with `'*'` targetOrigin
+
+### iOS Safari
+- Skip iframe src-swap on envelope tap entirely
+- After envelope opens: show a 🎵 button (top-left, same area as mute button)
+- Tapping 🎵 reveals a visible 200×113 YouTube mini-player with `controls=1`
+- User taps YouTube's own ▶ button directly — this IS a direct gesture on the media element, which iOS Safari permits
+
+## iOS detection
 ```tsx
-const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
-const ytStartedRef = useRef(false);
-
-// On tap gesture:
-const ytPlay = () => {
-  if (!ytIframeRef.current || ytStartedRef.current || !ytEmbedSrc) return;
-  ytStartedRef.current = true;
-  ytIframeRef.current.src = ytEmbedSrc; // browser navigation in gesture context
-};
-
-// Mute toggle (after player is running):
-iframe.contentWindow?.postMessage(
-  JSON.stringify({ event: "command", func: "mute", args: [] }),
-  "*"  // use '*' not 'https://www.youtube.com' — avoids origin mismatch error
+const isIOSSafari = useRef(
+  typeof navigator !== "undefined" &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent)
 );
 ```
 
-**Embed URL params:**
-`?autoplay=1&loop=1&playlist=VIDEO_ID&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1`
-
-**Key notes:**
-- No `youtube.com/iframe_api` script needed — pure iframe src manipulation
-- `enablejsapi=1` in URL allows postMessage commands for mute/unmute after load
-- Use `'*'` as postMessage targetOrigin (avoids the origin mismatch error seen on HTTP localhost dev)
-- The iframe starts with NO src — loaded only on tap to avoid any pre-tap network request
-- 1-2s delay for YouTube to load is acceptable; masked by the envelope open animation (0.9-1.4s)
-
-**Why '*' targetOrigin is safe:** We're only sending harmless playback commands (mute/unmute), not sensitive data.
-
 ## Dev environment note
-Dev runs on HTTP localhost — YouTube iframe postMessage gives a "target origin mismatch" warning. This is expected and harmless on dev. Only test music on the **HTTPS production URL**.
+Dev runs on HTTP localhost — YouTube iframe postMessage gives origin mismatch warnings. Expected and harmless.
+Only test music autoplay behavior on the HTTPS production URL.
+
+## Embed URL params (desktop hidden player)
+`autoplay=1&loop=1&playlist=VIDEO_ID&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1`
+
+**Why `'*'` targetOrigin for postMessage:** Avoids origin mismatch error; safe because we only send harmless playback commands.
