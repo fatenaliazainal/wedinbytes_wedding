@@ -107,7 +107,21 @@ router.get("/r2", r2RateLimit, async (req, res) => {
       res.setHeader("Content-Type", cached.contentType);
       res.setHeader("ETag", cached.etag);
       res.setHeader("Cache-Control", "public, max-age=86400");
-      res.send(cached.buffer);
+      res.setHeader("Accept-Ranges", "bytes");
+      const rangeHdr = req.headers.range;
+      if (rangeHdr && cached.buffer.length > 0) {
+        const [s, e] = rangeHdr.replace(/bytes=/, "").split("-");
+        const total = cached.buffer.length;
+        const start = parseInt(s, 10) || 0;
+        const end   = e ? Math.min(parseInt(e, 10), total - 1) : total - 1;
+        const chunk = cached.buffer.slice(start, end + 1);
+        res.setHeader("Content-Range", `bytes ${start}-${end}/${total}`);
+        res.setHeader("Content-Length", chunk.length);
+        res.status(206).send(chunk);
+      } else {
+        res.setHeader("Content-Length", cached.buffer.length);
+        res.send(cached.buffer);
+      }
       return;
     }
 
@@ -123,7 +137,24 @@ router.get("/r2", r2RateLimit, async (req, res) => {
     res.setHeader("Content-Type", image.contentType);
     res.setHeader("ETag", newEtag);
     res.setHeader("Cache-Control", "public, max-age=86400");
-    res.send(image.buffer);
+    res.setHeader("Accept-Ranges", "bytes");
+
+    // iOS Safari requires Range / partial-content (HTTP 206) to stream audio.
+    // Honour the Range header when present so mobile browsers can play audio files.
+    const rangeHeader = req.headers.range;
+    if (rangeHeader && image.buffer.length > 0) {
+      const [startStr, endStr] = rangeHeader.replace(/bytes=/, "").split("-");
+      const total  = image.buffer.length;
+      const start  = parseInt(startStr, 10) || 0;
+      const end    = endStr ? Math.min(parseInt(endStr, 10), total - 1) : total - 1;
+      const chunk  = image.buffer.slice(start, end + 1);
+      res.setHeader("Content-Range", `bytes ${start}-${end}/${total}`);
+      res.setHeader("Content-Length", chunk.length);
+      res.status(206).send(chunk);
+    } else {
+      res.setHeader("Content-Length", image.buffer.length);
+      res.send(image.buffer);
+    }
   } catch (err) {
     req.log.error({ err, key }, "Failed to serve R2 image");
     res.status(404).json({ error: "Image not found" });

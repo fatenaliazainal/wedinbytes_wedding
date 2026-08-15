@@ -185,8 +185,11 @@ export default function InvitationPage() {
   const audioStartedRef = useRef(false);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
 
-  const musicUrl = (invitationStyle?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
-  const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
+  const rawMusicUrl = (invitationStyle?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
+  // Resolve R2 keys through the same-origin proxy so iOS Safari can load the audio.
+  // Absolute URLs (YouTube, external CDN) are returned unchanged by resolveImageUrl.
+  const musicUrl = resolveImageUrl(rawMusicUrl) || rawMusicUrl;
+  const youtubeVideoId = rawMusicUrl ? extractYouTubeId(rawMusicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
   // Pre-create + preload HTML5 audio so iOS Safari allows .play() inside a gesture.
