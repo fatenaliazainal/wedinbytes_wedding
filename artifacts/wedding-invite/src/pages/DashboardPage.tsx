@@ -273,13 +273,12 @@ const isExpired = (card: Invitation) => {
   return addThreeMonths(card.eventDate) < new Date();
 };
 
-function ThumbnailView({ card, design, size = 100 }: { card: Invitation, design: Design | null, size?: number, width?: number, height?: number, scale?: number }) {
+function ThumbnailView({ card, design, width = 100, height = 180 }: { card: Invitation, design: Design | null, size?: number, width?: number, height?: number, scale?: number }) {
   const imgUrl = resolveImageUrl(design?.cardImageUrl || design?.envelopeImageUrl || "");
-  const logoSize = Math.round(size * 0.52);
   return (
     <div
       className="bg-slate-100 shadow-sm shrink-0 relative overflow-hidden"
-      style={{ width: size, height: size, borderRadius: 10, border: "3px solid #0f172a", flexShrink: 0 }}
+      style={{ width, height, borderRadius: 12, border: "4px solid #0f172a" }}
     >
       {imgUrl ? (
         <img
@@ -290,35 +289,9 @@ function ThumbnailView({ card, design, size = 100 }: { card: Invitation, design:
         />
       ) : (
         <div className="w-full h-full bg-slate-200 flex items-center justify-center">
-          <span className="text-slate-400" style={{ fontSize: Math.max(8, size * 0.1) }}>No design</span>
+          <span className="text-slate-400" style={{ fontSize: Math.max(8, width * 0.1) }}>No design</span>
         </div>
       )}
-      {/* Centered logo watermark */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      >
-        <div
-          style={{
-            width: logoSize,
-            height: logoSize,
-            borderRadius: logoSize * 0.18,
-            background: "rgba(255,255,255,0.82)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            padding: logoSize * 0.06,
-          }}
-        >
-          <img
-            src={logoWedinstudio}
-            alt="Wedinstudio"
-            draggable={false}
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-          />
-        </div>
-      </div>
       {!card.isPurchased && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* diagonal ribbon across the full card */}
@@ -336,7 +309,7 @@ function ThumbnailView({ card, design, size = 100 }: { card: Invitation, design:
           >
             <span
               className="text-white font-black tracking-[0.35em] select-none uppercase"
-              style={{ fontSize: Math.max(7, size * 0.075) }}
+              style={{ fontSize: Math.max(7, width * 0.075) }}
             >
               PREVIEW
             </span>
@@ -1019,7 +992,7 @@ export default function DashboardPage() {
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                           className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4 sm:gap-5 group"
                         >
-                           <ThumbnailView card={card} design={cardDesign} size={100} />
+                           <ThumbnailView card={card} design={cardDesign} width={100} height={180} />
 
                            <div className="flex-1 min-w-0 flex flex-col">
                              <div className="flex justify-between items-start gap-2 mb-2">
@@ -1138,7 +1111,7 @@ export default function DashboardPage() {
                              <tr key={card.token} className="hover:bg-slate-50/80 transition-colors group">
                                <td className="px-4 py-4">
                                   <div className="flex items-center gap-4">
-                                     <ThumbnailView card={card} design={cardDesign} size={56} />
+                                     <ThumbnailView card={card} design={cardDesign} width={48} height={85} />
                                      <div className="min-w-0 max-w-[250px]">
                                         <h3 className="text-sm font-bold text-slate-900 truncate">{card.groomName} & {card.brideName}</h3>
                                         <div className="flex flex-wrap gap-1.5 mt-1.5">
