@@ -287,9 +287,11 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // Start muted so iOS Safari allows playVideo() even outside a gesture
-          // (muted autoplay is permitted). We unmute once playback confirms started.
-          autoplay: 0,
+          // autoplay=1 + mute=1: browsers always allow muted autoplay.
+          // Video starts playing silently the moment the player loads.
+          // On envelope open we only call unMute() — unmuting an already-playing
+          // video requires NO user gesture on any browser including iOS Safari.
+          autoplay: 1,
           mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
@@ -303,12 +305,12 @@ export default function InvitationPage() {
           onReady: () => {
             if (!mounted) return;
             ytPlayerReadyRef.current = true;
-            // User tapped before the player finished loading — start playback now.
-            // Muted play is always allowed (no gesture required), so this works on
-            // iOS Safari. onStateChange will unmute once PLAYING fires.
-            if (pendingPlayRef.current) {
+            // If the user already opened the envelope before the player finished
+            // loading, unmute now. No gesture required — unmuting is always allowed.
+            if (pendingPlayRef.current && !hasUserMutedRef.current) {
               pendingPlayRef.current = false;
-              try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+              try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+              setIsMuted(false);
             }
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -318,13 +320,6 @@ export default function InvitationPage() {
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
-              // Unmute now that playback has started — browsers allow unmuting a
-              // video that is already playing without a new gesture.
-              if (!hasUserMutedRef.current) {
-                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                setIsMuted(false);
-              }
-              // Music started — remove any pending first-interaction fallback.
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
                 document.removeEventListener("touchstart",  firstInteractionRef.current);
@@ -549,10 +544,15 @@ export default function InvitationPage() {
           onOpen={() => {
             if (isYouTubeMusic) {
               if (ytPlayerReadyRef.current) {
-                // Player already ready — unmute (started muted) then play within gesture.
-                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
-              } else { pendingPlayRef.current = true; }
+                // Video already playing muted — just unmute. No gesture required.
+                if (!hasUserMutedRef.current) {
+                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                  setIsMuted(false);
+                }
+              } else {
+                // Player still loading — flag so onReady unmutes it.
+                pendingPlayRef.current = true;
+              }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
@@ -569,10 +569,15 @@ export default function InvitationPage() {
           onOpen={() => {
             if (isYouTubeMusic) {
               if (ytPlayerReadyRef.current) {
-                // Player already ready — unmute (started muted) then play within gesture.
-                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
-              } else { pendingPlayRef.current = true; }
+                // Video already playing muted — just unmute. No gesture required.
+                if (!hasUserMutedRef.current) {
+                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                  setIsMuted(false);
+                }
+              } else {
+                // Player still loading — flag so onReady unmutes it.
+                pendingPlayRef.current = true;
+              }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
