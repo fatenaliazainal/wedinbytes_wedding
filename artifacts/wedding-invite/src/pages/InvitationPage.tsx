@@ -427,28 +427,15 @@ export default function InvitationPage() {
   };
 
   useEffect(() => {
-    if (!isOpened || !cardScrollRef.current) {
-      return;
-    }
-
-    const scrollContainer = cardScrollRef.current;
-    const onScroll = () => {
-      if (scrollContainer.scrollTop > 0) {
-        setShowBottomNav(true);
-      }
-    };
-
-    scrollContainer.addEventListener("scroll", onScroll, { passive: true });
-    return () => scrollContainer.removeEventListener("scroll", onScroll);
-  }, [isOpened]);
-
-  useEffect(() => {
     if (!isOpened) {
       setShowBottomNav(false);
     } else {
       // Reset card scroll to top when envelope opens so back-navigation
       // doesn't restore a mid-scroll position that shows blank content.
       if (cardScrollRef.current) cardScrollRef.current.scrollTop = 0;
+      // Auto-show footer after 2 seconds so guests know they can scroll down.
+      const t = setTimeout(() => setShowBottomNav(true), 2000);
+      return () => clearTimeout(t);
     }
   }, [isOpened]);
 
