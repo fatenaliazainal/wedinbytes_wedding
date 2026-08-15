@@ -190,25 +190,15 @@ export default function InvitationPage() {
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
   // ── HTML5 audio ─────────────────────────────────────────────────────────────
-  // Strategy: start MUTED immediately on load (browsers always allow muted
-  // autoplay). When the user opens the envelope we simply unmute — no gesture
-  // requirement because the audio is already running.
+  // Pre-create + preload HTML5 audio so iOS Safari allows .play() inside a gesture.
   useEffect(() => {
     if (!musicUrl || isYouTubeMusic) return undefined;
     const audio = new Audio(musicUrl);
-    audio.loop    = true;
-    audio.volume  = 0.35;
-    audio.muted   = true;   // start muted so autoplay is never blocked
+    audio.loop = true;
+    audio.volume = 0.35;
     audio.preload = "auto";
-    audioRef.current      = audio;
-    audioStartedRef.current = false;
-
-    // Kick off muted playback straight away — works on every browser/OS.
-    audio.play().catch(() => {
-      // Silently ignore: even muted play can fail if the tab is hidden on load.
-      // The tap handler will retry via unmutedOnOpen below.
-    });
-
+    audio.load();
+    audioRef.current = audio;
     return () => {
       audio.pause();
       audio.src = "";
@@ -217,28 +207,49 @@ export default function InvitationPage() {
     };
   }, [musicUrl, isYouTubeMusic]);
 
-  // Called when the envelope opens — unmute (or start+unmute if autoplay failed).
-  const playAudioNow = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (audio.paused) {
-      // Muted autoplay was blocked; we're now inside a gesture so play + unmute.
-      audio.muted = false;
-      audio.play().catch(() => {});
-    } else {
-      // Already playing muted — just unmute. No gesture requirement.
-      audio.muted = false;
-    }
-    audioStartedRef.current = true;
+  // Attach a one-time interaction listener so audio starts on the very next
+  // tap/click after a blocked autoplay — covers iOS Safari where play() inside
+  // a gesture still gets rejected if the audio context was never unlocked.
+  const attachInteractionRetry = useCallback(() => {
+    const retry = () => {
+      if (!audioRef.current || audioStartedRef.current) return;
+      audioRef.current.play().catch(() => {});
+      audioStartedRef.current = true;
+    };
+    document.addEventListener("touchstart", retry, { once: true, capture: true });
+    document.addEventListener("click",      retry, { once: true, capture: true });
   }, []);
 
-  // openingAnimation="none": no envelope tap, so unmute on mount (best-effort).
+  // Called in the envelope tap handler — plays the pre-loaded HTML5 audio.
+  const playAudioNow = useCallback(() => {
+    if (!audioRef.current || audioStartedRef.current) return;
+    const promise = audioRef.current.play();
+    audioStartedRef.current = true;
+    if (promise !== undefined) {
+      promise.catch(() => {
+        // Play was blocked (iOS autoplay policy) — retry on next interaction.
+        audioStartedRef.current = false;
+        attachInteractionRetry();
+      });
+    }
+  }, [attachInteractionRetry]);
+
+  // Fallback for openingAnimation="none" (no envelope to tap): try autoplay
+  // immediately; if the browser blocks it, wait for the first interaction.
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
-    const audio = audioRef.current;
-    if (audio) audio.muted = false;
+    if (!audioStartedRef.current && audioRef.current) {
+      const promise = audioRef.current.play();
+      audioStartedRef.current = true;
+      if (promise !== undefined) {
+        promise.catch(() => {
+          audioStartedRef.current = false;
+          attachInteractionRetry();
+        });
+      }
+    }
     return undefined;
-  }, [isOpened, musicUrl, isYouTubeMusic]);
+  }, [isOpened, musicUrl, isYouTubeMusic, attachInteractionRetry]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted;
@@ -276,10 +287,9 @@ export default function InvitationPage() {
       ytPlayerRef.current = new (window as any).YT.Player(el, {
         videoId: youtubeVideoId,
         playerVars: {
-          // autoplay=1 + mute=1: browser always allows muted autoplay.
-          // We just call unMute() when the envelope opens — no gesture needed
-          // to unmute an already-playing video, even on iOS Safari.
-          autoplay: 1,
+          // Start muted so iOS Safari allows playVideo() even outside a gesture
+          // (muted autoplay is permitted). We unmute once playback confirms started.
+          autoplay: 0,
           mute: 1,
           loop: 1,
           playlist: youtubeVideoId,
@@ -293,13 +303,12 @@ export default function InvitationPage() {
           onReady: () => {
             if (!mounted) return;
             ytPlayerReadyRef.current = true;
-            // If user already opened the envelope before player was ready, unmute now.
+            // User tapped before the player finished loading — start playback now.
+            // Muted play is always allowed (no gesture required), so this works on
+            // iOS Safari. onStateChange will unmute once PLAYING fires.
             if (pendingPlayRef.current) {
               pendingPlayRef.current = false;
-              if (!hasUserMutedRef.current) {
-                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                setIsMuted(false);
-              }
+              try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
             }
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -309,6 +318,13 @@ export default function InvitationPage() {
             const YT = (window as any).YT;
             if (event.data === YT.PlayerState.PLAYING) {
               setIsPlaying(true);
+              // Unmute now that playback has started — browsers allow unmuting a
+              // video that is already playing without a new gesture.
+              if (!hasUserMutedRef.current) {
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                setIsMuted(false);
+              }
+              // Music started — remove any pending first-interaction fallback.
               if (firstInteractionRef.current) {
                 document.removeEventListener("click",       firstInteractionRef.current);
                 document.removeEventListener("touchstart",  firstInteractionRef.current);
@@ -546,14 +562,10 @@ export default function InvitationPage() {
           onOpen={() => {
             if (isYouTubeMusic) {
               if (ytPlayerReadyRef.current) {
-                if (!hasUserMutedRef.current) {
-                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                  setIsMuted(false);
-                }
-              } else {
-                // Player still loading — mark so onReady unmutes it.
-                pendingPlayRef.current = true;
-              }
+                // Player already ready — unmute (started muted) then play within gesture.
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+              } else { pendingPlayRef.current = true; }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
@@ -570,13 +582,10 @@ export default function InvitationPage() {
           onOpen={() => {
             if (isYouTubeMusic) {
               if (ytPlayerReadyRef.current) {
-                if (!hasUserMutedRef.current) {
-                  try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
-                  setIsMuted(false);
-                }
-              } else {
-                pendingPlayRef.current = true;
-              }
+                // Player already ready — unmute (started muted) then play within gesture.
+                try { ytPlayerRef.current?.unMute(); } catch { /* ignore */ }
+                try { ytPlayerRef.current?.playVideo(); } catch { /* ignore */ }
+              } else { pendingPlayRef.current = true; }
             } else { playAudioNow(); }
             setIsOpened(true);
           }}
