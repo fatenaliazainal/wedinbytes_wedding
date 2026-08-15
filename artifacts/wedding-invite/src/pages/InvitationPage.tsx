@@ -642,7 +642,8 @@ export default function InvitationPage() {
         {youtubeVideoId && (
           <div
             id="yt-bg-player"
-            className="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none overflow-hidden"
+            className="fixed pointer-events-none"
+            style={{ left: "-9999px", top: "0", width: "200px", height: "150px", opacity: 0.001 }}
             aria-hidden="true"
           />
         )}
