@@ -1,0 +1,109 @@
+The music is STILL completely silent after the previous changes.
+
+I want you to FIX the actual problem now, not just add more logging.
+
+IMPORTANT:
+Do not modify the envelope animation, invitation design, layout, or unrelated functionality.
+
+First inspect the CURRENT music implementation in InvitationPage.tsx and all related music components/hooks.
+
+The required behaviour is:
+
+1. MP3/direct audio URL:
+   - When the user taps the envelope, call HTML5 audio.play() directly inside the actual user gesture.
+   - The audio must NOT be muted.
+   - volume must be 0.35.
+   - loop must be true.
+   - If play() rejects, show/log the EXACT error.
+   - Verify the URL is actually reachable and is an audio resource.
+   - Add audio event listeners for:
+     loadedmetadata
+     canplay
+     playing
+     pause
+     error
+     stalled
+     ended
+   - Check audio.error and report the actual MediaError code/message.
+
+2. YouTube:
+   - Stop relying on iframe autoplay alone.
+   - Use the official YouTube IFrame Player API correctly.
+   - Create ONE persistent player/iframe.
+   - Wait for onReady before attempting playback.
+   - Listen for:
+     onReady
+     onStateChange
+     onError
+   - Log the YouTube state numerically and translate it:
+     -1 unstarted
+     0 ended
+     1 playing
+     2 paused
+     3 buffering
+     5 cued
+   - Log YouTube error codes such as:
+     2 invalid parameter
+     5 HTML5 player error
+     100 video not found/private
+     101/150 embedding not allowed
+     153 missing Referer/client identity where applicable
+
+3. IMPORTANT AUTOPLAY REQUIREMENT:
+   The current code creates the YouTube iframe and expects autoplay=1 to work immediately.
+   That is not sufficient for reliable diagnosis.
+
+   Implement the player so we can determine whether:
+   A. YouTube loaded successfully but autoplay was blocked
+   B. YouTube loaded and is playing
+   C. YouTube rejected the video/embed
+   D. YouTube API failed
+   E. The envelope tap is not reaching playback
+
+4. Do NOT use:
+   - synthetic .click()
+   - setTimeout to fake a user gesture
+   - requestAnimationFrame to fake a user gesture
+   - hidden 1x1 iframe
+   - multiple duplicate iframes
+   - any browser autoplay bypass hack
+
+5. VERY IMPORTANT:
+   For desktop/Android, attempt playback from the real envelope tap.
+   If browser policy prevents YouTube autoplay, DO NOT pretend it can be bypassed.
+   Instead make the existing music control trigger player.playVideo() from a real user tap.
+
+6. For iOS Safari:
+   Keep the existing fallback.
+   Do not attempt to bypass iOS media restrictions.
+
+7. Add a temporary visible diagnostic status beside the music button ONLY if necessary to verify:
+   - "YouTube Ready"
+   - "Playing"
+   - "Autoplay blocked"
+   - "YouTube Error"
+   This can be removed after the issue is confirmed.
+
+8. MOST IMPORTANT:
+   Test the actual video ID currently being used:
+   NZGHXy1IAHM
+
+   Verify whether this specific YouTube video:
+   - exists
+   - is playable
+   - allows embedding
+   - returns a YouTube player error
+   - actually enters PLAYING state
+
+9. Also inspect whether the application has CSP, iframe-src, frame-src, connect-src, Permissions Policy, or other security headers that could prevent:
+   https://www.youtube-nocookie.com
+   from loading or playing.
+
+10. After fixing, give me ONLY:
+   - ROOT CAUSE
+   - EXACT CODE CHANGE
+   - HOW TO TEST
+   - EXPECTED RESULT
+
+Do not just tell me that autoplay is blocked.
+I need you to determine whether the actual YouTube player/video is functioning first.

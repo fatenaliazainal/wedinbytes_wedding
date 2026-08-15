@@ -12,6 +12,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesign } from "@/hooks/use-design";
 
+// Minimal typings for the YouTube IFrame Player API (window.YT).
+// We only declare what we actually call so there is no dependency on @types/youtube.
+interface YTPlayerInstance {
+  playVideo(): void;
+  pauseVideo(): void;
+  mute(): void;
+  unMute(): void;
+  getPlayerState(): number;
+  destroy(): void;
+}
+type YTStatusType = "idle" | "loading" | "ready" | "playing" | "paused" | "blocked" | "error";
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    YT?: { Player: new (el: HTMLElement | string, opts: Record<string, unknown>) => YTPlayerInstance };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
 // Legacy custom fonts that are not loaded as web fonts — map to real Google Fonts.
 const FONT_ALIASES: Record<string, string> = {
   Magnolia: "Great Vibes",
@@ -220,7 +239,32 @@ export default function InvitationPage() {
     const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.35;
+    audio.muted = false;
     audio.preload = "auto";
+
+    // Diagnostic event listeners — help identify if the URL is unreachable
+    // or the browser cannot decode the audio resource.
+    audio.addEventListener("loadedmetadata", () =>
+      console.debug("[music] audio: loadedmetadata — duration:", audio.duration));
+    audio.addEventListener("canplay", () =>
+      console.debug("[music] audio: canplay"));
+    audio.addEventListener("playing", () =>
+      console.debug("[music] audio: playing ✓"));
+    audio.addEventListener("pause", () =>
+      console.debug("[music] audio: paused"));
+    audio.addEventListener("stalled", () =>
+      console.debug("[music] audio: stalled (network issue?)"));
+    audio.addEventListener("ended", () =>
+      console.debug("[music] audio: ended (loop not working?)"));
+    audio.addEventListener("error", () => {
+      const e = audio.error;
+      const codes: Record<number, string> = {
+        1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED",
+      };
+      console.debug("[music] audio error — code:", e?.code,
+        codes[e?.code ?? 0] ?? "unknown", "message:", e?.message ?? "(none)");
+    });
+
     audio.load();
     audioRef.current = audio;
     return () => {
@@ -289,91 +333,174 @@ export default function InvitationPage() {
     if (audioRef.current) audioRef.current.muted = isMuted;
   }, [isMuted]);
 
-  // ── YouTube music — iframe src-swap approach ─────────────────────────────
-  // Desktop / Android: setting iframe.src inside a click handler triggers a
-  // browser-level navigation that carries user-activation into the iframe,
-  // allowing YouTube to autoplay with sound.
-  // iOS Safari: user-activation is never propagated cross-frame; handled via
-  // a visible mini YouTube player (see iosPlayerVisible state above).
+  // ── YouTube music — official IFrame Player API ───────────────────────────
+  // We load https://www.youtube.com/iframe_api, create a YT.Player with
+  // autoplay:0, then call player.playVideo() from the real envelope gesture.
   //
-  // Note: server-side audio proxy was attempted but YouTube blocks requests
-  // from cloud/VPS IPs with bot-detection, making it unreliable in production.
-  const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const ytStartedRef = useRef(false);
+  // Two timing cases:
+  //   A. API ready BEFORE the user taps → playVideo() called synchronously
+  //      in the click handler — user activation is present, Chrome/Safari allow it.
+  //   B. API not ready yet when user taps → store tapPendingRef=true →
+  //      onReady fires (within seconds while user activation is still valid)
+  //      → playVideo() called → plays.
+  //
+  // iOS Safari: cross-frame gesture restriction means we cannot call
+  // playVideo() on iOS; the existing visible mini-player fallback is kept.
+  const ytPlayerRef    = useRef<YTPlayerInstance | null>(null);
+  const ytPlayerDivRef = useRef<HTMLDivElement | null>(null);
+  const ytTapPendingRef = useRef(false);  // user tapped before player was ready
+  const ytStartedRef   = useRef(false);
+  const [ytStatus, setYtStatus] = useState<YTStatusType>("idle");
 
-  // Clean up the dynamically-created iframe on unmount.
+  const YT_STATE: Record<number, string> = {
+    [-1]: "unstarted", 0: "ended", 1: "playing", 2: "paused", 3: "buffering", 5: "cued",
+  };
+  const YT_ERROR: Record<number, string> = {
+    2: "invalid parameter", 5: "HTML5 player error", 100: "video not found / private",
+    101: "embedding not allowed", 150: "embedding not allowed",
+  };
+
+  // Called once the API script is loaded and window.YT.Player is available.
+  const initYtPlayer = useCallback((videoId: string) => {
+    if (ytPlayerRef.current || !window.YT?.Player) return;
+    console.debug("[music] YT: initializing YT.Player for", videoId);
+
+    const div = document.createElement("div");
+    div.id = "yt-bg-player";
+    // Visible bottom-right while we diagnose — shows whether YouTube loads/plays.
+    div.style.cssText =
+      "position:fixed;bottom:80px;right:8px;width:200px;height:113px;" +
+      "border-radius:8px;overflow:hidden;z-index:9999;" +
+      "box-shadow:0 4px 16px rgba(0,0,0,0.35);";
+    document.body.appendChild(div);
+    ytPlayerDivRef.current = div;
+
+    ytPlayerRef.current = new window.YT.Player(div, {
+      videoId,
+      playerVars: {
+        autoplay: 0,          // do NOT autoplay on load — wait for the real gesture
+        loop: 1,
+        playlist: videoId,    // required for loop to work
+        controls: 1,          // visible controls while debugging
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1,
+        origin: window.location.origin,
+        host: "https://www.youtube-nocookie.com",
+      },
+      events: {
+        onReady: (e: { target: YTPlayerInstance }) => {
+          console.debug("[music] YT onReady ✓");
+          setYtStatus("ready");
+          // If the user tapped while the API was still loading, play now.
+          // The browser's user-activation window is ~5s; the API typically
+          // loads in 1-2s, so this fires well within that window.
+          if (ytTapPendingRef.current) {
+            console.debug("[music] YT onReady: tap was pending → calling playVideo()");
+            e.target.playVideo();
+          }
+        },
+        onStateChange: (e: { data: number }) => {
+          const label = YT_STATE[e.data] ?? `unknown(${e.data})`;
+          console.debug("[music] YT state →", e.data, label);
+          if (e.data === 1) {
+            // Actually playing
+            setYtStatus("playing");
+            ytStartedRef.current = true;
+            ytTapPendingRef.current = false;
+          } else if (e.data === 2) {
+            setYtStatus("paused");
+          } else if (e.data === -1 && ytTapPendingRef.current) {
+            // State -1 (unstarted) after we called playVideo() means autoplay blocked
+            console.debug("[music] YT: state -1 after playVideo() — autoplay blocked by browser");
+            setYtStatus("blocked");
+          }
+        },
+        onError: (e: { data: number }) => {
+          const label = YT_ERROR[e.data] ?? `unknown error code ${e.data}`;
+          console.debug("[music] YT onError:", e.data, "→", label);
+          setYtStatus("error");
+        },
+      },
+    } as Record<string, unknown>);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load the YouTube IFrame API script once when we know the video ID.
   useEffect(() => {
-    return () => {
-      if (ytIframeRef.current) {
-        ytIframeRef.current.remove();
-        ytIframeRef.current = null;
-      }
-    };
-  }, []);
+    if (!youtubeVideoId) return;
+    setYtStatus("loading");
+    console.debug("[music] YT: setting up for video", youtubeVideoId);
 
+    // Chain any pre-existing global callback so we don't overwrite it.
+    const prevCb = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prevCb?.();
+      console.debug("[music] YT IFrame API ready (global callback)");
+      initYtPlayer(youtubeVideoId);
+    };
+
+    // API might already be present from a previous load (e.g. HMR / re-render).
+    if (window.YT?.Player) {
+      console.debug("[music] YT API already present — init player immediately");
+      initYtPlayer(youtubeVideoId);
+    } else if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      document.head.appendChild(script);
+      console.debug("[music] YT IFrame API script injected");
+    }
+
+    return () => {
+      // Tear down the player when the component unmounts or the video ID changes.
+      if (ytPlayerRef.current) {
+        try { ytPlayerRef.current.destroy(); } catch { /* ignore */ }
+        ytPlayerRef.current = null;
+      }
+      if (ytPlayerDivRef.current) {
+        ytPlayerDivRef.current.remove();
+        ytPlayerDivRef.current = null;
+      }
+      ytStartedRef.current   = false;
+      ytTapPendingRef.current = false;
+      setYtStatus("idle");
+    };
+  }, [youtubeVideoId, initYtPlayer]);
+
+  // Called synchronously from the envelope tap gesture (desktop / Android).
   const ytPlay = useCallback(() => {
     if (isIOSSafari.current) {
-      console.debug("[music] ytPlay: iOS detected — skipping iframe autoplay, use mini-player instead");
-      return;
-    }
-    if (ytStartedRef.current) {
-      console.debug("[music] ytPlay: already started, skipping");
+      console.debug("[music] ytPlay: iOS — use mini-player fallback");
       return;
     }
     if (!youtubeVideoId) {
-      console.debug("[music] ytPlay: no youtubeVideoId, nothing to play");
+      console.debug("[music] ytPlay: no videoId");
       return;
     }
-    ytStartedRef.current = true;
-    console.debug("[music] ytPlay: creating YouTube iframe for video", youtubeVideoId);
-
-    // origin param is required for enablejsapi=1 postMessage to work correctly
-    // and tells YouTube which domain is embedding it.
-    const origin = encodeURIComponent(window.location.origin);
-    const src = `https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1&origin=${origin}`;
-    console.debug("[music] ytPlay: iframe src =", src);
-
-    // Create the iframe DYNAMICALLY inside the click handler.
-    // Browsers guarantee user-activation is present for elements created and
-    // appended synchronously during a gesture — stronger than setting .src on
-    // a pre-existing iframe. Appended to document.body so no parent transform
-    // or overflow:hidden can interfere with its fixed positioning.
-    const iframe = document.createElement("iframe");
-    iframe.src = src;
-    iframe.allow = "autoplay; encrypted-media";
-    iframe.setAttribute("aria-hidden", "true");
-    iframe.setAttribute("title", "Background music");
-    // Visible mini-player (bottom-right) so we can verify YouTube loads and plays.
-    // Keep controls=1 during debugging so it's clear whether the player starts.
-    // Once confirmed working, can be moved off-screen with controls=0.
-    iframe.style.cssText =
-      "position:fixed;bottom:80px;right:8px;width:200px;height:113px;border-radius:8px;border:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);";
-    document.body.appendChild(iframe);
-    ytIframeRef.current = iframe;
-    setIsMuted(false);
-    console.debug("[music] ytPlay: iframe appended to document.body");
+    if (ytPlayerRef.current) {
+      // Player already initialised — call playVideo() while still in gesture context.
+      console.debug("[music] ytPlay: player ready → calling playVideo() in gesture");
+      ytPlayerRef.current.playVideo();
+    } else {
+      // Player still loading — store intent; onReady will call playVideo() for us.
+      console.debug("[music] ytPlay: player not ready yet → storing tap intent");
+      ytTapPendingRef.current = true;
+    }
   }, [youtubeVideoId]);
-
-  const ytPostCommand = useCallback((func: string) => {
-    ytIframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "command", func, args: [] }),
-      "*",
-    );
-  }, []);
 
   const toggleMute = useCallback(() => {
     if (isYouTubeMusic) {
       if (isMuted) {
-        ytPostCommand("unMute");
+        ytPlayerRef.current?.unMute();
         setIsMuted(false);
       } else {
-        ytPostCommand("mute");
+        ytPlayerRef.current?.mute();
         setIsMuted(true);
       }
     } else {
       setIsMuted((prev) => !prev);
     }
-  }, [isMuted, isYouTubeMusic, ytPostCommand]);
+  }, [isMuted, isYouTubeMusic]);
 
   const handleTabClick = (tab: TabKey) => {
     setActiveTab((prev) => (prev === tab ? null : tab));
@@ -652,7 +779,8 @@ export default function InvitationPage() {
 
       {/* Music controls — fixed top-left, only visible when card is open.
           iOS + YouTube: shows 🎵 button → reveals mini visible player to tap.
-          Desktop / Android / direct audio: shows standard mute toggle. */}
+          Desktop / Android / direct audio: shows standard mute toggle.
+          ytStatus badge shown while diagnosing autoplay behaviour. */}
       <AnimatePresence>
         {isOpened && musicUrl && (
           <motion.div
@@ -680,6 +808,23 @@ export default function InvitationPage() {
               >
                 {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
               </button>
+            )}
+            {/* Diagnostic badge — shows YouTube player state while investigating.
+                Remove this block once music is confirmed working. */}
+            {isYouTubeMusic && ytStatus !== "idle" && ytStatus !== "playing" && (
+              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full leading-tight ${
+                ytStatus === "error" || ytStatus === "blocked"
+                  ? "bg-red-500/80 text-white"
+                  : ytStatus === "ready"
+                  ? "bg-green-500/80 text-white"
+                  : "bg-black/50 text-white/80"
+              }`}>
+                {ytStatus === "loading"  && "YT loading"}
+                {ytStatus === "ready"    && "YT ready"}
+                {ytStatus === "paused"   && "YT paused"}
+                {ytStatus === "blocked"  && "YT blocked"}
+                {ytStatus === "error"    && "YT error"}
+              </span>
             )}
           </motion.div>
         )}

@@ -46,7 +46,11 @@ app.use(
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
+              // youtube.com must be in scriptSrc so the YouTube IFrame Player
+              // API script (https://www.youtube.com/iframe_api) can load.
+              // Without this the YT global never exists and player.playVideo()
+              // can never be called, making all YouTube music silent.
+              scriptSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
               styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
