@@ -180,30 +180,26 @@ export default function InvitationPage() {
   const [unlockPin, setUnlockPin] = useState("");
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState("");
-  // ── HTML5 audio (non-YouTube URLs) ──────────────────────────────────────
+  // ── Audio ────────────────────────────────────────────────────────────────
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioStartedRef = useRef(false);
   const cardScrollRef = useRef<HTMLDivElement | null>(null);
-
-  // ── iOS Safari detection ─────────────────────────────────────────────────
-  // iOS Safari cannot propagate user-activation from a parent frame click into
-  // an iframe's audio context — `iframe.src = url` inside a click handler does
-  // NOT grant the iframe autoplay permission on iOS. We detect iOS once at mount
-  // and use a different UX: a visible mini YouTube player the user taps directly.
-  const isIOSSafari = useRef(
-    typeof navigator !== "undefined" &&
-    /iPad|iPhone|iPod/.test(navigator.userAgent)
-  );
-
-  // Controls visibility of the iOS mini YouTube player overlay.
-  const [iosPlayerVisible, setIosPlayerVisible] = useState(false);
 
   const musicUrl = (invitationStyle?.musicUrl as string | undefined) || (inv?.musicUrl as string | undefined) || templateDesign?.musicUrl || design?.musicUrl || "";
   const youtubeVideoId = musicUrl ? extractYouTubeId(musicUrl) : null;
   const isYouTubeMusic = Boolean(youtubeVideoId);
 
-  // ── HTML5 audio ─────────────────────────────────────────────────────────────
-  // Pre-create + preload HTML5 audio so iOS Safari allows .play() inside a gesture.
+  // ── iOS Safari detection ─────────────────────────────────────────────────
+  // iOS Safari cannot propagate user-activation from a parent frame click into
+  // an iframe's audio context. We detect iOS once at mount and use a different
+  // UX: a visible mini YouTube player the user taps directly instead.
+  const isIOSSafari = useRef(
+    typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+  );
+  const [iosPlayerVisible, setIosPlayerVisible] = useState(false);
+
+  // ── HTML5 audio (non-YouTube direct URLs) ────────────────────────────────
   useEffect(() => {
     if (!musicUrl || isYouTubeMusic) return undefined;
     const audio = new Audio(musicUrl);
@@ -220,9 +216,7 @@ export default function InvitationPage() {
     };
   }, [musicUrl, isYouTubeMusic]);
 
-  // Attach a one-time interaction listener so audio starts on the very next
-  // tap/click after a blocked autoplay — covers iOS Safari where play() inside
-  // a gesture still gets rejected if the audio context was never unlocked.
+  // Retry on next interaction if .play() was blocked by autoplay policy.
   const attachInteractionRetry = useCallback(() => {
     const retry = () => {
       if (!audioRef.current || audioStartedRef.current) return;
@@ -233,22 +227,21 @@ export default function InvitationPage() {
     document.addEventListener("click",      retry, { once: true, capture: true });
   }, []);
 
-  // Called in the envelope tap handler — plays the pre-loaded HTML5 audio.
+  // Called synchronously inside the envelope tap — works on all platforms for
+  // direct audio URLs (HTML5 <audio> .play() inside gesture is universally ok).
   const playAudioNow = useCallback(() => {
     if (!audioRef.current || audioStartedRef.current) return;
     const promise = audioRef.current.play();
     audioStartedRef.current = true;
     if (promise !== undefined) {
       promise.catch(() => {
-        // Play was blocked (iOS autoplay policy) — retry on next interaction.
         audioStartedRef.current = false;
         attachInteractionRetry();
       });
     }
   }, [attachInteractionRetry]);
 
-  // Fallback for openingAnimation="none" (no envelope to tap): try autoplay
-  // immediately; if the browser blocks it, wait for the first interaction.
+  // Fallback for openingAnimation="none" (no envelope tap): try autoplay.
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     if (!audioStartedRef.current && audioRef.current) {
@@ -268,37 +261,51 @@ export default function InvitationPage() {
     if (audioRef.current) audioRef.current.muted = isMuted;
   }, [isMuted]);
 
-  // ── YouTube music — direct iframe src approach ───────────────────────────
-  // Strategy: no YouTube IFrame API. The iframe starts with no src.
-  // On the envelope tap gesture, we set iframe.src directly to the embed URL
-  // with autoplay=1. This is a browser-level navigation triggered by user
-  // activation — iOS Safari allows audio autoplay because the navigation
-  // inherits the tap's user-activation, bypassing cross-origin postMessage
-  // restrictions entirely.
+  // ── YouTube music — iframe src-swap approach ─────────────────────────────
+  // Desktop / Android: setting iframe.src inside a click handler triggers a
+  // browser-level navigation that carries user-activation into the iframe,
+  // allowing YouTube to autoplay with sound.
+  // iOS Safari: user-activation is never propagated cross-frame; handled via
+  // a visible mini YouTube player (see iosPlayerVisible state above).
+  //
+  // Note: server-side audio proxy was attempted but YouTube blocks requests
+  // from cloud/VPS IPs with bot-detection, making it unreliable in production.
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const ytStartedRef = useRef(false); // prevent double-start
+  const ytStartedRef = useRef(false);
 
-  // Build the embed src — called once on tap to set the iframe src.
-  const ytEmbedSrc = youtubeVideoId
-    ? `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1`
-    : "";
+  // Clean up the dynamically-created iframe on unmount.
+  useEffect(() => {
+    return () => {
+      if (ytIframeRef.current) {
+        ytIframeRef.current.remove();
+        ytIframeRef.current = null;
+      }
+    };
+  }, []);
 
-  // Called synchronously inside the envelope tap gesture (onTap / onOpen).
-  // On iOS Safari, user activation from the parent frame does NOT transfer to an
-  // iframe's audio context — skipped; iOS uses the visible mini-player button instead.
-  // On desktop / Android, sets iframe.src (browser-level navigation inside gesture)
-  // which grants the iframe autoplay with sound.
   const ytPlay = useCallback(() => {
-    if (isIOSSafari.current) return; // iOS: mini-player button handles it
-    if (!ytIframeRef.current || ytStartedRef.current || !ytEmbedSrc) return;
+    if (isIOSSafari.current) return; // iOS: handled by mini-player button
+    if (ytStartedRef.current || !youtubeVideoId) return;
     ytStartedRef.current = true;
-    ytIframeRef.current.src = ytEmbedSrc;
-    setIsMuted(false);
-  }, [ytEmbedSrc]);
 
-  // Send a raw postMessage command to the already-running YouTube iframe.
-  // Uses '*' as targetOrigin so it always reaches the frame regardless of
-  // its exact origin — safe because we're only sending playback commands.
+    // Create the iframe DYNAMICALLY inside the click handler.
+    // Browsers guarantee user-activation is present for elements created and
+    // appended synchronously during a gesture — stronger than setting .src on
+    // a pre-existing iframe. Appended to document.body so no parent transform
+    // or overflow:hidden can interfere with its fixed positioning.
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}&controls=0&playsinline=1&rel=0&modestbranding=1&fs=0&enablejsapi=1`;
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.setAttribute("title", "Background music");
+    // Real dimensions so YouTube's player initialises; positioned far off-screen.
+    iframe.style.cssText =
+      "position:fixed;left:-9999px;top:0;width:320px;height:180px;border:none;pointer-events:none;";
+    document.body.appendChild(iframe);
+    ytIframeRef.current = iframe;
+    setIsMuted(false);
+  }, [youtubeVideoId]);
+
   const ytPostCommand = useCallback((func: string) => {
     ytIframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func, args: [] }),
@@ -306,7 +313,6 @@ export default function InvitationPage() {
     );
   }, []);
 
-  // Mute / unmute toggle — for the button shown after envelope is opened.
   const toggleMute = useCallback(() => {
     if (isYouTubeMusic) {
       if (isMuted) {
@@ -317,7 +323,6 @@ export default function InvitationPage() {
         setIsMuted(true);
       }
     } else {
-      // HTML5 audio path — muting handled via useEffect on isMuted.
       setIsMuted((prev) => !prev);
     }
   }, [isMuted, isYouTubeMusic, ytPostCommand]);
@@ -472,9 +477,6 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onTap={() => {
-            // Called synchronously inside the click handler — gesture context intact.
-            // playVideo() runs within the same JS task as the user gesture so iOS Safari
-            // transfers media activation to the YouTube iframe (which has allow="autoplay").
             if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
           }}
@@ -536,28 +538,6 @@ export default function InvitationPage() {
             (invitation as Record<string, unknown> | undefined)?.overlayEnabled !== false
           }
         />
-
-        {/* YouTube iframe — desktop/Android only.
-            Positioned far off-screen but with real dimensions (320×180) so
-            YouTube's player can fully initialize. 1×1 px was too small and
-            caused silent failure even with autoplay=1 in the URL. */}
-        {youtubeVideoId && !isIOSSafari.current && (
-          <iframe
-            ref={ytIframeRef}
-            title="Background music"
-            allow="autoplay; encrypted-media"
-            aria-hidden="true"
-            style={{
-              position: "fixed",
-              left: "-9999px",
-              top: "0",
-              width: "320px",
-              height: "180px",
-              border: "none",
-              pointerEvents: "none",
-            }}
-          />
-        )}
 
         {isOpened && (
           // Single fixed container anchored at viewport bottom, constrained to
@@ -621,13 +601,8 @@ export default function InvitationPage() {
       )}
 
       {/* Music controls — fixed top-left, only visible when card is open.
-          iOS Safari cannot autoplay YouTube audio via iframe src-swap (user
-          activation never transfers cross-frame on iOS). On iOS we show a 🎵
-          button instead; tapping it reveals a small visible YouTube player so
-          the user can tap YouTube's own play button directly (which IS a direct
-          gesture on the media element — the only thing iOS Safari permits).
-          On desktop/Android the standard mute toggle is shown because music is
-          already playing from the iframe src-swap in the envelope tap handler. */}
+          iOS + YouTube: shows 🎵 button → reveals mini visible player to tap.
+          Desktop / Android / direct audio: shows standard mute toggle. */}
       <AnimatePresence>
         {isOpened && musicUrl && (
           <motion.div
@@ -638,7 +613,6 @@ export default function InvitationPage() {
             className="fixed top-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto"
           >
             {isIOSSafari.current && isYouTubeMusic ? (
-              /* iOS + YouTube: button that reveals the mini player */
               <button
                 onClick={() => setIosPlayerVisible((v) => !v)}
                 type="button"
@@ -648,7 +622,6 @@ export default function InvitationPage() {
                 <Music size={15} strokeWidth={2} />
               </button>
             ) : (
-              /* Desktop / Android / HTML5 audio: standard mute toggle */
               <button
                 onClick={toggleMute}
                 type="button"
@@ -662,9 +635,9 @@ export default function InvitationPage() {
         )}
       </AnimatePresence>
 
-      {/* iOS mini YouTube player — appears when user taps the 🎵 button.
-          The iframe is visible so the user taps YouTube's native play button
-          directly, which is the only way to start audio on iOS Safari. */}
+      {/* iOS mini YouTube player — visible so the user taps YouTube's own ▶
+          directly. This is the only way to start audio on iOS Safari (direct
+          gesture on the media element itself). */}
       <AnimatePresence>
         {isIOSSafari.current && isYouTubeMusic && iosPlayerVisible && youtubeVideoId && (
           <motion.div

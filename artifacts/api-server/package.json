@@ -11,6 +11,7 @@
     "backup:db": "tsx scripts/backup-db.ts"
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
     "@replit/connectors-sdk": "^0.4.2",
     "@types/multer": "^2.1.0",
     "@types/nodemailer": "^8.0.1",
