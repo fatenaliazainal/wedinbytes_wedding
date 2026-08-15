@@ -592,24 +592,14 @@ export default function InvitationPage() {
         />
 
         {/* YouTube IFrame API player mount point.
-            MUST be within the viewport — YouTube uses IntersectionObserver
-            and will not autoplay if the element is at -9999px or otherwise
-            out of view. opacity:0 hides it visually while keeping it
-            "visible" to the browser for media-policy purposes.
-            z-index:-1 keeps it behind all content. */}
+            Rendered before the envelope opens so the player is fully
+            initialised when the user taps. playVideo() is called
+            synchronously inside the gesture handler — player size does
+            not affect gesture-triggered playback policy. */}
         {youtubeVideoId && (
           <div
             id="yt-bg-player"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "320px",
-              height: "180px",
-              opacity: 0,
-              pointerEvents: "none",
-              zIndex: -1,
-            }}
+            className="absolute w-px h-px opacity-0 overflow-hidden pointer-events-none"
             aria-hidden="true"
           />
         )}
