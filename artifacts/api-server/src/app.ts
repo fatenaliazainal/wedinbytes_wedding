@@ -59,6 +59,12 @@ app.use(
               connectSrc: ["'self'"],
               objectSrc: ["'none'"],
               frameAncestors: ["'none'"],
+              // YouTube music embeds — without this, iframes fall back to defaultSrc:self
+              // and are blocked entirely in production, silently preventing all music.
+              frameSrc: [
+                "https://www.youtube.com",
+                "https://www.youtube-nocookie.com",
+              ],
             },
           }
         : false,
