@@ -1,0 +1,81 @@
+Follow the WedInStudio Production Change Safety Rules.
+
+TASK:
+
+Investigate ONLY this CSP error. DO NOT change any code yet.
+
+ERROR:
+
+`Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com 'sha256-04UjFwSWw5Csw3iUGAFF8G5ivGIgSe834ianBpptCGM=''. Either the 'unsafe-inline' keyword, a hash ('sha256-qJVAmB01eMirBg1GvHw0rssk6rNPERVGgo1Q+F9tQ0A='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked.`
+
+LOCATION:
+
+`/editor:117`
+
+CURRENT BEHAVIOUR:
+
+The browser blocks an inline script on the `/editor` page because the script is not permitted by the current Content Security Policy.
+
+EXPECTED BEHAVIOUR:
+
+The `/editor` page should not generate an unnecessary CSP violation, while keeping the existing security protections intact.
+
+SCOPE:
+
+Only investigate this specific CSP inline script error.
+
+DO NOT:
+
+* Change any code
+* Change CSP headers
+* Add `'unsafe-inline'`
+* Add the suggested SHA-256 hash
+* Add a nonce
+* Modify YouTube security configuration
+* Refactor unrelated code
+* Change unrelated features
+* Change UI/UX
+* Change database/schema
+* Change existing business logic
+* Rename components/functions/variables
+* Modify unrelated files
+* Fix other console errors
+* Install packages
+* Deploy changes
+
+FIRST:
+
+Trace the exact source of the blocked inline script.
+
+Report:
+
+1. Root cause
+2. Exact file(s) involved
+3. Exact line(s) involved
+4. Exact inline script/code responsible
+5. Where the script originates from
+
+   * Our application
+   * YouTube
+   * Third-party library
+   * Browser/development tooling
+   * Other external source
+6. Why the current CSP blocks it
+7. Whether the script is actually required for `/editor`
+8. Whether blocking the script causes any functional problem
+9. Smallest possible fix recommendation
+10. Potential security implications of the recommended fix
+11. Potential regression risks
+12. What will remain untouched
+
+IMPORTANT:
+
+Do NOT simply add the hash shown in the browser error.
+
+Do NOT use `'unsafe-inline'` as a quick fix.
+
+Do NOT weaken the current CSP without first determining exactly what the blocked script does and where it comes from.
+
+After the investigation, STOP and wait for my approval.
+
+DO NOT IMPLEMENT ANY FIX.
