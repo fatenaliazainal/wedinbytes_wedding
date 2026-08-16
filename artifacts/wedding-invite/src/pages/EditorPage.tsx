@@ -4075,6 +4075,24 @@ export default function EditorPage({
                     placeholder={t("placeholders.musicUrl")}
                   />
                 </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Tajuk Lagu">
+                    <input
+                      className={inputCls}
+                      placeholder="Song Title"
+                      value={design.musicTitle}
+                      onChange={(e) => setDesign((p) => ({ ...p, musicTitle: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="Artis">
+                    <input
+                      className={inputCls}
+                      placeholder="Artis / Singer"
+                      value={design.musicArtist}
+                      onChange={(e) => setDesign((p) => ({ ...p, musicArtist: e.target.value }))}
+                    />
+                  </Field>
+                </div>
                 {extractYouTubeId(design.musicUrl) && (
                   <div className="rounded overflow-hidden border border-gray-200">
                     <iframe
