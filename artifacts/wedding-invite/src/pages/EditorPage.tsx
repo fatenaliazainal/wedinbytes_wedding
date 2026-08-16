@@ -3480,7 +3480,7 @@ export default function EditorPage({
                       <option value="">{t("placeholders.package")}</option>
                       {packages.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} {p.price ? `– RM ${p.price}` : ""}
+                          {p.name} {p.isPromoActive && p.promoPrice ? `– RM ${p.promoPrice}` : p.price ? `– RM ${p.price}` : ""}
                         </option>
                       ))}
                     </select>
