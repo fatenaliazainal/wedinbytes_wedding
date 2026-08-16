@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, Palette, PenLine, Phone, QrCode, Send, Share2, Shirt, Smartphone, Timer, User, UserCheck, Users } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, Palette, PenLine, Phone, QrCode, Send, Share2, Shirt, Smartphone, Timer, User, UserCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useListDesigns, useGetInvitation } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -49,7 +49,6 @@ const FEATURE_ICONS = [
   { icon: Images,        label: "Photo Gallery" },
   { icon: Shirt,         label: "Dress Code" },
   { icon: ClipboardList, label: "Event Programme" },
-  { icon: BookOpen,      label: "Guestbook" },
   { icon: Phone,         label: "Contact Host" },
   { icon: QrCode,        label: "QR Code" },
 ] as const;
@@ -399,7 +398,6 @@ export default function MarketingHomePage() {
               { icon: Images,        name: "Photo Gallery",     desc: "Share beautiful moments together." },
               { icon: Shirt,         name: "Dress Code",        desc: "Help guests know what to wear." },
               { icon: ClipboardList, name: "Event Programme",   desc: "Keep your guests in the loop." },
-              { icon: BookOpen,      name: "Guestbook",         desc: "Collect messages and memories." },
               { icon: Phone,         name: "Contact Host",      desc: "Guests can reach out to the host easily." },
               { icon: QrCode,        name: "QR Code",           desc: "Share or print with a scan." },
             ].map(({ icon: Icon, name, desc }) => (
