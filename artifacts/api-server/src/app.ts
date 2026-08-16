@@ -38,6 +38,13 @@ if (process.env.NODE_ENV === "production" && !sessionSecret) {
 
 app.use(
   helmet({
+    // YouTube IFrame API requires the browser to send a Referer header so YouTube
+    // can verify the embedding origin.  Helmet's default is "no-referrer" which
+    // strips the header entirely and causes Error 153 ("Video player configuration
+    // error").  "strict-origin-when-cross-origin" sends the bare origin (no path)
+    // for cross-origin requests, which is what YouTube needs and is the browser
+    // default recommended by the WHATWG.
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     // CSP is disabled in development so Vite's inline module scripts can execute
     // when the dev proxy forwards /invite/* to the Vite dev server.
     // In production the full CSP is enforced.

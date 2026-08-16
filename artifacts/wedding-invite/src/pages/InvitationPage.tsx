@@ -367,13 +367,21 @@ export default function InvitationPage() {
 
     const div = document.createElement("div");
     div.id = "yt-bg-player";
-    // Hidden off-screen — guests never see the YouTube player UI.
-    // Controls are disabled; audio only via the mute/unmute button.
+    // YouTube's IFrame API requires the player viewport to be at least 200×200.
+    // A 1×1px container can cause "Video player configuration error" (Error 153).
+    // We use a proper 320×180 player but hide it visually: it is positioned
+    // off-screen (above the viewport) and has opacity:0 so guests never see it.
+    // pointer-events:none ensures it never intercepts touches.
     div.style.cssText =
-      "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;" +
-      "overflow:hidden;pointer-events:none;";
+      "position:fixed;top:-400px;left:-400px;" +
+      "width:320px;height:180px;" +
+      "opacity:0;pointer-events:none;overflow:hidden;";
     document.body.appendChild(div);
     ytPlayerDivRef.current = div;
+
+    // Log origin so we can verify the player is configured with the right host.
+    console.debug("[music] YouTube origin:", window.location.origin);
+    console.debug("[music] window.location.origin:", window.location.origin);
 
     ytPlayerRef.current = new window.YT.Player(div, {
       videoId,
@@ -385,12 +393,21 @@ export default function InvitationPage() {
         playsinline: 1,
         rel: 0,
         modestbranding: 1,
+        // origin is required so YouTube can match the embed against the registered
+        // domain. Must be the actual production origin, not hardcoded dev URL.
+        // youtube-nocookie.com host override removed — it can interfere with the
+        // Referer header matching that YouTube uses to verify origin (Error 153).
         origin: window.location.origin,
-        host: "https://www.youtube-nocookie.com",
+        enablejsapi: 1,
       },
       events: {
         onReady: (e: { target: YTPlayerInstance }) => {
-          console.debug("[music] YT onReady ✓");
+          console.debug("[music] YouTube player ready");
+          // Log the actual iframe src so we can confirm origin= is correct.
+          const iframe = div.querySelector("iframe");
+          if (iframe) {
+            console.debug("[music] YouTube iframe src:", iframe.src);
+          }
           setYtStatus("ready");
           // If the user tapped while the API was still loading, play now.
           // The browser's user-activation window is ~5s; the API typically
@@ -402,7 +419,7 @@ export default function InvitationPage() {
         },
         onStateChange: (e: { data: number }) => {
           const label = YT_STATE[e.data] ?? `unknown(${e.data})`;
-          console.debug("[music] YT state →", e.data, label);
+          console.debug("[music] YouTube state:", e.data, label);
           if (e.data === 1) {
             // Actually playing
             setYtStatus("playing");
@@ -418,7 +435,7 @@ export default function InvitationPage() {
         },
         onError: (e: { data: number }) => {
           const label = YT_ERROR[e.data] ?? `unknown error code ${e.data}`;
-          console.debug("[music] YT onError:", e.data, "→", label);
+          console.debug("[music] YouTube error:", e.data, "→", label);
           setYtStatus("error");
         },
       },

@@ -5,12 +5,16 @@ import { extractYouTubeId } from "@/lib/youtube";
 
 export type MusicValidationStatus =
   | "idle"           // URL is empty — music is optional, save allowed
-  | "checking"       // Creating a test YouTube player to verify embeddability
-  | "valid"          // YT player onReady fired — video is embeddable
-  | "not-embeddable" // YT player onError 101/150 — owner disabled embedding
-  | "unavailable"    // YT player onError 100 — video not found / private
-  | "invalid-url"    // Unparseable string OR YouTube host with no video ID
-  | "direct-audio";  // Valid non-YouTube URL — treat as direct audio
+  | "checking"       // Calling /api/music/validate (oEmbed check)
+  | "valid"          // Video exists and oEmbed confirms it is accessible
+  | "not-embeddable" // oEmbed 401/403 — owner disabled embedding (error 101/150)
+  | "unavailable"    // oEmbed 404 — video not found / private
+  | "invalid-url"    // Non-parseable string OR YouTube host with no video ID
+  | "direct-audio";  // Valid non-YouTube URL — treat as direct audio (allowed)
+
+// Note: validation and actual IFrame playback are separate checks.
+// The runtime YouTube player in InvitationPage remains responsible for
+// reporting playback errors (153, 101, 150, 100, 5, 2) after the fix.
 
 export interface MusicValidation {
   status: MusicValidationStatus;
@@ -26,8 +30,8 @@ const MESSAGES: Record<MusicValidationStatus, string> = {
   idle:             "",
   checking:         "Checking this video…",
   valid:            "✓ This video is ready to use.",
-  "not-embeddable": "⚠️ This YouTube video can't be played on the invitation website. Please choose another video.",
-  unavailable:      "⚠️ This YouTube video is unavailable. Please choose another video.",
+  "not-embeddable": "⚠️ This YouTube video can't be embedded on other websites. Please choose another video.",
+  unavailable:      "⚠️ This YouTube video is unavailable or private. Please choose another video.",
   "invalid-url":    "⚠️ Please enter a valid YouTube or audio link.",
   "direct-audio":   "",
 };
@@ -52,125 +56,31 @@ function isYouTubeUrl(url: string): boolean {
   } catch { return false; }
 }
 
-// ── YT IFrame API loader ──────────────────────────────────────────────────────
-// Shared promise so we only load the script once across all hook instances.
-let ytApiPromise: Promise<void> | null = null;
-
-function loadYouTubeApi(): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = window as any;
-  if (w.YT?.Player) return Promise.resolve();
-  if (ytApiPromise) return ytApiPromise;
-
-  ytApiPromise = new Promise<void>((resolve) => {
-    const prev = w.onYouTubeIframeAPIReady as (() => void) | undefined;
-    w.onYouTubeIframeAPIReady = () => {
-      prev?.();
-      resolve();
-    };
-    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-      const s = document.createElement("script");
-      s.src = "https://www.youtube.com/iframe_api";
-      s.async = true;
-      document.head.appendChild(s);
-    }
-  });
-
-  return ytApiPromise;
-}
-
-/**
- * Creates a hidden temporary YT.Player to test whether the given videoId
- * can actually be embedded.  Resolves with:
- *   "valid"           — onReady fired (embeddable ✓)
- *   "not-embeddable"  — onError 101 / 150 (owner disabled embedding)
- *   "unavailable"     — onError 100 (video not found / private)
- *   "idle"            — timeout or unrecognised error (don't block save)
- *
- * The temporary player and div are cleaned up after the result is known.
- */
-function testEmbeddability(
-  videoId: string,
-  signal: AbortSignal,
-): Promise<MusicValidationStatus> {
-  return new Promise((resolve) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    let done = false;
-    // eslint-disable-next-line prefer-const
-    let player: { destroy: () => void } | null = null;
-
-    const finish = (status: MusicValidationStatus) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      try { player?.destroy(); } catch { /* ignore */ }
-      div.remove();
-      resolve(status);
-    };
-
-    // 10-second timeout — if YouTube hasn't responded by then, don't block save.
-    const timer = setTimeout(() => finish("idle"), 10_000);
-
-    // Abort support: if the hook re-runs (URL changed), stop waiting.
-    signal.addEventListener("abort", () => finish("idle"), { once: true });
-
-    const div = document.createElement("div");
-    div.style.cssText =
-      "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;";
-    document.body.appendChild(div);
-
-    player = new w.YT.Player(div, {
-      videoId,
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        origin: window.location.origin,
-        host: "https://www.youtube-nocookie.com",
-      },
-      events: {
-        onReady: () => finish("valid"),
-        onError: (e: { data: number }) => {
-          if (e.data === 100) finish("unavailable");
-          else if (e.data === 101 || e.data === 150) finish("not-embeddable");
-          else finish("idle"); // e.g. e.data === 5 (HTML5 player error) — don't block
-        },
-      },
-    });
-  });
-}
-
-const DEBOUNCE_MS = 700;
+const DEBOUNCE_MS = 600;
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 /**
- * Validates a music URL and returns the current validation state.
+ * Validates a music URL using the server-side /api/music/validate endpoint
+ * (YouTube oEmbed check).  This catches videos that don't exist or have
+ * embedding disabled at the metadata level (error 101/150).
  *
- * For YouTube URLs the hook uses a real hidden YT.Player to detect
- * embedding restrictions accurately — the same player that InvitationPage
- * uses.  This means it will correctly catch error 150 (embedding disabled)
- * which the oEmbed API cannot detect.
- *
- * Classification:
- *   - empty           → idle      (no message, save allowed)
- *   - non-URL text    → invalid-url (blocked)
- *   - YouTube + ID    → real YT.Player check (blocking while checking)
- *   - YouTube, no ID  → invalid-url (blocked)
- *   - other valid URL → direct-audio (allowed, existing MP3 behaviour)
+ * Note: runtime errors such as Error 153 (Referrer-Policy misconfiguration)
+ * are server/browser config issues, not per-video issues, and are handled
+ * separately by the Referrer-Policy header in app.ts.
  */
 export function useMusicUrlValidation(url: string): MusicValidation {
   const [status, setStatus] = useState<MusicValidationStatus>("idle");
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    // Cancel any in-progress check from the previous URL.
+    // Cancel any in-progress check from the previous URL value.
     abortRef.current?.abort();
     abortRef.current = null;
 
     const trimmed = url.trim();
 
-    // ── Empty ───────────────────────────────────────────────────────────
+    // ── Empty ──────────────────────────────────────────────────────────
     if (!trimmed) {
       setStatus("idle");
       return undefined;
@@ -178,7 +88,7 @@ export function useMusicUrlValidation(url: string): MusicValidation {
 
     // ── URL parse ──────────────────────────────────────────────────────
     let isValidUrl = false;
-    try { new URL(trimmed); isValidUrl = true; } catch { /* falls through */ }
+    try { new URL(trimmed); isValidUrl = true; } catch { /* not a URL */ }
 
     if (!isValidUrl) {
       setStatus("invalid-url");
@@ -197,15 +107,29 @@ export function useMusicUrlValidation(url: string): MusicValidation {
       const controller = new AbortController();
       abortRef.current = controller;
 
-      // Debounce: wait for user to stop typing before spinning up a player.
       const timer = setTimeout(() => {
-        loadYouTubeApi()
-          .then(() => testEmbeddability(videoId, controller.signal))
-          .then((result) => {
-            if (!controller.signal.aborted) setStatus(result);
+        fetch(`/api/music/validate?videoId=${encodeURIComponent(videoId)}`, {
+          signal: controller.signal,
+        })
+          .then((r) => r.json())
+          .then((data: { embeddable?: boolean; reason?: string }) => {
+            if (controller.signal.aborted) return;
+            if (data.embeddable === true) {
+              setStatus("valid");
+            } else if (data.reason === "not_embeddable") {
+              setStatus("not-embeddable");
+            } else if (data.reason === "not_found") {
+              setStatus("unavailable");
+            } else {
+              // Network issue / unavailable — don't block save on transient errors
+              setStatus("idle");
+            }
           })
-          .catch(() => {
-            if (!controller.signal.aborted) setStatus("idle");
+          .catch((err: unknown) => {
+            if (controller.signal.aborted) return;
+            if ((err as Error)?.name === "AbortError") return;
+            // Network error — be lenient, don't permanently block save
+            setStatus("idle");
           });
       }, DEBOUNCE_MS);
 
