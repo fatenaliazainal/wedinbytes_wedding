@@ -19,6 +19,7 @@ interface YTPlayerInstance {
   pauseVideo(): void;
   mute(): void;
   unMute(): void;
+  setVolume(volume: number): void;
   getPlayerState(): number;
   destroy(): void;
 }
@@ -47,7 +48,7 @@ function fontFamilyStack(fontName?: string | null): string {
   if (normalized.includes(",")) return normalized;
   return `'${normalized}', 'Dancing Script', cursive`;
 }
-import { Volume2, VolumeX, LockKeyhole, Music } from "lucide-react";
+import { Volume2, VolumeX, LockKeyhole } from "lucide-react";
 
 import { resolveImageUrl } from "@/lib/r2-url";
 import { extractYouTubeId } from "@/lib/youtube";
@@ -223,15 +224,6 @@ export default function InvitationPage() {
   //
   // Newer iPads (M1/M2) report userAgent as "Macintosh" — check maxTouchPoints
   // to catch them too.
-  const isIOSSafari = useRef(
-    typeof navigator !== "undefined" &&
-    (
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      // iPad Pro / Air M1+ reports as Macintosh but has touch
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
-    )
-  );
-  const [iosPlayerVisible, setIosPlayerVisible] = useState(false);
 
   // ── HTML5 audio (non-YouTube direct URLs) ────────────────────────────────
   useEffect(() => {
@@ -337,15 +329,16 @@ export default function InvitationPage() {
   // We load https://www.youtube.com/iframe_api, create a YT.Player with
   // autoplay:0, then call player.playVideo() from the real envelope gesture.
   //
-  // Two timing cases:
-  //   A. API ready BEFORE the user taps → playVideo() called synchronously
-  //      in the click handler — user activation is present, Chrome/Safari allow it.
-  //   B. API not ready yet when user taps → store tapPendingRef=true →
-  //      onReady fires (within seconds while user activation is still valid)
-  //      → playVideo() called → plays.
+  // Muted-autoplay + gesture-unmute strategy (works on iOS Safari too):
+  //   1. Player loads with autoplay:1 mute:1 → starts playing silently immediately.
+  //      iOS allows muted autoplay (same as <video muted autoplay>).
+  //   2. User taps envelope → ytPlay() → unMute() + setVolume(100) called
+  //      synchronously IN the gesture handler → iOS allows unmuting during gesture.
+  //   3. Music becomes audible — no extra taps needed on any platform.
   //
-  // iOS Safari: cross-frame gesture restriction means we cannot call
-  // playVideo() on iOS; the existing visible mini-player fallback is kept.
+  // Tap-before-ready timing:
+  //   If the user taps before onReady fires, ytTapPendingRef=true.
+  //   onReady then calls unMute()+setVolume(100)+playVideo() immediately.
   const ytPlayerRef    = useRef<YTPlayerInstance | null>(null);
   const ytPlayerDivRef = useRef<HTMLDivElement | null>(null);
   const ytTapPendingRef = useRef(false);  // user tapped before player was ready
@@ -367,36 +360,34 @@ export default function InvitationPage() {
 
     const div = document.createElement("div");
     div.id = "yt-bg-player";
-    // YouTube's IFrame API requires the player viewport to be at least 200×200.
-    // A 1×1px container can cause "Video player configuration error" (Error 153).
-    // We use a proper 320×180 player but hide it visually: it is positioned
-    // off-screen (above the viewport) and has opacity:0 so guests never see it.
-    // pointer-events:none ensures it never intercepts touches.
+    // Player must be in the viewport for YouTube's autoplay to trigger.
+    // We keep it at top:0 left:0 (corner of the viewport) but fully invisible
+    // via opacity:0 and z-index:-1 (behind all page content).
+    // 320×180 satisfies YouTube's minimum viewport size requirement.
+    // pointer-events:none ensures it never intercepts user touches.
     div.style.cssText =
-      "position:fixed;top:-400px;left:-400px;" +
+      "position:fixed;top:0;left:0;" +
       "width:320px;height:180px;" +
-      "opacity:0;pointer-events:none;overflow:hidden;";
+      "opacity:0;pointer-events:none;z-index:-1;overflow:hidden;";
     document.body.appendChild(div);
     ytPlayerDivRef.current = div;
 
-    // Log origin so we can verify the player is configured with the right host.
     console.log("[music] YouTube origin:", window.location.origin);
-    console.log("[music] window.location.origin:", window.location.origin);
 
     ytPlayerRef.current = new window.YT.Player(div, {
       videoId,
       playerVars: {
-        autoplay: 0,          // do NOT autoplay on load — wait for the real gesture
+        // autoplay:1 + mute:1 — start playing silently as soon as the player
+        // is ready. iOS allows muted autoplay; we unmute on the envelope tap
+        // gesture so no extra taps are needed on any platform.
+        autoplay: 1,
+        mute: 1,
         loop: 1,
         playlist: videoId,    // required for loop to work
-        controls: 0,          // no visible controls — audio only
+        controls: 0,
         playsinline: 1,
         rel: 0,
         modestbranding: 1,
-        // origin is required so YouTube can match the embed against the registered
-        // domain. Must be the actual production origin, not hardcoded dev URL.
-        // youtube-nocookie.com host override removed — it can interfere with the
-        // Referer header matching that YouTube uses to verify origin (Error 153).
         origin: window.location.origin,
         enablejsapi: 1,
       },
@@ -409,11 +400,12 @@ export default function InvitationPage() {
             console.log("[music] YouTube iframe src:", iframe.src);
           }
           setYtStatus("ready");
-          // If the user tapped while the API was still loading, play now.
-          // The browser's user-activation window is ~5s; the API typically
-          // loads in 1-2s, so this fires well within that window.
+          // If the user tapped the envelope while the API was still loading,
+          // unmute + ensure playing now (still within the user-activation window).
           if (ytTapPendingRef.current) {
-            console.log("[music] YT onReady: tap was pending → calling playVideo()");
+            console.log("[music] YT onReady: tap was pending → unmuting + playing");
+            e.target.unMute();
+            e.target.setVolume(100);
             e.target.playVideo();
           }
         },
@@ -484,26 +476,23 @@ export default function InvitationPage() {
     };
   }, [youtubeVideoId, initYtPlayer]);
 
-  // Called synchronously from the envelope tap gesture (desktop / Android).
+  // Called synchronously from the envelope tap gesture (all platforms including iOS).
+  // Strategy: player is already playing muted (autoplay:1 mute:1).
+  // We just unmute it here — this single call is allowed by iOS Safari
+  // because it happens synchronously within the user's gesture handler.
   const ytPlay = useCallback(() => {
-    if (isIOSSafari.current) {
-      // iOS Safari cannot transfer user-activation into the hidden iframe.
-      // Auto-show the mini-player immediately on envelope tap so the user
-      // only needs ONE tap (▶ in the mini-player) instead of two.
-      console.log("[music] ytPlay: iOS — auto-showing mini-player on envelope tap");
-      setIosPlayerVisible(true);
-      return;
-    }
     if (!youtubeVideoId) {
       console.log("[music] ytPlay: no videoId");
       return;
     }
     if (ytPlayerRef.current) {
-      // Player already initialised — call playVideo() while still in gesture context.
-      console.log("[music] ytPlay: player ready → calling playVideo() in gesture");
-      ytPlayerRef.current.playVideo();
+      console.log("[music] ytPlay: unmuting player in gesture context");
+      ytPlayerRef.current.unMute();
+      ytPlayerRef.current.setVolume(100);
+      ytPlayerRef.current.playVideo(); // ensure playing if autoplay was blocked
+      setIsMuted(false);
     } else {
-      // Player still loading — store intent; onReady will call playVideo() for us.
+      // Player still loading — store intent; onReady will unmute for us.
       console.log("[music] ytPlay: player not ready yet → storing tap intent");
       ytTapPendingRef.current = true;
     }
@@ -811,64 +800,18 @@ export default function InvitationPage() {
             transition={{ delay: 1.2, duration: 0.3 }}
             className="fixed top-4 left-4 z-50 flex flex-col gap-2 pointer-events-auto"
           >
-            {isIOSSafari.current && isYouTubeMusic ? (
-              <button
-                onClick={() => setIosPlayerVisible((v) => !v)}
-                type="button"
-                title={iosPlayerVisible ? "Hide music player" : "Play music"}
-                className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
-              >
-                <Music size={15} strokeWidth={2} />
-              </button>
-            ) : (
-              <button
-                onClick={toggleMute}
-                type="button"
-                title={isMuted ? "Unmute" : "Mute music"}
-                className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
-              >
-                {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
-              </button>
-            )}
+            <button
+              onClick={toggleMute}
+              type="button"
+              title={isMuted ? "Unmute" : "Mute music"}
+              className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm border border-primary/20 shadow-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-card transition-colors"
+            >
+              {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* iOS mini YouTube player — visible so the user taps YouTube's own ▶
-          directly. This is the only way to start audio on iOS Safari (direct
-          gesture on the media element itself). */}
-      <AnimatePresence>
-        {isIOSSafari.current && isYouTubeMusic && iosPlayerVisible && youtubeVideoId && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ duration: 0.25 }}
-            className="fixed bottom-20 left-4 z-50 rounded-xl overflow-hidden shadow-2xl"
-            style={{ width: 200, background: "#000" }}
-          >
-            <div className="relative">
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=0&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0`}
-                width="200"
-                height="113"
-                allow="autoplay; encrypted-media"
-                title="Music player"
-                style={{ display: "block", border: "none" }}
-              />
-              <button
-                onClick={() => setIosPlayerVisible(false)}
-                type="button"
-                aria-label="Close music player"
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white flex items-center justify-center text-xs leading-none"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-white/50 text-[10px] text-center py-1 px-2">Tap ▶ to play music</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
 
     </div>

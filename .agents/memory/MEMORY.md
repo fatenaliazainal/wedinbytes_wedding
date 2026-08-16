@@ -47,3 +47,4 @@
 - [Wax seal component coverage](wax-seal-component-coverage.md) — waxSealImageUrl must be wired into ALL opening-animation components (EnvelopeDoors AND EnvelopeAnimation); omitting it from one silently drops the seal for that animation style.
 - [Dev port assignment](dev-port-assignment.md) — Vite on port 8080, API server on port 24366; intentional swap so /invite/* routing hits Vite directly.
 - [YouTube music iOS limit](youtube-music-ios.md) — YouTube IFrame API cannot play audio on iOS Safari; cross-frame gesture context is not transferable; only direct `<audio>` with MP3 works reliably.
+- [YouTube iOS muted-autoplay](youtube-ios-muted-autoplay.md) — muted autoplay + gesture-unmute is the only reliable iOS auto-music approach; mini-player fallback removed.
