@@ -487,7 +487,11 @@ export default function InvitationPage() {
   // Called synchronously from the envelope tap gesture (desktop / Android).
   const ytPlay = useCallback(() => {
     if (isIOSSafari.current) {
-      console.log("[music] ytPlay: iOS — use mini-player fallback");
+      // iOS Safari cannot transfer user-activation into the hidden iframe.
+      // Auto-show the mini-player immediately on envelope tap so the user
+      // only needs ONE tap (▶ in the mini-player) instead of two.
+      console.log("[music] ytPlay: iOS — auto-showing mini-player on envelope tap");
+      setIosPlayerVisible(true);
       return;
     }
     if (!youtubeVideoId) {
