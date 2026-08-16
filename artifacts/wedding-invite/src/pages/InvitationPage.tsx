@@ -367,11 +367,11 @@ export default function InvitationPage() {
 
     const div = document.createElement("div");
     div.id = "yt-bg-player";
-    // Visible bottom-right while we diagnose — shows whether YouTube loads/plays.
+    // Hidden off-screen — guests never see the YouTube player UI.
+    // Controls are disabled; audio only via the mute/unmute button.
     div.style.cssText =
-      "position:fixed;bottom:80px;right:8px;width:200px;height:113px;" +
-      "border-radius:8px;overflow:hidden;z-index:9999;" +
-      "box-shadow:0 4px 16px rgba(0,0,0,0.35);";
+      "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;" +
+      "overflow:hidden;pointer-events:none;";
     document.body.appendChild(div);
     ytPlayerDivRef.current = div;
 
@@ -381,7 +381,7 @@ export default function InvitationPage() {
         autoplay: 0,          // do NOT autoplay on load — wait for the real gesture
         loop: 1,
         playlist: videoId,    // required for loop to work
-        controls: 1,          // visible controls while debugging
+        controls: 0,          // no visible controls — audio only
         playsinline: 1,
         rel: 0,
         modestbranding: 1,
@@ -808,23 +808,6 @@ export default function InvitationPage() {
               >
                 {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
               </button>
-            )}
-            {/* Diagnostic badge — shows YouTube player state while investigating.
-                Remove this block once music is confirmed working. */}
-            {isYouTubeMusic && ytStatus !== "idle" && ytStatus !== "playing" && (
-              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full leading-tight ${
-                ytStatus === "error" || ytStatus === "blocked"
-                  ? "bg-red-500/80 text-white"
-                  : ytStatus === "ready"
-                  ? "bg-green-500/80 text-white"
-                  : "bg-black/50 text-white/80"
-              }`}>
-                {ytStatus === "loading"  && "YT loading"}
-                {ytStatus === "ready"    && "YT ready"}
-                {ytStatus === "paused"   && "YT paused"}
-                {ytStatus === "blocked"  && "YT blocked"}
-                {ytStatus === "error"    && "YT error"}
-              </span>
             )}
           </motion.div>
         )}
