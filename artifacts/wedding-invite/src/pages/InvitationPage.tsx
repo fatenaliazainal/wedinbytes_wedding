@@ -211,9 +211,9 @@ export default function InvitationPage() {
   // Debug: log resolved music values every time they change.
   // Safe to leave in production — console.debug is silent unless DevTools open.
   React.useEffect(() => {
-    console.debug("[music] musicUrl:", musicUrl || "(none)");
-    console.debug("[music] youtubeVideoId:", youtubeVideoId ?? "(not YouTube)");
-    console.debug("[music] isYouTubeMusic:", isYouTubeMusic);
+    console.log("[music] musicUrl:", musicUrl || "(none)");
+    console.log("[music] youtubeVideoId:", youtubeVideoId ?? "(not YouTube)");
+    console.log("[music] isYouTubeMusic:", isYouTubeMusic);
   }, [musicUrl, youtubeVideoId, isYouTubeMusic]);
 
   // ── iOS Safari detection ─────────────────────────────────────────────────
@@ -245,23 +245,23 @@ export default function InvitationPage() {
     // Diagnostic event listeners — help identify if the URL is unreachable
     // or the browser cannot decode the audio resource.
     audio.addEventListener("loadedmetadata", () =>
-      console.debug("[music] audio: loadedmetadata — duration:", audio.duration));
+      console.log("[music] audio: loadedmetadata — duration:", audio.duration));
     audio.addEventListener("canplay", () =>
-      console.debug("[music] audio: canplay"));
+      console.log("[music] audio: canplay"));
     audio.addEventListener("playing", () =>
-      console.debug("[music] audio: playing ✓"));
+      console.log("[music] audio: playing ✓"));
     audio.addEventListener("pause", () =>
-      console.debug("[music] audio: paused"));
+      console.log("[music] audio: paused"));
     audio.addEventListener("stalled", () =>
-      console.debug("[music] audio: stalled (network issue?)"));
+      console.log("[music] audio: stalled (network issue?)"));
     audio.addEventListener("ended", () =>
-      console.debug("[music] audio: ended (loop not working?)"));
+      console.log("[music] audio: ended (loop not working?)"));
     audio.addEventListener("error", () => {
       const e = audio.error;
       const codes: Record<number, string> = {
         1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED",
       };
-      console.debug("[music] audio error — code:", e?.code,
+      console.log("[music] audio error — code:", e?.code,
         codes[e?.code ?? 0] ?? "unknown", "message:", e?.message ?? "(none)");
     });
 
@@ -277,17 +277,17 @@ export default function InvitationPage() {
 
   // Retry on next interaction if .play() was blocked by autoplay policy.
   const attachInteractionRetry = useCallback(() => {
-    console.debug("[music] autoplay blocked — waiting for next user interaction to retry");
+    console.log("[music] autoplay blocked — waiting for next user interaction to retry");
     const retry = () => {
       if (!audioRef.current || audioStartedRef.current) return;
-      console.debug("[music] retry: calling audio.play() on next interaction");
+      console.log("[music] retry: calling audio.play() on next interaction");
       audioRef.current.play()
         .then(() => {
           audioStartedRef.current = true;
-          console.debug("[music] retry: audio.play() ✓ started");
+          console.log("[music] retry: audio.play() ✓ started");
         })
         .catch((err: Error) => {
-          console.debug("[music] retry: audio.play() ✗ still blocked:", err.name, err.message);
+          console.log("[music] retry: audio.play() ✗ still blocked:", err.name, err.message);
         });
     };
     document.addEventListener("touchstart", retry, { once: true, capture: true });
@@ -299,14 +299,14 @@ export default function InvitationPage() {
   // Per spec: do NOT mark audioStartedRef true until play() actually resolves.
   const playAudioNow = useCallback(() => {
     if (!audioRef.current || audioStartedRef.current) return;
-    console.debug("[music] audio.play() calling...");
+    console.log("[music] audio.play() calling...");
     audioRef.current.play()
       .then(() => {
         audioStartedRef.current = true;
-        console.debug("[music] audio.play() ✓ started");
+        console.log("[music] audio.play() ✓ started");
       })
       .catch((err: Error) => {
-        console.debug("[music] audio.play() ✗ blocked:", err.name, "-", err.message);
+        console.log("[music] audio.play() ✗ blocked:", err.name, "-", err.message);
         attachInteractionRetry();
       });
   }, [attachInteractionRetry]);
@@ -315,14 +315,14 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!isOpened || !musicUrl || isYouTubeMusic) return undefined;
     if (!audioStartedRef.current && audioRef.current) {
-      console.debug("[music] fallback autoplay (no-envelope mode): calling audio.play()");
+      console.log("[music] fallback autoplay (no-envelope mode): calling audio.play()");
       audioRef.current.play()
         .then(() => {
           audioStartedRef.current = true;
-          console.debug("[music] fallback autoplay ✓ started");
+          console.log("[music] fallback autoplay ✓ started");
         })
         .catch((err: Error) => {
-          console.debug("[music] fallback autoplay ✗ blocked:", err.name, "-", err.message);
+          console.log("[music] fallback autoplay ✗ blocked:", err.name, "-", err.message);
           attachInteractionRetry();
         });
     }
@@ -363,7 +363,7 @@ export default function InvitationPage() {
   // Called once the API script is loaded and window.YT.Player is available.
   const initYtPlayer = useCallback((videoId: string) => {
     if (ytPlayerRef.current || !window.YT?.Player) return;
-    console.debug("[music] YT: initializing YT.Player for", videoId);
+    console.log("[music] YT: initializing YT.Player for", videoId);
 
     const div = document.createElement("div");
     div.id = "yt-bg-player";
@@ -380,8 +380,8 @@ export default function InvitationPage() {
     ytPlayerDivRef.current = div;
 
     // Log origin so we can verify the player is configured with the right host.
-    console.debug("[music] YouTube origin:", window.location.origin);
-    console.debug("[music] window.location.origin:", window.location.origin);
+    console.log("[music] YouTube origin:", window.location.origin);
+    console.log("[music] window.location.origin:", window.location.origin);
 
     ytPlayerRef.current = new window.YT.Player(div, {
       videoId,
@@ -402,24 +402,24 @@ export default function InvitationPage() {
       },
       events: {
         onReady: (e: { target: YTPlayerInstance }) => {
-          console.debug("[music] YouTube player ready");
+          console.log("[music] YouTube player ready");
           // Log the actual iframe src so we can confirm origin= is correct.
           const iframe = div.querySelector("iframe");
           if (iframe) {
-            console.debug("[music] YouTube iframe src:", iframe.src);
+            console.log("[music] YouTube iframe src:", iframe.src);
           }
           setYtStatus("ready");
           // If the user tapped while the API was still loading, play now.
           // The browser's user-activation window is ~5s; the API typically
           // loads in 1-2s, so this fires well within that window.
           if (ytTapPendingRef.current) {
-            console.debug("[music] YT onReady: tap was pending → calling playVideo()");
+            console.log("[music] YT onReady: tap was pending → calling playVideo()");
             e.target.playVideo();
           }
         },
         onStateChange: (e: { data: number }) => {
           const label = YT_STATE[e.data] ?? `unknown(${e.data})`;
-          console.debug("[music] YouTube state:", e.data, label);
+          console.log("[music] YouTube state:", e.data, label);
           if (e.data === 1) {
             // Actually playing
             setYtStatus("playing");
@@ -429,13 +429,13 @@ export default function InvitationPage() {
             setYtStatus("paused");
           } else if (e.data === -1 && ytTapPendingRef.current) {
             // State -1 (unstarted) after we called playVideo() means autoplay blocked
-            console.debug("[music] YT: state -1 after playVideo() — autoplay blocked by browser");
+            console.log("[music] YT: state -1 after playVideo() — autoplay blocked by browser");
             setYtStatus("blocked");
           }
         },
         onError: (e: { data: number }) => {
           const label = YT_ERROR[e.data] ?? `unknown error code ${e.data}`;
-          console.debug("[music] YouTube error:", e.data, "→", label);
+          console.log("[music] YouTube error:", e.data, "→", label);
           setYtStatus("error");
         },
       },
@@ -446,26 +446,26 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!youtubeVideoId) return;
     setYtStatus("loading");
-    console.debug("[music] YT: setting up for video", youtubeVideoId);
+    console.log("[music] YT: setting up for video", youtubeVideoId);
 
     // Chain any pre-existing global callback so we don't overwrite it.
     const prevCb = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
       prevCb?.();
-      console.debug("[music] YT IFrame API ready (global callback)");
+      console.log("[music] YT IFrame API ready (global callback)");
       initYtPlayer(youtubeVideoId);
     };
 
     // API might already be present from a previous load (e.g. HMR / re-render).
     if (window.YT?.Player) {
-      console.debug("[music] YT API already present — init player immediately");
+      console.log("[music] YT API already present — init player immediately");
       initYtPlayer(youtubeVideoId);
     } else if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
       const script = document.createElement("script");
       script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
       document.head.appendChild(script);
-      console.debug("[music] YT IFrame API script injected");
+      console.log("[music] YT IFrame API script injected");
     }
 
     return () => {
@@ -487,20 +487,20 @@ export default function InvitationPage() {
   // Called synchronously from the envelope tap gesture (desktop / Android).
   const ytPlay = useCallback(() => {
     if (isIOSSafari.current) {
-      console.debug("[music] ytPlay: iOS — use mini-player fallback");
+      console.log("[music] ytPlay: iOS — use mini-player fallback");
       return;
     }
     if (!youtubeVideoId) {
-      console.debug("[music] ytPlay: no videoId");
+      console.log("[music] ytPlay: no videoId");
       return;
     }
     if (ytPlayerRef.current) {
       // Player already initialised — call playVideo() while still in gesture context.
-      console.debug("[music] ytPlay: player ready → calling playVideo() in gesture");
+      console.log("[music] ytPlay: player ready → calling playVideo() in gesture");
       ytPlayerRef.current.playVideo();
     } else {
       // Player still loading — store intent; onReady will call playVideo() for us.
-      console.debug("[music] ytPlay: player not ready yet → storing tap intent");
+      console.log("[music] ytPlay: player not ready yet → storing tap intent");
       ytTapPendingRef.current = true;
     }
   }, [youtubeVideoId]);
@@ -669,7 +669,7 @@ export default function InvitationPage() {
         <EnvelopeAnimation
           isOpened={isOpened}
           onTap={() => {
-            console.debug("[music] envelope tap (EnvelopeAnimation) — isYouTubeMusic:", isYouTubeMusic);
+            console.log("[music] envelope tap (EnvelopeAnimation) — isYouTubeMusic:", isYouTubeMusic);
             if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
           }}
@@ -685,7 +685,7 @@ export default function InvitationPage() {
         <EnvelopeDoors
           isOpened={isOpened}
           onOpen={() => {
-            console.debug("[music] envelope open (EnvelopeDoors) — isYouTubeMusic:", isYouTubeMusic);
+            console.log("[music] envelope open (EnvelopeDoors) — isYouTubeMusic:", isYouTubeMusic);
             if (isYouTubeMusic) { ytPlay(); }
             else { playAudioNow(); }
             setIsOpened(true);
