@@ -57,7 +57,15 @@ app.use(
               // API script (https://www.youtube.com/iframe_api) can load.
               // Without this the YT global never exists and player.playVideo()
               // can never be called, making all YouTube music silent.
-              scriptSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
+              scriptSrc: [
+                "'self'",
+                "https://www.youtube.com",
+                "https://www.youtube-nocookie.com",
+                // SHA-256 hash of the inline content-protection script in index.html
+                // (right-click block, F12 / Ctrl+Shift+I block, image drag prevention).
+                // Update this hash whenever that script changes.
+                "'sha256-04UjFwSWw5Csw3iUGAFF8G5ivGIgSe834ianBpptCGM='",
+              ],
               styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
