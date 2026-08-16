@@ -49,6 +49,7 @@ const FEATURE_ICONS = [
   { icon: Images,        label: "Photo Gallery" },
   { icon: Shirt,         label: "Dress Code" },
   { icon: ClipboardList, label: "Event Programme" },
+  { icon: UserCheck,     label: "RSVP" },
   { icon: Phone,         label: "Contact Host" },
   { icon: QrCode,        label: "QR Code" },
 ] as const;
@@ -398,6 +399,7 @@ export default function MarketingHomePage() {
               { icon: Images,        name: "Photo Gallery",     desc: "Share beautiful moments together." },
               { icon: Shirt,         name: "Dress Code",        desc: "Help guests know what to wear." },
               { icon: ClipboardList, name: "Event Programme",   desc: "Keep your guests in the loop." },
+              { icon: UserCheck,     name: "RSVP",              desc: "Track attendance confirmations in real time." },
               { icon: Phone,         name: "Contact Host",      desc: "Guests can reach out to the host easily." },
               { icon: QrCode,        name: "QR Code",           desc: "Share or print with a scan." },
             ].map(({ icon: Icon, name, desc }) => (
