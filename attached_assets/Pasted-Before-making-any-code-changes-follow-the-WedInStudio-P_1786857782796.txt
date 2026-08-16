@@ -1,0 +1,107 @@
+Before making any code changes, follow the WedInStudio Production Change Safety Rules.
+
+TASK:
+
+Investigate the following 3 console errors ONLY. Do NOT make any code changes during this investigation.
+
+ISSUE 1 — CSP Inline Script Error
+
+CURRENT BEHAVIOUR:
+
+The `/editor` page shows the following browser console error:
+
+`Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com'`
+
+The error appears around:
+
+`/editor?token=...&package=2:117`
+
+EXPECTED BEHAVIOUR:
+
+The editor should load and function normally without unnecessary CSP violations.
+
+ISSUE 2 — CSP Inline Event Handler Error
+
+CURRENT BEHAVIOUR:
+
+The `/editor` page shows:
+
+`Executing inline event handler violates the following Content Security Policy directive 'script-src-attr 'none'`
+
+The error appears around:
+
+`/editor?token=...&package=2:46`
+
+EXPECTED BEHAVIOUR:
+
+The editor should function normally without unnecessary CSP violations.
+
+ISSUE 3 — Async Listener Error
+
+CURRENT BEHAVIOUR:
+
+The `/pricing` page shows:
+
+`Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`
+
+EXPECTED BEHAVIOUR:
+
+Determine whether this error is actually caused by WedInStudio, a third-party library, browser tooling, or a browser extension. The application should not be changed if the error is unrelated to our code.
+
+SCOPE:
+
+Only investigate the 3 issues described above.
+
+DO NOT:
+
+* Refactor unrelated code
+* Change unrelated features
+* Change UI/UX unless explicitly stated
+* Change database/schema
+* Change existing business logic
+* Rename existing components/functions/variables
+* Modify unrelated files
+* Fix other issues discovered during investigation
+* Modify CSP headers
+* Weaken any existing security protection
+* Modify authentication/session logic
+* Install new packages
+* Apply fixes automatically
+* Deploy any changes
+
+FIRST:
+
+Investigate all 3 issues WITHOUT changing any code.
+
+For each issue, report:
+
+1. Root cause
+2. Exact files involved
+3. Exact line(s) involved
+4. Exact code/logic responsible
+5. Whether the issue originates from our application, third-party code, browser tooling, or browser extension
+6. Potential impact
+7. Potential regression risks
+8. Smallest possible fix recommendation
+9. What will remain untouched
+
+IMPORTANT:
+
+For Issue 1 and Issue 2, specifically trace the source of the `/editor` errors around the reported line numbers.
+
+For Issue 3, do NOT assume it is an application bug. Determine whether it originates from browser extensions, browser tooling, third-party scripts, or WedInStudio code.
+
+DO NOT IMPLEMENT UNTIL THE INVESTIGATION IS COMPLETE.
+
+After the investigation, STOP and wait for my approval.
+
+Do NOT implement any proposed fix until I explicitly approve it.
+
+After I approve a proposed change, implement ONLY the smallest possible fix for the specific approved issue.
+
+After implementation:
+
+1. Verify that the requested issue is fixed.
+2. Verify that existing behaviour remains unchanged.
+3. Verify that no unrelated files/features were modified.
+4. Report exactly what was changed.
