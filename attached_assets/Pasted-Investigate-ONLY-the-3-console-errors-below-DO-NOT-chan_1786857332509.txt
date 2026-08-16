@@ -1,0 +1,137 @@
+Investigate ONLY the 3 console errors below. DO NOT change, modify, refactor, fix, or deploy any code yet.
+
+This is INVESTIGATION ONLY. I want you to identify the exact root cause of each error and report your findings.
+
+## Error 1 — CSP Inline Script
+
+Console error:
+
+`Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com'`
+
+The error appears on:
+
+`/editor?token=...&package=2:117`
+
+Please investigate specifically around line 117 and identify:
+
+* Which file/component generates this inline script.
+* The exact code responsible.
+* Whether this is our own application code or a third-party/external script.
+* Why the current CSP blocks it.
+* Whether the inline script is actually required for the editor to function.
+* Whether this is related to YouTube integration or something else.
+
+Do NOT modify the CSP or the script.
+
+---
+
+## Error 2 — CSP Inline Event Handler
+
+Console error:
+
+`Executing inline event handler violates the following Content Security Policy directive 'script-src-attr 'none'`
+
+The error appears on:
+
+`/editor?token=...&package=2:46`
+
+Please investigate specifically around line 46 and identify:
+
+* Which file/component generates the inline event handler.
+* The exact event handler involved.
+* Whether it is `onclick`, `onchange`, `onload`, etc.
+* Whether it comes from our application code, a third-party library, browser tooling, or an external script.
+* Why the current CSP blocks it.
+* Whether this event handler is required for the editor to function.
+
+Do NOT modify the CSP or the event handler.
+
+---
+
+## Error 3 — Async Listener Error
+
+Console error:
+
+`Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`
+
+The console points to:
+
+`/pricing:1`
+
+Please investigate whether this error originates from:
+
+1. Our application code,
+2. A third-party library,
+3. A browser extension,
+4. Development tooling, or
+5. Another external script.
+
+Trace the source as far as possible.
+
+IMPORTANT:
+Do NOT assume this is an application bug just because it appears in the console.
+
+If it is caused by a browser extension or browser tooling, clearly state that and explain why.
+
+Do NOT modify any code for this error.
+
+---
+
+# IMPORTANT RULES
+
+* INVESTIGATION ONLY.
+* DO NOT change any code.
+* DO NOT modify CSP headers.
+* DO NOT modify authentication/session logic.
+* DO NOT modify `/editor` functionality.
+* DO NOT modify `/pricing`.
+* DO NOT install packages.
+* DO NOT refactor anything.
+* DO NOT "clean up" unrelated code.
+* DO NOT apply any fixes automatically.
+* DO NOT deploy anything.
+* Do not make changes outside the investigation of these 3 errors.
+* Do not assume the root cause. Trace each error to the actual source.
+* If an error is harmless/non-blocking, clearly state that.
+* If an error is caused by the browser rather than our application, clearly state that.
+
+## Final Report
+
+Return ONLY an investigation report with this structure:
+
+### 1. Error #1 — CSP Inline Script
+
+* Root cause:
+* File/component:
+* Line:
+* Source:
+* Impact:
+* Recommended fix:
+
+### 2. Error #2 — CSP Inline Event Handler
+
+* Root cause:
+* File/component:
+* Line:
+* Source:
+* Impact:
+* Recommended fix:
+
+### 3. Error #3 — Async Listener
+
+* Root cause:
+* Source:
+* File/component (if applicable):
+* Impact:
+* Recommended fix:
+
+### 4. Overall Assessment
+
+Tell me:
+
+* Which errors are actual application issues.
+* Which errors can be safely ignored.
+* Which errors should be fixed first.
+* Whether any current security protection should NOT be weakened.
+
+REMEMBER: Recommendations only. DO NOT IMPLEMENT ANY FIXES.
