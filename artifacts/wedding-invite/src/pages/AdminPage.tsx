@@ -1270,17 +1270,27 @@ function DesignForm({
                 value={form.musicUrl}
                 onChange={set("musicUrl")}
                 onValidationChange={setMusicUrlBlocking}
+                onMetadata={(title, author) => {
+                  if (title !== null) set("musicTitle")(title);
+                  if (author !== null) set("musicArtist")(author);
+                }}
                 inputClassName="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="/music/spb.mp3 or https://youtu.be/..."
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Song Title</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Song Title
+                  <span className="ml-1 font-normal text-muted-foreground/60">(auto dari YouTube)</span>
+                </label>
                 <input className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="Song Title" value={form.musicTitle} onChange={(e) => set("musicTitle")(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Artis</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Artis
+                  <span className="ml-1 font-normal text-muted-foreground/60">(auto dari YouTube)</span>
+                </label>
                 <input className="w-full rounded-xl border border-border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" placeholder="Exist" value={form.musicArtist} onChange={(e) => set("musicArtist")(e.target.value)} />
               </div>
             </div>

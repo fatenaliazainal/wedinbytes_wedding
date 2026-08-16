@@ -35,7 +35,14 @@ router.get("/music/validate", async (req, res) => {
     });
 
     if (upstream.ok) {
-      res.json({ embeddable: true });
+      // Parse oEmbed body for title and author so editors can auto-fill them.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = await upstream.json().catch(() => ({}));
+      res.json({
+        embeddable: true,
+        title:  typeof data.title       === "string" ? data.title       : null,
+        author: typeof data.author_name === "string" ? data.author_name : null,
+      });
       return;
     }
 

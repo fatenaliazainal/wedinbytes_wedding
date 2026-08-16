@@ -4064,6 +4064,13 @@ export default function EditorPage({
                     value={design.musicUrl}
                     onChange={(v) => setDesign((p) => ({ ...p, musicUrl: v }))}
                     onValidationChange={setMusicUrlBlocking}
+                    onMetadata={(title, author) =>
+                      setDesign((p) => ({
+                        ...p,
+                        ...(title !== null  ? { musicTitle:  title  } : {}),
+                        ...(author !== null ? { musicArtist: author } : {}),
+                      }))
+                    }
                     inputClassName={inputCls}
                     placeholder={t("placeholders.musicUrl")}
                   />

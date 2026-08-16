@@ -22,6 +22,10 @@ export interface MusicValidation {
   message: string;
   /** True = save button must be disabled until status resolves. */
   isBlocking: boolean;
+  /** YouTube video title, populated when status === "valid". Null otherwise. */
+  title: string | null;
+  /** YouTube channel/artist name, populated when status === "valid". Null otherwise. */
+  author: string | null;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -71,6 +75,8 @@ const DEBOUNCE_MS = 600;
  */
 export function useMusicUrlValidation(url: string): MusicValidation {
   const [status, setStatus] = useState<MusicValidationStatus>("idle");
+  const [title,  setTitle]  = useState<string | null>(null);
+  const [author, setAuthor] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -83,6 +89,8 @@ export function useMusicUrlValidation(url: string): MusicValidation {
     // ── Empty ──────────────────────────────────────────────────────────
     if (!trimmed) {
       setStatus("idle");
+      setTitle(null);
+      setAuthor(null);
       return undefined;
     }
 
@@ -112,17 +120,22 @@ export function useMusicUrlValidation(url: string): MusicValidation {
           signal: controller.signal,
         })
           .then((r) => r.json())
-          .then((data: { embeddable?: boolean; reason?: string }) => {
+          .then((data: { embeddable?: boolean; reason?: string; title?: string | null; author?: string | null }) => {
             if (controller.signal.aborted) return;
             if (data.embeddable === true) {
               setStatus("valid");
+              setTitle(data.title ?? null);
+              setAuthor(data.author ?? null);
             } else if (data.reason === "not_embeddable") {
               setStatus("not-embeddable");
+              setTitle(null); setAuthor(null);
             } else if (data.reason === "not_found") {
               setStatus("unavailable");
+              setTitle(null); setAuthor(null);
             } else {
               // Network issue / unavailable — don't block save on transient errors
               setStatus("idle");
+              setTitle(null); setAuthor(null);
             }
           })
           .catch((err: unknown) => {
@@ -141,6 +154,8 @@ export function useMusicUrlValidation(url: string): MusicValidation {
 
     // ── Direct audio / non-YouTube URL ─────────────────────────────────
     setStatus("direct-audio");
+    setTitle(null);
+    setAuthor(null);
     return undefined;
   }, [url]);
 
@@ -148,5 +163,7 @@ export function useMusicUrlValidation(url: string): MusicValidation {
     status,
     message: MESSAGES[status],
     isBlocking: BLOCKING[status],
+    title,
+    author,
   };
 }
