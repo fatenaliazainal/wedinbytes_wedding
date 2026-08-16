@@ -1,0 +1,163 @@
+WEDINSTUDIO — PRODUCTION CHANGE SAFETY RULES
+
+You are working on a live production application called Wedinstudio.
+
+The application is expected to serve 300+ new users per month. Existing features, customer data, designs, editor behaviour, and production workflows must be treated as stable production systems.
+
+Your highest priority is:
+
+FIX THE REQUESTED ISSUE WITHOUT BREAKING OR CHANGING ANYTHING ELSE.
+
+CORE RULES
+
+1. NEVER modify unrelated features.
+2. NEVER refactor code unless explicitly requested.
+3. NEVER rewrite or restructure working code just because you think it can be improved.
+4. NEVER change UI, UX, styling, layout, wording, or behaviour unless explicitly requested.
+5. NEVER change database schema, data structure, API contracts, routes, authentication, permissions, or business logic unless explicitly requested.
+6. NEVER rename existing functions, variables, components, routes, database fields, or API fields unless explicitly requested.
+7. NEVER remove existing functionality unless explicitly requested.
+8. Prefer the SMALLEST POSSIBLE CHANGE that solves the requested problem.
+9. Preserve all existing behaviour outside the requested scope.
+10. Do not “clean up” nearby code while fixing an issue.
+11. Do not fix additional issues discovered during the task unless explicitly approved.
+12. If you discover another issue, report it separately and DO NOT modify it.
+13. If the requested change may affect another feature, STOP and explain the risk before making the change.
+14. Do not assume that a similar-looking component should also be changed.
+15. Always inspect existing code and understand the current flow before editing.
+
+REQUIRED WORKFLOW
+
+Every development task MUST follow this sequence:
+
+STEP 1 — INVESTIGATE
+
+Before changing any code:
+
+* Identify the exact issue.
+* Reproduce or trace the problem where possible.
+* Identify the root cause.
+* Identify the exact files involved.
+* Identify dependencies and possible regression risks.
+
+DO NOT MODIFY CODE DURING THIS STEP.
+
+STEP 2 — PROPOSE
+
+Before implementation, provide:
+
+* Root cause
+* Files that need modification
+* Exact changes you intend to make
+* What will NOT be changed
+* Potential regression risks
+
+Wait for approval if the change has meaningful risk or affects multiple systems.
+
+STEP 3 — IMPLEMENT
+
+After approval:
+
+* Make only the approved changes.
+* Keep the patch as small as possible.
+* Do not refactor unrelated code.
+* Do not modify unrelated files.
+* Do not introduce new dependencies unless necessary.
+* Preserve all existing behaviour outside the requested scope.
+
+STEP 4 — VERIFY
+
+After implementation:
+
+* Run the appropriate build/typecheck/tests.
+* Verify the original issue is fixed.
+* Check related functionality that could realistically be affected.
+* Check for unintended changes.
+* Review the final files changed.
+
+Report:
+
+* Files changed
+* What changed
+* What was intentionally NOT changed
+* Verification performed
+* Any remaining risks
+
+CHANGE SCOPE RULE
+
+If the task says:
+
+“Fix X”
+
+You must interpret the scope as:
+
+Fix X only.
+
+Do NOT interpret it as:
+
+“Improve X”
+
+“Refactor X”
+
+“Modernize X”
+
+“Clean up X”
+
+“Fix everything related to X”
+
+unless explicitly requested.
+
+DISCOVERED ISSUES
+
+If you discover another problem while working:
+
+DO NOT FIX IT.
+
+Report:
+
+DISCOVERED ISSUE:
+
+* Description:
+* File:
+* Possible impact:
+* Recommended follow-up:
+
+The discovered issue must remain unchanged.
+
+CRITICAL PRODUCTION SYSTEMS
+
+Treat these systems as high-risk:
+
+* Authentication
+* Authorization
+* Admin panel
+* Business panel
+* Customer panel
+* Design editor
+* Customer website rendering
+* RSVP
+* Music/audio
+* Envelope/opening interaction
+* Payment
+* Orders
+* Customer data
+* Database
+* File storage
+* Publishing/deployment
+* Existing production designs
+
+Changes involving these systems require extra caution.
+
+FINAL RULE
+
+When uncertain:
+
+DO NOT GUESS.
+
+Stop and explain what is uncertain, what could be affected, and what information or approval is needed.
+
+A smaller safe fix is always preferred over a larger clever fix.
+
+The goal is not to make the code “better”.
+
+The goal is to make the requested change safely while preserving existing production behaviour.
