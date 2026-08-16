@@ -970,11 +970,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-4">
                 <div className="text-center">
                   <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.totalGuests}</p>
-                  <p className="text-xs uppercase tracking-wider text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.attendingLabel}</p>
+                  <p className="text-xs uppercase tracking-wider" style={{ fontFamily: bodyFontFamily, color: "var(--color-heading, hsl(var(--primary)))" }}>{t.attendingLabel}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl font-semibold text-primary" style={{ fontFamily: nameStyle.fontFamily }}>{rsvpCount.notAttending}</p>
-                  <p className="text-xs uppercase tracking-wider text-foreground/70" style={{ fontFamily: bodyFontFamily }}>{t.notAttendingLabel}</p>
+                  <p className="text-xs uppercase tracking-wider" style={{ fontFamily: bodyFontFamily, color: "var(--color-heading, hsl(var(--primary)))" }}>{t.notAttendingLabel}</p>
                 </div>
               </div>
             )}
