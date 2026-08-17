@@ -332,6 +332,17 @@ router.post("/payment/billplz/create-bill", async (req, res) => {
     const [pkg] = await db.select().from(pricingPackageTable).where(eq(pricingPackageTable.id, invitation.packageId)).limit(1);
     if (!pkg) { res.status(400).json({ error: "Pricing package not found." }); return; }
 
+    // Use promo price when an active promotion exists, otherwise use the base price.
+    const now = new Date();
+    const promoStart = pkg.promoStartDate ? new Date(pkg.promoStartDate) : null;
+    const promoEnd   = pkg.promoEndDate   ? new Date(pkg.promoEndDate + "T23:59:59") : null;
+    const isPromoActive = Boolean(
+      pkg.promoPrice &&
+      (!promoStart || now >= promoStart) &&
+      (!promoEnd   || now <= promoEnd),
+    );
+    const effectivePrice = isPromoActive ? pkg.promoPrice! : pkg.price;
+
     let replacedExpired = false;
 
     if (!existingOrder) {
@@ -389,7 +400,7 @@ router.post("/payment/billplz/create-bill", async (req, res) => {
         paymentStatus: "PENDING",
         paymentReference: externalReference,
         paymentGateway: "billplz",
-        amount: pkg.price,
+        amount: effectivePrice,
       })
       .returning())[0];
     if (!order) throw new Error("Failed to create order.");
@@ -404,7 +415,7 @@ router.post("/payment/billplz/create-bill", async (req, res) => {
       const bill = await createBillplzBill({
         externalReference,
         description: `${pkg.name} wedding invitation`,
-        amount: pkg.price,
+        amount: effectivePrice,
         payerName: payer?.name ?? "Wedinstudio Customer",
         payerEmail: payer?.email ?? "",
       });
@@ -412,7 +423,7 @@ router.post("/payment/billplz/create-bill", async (req, res) => {
       await db.update(orderTable).set({
         billCode: bill.billId,
         billCodeCreatedAt: new Date(),
-        amount: pkg.price,
+        amount: effectivePrice,
         paymentGateway: "billplz",
         updatedAt: new Date(),
       }).where(eq(orderTable.id, order.id));

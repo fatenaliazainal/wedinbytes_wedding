@@ -331,6 +331,17 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       return;
     }
 
+    // Use promo price when an active promotion exists, otherwise use the base price.
+    const now = new Date();
+    const promoStart = pkg.promoStartDate ? new Date(pkg.promoStartDate) : null;
+    const promoEnd   = pkg.promoEndDate   ? new Date(pkg.promoEndDate + "T23:59:59") : null;
+    const isPromoActive = Boolean(
+      pkg.promoPrice &&
+      (!promoStart || now >= promoStart) &&
+      (!promoEnd   || now <= promoEnd),
+    );
+    const effectivePrice = isPromoActive ? pkg.promoPrice! : pkg.price;
+
     // The dashboard normally sends an invitationId, not an orderId. Reuse the
     // invitation's latest pending order as well, otherwise every Pay Now click
     // would create another order and another ToyyibPay bill.
@@ -389,7 +400,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         paymentStatus: "PENDING",
         paymentReference: externalReference,
         paymentGateway: "toyyibpay",
-        amount: pkg.price,
+        amount: effectivePrice,
       })
       .returning())[0];
     if (!order) throw new Error("Failed to create order.");
@@ -460,7 +471,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
         externalReference,
         billName: `Wedinstudio ${pkg.name}`,
         billDescription: `${pkg.name} wedding invitation`,
-        amount: pkg.price,
+        amount: effectivePrice,
         payerName: payer?.name ?? "Wedinstudio customer",
         payerEmail: payer?.email ?? "",
         payerPhone: invitation.contactPhone?.trim() || businessProfile?.phone?.trim() || undefined,
@@ -471,7 +482,7 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       // would otherwise drift from the bill amount and break verification matching.
       await db
         .update(orderTable)
-        .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), amount: pkg.price, updatedAt: new Date() })
+        .set({ billCode: bill.billCode, billCodeCreatedAt: new Date(), amount: effectivePrice, updatedAt: new Date() })
         .where(eq(orderTable.id, order.id));
 
       res.status(201).json({ orderId: order.id, paymentUrl: bill.paymentUrl, billCode: bill.billCode, replacedExpired });
