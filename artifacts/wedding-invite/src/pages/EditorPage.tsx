@@ -477,6 +477,7 @@ export default function EditorPage({
   const [previewWasOpened, setPreviewWasOpened] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingInitials, setUploadingInitials] = useState(false);
+  const [initialsImageCacheBust, setInitialsImageCacheBust] = useState(0);
   const [previewActiveTab, setPreviewActiveTab] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -1787,6 +1788,7 @@ export default function EditorPage({
         return;
       }
       setInv((p) => ({ ...p, initialsImageUrl: data.key || "" }));
+      setInitialsImageCacheBust(Date.now());
       toast.success("Initial artwork berjaya disimpan.");
     } catch {
       toast.error("Network error semasa upload artwork initials.");
@@ -1987,6 +1989,12 @@ export default function EditorPage({
 
   const primaryHsl = design.colorPrimary || "142 45% 35%";
   const primaryCss = `hsl(${primaryHsl})`;
+
+  // Cache-busted URL so the browser re-fetches the PNG after every upload,
+  // even when the R2 object key is the same deterministic path.
+  const initialsImageSrc = inv.initialsImageUrl
+    ? `${resolveImageUrl(inv.initialsImageUrl)}&t=${initialsImageCacheBust}`
+    : undefined;
 
   return (
     <div className="min-h-[100dvh] bg-[#faf9f7] flex flex-col">
@@ -2258,7 +2266,7 @@ export default function EditorPage({
                   {inv.initialsImageUrl && (
                     <>
                       <img
-                        src={resolveImageUrl(inv.initialsImageUrl)}
+                        src={initialsImageSrc}
                         alt="Uploaded logo preview"
                         className="mt-2 h-24 w-24 object-contain"
                         style={{
@@ -4277,9 +4285,7 @@ export default function EditorPage({
                   }}
                   names={inv.envelopeInitials}
                   initialsSize={inv.envelopeInitialsSize}
-                  initialsImageUrl={
-                    resolveImageUrl(inv.initialsImageUrl) || undefined
-                  }
+                  initialsImageUrl={initialsImageSrc}
                   initialsImageScale={inv.initialsImageScale}
                   envelopeImageUrl={resolveImageUrl(
                     design.envelopeImageUrl ||
@@ -4305,9 +4311,7 @@ export default function EditorPage({
                   }}
                   names={inv.envelopeInitials}
                   initialsSize={inv.envelopeInitialsSize}
-                  initialsImageUrl={
-                    resolveImageUrl(inv.initialsImageUrl) || undefined
-                  }
+                  initialsImageUrl={initialsImageSrc}
                   initialsImageScale={inv.initialsImageScale}
                   envelopeImageUrl={resolveImageUrl(
                     design.envelopeImageUrl ||
