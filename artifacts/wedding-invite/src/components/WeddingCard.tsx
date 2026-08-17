@@ -222,7 +222,7 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
 
 function OrnamentDivider() {
   return (
-    <div className="flex items-center justify-center w-full my-1 text-accent">
+    <div className="flex items-center justify-center w-full text-accent">
       <div
         style={{
           width: '160px',
@@ -698,7 +698,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
   const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
-  const detailBlock = "w-full max-w-sm text-center space-y-2";
+  const detailBlock = "w-full max-w-sm text-center space-y-1";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] uppercase" +
     " [color:var(--color-muted,hsl(var(--foreground)/0.5))]";
   const sectionTitleCls = "";
