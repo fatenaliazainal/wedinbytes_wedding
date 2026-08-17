@@ -226,7 +226,7 @@ function OrnamentDivider() {
       <div
         style={{
           width: '160px',
-          height: '48px',
+          height: '36px',
           backgroundColor: 'currentColor',
           opacity: 0.5,
           WebkitMaskImage: 'url(/ornament-divider2.png)',
@@ -698,7 +698,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
 
   const sectionBase = "relative min-h-(--card-viewport-height,100dvh) flex flex-col items-center justify-center overflow-hidden";
   const coverPanelBase = "relative z-10 flex flex-col items-center text-center px-7 py-10 gap-4 w-full";
-  const detailBlock = "w-full max-w-sm text-center space-y-4";
+  const detailBlock = "w-full max-w-sm text-center space-y-2";
   const detailLabel = "text-xs font-semibold tracking-[0.28em] uppercase" +
     " [color:var(--color-muted,hsl(var(--foreground)/0.5))]";
   const sectionTitleCls = "";
@@ -815,7 +815,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
       {/* ── GROUP 2 / ALL REMAINING INVITATION SECTIONS — envelopeImageUrl background ── */}
       <section className="relative z-10">
         <PageBackground imageUrl={envelopeImageUrl || cardImageUrl} overlay />
-        <div className="relative z-10 flex flex-col items-center gap-8 pt-16 pb-28 px-[60px]">
+        <div className="relative z-10 flex flex-col items-center gap-5 pt-16 pb-28 px-[60px]">
 
           <RevealOnScroll>
           {/* Invitation Text */}
