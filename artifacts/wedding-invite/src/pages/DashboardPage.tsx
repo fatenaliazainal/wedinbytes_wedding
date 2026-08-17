@@ -768,7 +768,7 @@ export default function DashboardPage() {
         <ReviewPromptModal
           defaultName={user.name ?? ""}
           onClose={() => setShowReviewModal(false)}
-          onReviewed={() => { setReviewed(true); setShowReviewModal(false); }}
+          onReviewed={() => { setReviewed(true); }}
         />
       )}
       {qrCard && (

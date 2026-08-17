@@ -113,7 +113,7 @@ export default function ReviewPromptModal({ defaultName = "", onClose, onReviewe
             </p>
             <button
               type="button"
-              onClick={() => { markReviewed(); setVisible(false); onClose?.(); }}
+              onClick={() => { markReviewed(); onClose?.(); }}
               className="mt-6 w-full rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white transition hover:opacity-80"
             >
               Close
