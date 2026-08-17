@@ -1761,15 +1761,15 @@ export default function EditorPage({
   async function uploadInitialsFile(file: File | null) {
     if (!file) return;
     if (file.type !== "image/png") {
-      toast.error("Initial artwork mesti PNG dengan transparent background.");
+      toast.error("Logo must be a PNG file with a transparent background.");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Initial artwork maksimum 2 MB.");
+      toast.error("Logo file must be 2 MB or smaller.");
       return;
     }
     if (!inv.token) {
-      toast.error("Simpan kad dahulu sebelum upload artwork initials.");
+      toast.error("Please save your card first before uploading a logo.");
       return;
     }
     setUploadingInitials(true);
@@ -1784,14 +1784,14 @@ export default function EditorPage({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(data.error || "Initial artwork upload gagal.");
+        toast.error(data.error || "Logo upload failed. Please try again.");
         return;
       }
       setInv((p) => ({ ...p, initialsImageUrl: data.key || "" }));
       setInitialsImageCacheBust(Date.now());
-      toast.success("Initial artwork berjaya disimpan.");
+      toast.success("Logo uploaded successfully.");
     } catch {
-      toast.error("Network error semasa upload artwork initials.");
+      toast.error("Network error while uploading logo. Please try again.");
     } finally {
       setUploadingInitials(false);
     }
@@ -2243,10 +2243,10 @@ export default function EditorPage({
                   <label className="flex cursor-pointer items-center justify-between rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <span>
                       {uploadingInitials
-                        ? "Memuat naik..."
+                        ? "Uploading..."
                         : inv.initialsImageUrl
-                          ? "Tukar logo"
-                          : "Muat naik logo"}
+                          ? "Change logo"
+                          : "Upload your logo"}
                     </span>
                     <input
                       type="file"
@@ -2260,8 +2260,12 @@ export default function EditorPage({
                     />
                   </label>
                   <p className="text-xs text-gray-400">
-                    Optional. Sila gunakan PNG dengan transparent background.
-                    Maksimum 2 MB.
+                    Optional. Please upload a PNG file with a transparent background. Maximum size: 2 MB.
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    💡 Tip: You can use{" "}
+                    <a href="https://www.remove.bg" target="_blank" rel="noreferrer" className="underline hover:text-gray-600">remove.bg</a>
+                    {" "}to easily remove the background from your logo for free.
                   </p>
                   {inv.initialsImageUrl && (
                     <>
@@ -2297,7 +2301,7 @@ export default function EditorPage({
                           setInv((p) => ({ ...p, initialsImageUrl: "" }))
                         }
                       >
-                        Buang logo
+                        Remove logo
                       </button>
                     </>
                   )}
