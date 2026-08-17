@@ -518,6 +518,9 @@ router.post("/order-initials-upload", initialsUpload.single("file"), async (req,
         invitationToken,
       },
     });
+    // Evict the stale server-side cache entry so the next /api/r2 request
+    // fetches the newly uploaded image from R2 instead of the old cached buffer.
+    r2Cache.delete(imageKey);
 
     const [updatedInvitation] = await db
       .update(invitationTable)
