@@ -360,6 +360,13 @@ router.post("/payment/billplz/create-bill", async (req, res) => {
       replacedExpired = true;
     }
 
+    // If the buyer changed their package since the order was created, expire the
+    // stale order so a fresh one is issued with the correct package and price.
+    if (existingOrder && existingOrder.packageId !== invitation.packageId) {
+      await db.update(orderTable).set({ paymentStatus: "EXPIRED", updatedAt: new Date() }).where(eq(orderTable.id, existingOrder.id));
+      existingOrder = undefined;
+    }
+
     if (!existingOrder && !replacedExpired) {
       const [expiredOrder] = await db
         .select({ id: orderTable.id }).from(orderTable)

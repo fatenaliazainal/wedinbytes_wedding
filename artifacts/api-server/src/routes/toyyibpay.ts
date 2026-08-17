@@ -374,6 +374,16 @@ router.post("/payment/toyyibpay/create-bill", async (req, res) => {
       replacedExpired = true;
     }
 
+    // If the buyer changed their package since the order was created, expire the
+    // stale order so a fresh one is issued with the correct package and price.
+    if (existingOrder && existingOrder.packageId !== invitation.packageId) {
+      await db
+        .update(orderTable)
+        .set({ paymentStatus: "EXPIRED", updatedAt: new Date() })
+        .where(eq(orderTable.id, existingOrder.id));
+      existingOrder = undefined;
+    }
+
     // If there is no fresh PENDING order to reuse, check whether there are any
     // EXPIRED orders for this invitation so we can tell the buyer their previous
     // attempt had expired.
