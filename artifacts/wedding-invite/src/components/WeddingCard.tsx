@@ -226,7 +226,7 @@ function OrnamentDivider() {
       <div
         style={{
           width: '160px',
-          height: '60px',
+          height: '54px',
           backgroundColor: 'currentColor',
           opacity: 0.5,
           WebkitMaskImage: 'url(/ornament-divider2.png)',
