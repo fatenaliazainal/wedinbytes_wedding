@@ -1,0 +1,58 @@
+Before making any code changes, follow the Wedinstudio Production Change Safety Rules.
+
+TASK:
+
+Fix the excessive vertical spacing between sections on the wedding invitation page.
+
+CURRENT BEHAVIOUR:
+
+There is too much vertical spacing/empty space between several sections, example: around the “Tema Pakaian” section. The spacing between the countdown, “Tema Pakaian” title, decorative dividers, “THEME / Melayu Klasik”, and the color circles appears unnecessarily large and inconsistent.
+
+EXPECTED BEHAVIOUR:
+
+Reduce the excessive vertical spacing between all sections so the page looks more compact, balanced, and consistent.
+
+Do not redesign the sections. Only adjust the existing spacing/margin/padding that is causing the excessive gaps.
+
+SCOPE:
+
+Only fix the excessive vertical spacing issue described above.
+
+DO NOT:
+
+* Refactor unrelated code
+* Change unrelated features
+* Change UI/UX unless explicitly stated
+* Change database/schema
+* Change existing business logic
+* Rename existing components/functions/variables
+* Modify unrelated files
+* Fix other issues discovered during investigation
+* Change fonts, colors, images, icons, or component structure
+* Change the bottom navigation bar
+* Change the content of any section
+
+FIRST:
+
+Investigate the issue WITHOUT changing any code.
+
+Report:
+
+1. Root cause
+2. Exact files involved
+3. Exact code/logic that needs to change
+4. Which CSS properties are currently causing the excessive spacing (e.g. margin, padding, gap, min-height, height, etc.)
+5. Potential regression risks
+6. What will remain untouched
+
+DO NOT IMPLEMENT UNTIL THE INVESTIGATION IS COMPLETE.
+
+After I approve the proposed change, implement the SMALLEST POSSIBLE FIX.
+
+After implementation, verify that:
+
+* The excessive vertical gaps are reduced
+* The spacing between sections is more consistent
+* The existing design remains unchanged
+* The mobile layout remains responsive
+* No unrelated functionality or styling is affected
