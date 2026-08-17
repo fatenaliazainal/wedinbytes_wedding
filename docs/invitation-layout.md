@@ -71,7 +71,7 @@
 | Padding kiri/kanan | 60px (`px-[60px]`) |
 | **Gap antara sections** | **50px** (`gap-[50px]`) |
 | Space dalam section | 4px (`space-y-1`) |
-| **Ornament height** | **54px** |
+| **Ornament height** | **48px** |
 | Ornament width | 160px |
 | Ornament margin atas/bawah | 0px (removed) |
 | Gap antara itinerary items | 16px (`space-y-4`) |
@@ -85,5 +85,5 @@
 |---|---|
 | 2026-08-18 | Gap antara sections: `gap-14` (56px) → `gap-[50px]` (50px) |
 | 2026-08-18 | detailBlock spacing: `space-y-4` (16px) → `space-y-1` (4px) |
-| 2026-08-18 | Ornament height: 80px → 20px → 32px → 60px → 54px |
+| 2026-08-18 | Ornament height: 80px → 20px → 32px → 60px → 54px → 48px |
 | 2026-08-18 | Ornament margin (`my-1`) removed |
