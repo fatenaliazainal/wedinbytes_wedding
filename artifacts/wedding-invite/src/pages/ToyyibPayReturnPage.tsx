@@ -108,7 +108,12 @@ export default function ToyyibPayReturnPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      {status === "PAID" && <ReviewPromptModal defaultName={user?.name ?? ""} />}
+      {status === "PAID" && (
+        <ReviewPromptModal
+          defaultName={user?.name ?? ""}
+          onClose={() => navigate(user?.role === "business_account" ? "/business/dashboard" : "/dashboard")}
+        />
+      )}
       <section className="w-full max-w-lg rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm sm:p-10">
         <Icon className={`mx-auto h-14 w-14 ${iconClass} ${isLoading ? "animate-spin" : ""}`} />
         <h1 className="mt-5 text-2xl font-bold text-slate-900">{heading}</h1>
