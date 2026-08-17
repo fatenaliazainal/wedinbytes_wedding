@@ -4161,7 +4161,7 @@ export default function EditorPage({
                     href={previewUrl}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={() => { if (!customerEditLocked) void handleSave(); }}
+                    onClick={() => { if (!customerEditLocked) setTimeout(() => void handleSave(), 0); }}
                     className="text-xs text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 rounded-full px-3 py-1 font-medium transition-colors"
                   >
                     {label}
