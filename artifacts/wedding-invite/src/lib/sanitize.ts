@@ -7,7 +7,7 @@
  */
 import DOMPurify from "dompurify";
 
-const ALLOWED_TAGS = ["br", "b", "strong", "i", "em", "u", "p", "span", "wbr", "font"];
+const ALLOWED_TAGS = ["br", "b", "strong", "i", "em", "u", "span", "wbr", "font"];
 const ALLOWED_ATTR = ["style", "class", "size"];
 
 /** Maps <font size="N"> to the exact px labels shown in the editor Size dropdown. */
@@ -33,15 +33,17 @@ function convertFontSizeTags(html: string): string {
 }
 
 /**
- * react-simple-wysiwyg wraps each editor "line" in a <div>. Since <div> is not
- * in our ALLOWED_TAGS, DOMPurify would strip the tags and run all lines together
- * with no spacing. Convert each closing </div> to <br> and drop opening <div>
- * tags so the line breaks are preserved inside any container element.
+ * react-simple-wysiwyg wraps each editor "line" in a <div> or <p>. Block
+ * elements not in ALLOWED_TAGS would be stripped by DOMPurify and merge all
+ * lines together; <p> in ALLOWED_TAGS renders with browser block margins that
+ * create huge gaps inside an outer element. Normalize both: strip opening tags
+ * and convert closing tags to <br> so line breaks are preserved without
+ * block-level margin side-effects.
  */
 function normalizeDivLineBreaks(html: string): string {
   return html
-    .replace(/<div[^>]*>/gi, "")   // strip opening <div …>
-    .replace(/<\/div>/gi, "<br>"); // closing </div> → <br>
+    .replace(/<(div|p)[^>]*>/gi, "")    // strip opening <div …> and <p …>
+    .replace(/<\/(div|p)>/gi, "<br>");   // closing </div> and </p> → <br>
 }
 
 export function sanitizeHtml(html: string | null | undefined): string {
