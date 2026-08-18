@@ -13,7 +13,6 @@ uri = "file://screenshots/pricing-page-final.jpg"
 type = "image"
 title = "Public Pricing Page"
 
-
 [[outputs]]
 id = "uuM-WYi-mBd6lbW8-anwq"
 uri = "file://screenshots/editor-gallery-final.jpg"
@@ -38,3 +37,10 @@ uri = "file://.agents/outputs/test-results-updated.csv"
 type = "table"
 title = "Test Results — WedInStudio (167 Test Cases)"
 description = "Semua 167 test cases dengan Actual Result dan Status dikemaskini. PASS: 60 | FAIL: 3 | UNABLE: 103 | N/A: 1"
+
+[[outputs]]
+id = "UXS6WRaTHgpBC6xWtw9Ob"
+uri = "file://docs/layout-preview.html"
+type = "text"
+title = "Invitation Text — Colour Map"
+description = "Layout reference for invitation text colour properties"
