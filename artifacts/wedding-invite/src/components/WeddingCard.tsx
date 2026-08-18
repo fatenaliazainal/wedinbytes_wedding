@@ -827,13 +827,15 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
         <div className="relative z-10 flex flex-col items-center gap-[50px] pt-16 pb-28 px-[60px]">
 
           <RevealOnScroll>
-          {/* Invitation Text */}
-          <div className={detailBlock}>
-            {/* Greeting — decorative but secondary; name font kept, reduced from text-xl */}
+          {/* Invitation Text — explicit per-gap spacing; no space-y on container */}
+          <div className="w-full max-w-sm text-center flex flex-col">
+            {/* Greeting */}
             <p className="leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(greetingText) }} />
-            <OrnamentDivider />
+            {/* Greeting → OrnamentDivider: 8px */}
+            <div className="mt-2"><OrnamentDivider /></div>
+            {/* OrnamentDivider → Parents: 12px | Parents internal: 6px */}
             {(brideParents || groomParents) && (
-              <div className="space-y-2">{/* Parents — medium weight, not label-weight */}
+              <div className="mt-3 space-y-[6px]">
                 {groomParents && (
                   <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(groomParents) }} />
                 )}
@@ -845,10 +847,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 )}
               </div>
             )}
-            {/* Invitation message — readable size, not italic */}
-            <p className="text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
-            {/* Couple names (secondary mention) — name font + primary kept; size reduced so they don't compete with the cover hero */}
-            <div className="space-y-0.5">
+            {/* Parents → Invitation message: 12px */}
+            <p className="mt-3 text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
+            {/* Invitation message → Couple names: 16px | Couple names internal: 4px */}
+            <div className="mt-4 space-y-1">
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{groomName}</p>
               <p className="text-sm text-foreground/60">&amp;</p>
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{brideName}</p>

@@ -108,31 +108,29 @@
 ```
 ┌─────────────────────────────────────────────┐
 │                                             │
-│  Container : detailBlock                    │
-│  max-width : max-w-sm                       │
-│  align     : text-center                    │
-│  gap       : space-y-1 = 4px               │
-│             (antara setiap direct child)    │
+│  Container : w-full max-w-sm text-center    │
+│              flex flex-col                  │
+│             (spacing explicit per element)  │
 │                                             │
 │  [Greeting text]                            │
-│  ↕ space-y-1 = 4px                         │
+│  ↕ mt-2 = 8px                              │
 │  [OrnamentDivider]                          │
-│  ↕ space-y-1 = 4px                         │
-│  ┌─ Parents block (space-y-2 = 8px) ──────┐ │
+│  ↕ mt-3 = 12px                             │
+│  ┌─ Parents block (space-y-[6px]) ────────┐ │
 │  │  [Parents Lelaki]                       │ │
-│  │  ↕ space-y-2 = 8px                     │ │
+│  │  ↕ 6px                                  │ │
 │  │  [&]                                    │ │
-│  │  ↕ space-y-2 = 8px                     │ │
+│  │  ↕ 6px                                  │ │
 │  │  [Parents Perempuan]                    │ │
 │  └─────────────────────────────────────────┘ │
-│  ↕ space-y-1 = 4px                         │
+│  ↕ mt-3 = 12px                             │
 │  [Invitation message]                       │
-│  ↕ space-y-1 = 4px                         │
-│  ┌─ Couple names (space-y-0.5 = 2px) ─────┐ │
+│  ↕ mt-4 = 16px                             │
+│  ┌─ Couple names (space-y-1 = 4px) ───────┐ │
 │  │  [Nama Pengantin Lelaki]                │ │
-│  │  ↕ space-y-0.5 = 2px                   │ │
+│  │  ↕ 4px                                  │ │
 │  │  [&]                                    │ │
-│  │  ↕ space-y-0.5 = 2px                   │ │
+│  │  ↕ 4px                                  │ │
 │  │  [Nama Pengantin Perempuan]             │ │
 │  └─────────────────────────────────────────┘ │
 │                                             │
