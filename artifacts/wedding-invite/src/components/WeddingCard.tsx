@@ -847,10 +847,10 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 )}
               </div>
             )}
-            {/* Parents → Invitation message: 30px */}
-            <p className="mt-[30px] text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
-            {/* Invitation message → Couple names: 30px | Couple names internal: 4px */}
-            <div className="mt-[30px] space-y-1">
+            {/* Parents → Invitation message: 40px */}
+            <p className="mt-10 text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
+            {/* Invitation message → Couple names: 40px | Couple names internal: 4px */}
+            <div className="mt-10 space-y-1">
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{groomName}</p>
               <p className="text-sm text-foreground/60">&amp;</p>
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{brideName}</p>
