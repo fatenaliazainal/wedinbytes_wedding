@@ -44,3 +44,10 @@ uri = "file://docs/layout-preview.html"
 type = "text"
 title = "Invitation Text — Colour Map"
 description = "Layout reference for invitation text colour properties"
+
+[[outputs]]
+id = "gFh3F9ldnYahwZGmI6lp6"
+uri = "file://docs/layout-invtext.html"
+type = "text"
+title = "Invitation Text — Layout"
+description = "Spacing layout for invitation text section with annotations"
