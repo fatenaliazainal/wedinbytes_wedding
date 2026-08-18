@@ -873,11 +873,11 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{inv.venueHijriDate as string}</p>
               )}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1" style={{ marginTop: "8px" }}>
               <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.timeLabel}</p>
               <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.eventTime}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1" style={{ marginTop: "8px" }}>
               <p className={detailLabel} style={{ fontFamily: bodyFontFamily }}>{t.locationLabel}</p>
               {/* Venue name — functional primary value, not decorative accent */}
               <p className="text-base text-foreground" style={{ fontFamily: bodyFontFamily }}>{invitation.venueName}</p>
