@@ -316,6 +316,10 @@ router.post("/gallery-upload", upload.single("file"), async (req, res) => {
       res.status(423).json({ error: "This paid invitation is locked because its event date has passed." });
       return;
     }
+    if (invitationToken !== "demo" && invitationToken !== "demo-en" && !(await invitationHasFeature(invitation, "Photo Gallery"))) {
+      res.status(403).json({ error: "Photo Gallery is available with the Premium package." });
+      return;
+    }
     const imageKey = await uploadImage({
       fileName: req.file.originalname,
       fileBuffer: req.file.buffer,

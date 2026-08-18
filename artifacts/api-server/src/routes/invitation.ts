@@ -153,12 +153,19 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect, ownerV
   }
   // Strip package-gated fields from guest-facing responses only.
   // Owner/admin views (editor) keep the full data so saved values are not lost.
+  // This ensures package downgrade scenarios never leak gated content to guests.
   if (!isDemoToken(row.token) && !ownerView) {
-    const hasDressCode = await invitationHasFeature(row, "Dress Code");
+    const [hasDressCode, hasGallery] = await Promise.all([
+      invitationHasFeature(row, "Dress Code"),
+      invitationHasFeature(row, "Photo Gallery"),
+    ]);
     if (!hasDressCode) {
       (safe as Record<string, unknown>).dresscode = null;
       (safe as Record<string, unknown>).dresscodeTheme = null;
       (safe as Record<string, unknown>).dresscodeColors = [];
+    }
+    if (!hasGallery) {
+      (safe as Record<string, unknown>).galleryImages = [];
     }
   }
   return { ...safe, isLocked: Boolean(row.lockPinHash), business: business };
@@ -407,6 +414,21 @@ router.patch("/invitation/:token", async (req, res) => {
         )
       ) {
         res.status(400).json({ error: "Dress code palette may contain up to 4 valid hex colours." });
+        return;
+      }
+    }
+    // ── Gallery write gate ────────────────────────────────────────────────────
+    if ("galleryImages" in body) {
+      if (!isDemoToken(token) && !(await invitationHasFeature(effectivePackage, "Photo Gallery"))) {
+        res.status(403).json({ error: "Photo Gallery is available with the Premium package." });
+        return;
+      }
+    }
+    // ── Dress Code write gate ─────────────────────────────────────────────────
+    const dressCodeWriteFields = ["dresscode", "dresscodeTheme", "dresscodeColors"];
+    if (dressCodeWriteFields.some((field) => field in body)) {
+      if (!isDemoToken(token) && !(await invitationHasFeature(effectivePackage, "Dress Code"))) {
+        res.status(403).json({ error: "Dress Code is available with the Premium package." });
         return;
       }
     }

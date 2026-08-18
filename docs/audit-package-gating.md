@@ -233,19 +233,45 @@ Editor DOES gate tabs by package via `visibleTabs` at line 497-510. Feature mapp
 
 ---
 
-## F. Proposed fixes (awaiting approval)
+## F. Fixes applied (HIGH issues — approved)
 
-| # | Fix | Risk | Customers affected? |
+| # | Fix | Files changed | Status |
 |---|---|---|---|
-| 1 | Add `invitationHasFeature(invitation, "Photo Gallery")` check before gallery save and upload | Low | No — only blocks unauthorized writes |
-| 2 | Add `invitationHasFeature(invitation, "Dress Code")` check before dress code save | Low | No — only blocks unauthorized writes |
-| 3 | Pass feature names to WeddingCard; add feature check before Gallery and Dress Code sections | Low | Existing Premium/Signature unaffected; downgraded invitations will hide sections |
-| 4 | Strip gated fields from `publicInvitation()` based on package | Medium | Careful — owner view should still receive full data |
-| 5 | Add Dress Code gate in `routes/business.ts` customer creation | Low | No |
-| 6 | Add package feature check to `showGift` logic in InvitationPage | Low | No — only hides nav for downgraded invitations |
+| 1 | Gallery write gate in `PATCH /invitation/:token` | `routes/invitation.ts` | ✅ DONE |
+| 2 | Gallery upload gate in `POST /gallery-upload` | `routes/cards.ts` | ✅ DONE |
+| 3 | Dress Code write gate in `PATCH /invitation/:token` | `routes/invitation.ts` | ✅ DONE |
+| 4 | Strip `galleryImages` from guest-facing GET when package lacks "Photo Gallery" | `routes/invitation.ts` (`publicInvitation()`) | ✅ DONE |
 
-> ⛔ **STOP — awaiting approval before applying any HIGH changes.**
-> No code has been modified. This is audit only.
+**Fix 3 (WeddingCard display)** — resolved via Fix 4: server strips `galleryImages = []` from guest GET response for non-entitled packages. WeddingCard's existing `galleryImages.length > 0` check naturally hides the section. No WeddingCard code changes required. Owner/editor view still receives full data (data preserved, editor tab already hidden by package gating).
+
+**No existing data deleted. No DB migration. No package reassignments.**
+
+---
+
+## G. Remaining open (MEDIUM — not yet actioned, awaiting approval)
+
+| # | Issue | Severity |
+|---|---|---|
+| 5 | Business route: Dress Code not gated during customer creation | MEDIUM |
+| 6 | Gift nav icon uses data presence, not package (downgrade scenario) | MEDIUM |
+| 7 | Dress Code READ strip inconsistent for owner view | MEDIUM |
+
+---
+
+## H. Additional finding: "Gift Corner" in production DB
+
+During verification, Signature package has **11 features** in prod including both `"Gift Corner"` and `"Gift Registry"`. This is not in the documentation.
+
+```
+Signature features (actual prod DB):
+RSVP / Wishes, Contact, Location & Navigation, Calendar, Countdown,
+Background Music, Photo Gallery, Money Gift, Dress Code,
+Gift Corner, Gift Registry
+```
+
+- `"Gift Registry"` — used by `routes/gift-registry.ts` for all CRUD gates ✅
+- `"Gift Corner"` — no code currently checks for this name; likely a legacy/duplicate entry
+- **Not renamed** — per safety requirement. No action taken.
 
 ---
 
@@ -254,3 +280,5 @@ Editor DOES gate tabs by package via `visibleTabs` at line 497-510. Feature mapp
 | Tarikh | Perubahan |
 |---|---|
 | 2026-08-18 | Audit report dibuat |
+| 2026-08-18 | HIGH fixes 1–4 implemented dan verified |
+| 2026-08-18 | Nota: "Gift Corner" feature found in prod Signature package (legacy entry, no rename) |
