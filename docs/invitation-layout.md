@@ -123,9 +123,9 @@
 │  │  ↕ 6px                                  │ │
 │  │  [Parents Perempuan]                    │ │
 │  └─────────────────────────────────────────┘ │
-│  ↕ mt-3 = 12px                             │
+│  ↕ mt-[18px] = 18px                         │
 │  [Invitation message]                       │
-│  ↕ mt-4 = 16px                             │
+│  ↕ mt-5 = 20px                             │
 │  ┌─ Couple names (space-y-1 = 4px) ───────┐ │
 │  │  [Nama Pengantin Lelaki]                │ │
 │  │  ↕ 4px                                  │ │
