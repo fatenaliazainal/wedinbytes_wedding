@@ -416,6 +416,24 @@ function isEventDatePassed(eventDate: string | null | undefined): boolean {
   return today.getTime() > event.getTime();
 }
 
+/** Regex that matches an outer font-size wrapper span produced by wrapFieldFontSize. */
+const FIELD_SIZE_WRAPPER_RE = /^<span style="font-size:(\d+(?:\.\d+)?)px">([\s\S]*)<\/span>$/;
+
+/** Extract the per-field font size (px) from the outer wrapper span, or return defaultPx. */
+function extractFieldFontSize(html: string | null | undefined, defaultPx = 16): number {
+  if (!html) return defaultPx;
+  const m = html.trim().match(FIELD_SIZE_WRAPPER_RE);
+  return m ? parseFloat(m[1]) : defaultPx;
+}
+
+/** Wrap (or re-wrap) HTML content with a per-field font-size span. */
+function wrapFieldFontSize(html: string | null | undefined, px: number): string {
+  const content = html?.trim() ?? "";
+  const m = content.match(FIELD_SIZE_WRAPPER_RE);
+  const inner = m ? m[2] : content;
+  return `<span style="font-size:${px}px">${inner}</span>`;
+}
+
 function Field({
   label,
   required,
@@ -2358,49 +2376,100 @@ export default function EditorPage({
             {/* ── AYAT JEMPUTAN ── */}
             {activeTab === "ayat-undangan" && (
               <>
-                <Field label={`Invitation Text Size — ${design.greetingFontSize || 16}px`}>
+                {/* Greeting Text — per-field size slider */}
+                <Field label={`Greeting Text — ${extractFieldFontSize(inv.greetingText || "")}px`}>
                   <input
-                    type="range"
-                    min={10}
-                    max={40}
-                    step={1}
-                    value={Number(design.greetingFontSize) || 16}
-                    onChange={(e) =>
-                      setDesign((p) => ({ ...p, greetingFontSize: e.target.value }))
-                    }
-                    className="w-full accent-blue-500"
+                    type="range" min={10} max={40} step={1}
+                    value={extractFieldFontSize(inv.greetingText || "")}
+                    onChange={(e) => {
+                      const px = parseInt(e.target.value);
+                      setInv((p) => ({ ...p, greetingText: wrapFieldFontSize(p.greetingText || "", px) }));
+                    }}
+                    className="w-full accent-blue-500 mb-3"
                   />
-                </Field>
-                <Field label="Greeting Text">
                   <RichTextEditor
                     value={inv.greetingText}
-                    onChange={(v) => setI("greetingText")(v)}
+                    onChange={(v) => {
+                      setInv((prev) => {
+                        const px = extractFieldFontSize(prev.greetingText || "");
+                        const wrapped = wrapFieldFontSize(v, px);
+                        return prev.greetingText === wrapped ? prev : { ...prev, greetingText: wrapped };
+                      });
+                    }}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Groom's Parents" helperText="Shown in the invitation detail section">
+                {/* Groom's Parents — per-field size slider */}
+                <Field label={`Groom's Parents — ${extractFieldFontSize(inv.groomParents || "")}px`} helperText="Shown in the invitation detail section">
+                  <input
+                    type="range" min={10} max={40} step={1}
+                    value={extractFieldFontSize(inv.groomParents || "")}
+                    onChange={(e) => {
+                      const px = parseInt(e.target.value);
+                      setInv((p) => ({ ...p, groomParents: wrapFieldFontSize(p.groomParents || "", px) }));
+                    }}
+                    className="w-full accent-blue-500 mb-3"
+                  />
                   <RichTextEditor
                     value={inv.groomParents}
-                    onChange={(v) => setI("groomParents")(v)}
+                    onChange={(v) => {
+                      setInv((prev) => {
+                        const px = extractFieldFontSize(prev.groomParents || "");
+                        const wrapped = wrapFieldFontSize(v, px);
+                        return prev.groomParents === wrapped ? prev : { ...prev, groomParents: wrapped };
+                      });
+                    }}
                     placeholder={t("placeholders.groomParents")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Bride's Parents" helperText="Shown in the invitation detail section">
+                {/* Bride's Parents — per-field size slider */}
+                <Field label={`Bride's Parents — ${extractFieldFontSize(inv.brideParents || "")}px`} helperText="Shown in the invitation detail section">
+                  <input
+                    type="range" min={10} max={40} step={1}
+                    value={extractFieldFontSize(inv.brideParents || "")}
+                    onChange={(e) => {
+                      const px = parseInt(e.target.value);
+                      setInv((p) => ({ ...p, brideParents: wrapFieldFontSize(p.brideParents || "", px) }));
+                    }}
+                    className="w-full accent-blue-500 mb-3"
+                  />
                   <RichTextEditor
                     value={inv.brideParents}
-                    onChange={(v) => setI("brideParents")(v)}
+                    onChange={(v) => {
+                      setInv((prev) => {
+                        const px = extractFieldFontSize(prev.brideParents || "");
+                        const wrapped = wrapFieldFontSize(v, px);
+                        return prev.brideParents === wrapped ? prev : { ...prev, brideParents: wrapped };
+                      });
+                    }}
                     placeholder={t("placeholders.brideParents")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
-                <Field label="Invitation Text">
+                {/* Invitation Text — per-field size slider */}
+                <Field label={`Invitation Text — ${extractFieldFontSize(inv.invitationText || "")}px`}>
+                  <input
+                    type="range" min={10} max={40} step={1}
+                    value={extractFieldFontSize(inv.invitationText || "")}
+                    onChange={(e) => {
+                      const px = parseInt(e.target.value);
+                      setInv((p) => ({ ...p, invitationText: wrapFieldFontSize(p.invitationText || "", px) }));
+                    }}
+                    className="w-full accent-blue-500 mb-3"
+                  />
                   <RichTextEditor
                     value={inv.invitationText}
-                    onChange={(v) => setI("invitationText")(v)}
+                    onChange={(v) => {
+                      setInv((prev) => {
+                        const px = extractFieldFontSize(prev.invitationText || "");
+                        const wrapped = wrapFieldFontSize(v, px);
+                        return prev.invitationText === wrapped ? prev : { ...prev, invitationText: wrapped };
+                      });
+                    }}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
