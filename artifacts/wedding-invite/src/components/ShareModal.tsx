@@ -1,6 +1,21 @@
 import { useState, useMemo } from "react";
 import { X, Copy, Check, ShieldCheck } from "lucide-react";
 
+/** Strip HTML tags and decode common entities for plain-text output. */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:div|p)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
 interface Invitation {
   groomName: string;
   brideName: string;
@@ -57,10 +72,14 @@ function buildMalayTemplate(card: Invitation, inviteUrl: string): string {
   const endTime      = card.eventEndTime   || "";
   const timeStr      = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime || "";
   const mapUrl       = card.venueMapUrl || "";
-  const groomParents = card.groomParents || "";
-  const brideParents = card.brideParents || "";
+  const groomParents = stripHtml(card.groomParents || "");
+  const brideParents = stripHtml(card.brideParents || "");
 
-  const lines: string[] = [
+  const lines: string[] = [];
+
+  if (inviteUrl) { lines.push(inviteUrl); lines.push(""); }
+
+  lines.push(
     `🕊 UNDANGAN ${eventTitle} 🕊`,
     "",
     "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ",
@@ -68,7 +87,7 @@ function buildMalayTemplate(card: Invitation, inviteUrl: string): string {
     "",
     "Dengan segala hormat dan penuh kesyukuran ke hadrat Ilahi, kami",
     "",
-  ];
+  );
 
   if (groomParents) lines.push(groomParents);
   if (groomParents && brideParents) lines.push("&");
@@ -94,8 +113,6 @@ function buildMalayTemplate(card: Invitation, inviteUrl: string): string {
   lines.push("");
   lines.push("Sekian, terima kasih 🌹");
 
-  if (inviteUrl) { lines.push(""); lines.push(inviteUrl); }
-
   return lines.join("\n");
 }
 
@@ -110,10 +127,14 @@ function buildEnglishTemplate(card: Invitation, inviteUrl: string): string {
   const endTime      = card.eventEndTime   || "";
   const timeStr      = startTime && endTime ? `${startTime} – ${endTime}` : startTime || endTime || "";
   const mapUrl       = card.venueMapUrl || "";
-  const groomParents = card.groomParents || "";
-  const brideParents = card.brideParents || "";
+  const groomParents = stripHtml(card.groomParents || "");
+  const brideParents = stripHtml(card.brideParents || "");
 
-  const lines: string[] = [
+  const lines: string[] = [];
+
+  if (inviteUrl) { lines.push(inviteUrl); lines.push(""); }
+
+  lines.push(
     "🤍 WEDDING INVITATION 🤍",
     "",
     "Together with their families,",
@@ -124,7 +145,7 @@ function buildEnglishTemplate(card: Invitation, inviteUrl: string): string {
     "",
     "joyfully invite you to celebrate their wedding.",
     "",
-  ];
+  );
 
   if (dateStr) lines.push(`🗓 Date: ${dateStr}`);
   if (venue)   lines.push(`📍 Venue: ${venue}`);
@@ -140,8 +161,6 @@ function buildEnglishTemplate(card: Invitation, inviteUrl: string): string {
   if (groomParents) lines.push(groomParents);
   if (groomParents && brideParents) lines.push("&");
   if (brideParents) lines.push(brideParents);
-
-  if (inviteUrl) { lines.push(""); lines.push(inviteUrl); }
 
   return lines.join("\n");
 }
