@@ -63,12 +63,27 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 - Malay UI labels (Bahasa Malaysia) throughout the buyer-facing UI
 - Brand name: **Wedinstudio**
 
+## Text field typography (WeddingCard)
+
+| Field | Font | Base size | Color | Line height |
+|---|---|---|---|---|
+| Greeting text | `nameStyle.fontFamily` (script/name font) | `--greeting-font-size` (1rem default) | `--greeting-color` | `leading-relaxed` |
+| Groom's Parents | `bodyFontFamily` | `--greeting-font-size` (1rem default) | `--greeting-color` | — |
+| Bride's Parents | `bodyFontFamily` | `--greeting-font-size` (1rem default) | `--greeting-color` | — |
+| Invitation Text | `bodyFontFamily` | `text-sm` (14px base, slider-adjustable) | `text-foreground/80` | `leading-relaxed` |
+| Prayer / Doa | `bodyFontFamily` | `text-sm` (14px) | `text-foreground/80` | `leading-relaxed` |
+
+**Slider-adjustable fields** — Greeting, Groom's Parents, Bride's Parents, and Invitation Text each have a per-field font-size slider in the editor. The chosen size is persisted as a `<span style="font-size:Xpx">` wrapper around the field content. `EditorPage` strips the wrapper on load (`extractFieldContent`/`extractFieldFontSize`), applies it in the preview (`applyFieldSizes`), and re-wraps on save (`wrapFieldFontSize`).
+
+**`sanitizeHtml` (`src/lib/sanitize.ts`)** — strips all `<div>` and `<p>` block tags, converting their closing tags to `<br>`, before DOMPurify runs. This preserves line breaks from the wysiwyg editor while eliminating block-level margins that would otherwise create large gaps between lines.
+
 ## Gotchas
 
 - Demo token is `"demo"` — hardcoded in seed; never assign to a real user
 - `ALLOWED_FIELDS` in `invitation.ts` route must include any new invitation columns or PATCH silently ignores them
 - After adding DB columns, restart API server (push-force runs on startup)
 - `Grid2X2` icon from lucide-react used in DashboardPage (not `Grid`)
+- `<p>` is **not** in `sanitizeHtml`'s `ALLOWED_TAGS` — it is normalised to `<br>` before sanitization; adding it back would re-introduce block-margin gaps in rendered invitation text
 
 ## Pointers
 
