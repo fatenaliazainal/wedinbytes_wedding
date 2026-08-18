@@ -1,0 +1,231 @@
+Now that the package-gating changes are live and verified in production, I want to strengthen the existing:
+
+`docs/audit-package-gating.md`
+
+Do NOT change any application code or production data.
+
+Update ONLY the documentation so that this file becomes the main reference / single source of truth whenever I need to make future package or feature changes.
+
+The goal is:
+
+> If I want to add a package, remove a feature, move a feature between packages, or change how a section is displayed, I should be able to refer to this MD file first and know exactly what needs to be checked.
+
+Please make the document comprehensive but practical.
+
+Include these sections:
+
+### 1. Current Production Packages
+
+Document the actual production packages:
+
+* Standard — package ID 1
+* Premium — package ID 2
+* Signature — package ID 4
+
+Mention that package prices are Admin/DB managed and must NOT be assumed from seed defaults.
+
+### 2. Current Production Feature Matrix
+
+Document the CURRENT DB entitlement mapping:
+
+| Feature               | Standard | Premium | Signature |
+| --------------------- | -------- | ------- | --------- |
+| RSVP / Wishes         | ✅        | ✅       | ✅         |
+| Contact               | ✅        | ✅       | ✅         |
+| Location & Navigation | ✅        | ✅       | ✅         |
+| Calendar              | ✅        | ✅       | ✅         |
+| Countdown             | ✅        | ✅       | ✅         |
+| Background Music      | ✅        | ✅       | ✅         |
+| Photo Gallery         | ❌        | ✅       | ✅         |
+| Dress Code            | ❌        | ✅       | ✅         |
+| Money Gift            | ❌        | ✅       | ✅         |
+| Gift Registry         | ❌        | ❌       | ✅         |
+
+Clearly distinguish:
+
+* Package entitlement
+* UI visibility
+* Server write permission
+* Public API read permission
+
+### 3. Architecture / Source of Truth
+
+Explain the actual production flow:
+
+Package
+→ packageId
+→ pricing_feature
+→ invitationHasFeature()
+→ API write protection
+→ publicInvitation() read protection
+→ frontend section display
+
+Explicitly state:
+
+* Do NOT hardcode package names such as Premium/Signature for feature entitlement.
+* Use `invitationHasFeature()` / DB feature mapping.
+* Package name and price are not the source of feature entitlement.
+* The database package-feature relationship is the source of truth.
+
+### 4. Server-Side Write Gates
+
+Document every currently gated write operation and the feature it checks.
+
+Include the relevant route/file/function for:
+
+* Photo Gallery
+* Dress Code
+* Money Gift
+* Gift Registry
+
+For each one, explain what happens when the package does not have the feature.
+
+### 5. Public API Read Gates
+
+Document `publicInvitation()` and explain which fields are stripped for non-entitled packages.
+
+Create a table:
+
+| Feature | Fields protected | Standard | Premium | Signature |
+| ------- | ---------------- | -------- | ------- | --------- |
+
+Include ALL actual fields from the current schema, not just the obvious ones.
+
+Important:
+
+* Explain that stripping modifies only the response object.
+* It does NOT delete or modify DB data.
+* Existing gated data can remain in DB after downgrade.
+* Owner/editor access uses `ownerView=true` and must remain separate from guest/public access.
+
+### 6. Frontend Display Logic
+
+Document how `WeddingCard.tsx` currently decides whether sections appear.
+
+Clearly separate:
+
+* Always available sections
+* Data-dependent sections
+* Package-gated sections
+
+Explain that frontend should never be the only security layer.
+
+### 7. Downgrade Behaviour
+
+Document the expected behaviour when:
+
+Premium/Signature → Standard
+
+Expected:
+
+* Existing gated data is NOT deleted.
+* Public guests cannot see gated data.
+* Public API strips gated fields.
+* Owner/editor may retain access to existing data.
+* If the invitation upgrades again, existing data may become available again.
+
+### 8. Upgrade Behaviour
+
+Document expected behaviour when:
+
+Standard → Premium → Signature
+
+Explain that existing stored data should not be unnecessarily deleted or recreated.
+
+### 9. Adding a New Feature
+
+Create a step-by-step checklist for future development.
+
+Example:
+
+* Add feature to pricing_feature / package mapping.
+* Add server write gate.
+* Add public GET/read gate.
+* Add frontend display condition.
+* Add editor/package entitlement logic.
+* Test Standard/Premium/Signature.
+* Test upgrade/downgrade.
+* Test existing invitations.
+* Test public vs owner access.
+* Update this MD file.
+
+### 10. Moving a Feature Between Packages
+
+Explain exactly what must be checked if, for example:
+
+Photo Gallery:
+Premium + Signature → Signature only
+
+or:
+
+Dress Code:
+Premium + Signature → all packages
+
+Include database, API, editor, frontend and regression checks.
+
+### 11. Production Safety Rules
+
+Document these as hard rules:
+
+* Never delete existing customer invitation data just because a package no longer has a feature.
+* Never change package assignments unless explicitly requested.
+* Never change package prices through code/seed files.
+* Never rely on autoSeed.ts to update existing production packages.
+* No production DB migration without explicit approval.
+* Audit existing customer invitations before changing entitlement logic.
+* Test public API AND owner/editor access.
+* Test at least one real existing invitation per package before deployment.
+* Review git diff before deployment.
+* Deploy only after build + functional tests pass.
+
+### 12. Current Production Audit
+
+Keep the latest verified state in the document:
+
+* Audit date: 18 August 2026
+* Package entitlement audit: PASS
+* Production safety review: PASS
+* Deployment smoke test: PASS
+* Current production deployment includes the audited package-gating changes.
+* No DB migration.
+* No customer data deleted.
+* Existing Standard customer with legacy Money Gift data is preserved in DB but hidden publicly.
+
+Do NOT include sensitive customer data, tokens, account numbers, or personal information in this documentation.
+
+### 13. Known Legacy / Non-Issues
+
+Document:
+
+* `Gift Corner` is a legacy orphaned DB feature record.
+* It has no active entitlement checks.
+* Actual implemented feature is `Gift Registry`.
+* Do not rename/delete the legacy DB record without a separate cleanup decision.
+
+### 14. Future Change Template
+
+Add a reusable template at the bottom:
+
+Feature:
+Current packages:
+New packages:
+Database changes:
+Write API changes:
+Public GET changes:
+Frontend changes:
+Editor changes:
+Upgrade behaviour:
+Downgrade behaviour:
+Existing customer impact:
+Tests performed:
+Production deployment notes:
+
+IMPORTANT:
+
+* Do not change application code.
+* Do not change database data.
+* Do not create another documentation file.
+* Improve the existing `docs/audit-package-gating.md`.
+* Base everything on the ACTUAL current production implementation and database schema, not assumptions.
+* If the existing documentation conflicts with the code, update the documentation to reflect the actual production behavior.
+* Keep the document easy for another developer/AI agent to follow before making future package-related changes.
