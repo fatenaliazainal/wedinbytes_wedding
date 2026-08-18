@@ -75,12 +75,17 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 
 ### 3. Programme / Itinerary
 
-| Elemen | Colour property |
+Container: `detailBlock` (`w-full max-w-sm text-center space-y-1`) → section title → `OrnamentDivider`
+
+**Itinerary items** (`space-y-4`, `fontFamily: bodyFontFamily`):
+- Each item wrapper: `space-y-0.5`
+
+| Elemen | Class / Style |
 |---|---|
 | Section title | `var(--color-heading, hsl(var(--primary)))` |
-| Masa (time) | `text-foreground` (font-semibold) |
-| Acara (event) | `text-foreground/80` |
-| Legacy schedule text | `text-foreground/75` |
+| Masa / Time | `text-sm font-semibold text-foreground` |
+| Acara / Event | `text-sm text-foreground/80` |
+| Legacy schedule (fallback) | `text-xs text-foreground/75 leading-relaxed` |
 
 **Slider-adjustable fields** — Greeting, Groom's Parents, Bride's Parents, and Invitation Text each have a per-field font-size slider in the editor. The chosen size is persisted as a `<span style="font-size:Xpx">` wrapper around the field content. `EditorPage` strips the wrapper on load (`extractFieldContent`/`extractFieldFontSize`), applies it in the preview (`applyFieldSizes`), and re-wraps on save (`wrapFieldFontSize`).
 
