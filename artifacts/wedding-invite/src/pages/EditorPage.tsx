@@ -2337,12 +2337,24 @@ export default function EditorPage({
             {/* ── AYAT JEMPUTAN ── */}
             {activeTab === "ayat-undangan" && (
               <>
+                <Field label={`Invitation Text Size — ${design.greetingFontSize || 16}px`}>
+                  <input
+                    type="range"
+                    min={10}
+                    max={40}
+                    step={1}
+                    value={Number(design.greetingFontSize) || 16}
+                    onChange={(e) =>
+                      setDesign((p) => ({ ...p, greetingFontSize: e.target.value }))
+                    }
+                    className="w-full accent-blue-500"
+                  />
+                </Field>
                 <Field label="Greeting Text">
                   <RichTextEditor
                     value={inv.greetingText}
                     onChange={(v) => setI("greetingText")(v)}
                     multiLine
-                    showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
@@ -2352,7 +2364,6 @@ export default function EditorPage({
                     onChange={(v) => setI("groomParents")(v)}
                     placeholder={t("placeholders.groomParents")}
                     multiLine
-                    showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
@@ -2362,7 +2373,6 @@ export default function EditorPage({
                     onChange={(v) => setI("brideParents")(v)}
                     placeholder={t("placeholders.brideParents")}
                     multiLine
-                    showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
@@ -2371,7 +2381,6 @@ export default function EditorPage({
                     value={inv.invitationText}
                     onChange={(v) => setI("invitationText")(v)}
                     multiLine
-                    showFontSize
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>

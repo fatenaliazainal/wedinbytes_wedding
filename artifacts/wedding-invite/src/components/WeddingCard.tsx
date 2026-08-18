@@ -837,18 +837,18 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {(brideParents || groomParents) && (
               <div className="mt-3 space-y-[6px]">
                 {groomParents && (
-                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(groomParents) }} />
+                  <p className="font-medium" style={{ fontFamily: bodyFontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(groomParents) }} />
                 )}
                 {brideParents && groomParents && (
-                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }}>&amp;</p>
+                  <p className="font-medium" style={{ fontFamily: bodyFontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>&amp;</p>
                 )}
                 {brideParents && (
-                  <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(brideParents) }} />
+                  <p className="font-medium" style={{ fontFamily: bodyFontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(brideParents) }} />
                 )}
               </div>
             )}
             {/* Parents → Invitation message: 40px */}
-            <p className="mt-10 text-sm text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
+            <p className="mt-10 text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily, fontSize: "var(--greeting-font-size, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitationText) }} />
             {/* Invitation message → Couple names: 40px | Couple names internal: 4px */}
             <div className="mt-10 space-y-1">
               <p style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }}>{groomName}</p>
