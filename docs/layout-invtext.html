@@ -1,266 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #e8e3dc;
-    font-family: Georgia, serif;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 48px 24px;
-    gap: 48px;
-    flex-wrap: wrap;
-  }
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #e8e3dc;
+        font-family: Georgia, serif;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 48px 24px;
+        gap: 48px;
+        flex-wrap: wrap;
+      }
 
-  /* ── Invitation card ── */
-  .invite {
-    background: #fdf8f3;
-    width: 320px;
-    padding: 40px 28px;
-    text-align: center;
-    border-radius: 4px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-    position: relative;
-  }
+      /* ── Invitation card ── */
+      .invite {
+        background: #fdf8f3;
+        width: 320px;
+        padding: 40px 28px;
+        text-align: center;
+        border-radius: 4px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        position: relative;
+      }
 
-  .greeting {
-    font-size: 13px;
-    font-style: italic;
-    color: #7a4f2e;
-    margin-bottom: 20px;
-    line-height: 1.6;
-  }
-  .parents {
-    font-size: 13px;
-    color: #7a4f2e;
-    line-height: 1.9;
-  }
-  .amp-parents {
-    font-size: 12px;
-    color: #7a4f2e;
-    margin: 4px 0;
-  }
-  .invite-msg {
-    font-size: 11.5px;
-    color: rgba(44,28,14,0.70);
-    margin: 20px 0;
-    line-height: 1.8;
-  }
-  .couple {
-    font-size: 24px;
-    color: #7a4f2e;
-    letter-spacing: 0.03em;
-    margin: 6px 0 2px;
-  }
-  .amp-couple {
-    font-size: 14px;
-    color: rgba(44,28,14,0.60);
-    margin: 2px 0;
-  }
+      .greeting {
+        font-size: 13px;
+        font-style: italic;
+        color: #7a4f2e;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+      .parents {
+        font-size: 13px;
+        color: #7a4f2e;
+        line-height: 1.9;
+      }
+      .amp-parents {
+        font-size: 12px;
+        color: #7a4f2e;
+        margin: 4px 0;
+      }
+      .invite-msg {
+        font-size: 11.5px;
+        color: rgba(44, 28, 14, 0.7);
+        margin: 20px 0;
+        line-height: 1.8;
+      }
+      .couple {
+        font-size: 24px;
+        color: #7a4f2e;
+        letter-spacing: 0.03em;
+        margin: 6px 0 2px;
+      }
+      .amp-couple {
+        font-size: 14px;
+        color: rgba(44, 28, 14, 0.6);
+        margin: 2px 0;
+      }
 
-  /* ── Annotation panel ── */
-  .annotations {
-    width: 320px;
-    padding-top: 8px;
-  }
+      /* ── Annotation panel ── */
+      .annotations {
+        width: 320px;
+        padding-top: 8px;
+      }
 
-  .ann-title {
-    font-size: 10px;
-    font-family: monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #999;
-    margin-bottom: 20px;
-  }
+      .ann-title {
+        font-size: 10px;
+        font-family: monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #999;
+        margin-bottom: 20px;
+      }
 
-  .ann-block {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-  .ann-line {
-    width: 3px;
-    border-radius: 2px;
-    flex-shrink: 0;
-    margin-top: 3px;
-  }
-  .ann-label {
-    font-size: 11.5px;
-    font-family: monospace;
-    color: #444;
-    line-height: 1.6;
-  }
-  .ann-sub {
-    font-size: 10px;
-    color: #aaa;
-    font-family: monospace;
-  }
+      .ann-block {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .ann-line {
+        width: 3px;
+        border-radius: 2px;
+        flex-shrink: 0;
+        margin-top: 3px;
+      }
+      .ann-label {
+        font-size: 11.5px;
+        font-family: monospace;
+        color: #444;
+        line-height: 1.6;
+      }
+      .ann-sub {
+        font-size: 10px;
+        color: #aaa;
+        font-family: monospace;
+      }
 
-  /* spacing ruler between elements */
-  .spacer-ann {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-    padding-left: 15px;
-  }
-  .spacer-tick {
-    width: 12px;
-    height: 1px;
-    background: #ccc;
-  }
-  .spacer-text {
-    font-size: 10px;
-    font-family: monospace;
-    color: #bbb;
-  }
+      /* spacing ruler between elements */
+      .spacer-ann {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        padding-left: 15px;
+      }
+      .spacer-tick {
+        width: 12px;
+        height: 1px;
+        background: #ccc;
+      }
+      .spacer-text {
+        font-size: 10px;
+        font-family: monospace;
+        color: #bbb;
+      }
 
-  /* connecting lines (decorative) */
-  .divider-ann {
-    height: 1px;
-    background: #e4ddd5;
-    margin: 6px 0 14px;
-  }
-</style>
-</head>
-<body>
+      /* connecting lines (decorative) */
+      .divider-ann {
+        height: 1px;
+        background: #e4ddd5;
+        margin: 6px 0 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Left: Invitation preview -->
+    <div class="invite">
+      <div class="greeting">Dengan Hormatnya Kami Menjemput</div>
 
-<!-- Left: Invitation preview -->
-<div class="invite">
-  <div class="greeting">
-    Dengan Hormatnya Kami Menjemput
-  </div>
+      <div class="parents">
+        Haji Ahmad bin Osman<br />
+        &amp; Hajah Salmah binti Yusof
+      </div>
 
-  <div class="parents">
-    Haji Ahmad bin Osman<br>
-    &amp; Hajah Salmah binti Yusof
-  </div>
+      <div class="amp-parents">dan</div>
 
-  <div class="amp-parents">dan</div>
+      <div class="parents">
+        Encik Razali bin Hamid<br />
+        &amp; Puan Rohana binti Ismail
+      </div>
 
-  <div class="parents">
-    Encik Razali bin Hamid<br>
-    &amp; Puan Rohana binti Ismail
-  </div>
+      <div class="invite-msg">
+        Dengan segala hormatnya menjemput Tuan / Puan hadir ke majlis
+        perkahwinan putera / puteri kami
+      </div>
 
-  <div class="invite-msg">
-    Dengan segala hormatnya menjemput Tuan / Puan hadir ke
-    majlis perkahwinan putera / puteri kami
-  </div>
-
-  <div class="couple">Ahmad Farhan</div>
-  <div class="amp-couple">&amp;</div>
-  <div class="couple">Nur Aisyah</div>
-</div>
-
-<!-- Right: Annotations -->
-<div class="annotations">
-  <div class="ann-title">Invitation Text — Layout</div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:36px;"></div>
-    <div>
-      <div class="ann-label">Greeting text</div>
-      <div class="ann-sub">italic · greeting color</div>
+      <div class="couple">Ahmad Farhan</div>
+      <div class="amp-couple">&amp;</div>
+      <div class="couple">Nur Aisyah</div>
     </div>
-  </div>
 
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin-bottom: 20px</div>
-  </div>
+    <!-- Right: Annotations -->
+    <div class="annotations">
+      <div class="ann-title">Invitation Text — Layout</div>
 
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:52px;"></div>
-    <div>
-      <div class="ann-label">Parents (bapa/ibu) — lelaki</div>
-      <div class="ann-sub">greeting color · line-height 1.9</div>
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 36px"></div>
+        <div>
+          <div class="ann-label">Greeting text</div>
+          <div class="ann-sub">italic · greeting color</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin-bottom: 20px</div>
+      </div>
+
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 52px"></div>
+        <div>
+          <div class="ann-label">Parents (bapa/ibu) — lelaki</div>
+          <div class="ann-sub">greeting color · line-height 1.9</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 4px 0</div>
+      </div>
+
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 18px"></div>
+        <div>
+          <div class="ann-label">&amp; antara parents</div>
+          <div class="ann-sub">greeting color · smaller</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 4px 0</div>
+      </div>
+
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 52px"></div>
+        <div>
+          <div class="ann-label">Parents (bapa/ibu) — perempuan</div>
+          <div class="ann-sub">greeting color · line-height 1.9</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 20px 0</div>
+      </div>
+
+      <div class="ann-block">
+        <div
+          class="ann-line"
+          style="background: rgba(44, 28, 14, 0.4); height: 48px"
+        ></div>
+        <div>
+          <div class="ann-label">Invitation message</div>
+          <div class="ann-sub">foreground/70 · line-height 1.8</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 6px 0 2px</div>
+      </div>
+
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 28px"></div>
+        <div>
+          <div class="ann-label">Nama pengantin (secondary)</div>
+          <div class="ann-sub">greeting color · larger</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 2px 0</div>
+      </div>
+
+      <div class="ann-block">
+        <div
+          class="ann-line"
+          style="background: rgba(44, 28, 14, 0.4); height: 18px"
+        ></div>
+        <div>
+          <div class="ann-label">&amp; antara nama pengantin</div>
+          <div class="ann-sub">foreground/60 · smaller</div>
+        </div>
+      </div>
+
+      <div class="spacer-ann">
+        <div class="spacer-tick"></div>
+        <div class="spacer-text">margin: 2px 0</div>
+      </div>
+
+      <div class="ann-block">
+        <div class="ann-line" style="background: #7a4f2e; height: 28px"></div>
+        <div>
+          <div class="ann-label">Nama pengantin (secondary)</div>
+          <div class="ann-sub">greeting color · larger</div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 4px 0</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:18px;"></div>
-    <div>
-      <div class="ann-label">&amp; antara parents</div>
-      <div class="ann-sub">greeting color · smaller</div>
-    </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 4px 0</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:52px;"></div>
-    <div>
-      <div class="ann-label">Parents (bapa/ibu) — perempuan</div>
-      <div class="ann-sub">greeting color · line-height 1.9</div>
-    </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 20px 0</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:rgba(44,28,14,0.40); height:48px;"></div>
-    <div>
-      <div class="ann-label">Invitation message</div>
-      <div class="ann-sub">foreground/70 · line-height 1.8</div>
-    </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 6px 0 2px</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:28px;"></div>
-    <div>
-      <div class="ann-label">Nama pengantin (secondary)</div>
-      <div class="ann-sub">greeting color · larger</div>
-    </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 2px 0</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:rgba(44,28,14,0.40); height:18px;"></div>
-    <div>
-      <div class="ann-label">&amp; antara nama pengantin</div>
-      <div class="ann-sub">foreground/60 · smaller</div>
-    </div>
-  </div>
-
-  <div class="spacer-ann">
-    <div class="spacer-tick"></div>
-    <div class="spacer-text">margin: 2px 0</div>
-  </div>
-
-  <div class="ann-block">
-    <div class="ann-line" style="background:#7a4f2e; height:28px;"></div>
-    <div>
-      <div class="ann-label">Nama pengantin (secondary)</div>
-      <div class="ann-sub">greeting color · larger</div>
-    </div>
-  </div>
-
-</div>
-
-</body>
+  </body>
 </html>
