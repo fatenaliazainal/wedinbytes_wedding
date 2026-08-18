@@ -233,17 +233,20 @@ Editor DOES gate tabs by package via `visibleTabs` at line 497-510. Feature mapp
 
 ---
 
-## F. Fixes applied (HIGH issues — approved)
+## F. Fixes applied (HIGH issues — closed)
 
 | # | Fix | Files changed | Status |
 |---|---|---|---|
 | 1 | Gallery write gate in `PATCH /invitation/:token` | `routes/invitation.ts` | ✅ DONE |
 | 2 | Gallery upload gate in `POST /gallery-upload` | `routes/cards.ts` | ✅ DONE |
 | 3 | Dress Code write gate in `PATCH /invitation/:token` | `routes/invitation.ts` | ✅ DONE |
-| 4 | Strip `galleryImages` from guest-facing GET when package lacks "Photo Gallery" | `routes/invitation.ts` (`publicInvitation()`) | ✅ DONE |
+| 4a | Strip `galleryImages` from guest GET when package lacks "Photo Gallery" | `routes/invitation.ts` (`publicInvitation()`) | ✅ DONE |
+| 4b | Strip all Money Gift fields from guest GET when package lacks "Money Gift" | `routes/invitation.ts` (`publicInvitation()`) | ✅ DONE |
+| 4c | Strip Gift Registry fields from guest GET when package lacks "Gift Registry" | `routes/invitation.ts` (`publicInvitation()`) | ✅ DONE |
 
-**Fix 3 (WeddingCard display)** — resolved via Fix 4: server strips `galleryImages = []` from guest GET response for non-entitled packages. WeddingCard's existing `galleryImages.length > 0` check naturally hides the section. No WeddingCard code changes required. Owner/editor view still receives full data (data preserved, editor tab already hidden by package gating).
+**Fix 3 (WeddingCard display)** — resolved via Fix 4a: server strips `galleryImages = []` from guest GET response for non-entitled packages. WeddingCard's existing `galleryImages.length > 0` check naturally hides the section. No WeddingCard code changes required. Owner/editor view still receives full data (data preserved, editor tab already hidden by package gating).
 
+**All 4 gated features now protected on both WRITE and PUBLIC READ.**
 **No existing data deleted. No DB migration. No package reassignments.**
 
 ---

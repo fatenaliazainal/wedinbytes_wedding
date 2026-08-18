@@ -155,9 +155,11 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect, ownerV
   // Owner/admin views (editor) keep the full data so saved values are not lost.
   // This ensures package downgrade scenarios never leak gated content to guests.
   if (!isDemoToken(row.token) && !ownerView) {
-    const [hasDressCode, hasGallery] = await Promise.all([
+    const [hasDressCode, hasGallery, hasMoneyGift, hasGiftRegistry] = await Promise.all([
       invitationHasFeature(row, "Dress Code"),
       invitationHasFeature(row, "Photo Gallery"),
+      invitationHasFeature(row, "Money Gift"),
+      invitationHasFeature(row, "Gift Registry"),
     ]);
     if (!hasDressCode) {
       (safe as Record<string, unknown>).dresscode = null;
@@ -166,6 +168,18 @@ async function publicInvitation(row: typeof invitationTable.$inferSelect, ownerV
     }
     if (!hasGallery) {
       (safe as Record<string, unknown>).galleryImages = [];
+    }
+    if (!hasMoneyGift) {
+      (safe as Record<string, unknown>).giftDisplay = false;
+      (safe as Record<string, unknown>).giftTitle = null;
+      (safe as Record<string, unknown>).giftRecipient = null;
+      (safe as Record<string, unknown>).giftBankName = null;
+      (safe as Record<string, unknown>).giftAccountNumber = null;
+      (safe as Record<string, unknown>).giftQrCodes = null;
+    }
+    if (!hasGiftRegistry) {
+      (safe as Record<string, unknown>).registryRecipientName = null;
+      (safe as Record<string, unknown>).registryRecipientAddress = null;
     }
   }
   return { ...safe, isLocked: Boolean(row.lockPinHash), business: business };
