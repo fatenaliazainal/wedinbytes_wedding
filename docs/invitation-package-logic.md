@@ -8,11 +8,13 @@
 
 Pakej di-seed secara automatik semasa server start (`autoSeed.ts`) — hanya dibuat kalau jadual kosong.
 
-| Pakej | Harga (Buyer) | Harga (Business) | Badge |
-|---|---|---|---|
-| **Standard** | RM 55 | — | — |
-| **Premium** | RM 65 | — | More Features |
-| **Signature** | RM 85 | — | Best Value |
+> ⚠️ **Harga diurus oleh Admin dalam DB** — nilai di bawah hanya seed defaults (first-time only). Harga sebenar semasa boleh berbeza; semak terus dalam Admin → Packages.
+
+| Pakej | Harga Default (Seed) | Badge |
+|---|---|---|
+| **Standard** | RM 55 *(admin-managed)* | — |
+| **Premium** | RM 65 *(admin-managed)* | More Features |
+| **Signature** | RM 85 *(admin-managed)* | Best Value |
 
 ### Features per Pakej
 
