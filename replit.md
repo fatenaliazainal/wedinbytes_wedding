@@ -73,6 +73,15 @@ Optional env vars: `VITE_R2_DOMAIN_URL` — public base URL for R2 images (e.g. 
 | Invitation Text | `bodyFontFamily` | `text-sm` (14px base, slider-adjustable) | `text-foreground/80` | `leading-relaxed` |
 | Prayer / Doa | `bodyFontFamily` | `text-sm` (14px) | `text-foreground/80` | `leading-relaxed` |
 
+### 3. Programme / Itinerary
+
+| Elemen | Colour property |
+|---|---|
+| Section title | `var(--color-heading, hsl(var(--primary)))` |
+| Masa (time) | `text-foreground` (font-semibold) |
+| Acara (event) | `text-foreground/80` |
+| Legacy schedule text | `text-foreground/75` |
+
 **Slider-adjustable fields** — Greeting, Groom's Parents, Bride's Parents, and Invitation Text each have a per-field font-size slider in the editor. The chosen size is persisted as a `<span style="font-size:Xpx">` wrapper around the field content. `EditorPage` strips the wrapper on load (`extractFieldContent`/`extractFieldFontSize`), applies it in the preview (`applyFieldSizes`), and re-wraps on save (`wrapFieldFontSize`).
 
 **`sanitizeHtml` (`src/lib/sanitize.ts`)** — strips all `<div>` and `<p>` block tags, converting their closing tags to `<br>`, before DOMPurify runs. This preserves line breaks from the wysiwyg editor while eliminating block-level margins that would otherwise create large gaps between lines.
