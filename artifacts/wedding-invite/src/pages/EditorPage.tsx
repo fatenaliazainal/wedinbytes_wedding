@@ -76,7 +76,7 @@ const TAB_FEATURE_MAP: Record<string, string[]> = {
   kehadiran: ["RSVP / Wishes"],
   hubungi: ["Contact"],
   dresscode: ["Dress Code"],
-  galeri: ["Photo Gallery", "Money Gift"],
+  galeri: ["Photo Gallery"],
   gift: ["Money Gift"],
   registry: ["Gift Registry"],
 };
@@ -2693,57 +2693,65 @@ export default function EditorPage({
             {/* ── GALERI ── */}
             {activeTab === "galeri" && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-500">Upload up to 4 images.</p>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => uploadGalleryFiles(e.target.files)}
-                      disabled={uploadingGallery}
-                    />
-                    {uploadingGallery
-                      ? "Uploading..."
-                      : inv.galleryImages.length >= 4
-                        ? "Gallery Full"
-                        : "Upload Images"}
-                  </label>
-                  <span className="text-xs text-gray-400">
-                    {inv.galleryImages.length}/4 images · Max 10 MB each
-                  </span>
-                </div>
-                {inv.galleryImages.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {inv.galleryImages.map((url, idx) => (
-                      <div key={idx} className="relative group">
-                        <img
-                          src={resolveImageUrl(url)}
-                          alt={`Gallery preview ${idx + 1}`}
-                          onError={(e) => {
-                            fallbackToR2Proxy(e, url);
-                          }}
-                          className="w-full h-24 object-cover rounded border border-gray-200"
+                {mode !== "demo" && activePackageId !== null && !activeFeatureNames.has("Photo Gallery") ? (
+                  <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                    Photo Gallery is available with the Premium package.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-500">Upload up to 4 images.</p>
+                    <div className="flex items-center gap-3">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => uploadGalleryFiles(e.target.files)}
+                          disabled={uploadingGallery}
                         />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setInv((p) => ({
-                              ...p,
-                              galleryImages: p.galleryImages.filter(
-                                (_, i) => i !== idx,
-                              ),
-                            }))
-                          }
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Remove"
-                        >
-                          ×
-                        </button>
+                        {uploadingGallery
+                          ? "Uploading..."
+                          : inv.galleryImages.length >= 4
+                            ? "Gallery Full"
+                            : "Upload Images"}
+                      </label>
+                      <span className="text-xs text-gray-400">
+                        {inv.galleryImages.length}/4 images · Max 10 MB each
+                      </span>
+                    </div>
+                    {inv.galleryImages.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {inv.galleryImages.map((url, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={resolveImageUrl(url)}
+                              alt={`Gallery preview ${idx + 1}`}
+                              onError={(e) => {
+                                fallbackToR2Proxy(e, url);
+                              }}
+                              className="w-full h-24 object-cover rounded border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setInv((p) => ({
+                                  ...p,
+                                  galleryImages: p.galleryImages.filter(
+                                    (_, i) => i !== idx,
+                                  ),
+                                }))
+                              }
+                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

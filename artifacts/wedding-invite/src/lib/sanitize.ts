@@ -7,8 +7,8 @@
  */
 import DOMPurify from "dompurify";
 
-const ALLOWED_TAGS = ["br", "b", "strong", "i", "em", "u", "p", "span", "wbr"];
-const ALLOWED_ATTR = ["style", "class"];
+const ALLOWED_TAGS = ["br", "b", "strong", "i", "em", "u", "p", "span", "wbr", "font"];
+const ALLOWED_ATTR = ["style", "class", "size"];
 
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";
