@@ -1,0 +1,195 @@
+You are working on a LIVE PRODUCTION application. Do NOT make broad changes or refactor unrelated code.
+
+The current production package/feature logic has inconsistencies between the intended behavior and the actual implementation.
+
+IMPORTANT:
+
+* Production is already live.
+* Existing customer invitations and data MUST NOT be broken.
+* Do NOT delete existing invitation data.
+* Do NOT change package prices.
+* Do NOT change existing package assignments.
+* Do NOT rename existing database features unless absolutely necessary.
+* Do NOT change UI/design unrelated to package gating.
+* Do NOT assume the documentation is correct. Inspect the actual production code and database schema first.
+* Do NOT immediately modify code. AUDIT FIRST.
+
+### STEP 1 — Audit current implementation
+
+Inspect:
+
+1. Package creation/seeding:
+
+   * autoSeed.ts
+   * package tables
+   * pricing_feature tables
+   * package-feature relationships
+
+2. Server-side feature gating:
+
+   * invitationHasFeature()
+   * all API routes that save/update:
+
+     * gallery
+     * dress code
+     * money gift
+     * gift registry
+     * any other package-gated fields
+
+3. Invitation GET/read APIs:
+
+   * Check whether gated data can still be returned to a client whose package does not have the feature.
+
+4. Frontend:
+
+   * WeddingCard.tsx
+   * editor components
+   * all section rendering conditions
+   * check whether sections depend on packageId, feature entitlement, or only whether data exists.
+
+5. Database:
+
+   * inspect existing production schema
+   * inspect actual package → feature mappings
+   * inspect whether existing invitations can contain gated data from an older package.
+
+### STEP 2 — Produce an audit report BEFORE changing anything
+
+Create a clear report with:
+
+A. What the documentation says.
+
+B. What the production code actually does.
+
+C. What the database actually contains.
+
+D. Every mismatch found.
+
+For each mismatch, classify it as:
+
+* CRITICAL — security/entitlement issue
+* HIGH — customer-facing package issue
+* MEDIUM — inconsistent behavior
+* LOW — documentation/cleanup only
+
+Do NOT fix anything yet.
+
+### STEP 3 — Pay special attention to these issues
+
+#### A. Package downgrade
+
+Test/trace this scenario:
+
+Premium invitation
+→ has gallery data
+→ package becomes Standard
+
+Determine whether the gallery can still appear because WeddingCard.tsx only checks:
+
+galleryImages.length > 0
+
+If yes, identify the safest fix.
+
+Do NOT delete the old gallery data automatically.
+
+The preferred behavior is:
+
+Standard package:
+
+* gated feature cannot be edited/saved
+* gated section should not be displayed
+* existing data should remain safely stored unless there is a deliberate data migration decision.
+
+#### B. Server READ protection
+
+Check whether package gating only happens during SAVE/UPLOAD.
+
+If a Standard invitation can still retrieve Premium-only data through an API, report this as a HIGH/CRITICAL issue.
+
+Do not expose gated data to unauthorized clients if the API currently returns it unnecessarily.
+
+#### C. Feature names
+
+Check whether feature names are consistently represented.
+
+Expected conceptual features:
+
+* RSVP
+* Wishes / Guestbook
+* Contact
+* Location & Navigation
+* Calendar
+* Countdown
+* Background Music
+* Photo Gallery
+* Money Gift
+* Dress Code
+* Gift Registry
+
+Do NOT rename database records automatically. First report the actual names currently used.
+
+#### D. Gift Registry
+
+Check whether Gift Registry is:
+
+* actually implemented,
+* package-gated,
+* saved by API,
+* displayed by WeddingCard.tsx.
+
+If documentation mentions it but the frontend does not implement it, report the mismatch. Do not invent a new UI.
+
+#### E. autoSeed.ts
+
+Verify whether autoSeed.ts only seeds when tables are empty.
+
+If so, confirm that modifying autoSeed.ts will NOT update existing production package/feature records.
+
+Do not change existing production records through autoSeed.ts.
+
+#### F. Hardcoded package names
+
+Search the entire codebase for logic such as:
+
+packageName === "Premium"
+packageName === "Signature"
+package === "Premium"
+package === "Signature"
+
+Report every occurrence.
+
+Where possible, package entitlement should be determined through the existing feature system:
+
+invitationHasFeature(invitation, featureName)
+
+Do NOT refactor all occurrences automatically. Only propose changes after identifying whether they are actually incorrect.
+
+### STEP 4 — After the audit
+
+Once the audit is complete, provide:
+
+1. Exact files affected.
+2. Exact current behavior.
+3. Exact proposed change.
+4. Risk level.
+5. Whether existing production data is affected.
+6. Whether a database migration is required.
+7. Whether existing customers will notice any change.
+
+STOP and wait for approval before applying HIGH/CRITICAL changes.
+
+For LOW-risk documentation-only fixes, you may make them if they do not affect production behavior.
+
+### Safety requirement
+
+Before modifying any production-related code:
+
+* Do not delete data.
+* Do not reset the database.
+* Do not reseed existing package data.
+* Do not change package prices.
+* Do not change customer package assignments.
+* Do not change unrelated invitation functionality.
+* Do not perform a broad refactor.
+
+The goal is to understand exactly what is currently running in production and identify the minimum safe changes needed.
