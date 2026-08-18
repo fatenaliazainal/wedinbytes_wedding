@@ -108,29 +108,31 @@
 ```
 ┌─────────────────────────────────────────────┐
 │                                             │
-│  Container : w-full max-w-sm text-center    │
-│              flex flex-col                  │
-│             (spacing explicit per element)  │
+│  Container : detailBlock                    │
+│  max-width : max-w-sm                       │
+│  align     : text-center                    │
+│  gap       : space-y-1 = 4px               │
+│             (antara setiap direct child)    │
 │                                             │
 │  [Greeting text]                            │
-│  ↕ mt-2 = 8px                              │
+│  ↕ space-y-1 = 4px                         │
 │  [OrnamentDivider]                          │
-│  ↕ mt-3 = 12px                             │
-│  ┌─ Parents block (space-y-[6px]) ────────┐ │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ Parents block (space-y-2 = 8px) ──────┐ │
 │  │  [Parents Lelaki]                       │ │
-│  │  ↕ 6px                                  │ │
+│  │  ↕ space-y-2 = 8px                     │ │
 │  │  [&]                                    │ │
-│  │  ↕ 6px                                  │ │
+│  │  ↕ space-y-2 = 8px                     │ │
 │  │  [Parents Perempuan]                    │ │
 │  └─────────────────────────────────────────┘ │
-│  ↕ mt-3 = 12px                             │
+│  ↕ space-y-1 = 4px                         │
 │  [Invitation message]                       │
-│  ↕ mt-4 = 16px                             │
-│  ┌─ Couple names (space-y-1 = 4px) ───────┐ │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ Couple names (space-y-0.5 = 2px) ─────┐ │
 │  │  [Nama Pengantin Lelaki]                │ │
-│  │  ↕ 4px                                  │ │
+│  │  ↕ space-y-0.5 = 2px                   │ │
 │  │  [&]                                    │ │
-│  │  ↕ 4px                                  │ │
+│  │  ↕ space-y-0.5 = 2px                   │ │
 │  │  [Nama Pengantin Perempuan]             │ │
 │  └─────────────────────────────────────────┘ │
 │                                             │
@@ -219,4 +221,3 @@
 | 2026-08-18 | Tambah rujukan warna teks untuk semua section |
 | 2026-08-18 | Invitation Text — Parents block: `space-y-1` (4px) → `space-y-2` (8px) |
 | 2026-08-18 | Tambah layout diagram untuk section Invitation Text |
-| 2026-08-18 | Invitation Text — spacing tuned: Greeting→Ornament 8px, Ornament→Parents 12px, Parents internal 6px, Parents→Message 12px, Message→Names 16px, Names internal 4px |
