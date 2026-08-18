@@ -220,6 +220,15 @@ function getCountdownTarget(dateStr: string, timeStr?: string): string | null {
   return `${datePart}T${timePart}`;
 }
 
+function formatTime12h(time24: string | undefined): string {
+  if (!time24) return "";
+  const [h, m] = time24.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return time24;
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 function OrnamentDivider() {
   return (
     <div className="flex items-center justify-center w-full text-accent">
@@ -890,7 +899,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                   {(inv.itinerary as { time?: string; event?: string }[]).map((item, idx) => (
                     <div key={idx} className="space-y-0.5">
                       {/* Programme time — foreground; reserve primary for section headings */}
-                      <p className="text-sm font-semibold text-foreground">{item.time || "—"}</p>
+                      <p className="text-sm font-semibold text-foreground">{formatTime12h(item.time) || item.time || "—"}</p>
                       <p className="text-sm text-foreground/80">{item.event || "—"}</p>
                     </div>
                   ))}
