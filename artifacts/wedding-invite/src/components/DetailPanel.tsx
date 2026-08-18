@@ -264,7 +264,12 @@ function HubungiPanel({ invitation }: { invitation?: Invitation }) {
         )}
 
         {contacts.map((contact, idx) => {
-          const dial = contact.phone?.replace(/\D/g, "");
+          const rawDial = contact.phone?.replace(/\D/g, "") ?? "";
+          const dial = rawDial.startsWith("60")
+            ? rawDial
+            : rawDial.startsWith("0")
+              ? "60" + rawDial.slice(1)
+              : rawDial || undefined;
           return (
             <div
               key={idx}
