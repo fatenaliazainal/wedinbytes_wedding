@@ -833,7 +833,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             <p className="leading-relaxed" style={{ fontFamily: nameStyle.fontFamily, fontSize: "var(--greeting-font-size, 1rem)", color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(greetingText) }} />
             <OrnamentDivider />
             {(brideParents || groomParents) && (
-              <div className="space-y-1">{/* Parents — medium weight, not label-weight */}
+              <div className="space-y-2">{/* Parents — medium weight, not label-weight */}
                 {groomParents && (
                   <p className="text-sm font-medium" style={{ fontFamily: bodyFontFamily, color: "var(--greeting-color, hsl(var(--primary)))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(groomParents) }} />
                 )}
