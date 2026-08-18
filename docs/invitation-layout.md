@@ -142,7 +142,7 @@
 | Greeting text | `var(--greeting-color, hsl(var(--primary)))` |
 | Parents (bapa/ibu) | `var(--greeting-color, hsl(var(--primary)))` |
 | `&` antara parents | `var(--greeting-color, hsl(var(--primary)))` |
-| Invitation message | `text-foreground/70` |
+| Invitation message | `text-foreground/80` |
 | Nama pengantin (secondary) | `var(--greeting-color, hsl(var(--primary)))` |
 | `&` antara nama pengantin | `text-foreground/60` |
 
@@ -212,12 +212,42 @@ Greeting text, Parents, dan Invitation message menggunakan saiz yang dikontrol o
 ---
 
 #### 3. Programme / Itinerary
-| Elemen | Colour Property |
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│  Container : detailBlock                    │
+│              (space-y-1 = 4px per child)    │
+│                                             │
+│  [Section title]                            │
+│  ↕ space-y-1 = 4px                         │
+│  [OrnamentDivider]                          │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ Itinerary list (space-y-4 = 16px) ────┐ │
+│  │  ┌─ Item (space-y-0.5 = 2px) ────────┐ │ │
+│  │  │  [Masa / Time]                    │ │ │
+│  │  │  ↕ 2px                            │ │ │
+│  │  │  [Acara / Event]                  │ │ │
+│  │  └───────────────────────────────────┘ │ │
+│  │  ↕ 16px                               │ │
+│  │  ┌─ Item ────────────────────────────┐ │ │
+│  │  │  ...                              │ │ │
+│  │  └───────────────────────────────────┘ │ │
+│  └─────────────────────────────────────────┘ │
+│                                             │
+│  (Fallback jika tiada itinerary:            │
+│   legacy schedule text — text-xs)           │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+| Elemen | Class / Style |
 |---|---|
 | Section title | `var(--color-heading, hsl(var(--primary)))` |
-| Masa (time) | `text-foreground` (font-semibold) |
-| Acara (event) | `text-foreground/80` |
-| Legacy schedule text | `text-foreground/75` |
+| Masa / Time | `text-sm font-semibold text-foreground` |
+| Acara / Event | `text-sm text-foreground/80` |
+| Legacy schedule (fallback) | `text-xs text-foreground/75 leading-relaxed` |
+| Font (semua) | `bodyFontFamily` |
 
 ---
 
