@@ -146,6 +146,17 @@
 | Nama pengantin (secondary) | `var(--greeting-color, hsl(var(--primary)))` |
 | `&` antara nama pengantin | `text-foreground/60` |
 
+**Font Size (per-field, dikontrol editor)**
+
+Greeting text, Parents, dan Invitation message menggunakan saiz yang dikontrol oleh slider berasingan dalam editor (Invitation Text tab). Saiz disimpan sebagai `<span style="font-size:Xpx">` wrapper dalam HTML field. Fallback: `var(--greeting-font-size, 1rem)` dari Design tab.
+
+| Field | CSS Fallback | Slider (Editor) |
+|---|---|---|
+| Greeting text | `var(--greeting-font-size, 1rem)` | Greeting Text — Npx |
+| Parents (bapa/ibu) | `var(--greeting-font-size, 1rem)` | Groom's/Bride's Parents — Npx |
+| Invitation message | `var(--greeting-font-size, 1rem)` | Invitation Text — Npx |
+| Nama pengantin | `var(--greeting-font-size, 1rem)` | Design tab slider |
+
 ---
 
 #### 2. Event Details
@@ -167,13 +178,13 @@
 │  │  ↕ 4px                                  │ │
 │  │  [Tarikh Hijri] (optional)              │ │
 │  └─────────────────────────────────────────┘ │
-│  ↕ space-y-1 = 4px                         │
+│  ↕ marginTop = 8px  ← (override space-y-1) │
 │  ┌─ TIME block (space-y-1 = 4px) ─────────┐ │
 │  │  [Label TIME]                           │ │
 │  │  ↕ 4px                                  │ │
 │  │  [Masa value]                           │ │
 │  └─────────────────────────────────────────┘ │
-│  ↕ space-y-1 = 4px                         │
+│  ↕ marginTop = 8px  ← (override space-y-1) │
 │  ┌─ LOCATION block (space-y-1 = 4px) ─────┐ │
 │  │  [Label LOCATION]                       │ │
 │  │  ↕ 4px                                  │ │
@@ -257,3 +268,6 @@
 | 2026-08-18 | Tambah rujukan warna teks untuk semua section |
 | 2026-08-18 | Invitation Text — Parents block: `space-y-1` (4px) → `space-y-2` (8px) |
 | 2026-08-18 | Tambah layout diagram untuk section Invitation Text |
+| 2026-08-18 | Event Details — DATE→TIME dan TIME→LOCATION gap: `space-y-1` (4px) → `marginTop: 8px` |
+| 2026-08-18 | Invitation Text — Parents + Invitation message font size: hardcoded `text-sm` → `var(--greeting-font-size, 1rem)` dengan per-field slider override |
+| 2026-08-18 | Tambah nota font size per-field (wrapper `<span style="font-size:Xpx">`) dalam section Invitation Text |
