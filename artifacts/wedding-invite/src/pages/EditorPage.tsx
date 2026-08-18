@@ -434,6 +434,26 @@ function wrapFieldFontSize(html: string | null | undefined, px: number): string 
   return `<span style="font-size:${px}px">${inner}</span>`;
 }
 
+/** Strip the outer font-size wrapper span (if present) and return the raw inner HTML. */
+function extractFieldContent(html: string | null | undefined): string {
+  if (!html) return "";
+  const m = html.trim().match(FIELD_SIZE_WRAPPER_RE);
+  return m ? m[2] : html.trim();
+}
+
+type FieldSizes = { greeting: number; groomParents: number; brideParents: number; invitation: number };
+
+/** Return a copy of the invitation with per-field font-size wrappers applied for display. */
+function applyFieldSizes(inv: InvData, sizes: FieldSizes): InvData {
+  return {
+    ...inv,
+    greetingText:    inv.greetingText    ? wrapFieldFontSize(inv.greetingText,    sizes.greeting)    : inv.greetingText,
+    groomParents:    inv.groomParents    ? wrapFieldFontSize(inv.groomParents,    sizes.groomParents) : inv.groomParents,
+    brideParents:    inv.brideParents    ? wrapFieldFontSize(inv.brideParents,    sizes.brideParents) : inv.brideParents,
+    invitationText:  inv.invitationText  ? wrapFieldFontSize(inv.invitationText,  sizes.invitation)  : inv.invitationText,
+  };
+}
+
 function Field({
   label,
   required,
@@ -658,6 +678,14 @@ export default function EditorPage({
   const [waxSeals, setWaxSeals] = useState<
     { id: number; name: string; imageUrl: string; isActive: boolean }[]
   >([]);
+  // Per-field font sizes for the Invitation Text tab sliders.
+  // Kept separate from inv so RTEs always receive plain text — no render loops.
+  const [fieldSizes, setFieldSizes] = useState<FieldSizes>({
+    greeting: 16,
+    groomParents: 16,
+    brideParents: 16,
+    invitation: 16,
+  });
   useEffect(() => {
     fetch("/api/wax-seals")
       .then((r) => (r.ok ? r.json() : []))
@@ -953,8 +981,8 @@ export default function EditorPage({
             venueState: d.venueState ?? "",
             venueMapUrl: d.venueMapUrl ?? "",
             venueWazeUrl: (d as any).venueWazeUrl ?? "",
-            groomParents: d.groomParents ?? "",
-            brideParents: d.brideParents ?? "",
+            groomParents: extractFieldContent(d.groomParents ?? ""),
+            brideParents: extractFieldContent(d.brideParents ?? ""),
             contactPhone: d.contactPhone ?? "",
             contacts: normalizeContacts(d.contacts, d.contactPhone ?? ""),
             dresscode: d.dresscode ?? "",
@@ -1004,13 +1032,13 @@ export default function EditorPage({
             language: (d.language as "ms" | "en") ?? "ms",
             showFrontText: d.showFrontText ?? true,
             greetingText:
-              d.greetingText ?? "Assalamualaikum wbt & salam sejahtera",
+              extractFieldContent(d.greetingText ?? "Assalamualaikum wbt & salam sejahtera"),
             doaText:
               d.doaText ??
               "Ya Allah,\nberkatilah majlis perkahwinan kami.\nSatukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
             invitationText:
-              d.invitationText ??
-              "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami",
+              extractFieldContent(d.invitationText ??
+              "Dengan penuh kesyukuran, kami menjemput\nDato' | Datin | Tuan | Puan | Encik | Cik\nke majlis perkahwinan anakanda kami"),
             hostName: d.hostName ?? "",
             hostCount: d.hostCount ?? 1,
             venueHijriDate: d.venueHijriDate ?? "",
@@ -1077,6 +1105,13 @@ export default function EditorPage({
               d.business && typeof d.business === "object"
                 ? (d.business as BusinessInvitationSummary)
                 : null,
+          });
+          // Initialise per-field font sizes from any wrappers stored in the DB.
+          setFieldSizes({
+            greeting:     extractFieldFontSize(d.greetingText),
+            groomParents: extractFieldFontSize(d.groomParents),
+            brideParents: extractFieldFontSize(d.brideParents),
+            invitation:   extractFieldFontSize(d.invitationText),
           });
           // URL param ?designCode= takes priority (user clicked "Personalise" on a specific card).
           // Both demo and real invitations use the active card design as the base template so that
@@ -1551,8 +1586,8 @@ export default function EditorPage({
         venueState: inv.venueState,
         venueMapUrl: inv.venueMapUrl || null,
         venueWazeUrl: (inv as any).venueWazeUrl || null,
-        groomParents: inv.groomParents || null,
-        brideParents: inv.brideParents || null,
+        groomParents: inv.groomParents ? wrapFieldFontSize(inv.groomParents, fieldSizes.groomParents) : null,
+        brideParents: inv.brideParents ? wrapFieldFontSize(inv.brideParents, fieldSizes.brideParents) : null,
         contactPhone: inv.contactPhone,
         contacts: inv.contacts,
         message: inv.message || null,
@@ -1580,9 +1615,9 @@ export default function EditorPage({
         hashtag: inv.hashtag || null,
         language: inv.language,
         showFrontText: inv.showFrontText,
-        greetingText: inv.greetingText || null,
+        greetingText: inv.greetingText ? wrapFieldFontSize(inv.greetingText, fieldSizes.greeting) : null,
         doaText: inv.doaText || null,
-        invitationText: inv.invitationText || null,
+        invitationText: inv.invitationText ? wrapFieldFontSize(inv.invitationText, fieldSizes.invitation) : null,
         hostName: inv.hostName || null,
         hostCount: inv.hostCount,
         venueHijriDate: inv.venueHijriDate || null,
@@ -2377,99 +2412,63 @@ export default function EditorPage({
             {activeTab === "ayat-undangan" && (
               <>
                 {/* Greeting Text — per-field size slider */}
-                <Field label={`Greeting Text — ${extractFieldFontSize(inv.greetingText || "")}px`}>
+                <Field label={`Greeting Text — ${fieldSizes.greeting}px`}>
                   <input
                     type="range" min={10} max={40} step={1}
-                    value={extractFieldFontSize(inv.greetingText || "")}
-                    onChange={(e) => {
-                      const px = parseInt(e.target.value);
-                      setInv((p) => ({ ...p, greetingText: wrapFieldFontSize(p.greetingText || "", px) }));
-                    }}
+                    value={fieldSizes.greeting}
+                    onChange={(e) => setFieldSizes((s) => ({ ...s, greeting: parseInt(e.target.value) }))}
                     className="w-full accent-blue-500 mb-3"
                   />
                   <RichTextEditor
                     value={inv.greetingText}
-                    onChange={(v) => {
-                      setInv((prev) => {
-                        const px = extractFieldFontSize(prev.greetingText || "");
-                        const wrapped = wrapFieldFontSize(v, px);
-                        return prev.greetingText === wrapped ? prev : { ...prev, greetingText: wrapped };
-                      });
-                    }}
+                    onChange={setI("greetingText")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
                 {/* Groom's Parents — per-field size slider */}
-                <Field label={`Groom's Parents — ${extractFieldFontSize(inv.groomParents || "")}px`} helperText="Shown in the invitation detail section">
+                <Field label={`Groom's Parents — ${fieldSizes.groomParents}px`} helperText="Shown in the invitation detail section">
                   <input
                     type="range" min={10} max={40} step={1}
-                    value={extractFieldFontSize(inv.groomParents || "")}
-                    onChange={(e) => {
-                      const px = parseInt(e.target.value);
-                      setInv((p) => ({ ...p, groomParents: wrapFieldFontSize(p.groomParents || "", px) }));
-                    }}
+                    value={fieldSizes.groomParents}
+                    onChange={(e) => setFieldSizes((s) => ({ ...s, groomParents: parseInt(e.target.value) }))}
                     className="w-full accent-blue-500 mb-3"
                   />
                   <RichTextEditor
                     value={inv.groomParents}
-                    onChange={(v) => {
-                      setInv((prev) => {
-                        const px = extractFieldFontSize(prev.groomParents || "");
-                        const wrapped = wrapFieldFontSize(v, px);
-                        return prev.groomParents === wrapped ? prev : { ...prev, groomParents: wrapped };
-                      });
-                    }}
+                    onChange={setI("groomParents")}
                     placeholder={t("placeholders.groomParents")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
                 {/* Bride's Parents — per-field size slider */}
-                <Field label={`Bride's Parents — ${extractFieldFontSize(inv.brideParents || "")}px`} helperText="Shown in the invitation detail section">
+                <Field label={`Bride's Parents — ${fieldSizes.brideParents}px`} helperText="Shown in the invitation detail section">
                   <input
                     type="range" min={10} max={40} step={1}
-                    value={extractFieldFontSize(inv.brideParents || "")}
-                    onChange={(e) => {
-                      const px = parseInt(e.target.value);
-                      setInv((p) => ({ ...p, brideParents: wrapFieldFontSize(p.brideParents || "", px) }));
-                    }}
+                    value={fieldSizes.brideParents}
+                    onChange={(e) => setFieldSizes((s) => ({ ...s, brideParents: parseInt(e.target.value) }))}
                     className="w-full accent-blue-500 mb-3"
                   />
                   <RichTextEditor
                     value={inv.brideParents}
-                    onChange={(v) => {
-                      setInv((prev) => {
-                        const px = extractFieldFontSize(prev.brideParents || "");
-                        const wrapped = wrapFieldFontSize(v, px);
-                        return prev.brideParents === wrapped ? prev : { ...prev, brideParents: wrapped };
-                      });
-                    }}
+                    onChange={setI("brideParents")}
                     placeholder={t("placeholders.brideParents")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
                 </Field>
                 {/* Invitation Text — per-field size slider */}
-                <Field label={`Invitation Text — ${extractFieldFontSize(inv.invitationText || "")}px`}>
+                <Field label={`Invitation Text — ${fieldSizes.invitation}px`}>
                   <input
                     type="range" min={10} max={40} step={1}
-                    value={extractFieldFontSize(inv.invitationText || "")}
-                    onChange={(e) => {
-                      const px = parseInt(e.target.value);
-                      setInv((p) => ({ ...p, invitationText: wrapFieldFontSize(p.invitationText || "", px) }));
-                    }}
+                    value={fieldSizes.invitation}
+                    onChange={(e) => setFieldSizes((s) => ({ ...s, invitation: parseInt(e.target.value) }))}
                     className="w-full accent-blue-500 mb-3"
                   />
                   <RichTextEditor
                     value={inv.invitationText}
-                    onChange={(v) => {
-                      setInv((prev) => {
-                        const px = extractFieldFontSize(prev.invitationText || "");
-                        const wrapped = wrapFieldFontSize(v, px);
-                        return prev.invitationText === wrapped ? prev : { ...prev, invitationText: wrapped };
-                      });
-                    }}
+                    onChange={setI("invitationText")}
                     multiLine
                     inputStyle={{ textAlign: "center" }}
                   />
@@ -4361,11 +4360,12 @@ export default function EditorPage({
                 }
               >
                 <WeddingCard
-                  invitation={
+                  invitation={applyFieldSizes(
                     mode !== "demo" && activePackageId !== null && !activeFeatureNames.has("Dress Code")
                       ? { ...inv, dresscode: "", dresscodeTheme: "", dresscodeColors: [] }
-                      : inv
-                  }
+                      : inv,
+                    fieldSizes
+                  )}
                   cardImageUrl={resolveImageUrl(
                     design.cardImageUrl ||
                       "wed_card_design/20260531-041903-27796.jpg",

@@ -32,9 +32,21 @@ function convertFontSizeTags(html: string): string {
     .replace(/<\/font>/gi, "</span>");
 }
 
+/**
+ * react-simple-wysiwyg wraps each editor "line" in a <div>. Since <div> is not
+ * in our ALLOWED_TAGS, DOMPurify would strip the tags and run all lines together
+ * with no spacing. Convert each closing </div> to <br> and drop opening <div>
+ * tags so the line breaks are preserved inside any container element.
+ */
+function normalizeDivLineBreaks(html: string): string {
+  return html
+    .replace(/<div[^>]*>/gi, "")   // strip opening <div …>
+    .replace(/<\/div>/gi, "<br>"); // closing </div> → <br>
+}
+
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";
-  return DOMPurify.sanitize(convertFontSizeTags(html), {
+  return DOMPurify.sanitize(normalizeDivLineBreaks(convertFontSizeTags(html)), {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
