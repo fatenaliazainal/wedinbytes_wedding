@@ -1,0 +1,59 @@
+Before deployment, I want one final end-to-end audit based on the ACTUAL package purchased by existing customers.
+
+Do not change any code.
+
+Please inspect the production database and verify the complete chain:
+
+Customer invitation
+→ invitation.packageId
+→ actual package record
+→ pricing_feature records
+→ features available to that package
+→ server write gates
+→ public GET stripping
+→ frontend section visibility
+
+For EACH current production package:
+
+* Standard
+* Premium
+* Signature
+
+Please verify the actual package → feature mapping in the database.
+
+Then test each gated feature against the ACTUAL package entitlement:
+
+| Feature       | Standard | Premium | Signature |
+| ------------- | -------- | ------- | --------- |
+| Photo Gallery | ❌        | ✅       | ✅         |
+| Dress Code    | ❌        | ✅       | ✅         |
+| Money Gift    | ❌        | ✅       | ✅         |
+| Gift Registry | ❌        | ❌       | ✅         |
+
+Also verify all non-gated features remain available to all packages.
+
+Most importantly, inspect EXISTING customer invitations in production and verify:
+
+1. Their `packageId` points to the correct package.
+2. The package's actual DB features match the intended entitlement.
+3. No existing customer has a package/feature mismatch.
+4. No customer invitation is accidentally assigned to the wrong package.
+5. Existing Premium/Signature customers with gated data can still see their data.
+6. Existing Standard customers cannot publicly access gated data.
+7. Existing downgraded invitations, if any, are handled correctly.
+
+Please report:
+
+* Actual package IDs
+* Actual package names
+* Actual feature mappings from DB
+* Number of existing invitations per package
+* Any package/feature mismatches found
+* Any invitations with gated data while their package does not have the feature
+
+Do NOT modify anything.
+
+If everything matches, give me:
+`PACKAGE ENTITLEMENT AUDIT: PASS`
+
+If anything is inconsistent, STOP and report it before making any changes.
