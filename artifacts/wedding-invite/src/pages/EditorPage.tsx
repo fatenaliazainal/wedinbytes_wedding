@@ -1537,9 +1537,6 @@ export default function EditorPage({
         brideParents: inv.brideParents || null,
         contactPhone: inv.contactPhone,
         contacts: inv.contacts,
-        dresscode: inv.dresscode || null,
-        dresscodeTheme: inv.dresscodeTheme || null,
-        dresscodeColors: inv.dresscodeColors.slice(0, 4),
         message: inv.message || null,
         shortCoupleName: inv.shortCoupleName || null,
         groomShortName: inv.groomShortName || null,
@@ -1573,7 +1570,6 @@ export default function EditorPage({
         venueHijriDate: inv.venueHijriDate || null,
         schedule: inv.schedule || null,
         itinerary: inv.itinerary,
-        galleryImages: inv.galleryImages,
         rsvpEnabled: inv.rsvpEnabled,
         rsvpAdditionalInfo: inv.rsvpAdditionalInfo || null,
         rsvpDeadline: inv.rsvpDeadline || null,
@@ -1621,6 +1617,31 @@ export default function EditorPage({
         musicArtist: design.musicArtist || null,
         overlayEnabled: inv.overlayEnabled,
       };
+
+      // Dress Code is a Premium feature — do not send dresscode fields for
+      // Standard packages; the API gates them and returns 403 otherwise.
+      if (
+        mode === "admin" ||
+        mode === "demo" ||
+        activeFeatureNames.has("Dress Code")
+      ) {
+        Object.assign(savePayload, {
+          dresscode: inv.dresscode || null,
+          dresscodeTheme: inv.dresscodeTheme || null,
+          dresscodeColors: inv.dresscodeColors.slice(0, 4),
+        });
+      }
+
+      // Photo Gallery is a Premium feature — same gate.
+      if (
+        mode === "admin" ||
+        mode === "demo" ||
+        activeFeatureNames.has("Photo Gallery")
+      ) {
+        Object.assign(savePayload, {
+          galleryImages: inv.galleryImages,
+        });
+      }
 
       // Standard invitations do not have the Money Gift feature. Do not send
       // those fields during an otherwise unrelated save, because the API
