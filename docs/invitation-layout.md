@@ -149,6 +149,44 @@
 ---
 
 #### 2. Event Details
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│  Container : detailBlock                    │
+│              (space-y-1 = 4px per child)    │
+│                                             │
+│  [Section title]                            │
+│  ↕ space-y-1 = 4px                         │
+│  [OrnamentDivider]                          │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ DATE block (space-y-1 = 4px) ─────────┐ │
+│  │  [Label DATE]                           │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Tarikh value]                         │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Tarikh Hijri] (optional)              │ │
+│  └─────────────────────────────────────────┘ │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ TIME block (space-y-1 = 4px) ─────────┐ │
+│  │  [Label TIME]                           │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Masa value]                           │ │
+│  └─────────────────────────────────────────┘ │
+│  ↕ space-y-1 = 4px                         │
+│  ┌─ LOCATION block (space-y-1 = 4px) ─────┐ │
+│  │  [Label LOCATION]                       │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Nama venue]                           │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Alamat venue] (optional)              │ │
+│  │  ↕ 4px                                  │ │
+│  │  [Bandar, Negeri]                       │ │
+│  └─────────────────────────────────────────┘ │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
 | Elemen | Colour Property |
 |---|---|
 | Section title | `var(--color-heading, hsl(var(--primary)))` |
