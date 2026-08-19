@@ -35,6 +35,7 @@ import BusinessProposalPage from "@/pages/BusinessProposalPage";
 import BusinessRegisterPage from "@/pages/BusinessRegisterPage";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
+import HowToUsePage from "@/pages/HowToUsePage";
 import TermsPage from "@/pages/TermsPage";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -173,6 +174,7 @@ function Router() {
       <Route path="/register/business" component={BusinessRegisterPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/contact" component={ContactPage} />
+      <Route path="/how-to-use" component={HowToUsePage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />

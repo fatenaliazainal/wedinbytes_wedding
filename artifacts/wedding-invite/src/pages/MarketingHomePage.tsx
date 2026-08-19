@@ -19,6 +19,7 @@ const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
   { label: "PACKAGES", href: "/pricing" },
+  { label: "HOW TO USE", href: "/how-to-use" },
   { label: "FAQs", href: "/faq" },
   { label: "REVIEWS", href: "/reviews" },
   { label: "FOR BUSINESS", href: "/for-business" },
