@@ -151,6 +151,11 @@ if (process.env.NODE_ENV === "production") {
   app.use(
     express.static(frontendDist, {
       setHeaders: (res, filePath) => {
+        // Pre-rendered tutorial page images live in a versioned folder
+        // (/how-to-use/v1/...), so they can be cached forever like the PDF.
+        if (filePath.includes(`${path.sep}how-to-use${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
         if (filePath.endsWith("wedinstudio-tutorial-v1.pdf")) {
           // Versioned filename + immutable: browsers download the tutorial once
           // and reuse the cached copy on every later visit. Replace the PDF by

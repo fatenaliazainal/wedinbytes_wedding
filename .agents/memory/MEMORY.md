@@ -51,5 +51,5 @@
 - [YouTube iOS muted-autoplay](youtube-ios-muted-autoplay.md) — muted autoplay + gesture-unmute is the only reliable iOS auto-music approach; mini-player fallback removed.
 - [Rich-text editor line breaks](rich-text-editor-line-breaks.md) — Enter inserts an explicit line break so multiline invitation text works consistently across browsers.
 - [Customer tutorial placement](customer-tutorial-placement.md) — the How To Use guide is global website help, not editor or invitation content.
-- [Public PDF embedding](google-drive-pdf-embedding.md) — serve fixed guides as same-origin static files; Google’s preview iframe is unreliable and prod CSP frame-src must include 'self'.
+- [Public PDF embedding](google-drive-pdf-embedding.md) — never iframe PDFs; pre-render pages to versioned static images and keep the PDF only as a download link.
 - [Workspace env dirs](workspace-env-dirs.md) — never delete root .cache/.upm during cleanup; it breaks the shell toolchain PATH.

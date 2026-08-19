@@ -1,10 +1,10 @@
 ---
 name: Public PDF embedding
-description: Reliable delivery pattern for the public How To Use PDF.
+description: Reliable delivery pattern for the public How To Use guide (PDF → pre-rendered page images).
 ---
 
-Do not embed Google Drive’s `/preview` viewer directly in the website. For a fixed public guide, ship the approved PDF as a same-origin static asset and embed that file directly. Production CSP must allow same-origin frames with `frame-src 'self'`.
+Do not embed PDFs in an `<iframe>` on the public website at all — neither Google Drive's `/preview` viewer nor a same-origin PDF file. Pre-render the approved PDF to one JPEG per page (pdftoppm, ~1100px wide, quality ~78) into a versioned static folder and display the pages as plain `<img>` tags. Keep the original PDF as a static asset only for an "Open PDF" download link.
 
-**Why:** Google’s HTML preview viewer can fail inside an iframe, leaving a broken or blank panel even when the Drive link itself is public and opens correctly in a new tab. Production can also block a valid same-origin PDF iframe if CSP's `frame-src` omits `'self'`. A static asset has no third-party viewer or per-visit server fetch, and browsers/CDNs can cache it.
+**Why:** Google's HTML preview viewer can fail inside an iframe. A same-origin PDF iframe is also fragile: production CSP `frame-src` must include `'self'`, iOS Safari renders only the first page or nothing, and users reported a grey blocked panel even after the file was local. Plain images have no viewer, no CSP frame dependency, and lazy-load per page.
 
-**How to apply:** Keep the file small and version it by filename when its content changes. Point both the embedded viewer and “Open in new tab” fallback at the same static URL, and keep `frame-src 'self'` while that embed is supported.
+**How to apply:** Regenerate the images and bump the folder version (v1 → v2) whenever the guide changes; versioned paths get one-year immutable cache headers in production. Eager-load the first couple of pages, lazy-load the rest, and set width/height to avoid layout shift.

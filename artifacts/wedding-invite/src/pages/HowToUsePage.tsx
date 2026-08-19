@@ -3,7 +3,11 @@ import { ExternalLink, FileText, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
-import { HOW_TO_USE_PDF_PATH } from "@/lib/how-to-use-guide";
+import {
+  HOW_TO_USE_PDF_PATH,
+  HOW_TO_USE_PAGE_COUNT,
+  howToUsePageImagePath,
+} from "@/lib/how-to-use-guide";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
@@ -142,21 +146,27 @@ export default function HowToUsePage() {
                 rel="noreferrer"
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
               >
-                Open in new tab
+                Open PDF
                 <ExternalLink size={13} />
               </a>
             </div>
-            <div className="bg-gray-100 p-2 sm:p-4">
-              <iframe
-                title="Wedinstudio How To Use guide"
-                src={pdfUrl}
-                className="h-[70vh] min-h-[520px] w-full rounded-lg border border-gray-200 bg-white sm:h-[780px]"
-                loading="lazy"
-              />
+            <div className="flex flex-col gap-3 bg-gray-100 p-2 sm:gap-4 sm:p-4">
+              {Array.from({ length: HOW_TO_USE_PAGE_COUNT }, (_, i) => i + 1).map((page) => (
+                <img
+                  key={page}
+                  src={`${BASE}${howToUsePageImagePath(page)}`}
+                  alt={`How To Use guide, page ${page} of ${HOW_TO_USE_PAGE_COUNT}`}
+                  width={1100}
+                  height={1556}
+                  loading={page <= 2 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="w-full rounded-lg border border-gray-200 bg-white shadow-sm"
+                />
+              ))}
             </div>
           </div>
           <p className="mt-4 text-center text-xs leading-5 text-gray-400">
-            If the PDF does not load inside the page, use <strong>Open in new tab</strong>.
+            Prefer a copy? Use <strong>Open PDF</strong> to view or download the full guide.
           </p>
         </section>
       </main>
