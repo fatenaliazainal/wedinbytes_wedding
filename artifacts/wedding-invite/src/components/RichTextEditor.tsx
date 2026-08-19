@@ -121,6 +121,28 @@ export function RichTextEditor({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (!multiLine && e.key === "Enter") {
       e.preventDefault();
+      return;
+    }
+
+    if (multiLine && e.key === "Enter") {
+      e.preventDefault();
+
+      const selection = window.getSelection();
+      if (!selection?.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      const lineBreak = document.createElement("br");
+      range.insertNode(lineBreak);
+      range.setStartAfter(lineBreak);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      const cleaned = sanitizeHtml(e.currentTarget.innerHTML);
+      setHtml(cleaned);
+      onChange(cleaned);
     }
   };
 
