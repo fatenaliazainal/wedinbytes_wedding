@@ -10,6 +10,8 @@ import SharedNavDrawer from "@/components/SharedNavDrawer";
 import type { SiteNavItem } from "@/components/SiteHeader";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 const NAV_ITEMS: SiteNavItem[] = [
   { label: "HOME", href: "/" },
   { label: "CATALOG", href: "/weddingcards/home" },
@@ -149,7 +151,7 @@ export default function HowToUsePage() {
                 <div className="bg-gray-100 p-2 sm:p-4">
                   <iframe
                     title="Wedinstudio How To Use guide"
-                    src={pdfUrls.previewUrl}
+                    src={`${BASE}/api/how-to-use-pdf`}
                     className="h-[70vh] min-h-[520px] w-full rounded-lg border border-gray-200 bg-white sm:h-[780px]"
                     loading="lazy"
                   />

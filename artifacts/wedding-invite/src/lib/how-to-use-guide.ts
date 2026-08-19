@@ -13,7 +13,6 @@ export function getHowToUsePdfUrls() {
 
     const encodedId = encodeURIComponent(fileId);
     return {
-      previewUrl: `https://drive.google.com/file/d/${encodedId}/preview`,
       openUrl: `https://drive.google.com/file/d/${encodedId}/view`,
     };
   } catch {

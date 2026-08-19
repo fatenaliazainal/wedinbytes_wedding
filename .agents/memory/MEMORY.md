@@ -51,3 +51,4 @@
 - [YouTube iOS muted-autoplay](youtube-ios-muted-autoplay.md) — muted autoplay + gesture-unmute is the only reliable iOS auto-music approach; mini-player fallback removed.
 - [Rich-text editor line breaks](rich-text-editor-line-breaks.md) — Enter inserts an explicit line break so multiline invitation text works consistently across browsers.
 - [Customer tutorial placement](customer-tutorial-placement.md) — the How To Use guide is global website help, not editor or invitation content.
+- [Google Drive PDF embedding](google-drive-pdf-embedding.md) — proxy the approved tutorial PDF as same-origin content; Google’s preview iframe is unreliable.
