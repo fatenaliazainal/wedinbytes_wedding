@@ -1,371 +1,370 @@
-# Panduan Editor Digital Invitation
+# Digital Invitation Editor Guide
 
-Panduan ini untuk **Buyer** dan **Business Account** yang mahu mengisi serta mengemas kini digital invitation sendiri.
+This guide is for **Buyers** and **Business Accounts** who want to fill in or update their digital invitation.
 
-> **Nota penting:** Sesetengah tab hanya kelihatan jika ia termasuk dalam package yang dipilih. Jika satu tab tidak kelihatan, feature tersebut mungkin belum tersedia dalam package invitation anda.
-
----
-
-## 1. Cara buka editor
-
-1. Log masuk ke akaun anda.
-2. Buka **Dashboard**.
-3. Pilih invitation yang mahu dikemas kini.
-4. Tekan **Edit**.
-5. Gunakan tab di bahagian atas untuk mengisi maklumat invitation.
-6. Tekan **SAVE** di bahagian bawah selepas selesai.
-
-Di sebelah kanan editor terdapat **preview**. Gunakan preview untuk melihat perubahan sebelum berkongsi link invitation dengan tetamu.
-
-### Sebelum tekan SAVE
-
-- Pastikan **Cover Groom Name** dan **Cover Bride Name** telah diisi.
-- Kedua-dua nama ini diperlukan untuk mencipta link invitation.
-- Selepas invitation dibayar, link invitation kekal sama walaupun nama pada cover masih boleh dikemas kini.
-- Gunakan browser dalam **light mode** untuk paparan editor yang lebih tepat.
+> **Important:** Some tabs are only shown when the feature is included in your selected package. If a tab is not visible, that feature may not be available in your package.
 
 ---
 
-## 2. Tab DESIGN
+## 1. How to open the editor
 
-Tab ini digunakan untuk memilih rupa invitation anda sendiri. Ia tidak mengubah catalog atau design asal milik admin.
+1. Log in to your account.
+2. Open the **Dashboard**.
+3. Select the invitation you want to update.
+4. Click **Edit**.
+5. Use the tabs at the top to fill in your invitation details.
+6. Click **SAVE** at the bottom when you are finished.
 
-### Apa yang boleh diisi
+The **preview** is shown on the right side of the editor. Use it to review your changes before sharing the invitation link with guests.
 
-| Bahagian | Kegunaan |
+### Before clicking SAVE
+
+- Make sure **Cover Groom Name** and **Cover Bride Name** are filled in.
+- Both names are required before the invitation can be saved.
+- These names are used to create the invitation link.
+- After payment, the invitation link stays the same even if the cover names are edited.
+- Use your browser in **light mode** for the most accurate editor display.
+
+---
+
+## 2. DESIGN tab
+
+This tab controls the appearance of your own invitation. It does not change the admin's original catalog design.
+
+| Section | Purpose |
 |---|---|
-| Package | Pilih package invitation sebelum pembayaran. Package yang sudah dibayar tidak boleh ditukar dari editor. |
-| Card Language | Pilih Bahasa Melayu atau English untuk label dan teks default invitation. |
-| Design Code | Pilih design/card template yang tersedia. |
-| Opening Style | Pilih gaya pembukaan invitation, contohnya `Doors` atau `Window`. |
-| Show background overlay | Hidupkan atau tutup lapisan efek di atas background. |
-| Wax Seal | Pilih wax seal jika tersedia pada design. |
-| Name Font | Font untuk nama pasangan. |
-| Body Font | Font untuk isi kandungan invitation. |
-| Font Size | Laraskan saiz nama, tajuk section, greeting, eyebrow, hari, tarikh dan hashtag. |
-| Theme Colours | Laraskan warna nama, teks, tajuk section, button, ornament, background dan card. |
-| Music | Masukkan link muzik serta tajuk/artis jika diperlukan. |
+| Package | Select your invitation package before payment. A paid package cannot be changed from the editor. |
+| Card Language | Choose Malay or English for labels and default invitation text. |
+| Design Code | Choose an available card design/template. |
+| Opening Style | Choose the opening animation, such as `Doors` or `Window`. |
+| Show background overlay | Turn the background overlay effect on or off. |
+| Wax Seal | Choose a wax seal if one is available for the design. |
+| Name Font | Choose the font used for the couple's names. |
+| Body Font | Choose the font used for the invitation body text. |
+| Font sizes | Adjust the size of names, section titles, greeting, eyebrow, day, date and hashtag text. |
+| Theme Colours | Adjust the colours for names, text, section titles, buttons, ornaments, background and card. |
+| Music | Add a music link, title and artist if required. |
 
-### Tip
+### Tips
 
-- Tukar satu bahagian pada satu masa dan lihat preview.
-- Elakkan memilih warna teks yang terlalu hampir dengan warna background.
-- Muzik autoplay bergantung pada browser dan peranti tetamu. Sesetengah in-app browser mungkin tidak menyokong autoplay.
-
----
-
-## 3. Tab COVER
-
-Tab ini mengawal bahagian depan/envelope invitation.
-
-| Field | Cara guna |
-|---|---|
-| Event Title | Tajuk majlis, contoh: `WALIMATULURUS`. |
-| Groom's Full Name | Nama penuh pengantin lelaki. |
-| Bride's Full Name | Nama penuh pengantin perempuan. |
-| Cover Groom Name | Nama yang digunakan pada cover dan link invitation. Contoh: `Ahmad`. |
-| Cover Bride Name | Nama yang digunakan pada cover dan link invitation. Contoh: `Aisyah`. |
-| Cover Initials | Initial pada envelope, contoh: `A & A`. |
-| Cover initials size | Laraskan saiz initial pada envelope. |
-| Upload Logo | Pilihan untuk menggantikan initial dengan logo/monogram sendiri. Gunakan PNG berlatar belakang transparent, maksimum 2 MB. |
-| Logo size | Laraskan saiz logo yang telah dimuat naik. |
-| Hashtag | Contoh: `#AisyahDanAhmad`. |
-| Show front page | Hidupkan jika mahu cover dipaparkan. |
-
-### Nota untuk link invitation
-
-Link invitation menggunakan **Cover Groom Name** dan **Cover Bride Name**. Pastikan ejaan kedua-duanya betul sebelum anda mula berkongsi link.
+- Change one setting at a time and check the preview.
+- Avoid choosing text and background colours that are too similar.
+- Music autoplay depends on the guest's browser and device. Some in-app browsers may not support autoplay.
 
 ---
 
-## 4. Tab INVITATION TEXT
+## 3. COVER tab
 
-Tab ini untuk ayat jemputan dan nama keluarga yang muncul dalam bahagian detail invitation.
+This tab controls the front cover/envelope of the invitation.
 
-| Field | Kegunaan |
+| Field | How to use it |
 |---|---|
-| Greeting Text | Ayat pembukaan, contoh: `Dengan penuh kesyukuran ke hadrat Ilahi...` |
-| Groom's Parents | Nama ibu bapa/keluarga pengantin lelaki. |
-| Bride's Parents | Nama ibu bapa/keluarga pengantin perempuan. |
-| Invitation Text | Ayat jemputan utama kepada tetamu. |
-| Groom's Full Name | Nama penuh pengantin lelaki pada bahagian detail. |
-| Bride's Full Name | Nama penuh pengantin perempuan pada bahagian detail. |
-| Page 2 Initials | Initial yang digunakan pada bahagian detail, contoh: `A & A`. |
+| Event Title | Enter the event title, for example `WALIMATULURUS`. |
+| Groom's Full Name | Enter the groom's full name. |
+| Bride's Full Name | Enter the bride's full name. |
+| Cover Groom Name | The groom's name shown on the cover and used in the invitation link. |
+| Cover Bride Name | The bride's name shown on the cover and used in the invitation link. |
+| Cover Initials | Initials shown on the envelope, for example `A & A`. |
+| Cover initials size | Adjust the size of the initials on the envelope. |
+| Upload Logo | Optionally replace the initials with your own logo/monogram. Use a transparent PNG, maximum 2 MB. |
+| Logo size | Adjust the size of the uploaded logo. |
+| Hashtag | Add a hashtag, for example `#AisyahAndAhmad`. |
+| Show front page | Turn this on if you want the cover page to be displayed. |
 
-### Cara buat ayat berbaris
+### Invitation link
 
-Untuk **Greeting Text**, **Groom's Parents**, **Bride's Parents** dan **Invitation Text**:
+The invitation link uses the **Cover Groom Name** and **Cover Bride Name**. Check both spellings carefully before sharing the link.
 
-1. Taip ayat pertama.
-2. Tekan **Enter** untuk turun ke baris baru.
-3. Sambung taip ayat seterusnya.
-4. Tekan **SAVE**.
+---
 
-Contoh untuk Groom's Parents:
+## 4. INVITATION TEXT tab
+
+This tab is for the invitation wording and family names shown in the invitation details section.
+
+| Field | Purpose |
+|---|---|
+| Greeting Text | Opening greeting, for example `With gratitude to Allah...` |
+| Groom's Parents | Groom's parents or family names. |
+| Bride's Parents | Bride's parents or family names. |
+| Invitation Text | Main invitation message for guests. |
+| Groom's Full Name | Groom's full name in the details section. |
+| Bride's Full Name | Bride's full name in the details section. |
+| Page 2 Initials | Initials used in the details section, for example `A & A`. |
+
+### How to create a new line
+
+For **Greeting Text**, **Groom's Parents**, **Bride's Parents** and **Invitation Text**:
+
+1. Type the first line.
+2. Press **Enter** to move to a new line.
+3. Continue typing the next line.
+4. Click **SAVE**.
+
+Example for Groom's Parents:
 
 ```text
-Encik Ahmad bin Ali
+Mr Ahmad bin Ali
 &
-Puan Aishah binti Osman
+Mrs Aishah binti Osman
 ```
 
-Setiap field mempunyai slider saiz sendiri. Geser slider ke kiri untuk kecilkan teks atau ke kanan untuk besarkan teks.
+Each field has its own size slider. Move the slider left to make the text smaller or right to make it larger.
 
 ---
 
-## 5. Tab DATE & LOCATION
+## 5. DATE & LOCATION tab
 
-Tab ini untuk tarikh, masa dan lokasi majlis.
+This tab is for the event date, time and venue.
 
-| Field | Kegunaan |
+| Field | Purpose |
 |---|---|
-| Date | Pilih tarikh majlis. |
-| Day (auto) | Hari akan diisi secara automatik mengikut tarikh. |
-| Start Time | Masa mula majlis. |
-| End Time | Masa tamat majlis. |
-| Time (Text) | Masa akan dipaparkan secara automatik berdasarkan masa mula dan tamat. |
-| Venue Name | Nama dewan, rumah atau lokasi majlis. |
-| Venue Address | Alamat penuh. Boleh tekan **Enter** untuk buat alamat berbaris. |
-| Hijri Date | Tarikh Hijri jika mahu dipaparkan. |
-| Google Maps Link | Paste link Google Maps lokasi majlis. |
-| Waze Link | Paste link Waze lokasi majlis. |
+| Date | Select the event date. |
+| Day (auto) | The day is filled in automatically based on the selected date. |
+| Start Time | Enter the event start time. |
+| End Time | Enter the event end time. |
+| Time (Text) | This is displayed automatically based on the start and end time. |
+| Venue Name | Enter the hall, home or venue name. |
+| Venue Address | Enter the full address. Press **Enter** to create separate address lines. |
+| Hijri Date | Add a Hijri date if you want it displayed. |
+| Google Maps Link | Paste the Google Maps link for the venue. |
+| Waze Link | Paste the Waze link for the venue. |
 
-### Contoh Venue Address
+### Example venue address
 
 ```text
-No. 25, Jalan Melur 2
-Taman Melur
+25 Melur 2 Road
+Melur Garden
 43000 Kajang, Selangor
 ```
 
 ---
 
-## 6. Tab PROGRAMME
+## 6. PROGRAMME tab
 
-Tab ini untuk atur cara majlis.
+This tab is for the event programme or itinerary.
 
-1. Tekan **Add item**.
-2. Isi **masa**.
-3. Isi **nama acara**.
-4. Ulang langkah yang sama untuk acara seterusnya.
-5. Tekan ikon tong sampah untuk membuang item yang tidak diperlukan.
+1. Click **Add item**.
+2. Enter the **time**.
+3. Enter the **event name**.
+4. Repeat for each event.
+5. Click the trash icon to remove an item.
 
-### Contoh atur cara
+### Example
 
-| Masa | Acara |
+| Time | Event |
 |---|---|
-| 11:00 | Ketibaan tetamu |
-| 12:00 | Ketibaan pengantin |
-| 12:30 | Jamuan makan |
-| 16:00 | Majlis bersurai |
+| 11:00 AM | Guests arrive |
+| 12:00 PM | Couple arrives |
+| 12:30 PM | Lunch |
+| 4:00 PM | Event ends |
 
 ---
 
-## 7. Tab DRESS CODE
+## 7. DRESS CODE tab
 
-Tab ini akan muncul jika package anda mempunyai feature **Dress Code**.
+This tab is shown when your package includes the **Dress Code** feature.
 
-| Field | Kegunaan |
+| Field | Purpose |
 |---|---|
-| Theme | Nama tema pakaian, contoh: `Melayu Klasik`, `Sage Green` atau `Pastel`. |
-| Colour palette | Tambah sehingga empat warna untuk rujukan tetamu. |
+| Theme | Enter the dress code theme, for example `Classic Malay`, `Sage Green` or `Pastel`. |
+| Colour palette | Add up to four colours for guests to use as a reference. |
 
-### Cara tambah warna
+### How to add colours
 
-1. Tekan simbol **+**.
-2. Pilih warna daripada colour picker atau isi kod warna.
-3. Tekan `×` pada warna tertentu untuk membuangnya.
+1. Click the **+** button.
+2. Choose a colour using the colour picker or enter a colour code.
+3. Click `×` on a colour to remove it.
 
 ---
 
-## 8. Tab DOA
+## 8. DOA tab
 
-Tab ini untuk doa atau prayer yang mahu dipaparkan kepada tetamu.
+This tab is for a prayer or message that you want to display to guests.
 
-- Tulis doa di ruangan yang disediakan.
-- Anda boleh guna **Bold**, *Italic*, underline dan pilihan font size dalam toolbar.
-- Tekan **Enter** untuk buat baris baru.
+- Type your prayer in the text editor.
+- You can use **Bold**, *Italic*, underline and the font-size option in the toolbar.
+- Press **Enter** to create a new line.
 
-Contoh:
+Example:
 
 ```text
-Ya Allah, berkatilah majlis perkahwinan kami.
-Satukanlah hati kami sebagaimana Engkau satukan hati Adam dan Hawa.
+O Allah, bless our wedding celebration.
+Unite our hearts as You united the hearts of Adam and Eve.
 ```
 
 ---
 
-## 9. Tab GALLERY
+## 9. GALLERY tab
 
-Tab ini akan muncul jika package anda mempunyai feature **Photo Gallery**.
+This tab is shown when your package includes the **Photo Gallery** feature.
 
-### Cara guna
+### How to use it
 
-1. Tekan **Upload Images**.
-2. Pilih gambar daripada peranti anda.
-3. Tunggu sehingga upload selesai.
-4. Lihat thumbnail gambar yang berjaya dimuat naik.
-5. Tekan `×` pada gambar untuk membuangnya.
+1. Click **Upload Images**.
+2. Select images from your device.
+3. Wait for the upload to finish.
+4. Check the uploaded image thumbnails.
+5. Click `×` on an image to remove it.
 
-### Had gallery
+### Gallery limits
 
-- Maksimum **4 gambar**.
-- Format: JPG, PNG, WEBP atau GIF.
-- Maksimum **10 MB** bagi setiap gambar.
+- Maximum **4 images**.
+- Supported formats: JPG, PNG, WEBP or GIF.
+- Maximum **10 MB** per image.
 
 ---
 
-## 10. Tab GIFT
+## 10. GIFT tab
 
-Tab ini akan muncul jika package anda mempunyai feature **Money Gift**.
+This tab is shown when your package includes the **Money Gift** feature.
 
-| Field | Kegunaan |
+| Field | Purpose |
 |---|---|
-| Display Gift | Hidupkan untuk paparkan bahagian hadiah wang kepada tetamu. |
-| Recipient Name | Nama penerima akaun. |
-| Bank | Nama bank, contoh: `Maybank`. |
-| Account Number | Nombor akaun bank. |
-| QR Code | Muat naik QR bank untuk memudahkan tetamu memberi hadiah. |
+| Display Gift | Turn this on to show the money-gift section to guests. |
+| Recipient Name | Enter the account holder's name. |
+| Bank | Enter the bank name, for example `Maybank`. |
+| Account Number | Enter the bank account number. |
+| QR Code | Upload a bank QR code to make gifting easier for guests. |
 
-### Had QR Code
+### QR code limits
 
-- Maksimum **2 QR code**.
-- Format: JPG, PNG atau WEBP.
-- Maksimum **5 MB** bagi setiap gambar.
-- Invitation perlu disimpan dahulu sebelum QR boleh dimuat naik.
-
----
-
-## 11. Tab GIFT REGISTRY
-
-Tab ini akan muncul jika package anda mempunyai feature **Gift Registry**.
-
-Gift Registry digunakan jika anda mahu tetamu membeli barang hadiah tertentu.
-
-### Maklumat penghantaran
-
-Isi:
-
-- Nama penerima.
-- Alamat penghantaran lengkap.
-
-Maklumat ini akan ditunjukkan kepada tetamu apabila mereka tekan butang untuk membeli item hadiah.
-
-### Cara tambah item
-
-1. Isi **Product name**.
-2. Masukkan **Purchase link** jika ada.
-3. Tambah nota jika perlu, contoh: `Nak warna putih` atau `Saiz M`.
-4. Tekan **Add to Registry**.
-
-Anda juga boleh:
-
-- Upload thumbnail item.
-- Edit item.
-- Buang item.
-- Ubah susunan item menggunakan anak panah atas/bawah.
-
-Had maksimum ialah **20 item**.
+- Maximum **2 QR codes**.
+- Supported formats: JPG, PNG or WEBP.
+- Maximum **5 MB** per image.
+- The invitation must be saved before QR codes can be uploaded.
 
 ---
 
-## 12. Tab RSVP
+## 11. GIFT REGISTRY tab
 
-Tab ini akan muncul jika package anda mempunyai feature **RSVP / Wishes**.
+This tab is shown when your package includes the **Gift Registry** feature.
 
-| Field | Kegunaan |
+Gift Registry allows you to list specific items that guests can purchase as gifts.
+
+### Delivery information
+
+Enter:
+
+- Recipient name.
+- Full delivery address.
+
+Guests will see this information when they click the purchase button for a registry item.
+
+### How to add an item
+
+1. Enter the **Product name**.
+2. Add a **Purchase link**, if available.
+3. Add a note if needed, for example `White colour preferred` or `Size M`.
+4. Click **Add to Registry**.
+
+You can also:
+
+- Upload an item thumbnail.
+- Edit an item.
+- Delete an item.
+- Change the order using the up/down arrows.
+
+The maximum is **20 items**.
+
+---
+
+## 12. RSVP tab
+
+This tab is shown when your package includes the **RSVP / Wishes** feature.
+
+| Field | Purpose |
 |---|---|
-| RSVP - Yes / No | Hidupkan atau tutup borang RSVP. |
-| RSVP Message | Ayat yang tetamu akan lihat sebelum mengisi RSVP. |
-| RSVP Deadline | Tarikh dan masa akhir untuk tetamu memberi jawapan. |
-| Total Guest Limit | Jumlah keseluruhan tetamu yang boleh RSVP. |
-| Per-Invitation Guest Limit | Had tetamu untuk satu respons RSVP. |
-| RSVP Email Notification | Email untuk menerima salinan RSVP daripada tetamu. |
-| Send Email Notification | Hidupkan untuk menerima notifikasi email setiap kali tetamu RSVP. |
+| RSVP - Yes / No | Turn the RSVP form on or off. |
+| RSVP Message | The message guests see before completing the RSVP form. |
+| RSVP Deadline | The final date and time for guests to respond. |
+| Total Guest Limit | The total number of guests allowed to RSVP. |
+| Per-Invitation Guest Limit | The guest limit for one RSVP response. |
+| RSVP Email Notification | The email address that receives RSVP copies. |
+| Send Email Notification | Turn this on to receive an email whenever a guest submits an RSVP. |
 
-### Cadangan
+### Suggestions
 
-- Tetapkan RSVP deadline beberapa hari sebelum majlis.
-- Isi email yang aktif jika mahu menerima notifikasi tetamu.
-- Semak had tetamu dengan teliti supaya kapasiti majlis terkawal.
-
----
-
-## 13. Tab CONTACT
-
-Tab ini akan muncul jika package anda mempunyai feature **Contact**.
-
-Gunakan tab ini untuk meletakkan nombor telefon orang yang boleh dihubungi oleh tetamu.
-
-### Satu nombor telefon
-
-Jika hanya ada seorang contact person:
-
-1. Isi **Phone Number**.
-2. Contoh format: `0123456789`.
-
-### Lebih daripada seorang contact person
-
-1. Tekan **Add contact**.
-2. Isi nama contact person.
-3. Isi nombor telefon.
-4. Ulang untuk contact seterusnya jika perlu.
-5. Tekan **Remove** untuk membuang contact yang tidak diperlukan.
-
-Tetamu boleh menekan ikon panggilan atau WhatsApp pada invitation. Nombor Malaysia yang dimasukkan bermula dengan `01...` akan dibuka dalam format WhatsApp yang betul secara automatik.
+- Set the RSVP deadline several days before the event.
+- Use an active email address if you want to receive notifications.
+- Check the guest limits carefully so they match your venue capacity.
 
 ---
 
-## 14. Tab FOOTER
+## 13. CONTACT tab
 
-Tab Footer digunakan untuk footer branding dan social links. Ia biasanya hanya tersedia untuk editor admin atau demo.
+This tab is shown when your package includes the **Contact** feature.
 
-Jika tab ini tersedia, anda boleh:
+Use this tab to add phone numbers for people guests can contact.
 
-- Hidupkan atau tutup footer branding.
-- Isi teks footer.
-- Masukkan URL footer.
-- Tambah link Instagram, TikTok, Threads atau website.
+### One contact number
+
+If there is only one contact person:
+
+1. Enter the number in **Phone Number**.
+2. Example: `0123456789`.
+
+### More than one contact person
+
+1. Click **Add contact**.
+2. Enter the contact person's name.
+3. Enter the phone number.
+4. Repeat for additional contacts.
+5. Click **Remove** to delete a contact.
+
+Guests can tap the call or WhatsApp icon on the invitation. Malaysian numbers entered with `01...` are automatically converted to the correct WhatsApp format.
 
 ---
 
-## 15. Preview dan SAVE
+## 14. FOOTER tab
 
-### Preview dalam editor
+The Footer tab is used for footer branding and social links. It is normally available only in the admin or demo editor.
 
-- Preview di sebelah kanan menunjukkan gambaran invitation anda.
-- Tekan pada envelope/seal untuk membuka preview.
-- Gunakan butang bawah pada preview untuk melihat panel seperti RSVP, Contact atau Gift.
-- Preview adalah untuk semakan visual. RSVP sebenar hanya berfungsi pada public invitation.
+If this tab is available, you can:
+
+- Turn footer branding on or off.
+- Enter footer text.
+- Add a footer URL.
+- Add Instagram, TikTok, Threads or website links.
+
+---
+
+## 15. Preview and SAVE
+
+### Editor preview
+
+- The preview on the right shows an overview of your invitation.
+- Click the envelope/seal to open the preview.
+- Use the bottom navigation in the preview to check panels such as RSVP, Contact or Gift.
+- The preview is for visual checking. Actual RSVP submissions work on the public invitation.
 
 ### Full Preview
 
-Selepas invitation mempunyai link dan boleh disimpan, tekan **Full Preview** untuk membuka halaman invitation dalam tab baru.
+When the invitation has a valid link and can be saved, click **Full Preview** to open the invitation page in a new browser tab.
 
 ### SAVE
 
-Tekan **SAVE** setiap kali anda selesai mengubah maklumat. Jangan terus tutup halaman sebelum mesej save berjaya muncul.
+Click **SAVE** every time you finish making changes. Do not close the page until the save confirmation appears.
 
 ---
 
-## 16. Soalan Lazim
+## 16. Frequently asked questions
 
-### Kenapa tab tertentu tak ada?
+### Why is a tab missing?
 
-Tab seperti Gallery, Gift, Gift Registry, RSVP, Contact dan Dress Code bergantung pada feature dalam package. Pilih atau upgrade package yang mempunyai feature tersebut jika diperlukan.
+Tabs such as Gallery, Gift, Gift Registry, RSVP, Contact and Dress Code depend on the features included in your package. Choose or upgrade to a package that includes the required feature.
 
-### Kenapa saya tak boleh tukar package?
+### Why can't I change the package?
 
-Package invitation yang sudah dibayar tidak boleh ditukar melalui editor. Hubungi support jika perlukan bantuan.
+A paid invitation package cannot be changed from the editor. Contact support if you need help.
 
-### Kenapa link invitation saya tidak boleh disimpan?
+### Why can't I save my invitation?
 
-Pastikan **Cover Groom Name** dan **Cover Bride Name** sudah diisi dalam tab **Cover**.
+Make sure **Cover Groom Name** and **Cover Bride Name** are filled in under the **Cover** tab.
 
-### Boleh tak tukar isi invitation selepas bayar?
+### Can I edit the invitation after payment?
 
-Ya, kandungan seperti teks, masa, lokasi dan maklumat tetamu masih boleh dikemas kini mengikut status/edit access invitation anda. Package yang telah dibayar pula kekal.
+Yes. Content such as text, time, location and guest information can still be updated according to your invitation's edit access. The purchased package remains fixed.
 
-### Boleh tak buat teks turun ke baris baru?
+### Can I move text to a new line?
 
-Ya. Dalam field rich text seperti Invitation Text, Parents, Doa dan Venue Address, tekan **Enter** untuk membuat baris baru.
+Yes. In rich-text fields such as Invitation Text, Parents, Doa and Venue Address, press **Enter** to create a new line.
