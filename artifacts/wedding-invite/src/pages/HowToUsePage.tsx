@@ -6,7 +6,7 @@ import { dashboardPathForUser } from "@/lib/dashboard-path";
 import {
   HOW_TO_USE_PDF_PATH,
   HOW_TO_USE_PAGE_COUNT,
-  howToUsePageImagePath,
+  howToUsePagePaths,
 } from "@/lib/how-to-use-guide";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -151,18 +151,24 @@ export default function HowToUsePage() {
               </a>
             </div>
             <div className="flex flex-col gap-3 bg-gray-100 p-2 sm:gap-4 sm:p-4">
-              {Array.from({ length: HOW_TO_USE_PAGE_COUNT }, (_, i) => i + 1).map((page) => (
-                <img
-                  key={page}
-                  src={`${BASE}${howToUsePageImagePath(page)}`}
-                  alt={`How To Use guide, page ${page} of ${HOW_TO_USE_PAGE_COUNT}`}
-                  width={1100}
-                  height={1556}
-                  loading={page <= 2 ? "eager" : "lazy"}
-                  decoding="async"
-                  className="w-full rounded-lg border border-gray-200 bg-white shadow-sm"
-                />
-              ))}
+              {Array.from({ length: HOW_TO_USE_PAGE_COUNT }, (_, i) => i + 1).map((page) => {
+                const p = howToUsePagePaths(page);
+                return (
+                  <picture key={page} className="block">
+                    <source type="image/avif" srcSet={`${BASE}${p.avif}`} />
+                    <source type="image/webp" srcSet={`${BASE}${p.webp}`} />
+                    <img
+                      src={`${BASE}${p.jpeg}`}
+                      alt={`How To Use guide, page ${page} of ${HOW_TO_USE_PAGE_COUNT}`}
+                      width={1100}
+                      height={1556}
+                      loading={page <= 2 ? "eager" : "lazy"}
+                      decoding="async"
+                      className="w-full rounded-lg border border-gray-200 bg-white shadow-sm"
+                    />
+                  </picture>
+                );
+              })}
             </div>
           </div>
           <p className="mt-4 text-center text-xs leading-5 text-gray-400">

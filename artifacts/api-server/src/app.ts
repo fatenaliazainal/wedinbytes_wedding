@@ -151,8 +151,8 @@ if (process.env.NODE_ENV === "production") {
   app.use(
     express.static(frontendDist, {
       setHeaders: (res, filePath) => {
-        // Pre-rendered tutorial page images live in a versioned folder
-        // (/how-to-use/v1/...), so they can be cached forever like the PDF.
+        // Pre-rendered tutorial page images live in versioned folders
+        // (/how-to-use/v1/ and /how-to-use/v2/), so they can be cached forever.
         if (filePath.includes(`${path.sep}how-to-use${path.sep}`)) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         }
