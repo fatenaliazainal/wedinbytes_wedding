@@ -51,3 +51,10 @@ uri = "file://docs/layout-invtext.html"
 type = "text"
 title = "Invitation Text — Layout"
 description = "Spacing layout for invitation text section with annotations"
+
+[[outputs]]
+id = "6xwo_QWp7vQ39XZDsqvKg"
+uri = "file://docs/panduan-editor-pelanggan.md"
+type = "text"
+title = "Panduan Editor Digital Invitation"
+description = "Panduan Bahasa Melayu untuk Buyer dan Business Account, menerangkan langkah editor serta fungsi setiap tab."
