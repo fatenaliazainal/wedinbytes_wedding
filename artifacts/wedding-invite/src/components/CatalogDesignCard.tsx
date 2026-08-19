@@ -84,7 +84,7 @@ export function CatalogDesignCard({
           className="mt-3 w-full rounded-full bg-[#3d5a3e] px-2 py-2 text-[10px] font-bold tracking-widest text-white transition-colors hover:bg-[#2d4330]"
         >
           <ShoppingBag size={11} className="mr-1 inline-block align-[-2px]" />
-          ORDER NOW
+          TRY IT FREE
         </button>
       </div>
     </article>
