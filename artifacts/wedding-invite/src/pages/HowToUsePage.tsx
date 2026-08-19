@@ -3,7 +3,7 @@ import { ExternalLink, FileText, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardPathForUser } from "@/lib/dashboard-path";
-import { getHowToUsePdfUrls } from "@/lib/how-to-use-guide";
+import { HOW_TO_USE_PDF_PATH } from "@/lib/how-to-use-guide";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SharedNavDrawer from "@/components/SharedNavDrawer";
@@ -32,7 +32,7 @@ export default function HowToUsePage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [navOpen, setNavOpen] = useState(false);
-  const pdfUrls = getHowToUsePdfUrls();
+  const pdfUrl = `${BASE}${HOW_TO_USE_PDF_PATH}`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f9f9f7]">
@@ -132,42 +132,28 @@ export default function HowToUsePage() {
 
         <section className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
           <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            {pdfUrls ? (
-              <>
-                <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 sm:px-5">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                    Tutorial PDF
-                  </p>
-                  <a
-                    href={pdfUrls.openUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
-                  >
-                    Open in new tab
-                    <ExternalLink size={13} />
-                  </a>
-                </div>
-                <div className="bg-gray-100 p-2 sm:p-4">
-                  <iframe
-                    title="Wedinstudio How To Use guide"
-                    src={`${BASE}/api/how-to-use-pdf`}
-                    className="h-[70vh] min-h-[520px] w-full rounded-lg border border-gray-200 bg-white sm:h-[780px]"
-                    loading="lazy"
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-12 text-center">
-                <FileText size={28} className="text-gray-300" />
-                <h2 className="mt-4 text-base font-semibold text-gray-800">
-                  Tutorial unavailable
-                </h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
-                  The tutorial PDF link is not configured yet. Please contact Wedinstudio for assistance.
-                </p>
-              </div>
-            )}
+            <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 sm:px-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                Tutorial PDF
+              </p>
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+              >
+                Open in new tab
+                <ExternalLink size={13} />
+              </a>
+            </div>
+            <div className="bg-gray-100 p-2 sm:p-4">
+              <iframe
+                title="Wedinstudio How To Use guide"
+                src={pdfUrl}
+                className="h-[70vh] min-h-[520px] w-full rounded-lg border border-gray-200 bg-white sm:h-[780px]"
+                loading="lazy"
+              />
+            </div>
           </div>
           <p className="mt-4 text-center text-xs leading-5 text-gray-400">
             If the PDF does not load inside the page, use <strong>Open in new tab</strong>.

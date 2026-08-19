@@ -78,6 +78,7 @@ app.use(
               // YouTube music embeds — without this, iframes fall back to defaultSrc:self
               // and are blocked entirely in production, silently preventing all music.
               frameSrc: [
+                "'self'",
                 "https://www.youtube.com",
                 "https://www.youtube-nocookie.com",
               ],
@@ -147,7 +148,22 @@ app.use(
 
 if (process.env.NODE_ENV === "production") {
   const frontendDist = path.resolve(__dirname, "../../wedding-invite/dist/public");
-  app.use(express.static(frontendDist));
+  app.use(
+    express.static(frontendDist, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith("wedinstudio-tutorial-v1.pdf")) {
+          // Versioned filename + immutable: browsers download the tutorial once
+          // and reuse the cached copy on every later visit. Replace the PDF by
+          // shipping a new filename (v2, v3, ...) so old caches never go stale.
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          res.setHeader(
+            "Content-Disposition",
+            'inline; filename="wedinstudio-tutorial.pdf"',
+          );
+        }
+      },
+    }),
+  );
 }
 
 // Limit concurrent multipart uploads to prevent RAM exhaustion from buffered file bytes
