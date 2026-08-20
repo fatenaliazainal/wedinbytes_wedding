@@ -4514,7 +4514,9 @@ export default function EditorPage({
                           prev === tab ? null : tab,
                         )
                       }
-                      onRsvpClick={() => toast.info("RSVP preview only")}
+                       onRsvpClick={() =>
+                         toast.info("Please click Full Review to view this feature.")
+                       }
                       isVisible={true}
                       cardMaxWidth="100%"
                       showGift={inv.giftDisplay}
