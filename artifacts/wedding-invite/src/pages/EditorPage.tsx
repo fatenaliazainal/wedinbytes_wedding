@@ -1462,7 +1462,7 @@ export default function EditorPage({
             paidPackageIdRef.current = loadedInv.packageId;
           }
 
-          // Display package: URL param > paid/saved package > first active.
+          // Display package: URL param > paid/saved package > Signature for new invitations.
           const pkgId = urlPackage
             ? parseInt(urlPackage, 10)
             : isPaidOrCustomer
@@ -1474,7 +1474,11 @@ export default function EditorPage({
             (isPaidOrCustomer && !urlPackage
               ? loadedPackages.find((p) => p.id === pkgId) // allow inactive paid pkg
               : null) ||
-            (!urlPackage ? loadedPackages.find((p) => p.isActive) : null);
+            (!urlPackage
+              ? loadedPackages.find(
+                  (p) => p.isActive && p.name.trim().toLowerCase() === "signature",
+                ) || loadedPackages.find((p) => p.isActive)
+              : null);
           setActivePackageId(resolvedPkg?.id ?? null);
         }
       } catch {
