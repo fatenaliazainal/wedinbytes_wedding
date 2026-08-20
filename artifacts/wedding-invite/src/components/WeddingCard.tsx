@@ -160,26 +160,48 @@ function GalleryCarousel({ images, label }: { images: string[]; label: string })
   );
 }
 
-function formatDatePipes(dateStr: string): string {
+const MONTH_NAMES = {
+  ms: [
+    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
+    "Julai", "Ogos", "September", "Oktober", "November", "Disember",
+  ],
+  en: [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ],
+} as const;
+
+function formatDatePipes(dateStr: string, lang: "ms" | "en"): string {
   if (!dateStr) return "";
   const s = dateStr.trim();
   // ISO / date-picker format: YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [year, month, day] = s.split("-");
-    const monthNames = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
-    return `${parseInt(day, 10)} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
+    return `${parseInt(day, 10)} ${MONTH_NAMES[lang][parseInt(month, 10) - 1]} ${year}`;
   }
-  // Display format: "15 November 2025"
+  // Display format: "15 November 2025" (in either supported language).
   const parts = s.split(" ");
   if (parts.length === 3) {
-    return `${parseInt(parts[0], 10)} ${parts[1]} ${parts[2]}`;
+    const monthIndex = MONTH_NAMES.ms.indexOf(
+      parts[1] as (typeof MONTH_NAMES.ms)[number],
+    );
+    const englishMonthIndex = MONTH_NAMES.en.indexOf(
+      parts[1] as (typeof MONTH_NAMES.en)[number],
+    );
+    const resolvedMonthIndex =
+      monthIndex >= 0 ? monthIndex : englishMonthIndex;
+    const monthName =
+      resolvedMonthIndex >= 0
+        ? MONTH_NAMES[lang][resolvedMonthIndex]
+        : parts[1];
+    return `${parseInt(parts[0], 10)} ${monthName} ${parts[2]}`;
   }
   return s;
 }
 
 function formatDateBlock(dateStr: string, dayStr: string, lang: "ms" | "en"): string {
   if (!dateStr) return "";
-  const dateText = formatDatePipes(dateStr);
+  const dateText = formatDatePipes(dateStr, lang);
   if (!dateText) return dayStr || "";
   return dayStr ? `${dayStr}\n${dateText}` : dateText;
 }
@@ -602,6 +624,7 @@ const CARD_TEXT = {
     invitation: "Dengan penuh kesyukuran, kami menjemput Dato' | Datin | Tuan | Puan | Encik | Cik ke majlis perkahwinan anakanda kami.",
     prayer: "Ya Allah, berkatilah majlis perkahwinan kami. Satukanlah hati kami sebagaimana Engkau satukan hati Adam & Hawa.",
     rsvpPrompt: "Sila sahkan kehadiran anda.",
+    rsvpButton: "Sahkan Kehadiran",
     setDateTime: "Sila tetapkan tarikh & masa majlis.",
     eventStarted: "Majlis telah bermula",
     guestWishes: "Ucapan dan doa daripada tetamu akan dipaparkan di sini.",
@@ -633,6 +656,7 @@ const CARD_TEXT = {
     invitation: "With heartfelt gratitude, we joyfully invite Dato' | Datin | Tuan | Puan | Mr. | Ms. to the wedding of our beloved children.",
     prayer: "O Allah, bless our wedding. Unite our hearts as You united the hearts of Adam & Hawa.",
     rsvpPrompt: "Please confirm your attendance.",
+    rsvpButton: "Confirm Attendance",
     setDateTime: "Please set the event date & time.",
     eventStarted: "The event has started",
     guestWishes: "Guest wishes and prayers will appear here.",
@@ -810,7 +834,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
             {/* Day + Date — ONE unified information group; same font, weight, tracking; only size + opacity differ */}
             <div className="mt-9 flex flex-col items-center space-y-1">
               <p className="font-normal tracking-[0.20em] text-foreground/58 uppercase" style={{ fontFamily: bodyFontFamily, fontSize: "var(--day-font-size, 11px)" }}>{invitation.eventDay}</p>
-              <p className="font-normal tracking-[0.20em] text-foreground/78" style={{ fontFamily: bodyFontFamily, fontSize: "var(--date-font-size, 11px)" }}>{formatDatePipes(invitation.eventDate ?? "")}</p>
+              <p className="font-normal tracking-[0.20em] text-foreground/78" style={{ fontFamily: bodyFontFamily, fontSize: "var(--date-font-size, 11px)" }}>{formatDatePipes(invitation.eventDate ?? "", lang)}</p>
             </div>
 
             {/* Hashtag — subordinate, decorative; smallest level */}
@@ -999,7 +1023,7 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
                 whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
               >
-                Sahkan Kehadiran
+                {t.rsvpButton}
               </motion.button>
             )}
           </div>

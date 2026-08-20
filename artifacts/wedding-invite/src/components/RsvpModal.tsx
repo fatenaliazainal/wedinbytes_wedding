@@ -68,6 +68,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         close: "Close",
         cancel: "Cancel",
         submit: "Submit",
+        nameRequired: "Please enter your name",
         success: "Thank you! Your RSVP has been submitted.",
         disabled: "RSVP is currently unavailable.",
         deadline: "The RSVP deadline has passed.",
@@ -88,6 +89,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
         close: "Tutup",
         cancel: "Batal",
         submit: "Hantar",
+        nameRequired: "Sila masukkan nama",
         success: "Terima kasih! RSVP anda telah dihantar.",
         disabled: "RSVP tidak dibuka buat masa ini.",
         deadline: "Tempoh RSVP telah tamat.",
@@ -103,7 +105,7 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
   const isOverallLimitReached = maxOverallGuests > 0 && currentTotalGuests >= maxOverallGuests;
 
   const formSchema = z.object({
-    name: z.string().min(2, "Sila masukkan nama"),
+    name: z.string().min(2, copy.nameRequired),
     attending: z.string(),
     numberOfGuests: z.coerce.number().min(1),
     message: z.string().optional(),

@@ -316,6 +316,26 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
   const [tempahSet, setTempahSet] = useState<Set<number>>(new Set());
   const [giftTab, setGiftTab] = useState<"qr" | "registry">("qr");
   const data = (invitation ?? {}) as Invitation & Record<string, unknown>;
+  const isEnglish = data.language === "en";
+  const copy = isEnglish
+    ? {
+        back: "Back",
+        reserveGift: "Reserve Gift",
+        additionalNotes: "Additional Notes",
+        recipientName: "Recipient Name",
+        recipientAddress: "Recipient Address",
+        reserved: "Reserved ✓",
+        reserve: "Reserve",
+      }
+    : {
+        back: "Kembali",
+        reserveGift: "Tempah Hadiah",
+        additionalNotes: "Nota Tambahan",
+        recipientName: "Nama penerima",
+        recipientAddress: "Alamat Penerima",
+        reserved: "Ditempah ✓",
+        reserve: "Tempah",
+      };
   const qrCodes = Array.isArray(data.giftQrCodes)
     ? data.giftQrCodes.filter((value): value is string => typeof value === "string" && Boolean(value.trim())).slice(0, 2)
     : [];
@@ -339,10 +359,10 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
           className="self-start flex items-center gap-1 text-xs font-medium text-primary/70 hover:text-primary transition-colors"
           style={{ fontFamily: bodyFont }}
         >
-          ← Kembali
+          ← {copy.back}
         </button>
         <div className="text-center">
-          <p className="text-xl font-bold text-primary" style={{ fontFamily: nameFont }}>Tempah Hadiah</p>
+          <p className="text-xl font-bold text-primary" style={{ fontFamily: nameFont }}>{copy.reserveGift}</p>
         </div>
         {selectedItem.thumbnailUrl && (
           <div className="mx-auto w-full max-w-[220px]">
@@ -380,19 +400,19 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
         </button>
         {selectedItem.notes && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nota Tambahan</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{copy.additionalNotes}</p>
             <p className="text-[12px] text-primary">{selectedItem.notes}</p>
           </div>
         )}
         {registryRecipientName && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Nama penerima</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{copy.recipientName}</p>
             <p className="text-[12px] text-primary">{registryRecipientName}</p>
           </div>
         )}
         {registryRecipientAddress && (
           <div className="rounded-xl border border-primary/10 bg-background/60 p-4 space-y-1" style={{ fontFamily: bodyFont }}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Alamat Penerima</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{copy.recipientAddress}</p>
             <p className="text-[12px] text-primary whitespace-pre-line">{registryRecipientAddress}</p>
           </div>
         )}
@@ -497,7 +517,7 @@ function GiftPanel({ invitation, registryItems = [] }: { invitation?: Invitation
                     backgroundColor: tempahSet.has(item.id) ? "hsl(var(--primary) / 0.05)" : "transparent",
                   }}
                 >
-                  {tempahSet.has(item.id) ? "Ditempah ✓" : <>Tempah <span className="ml-0.5 text-primary/60">›</span></>}
+                  {tempahSet.has(item.id) ? copy.reserved : <>{copy.reserve} <span className="ml-0.5 text-primary/60">›</span></>}
                 </button>
               </div>
             </div>
