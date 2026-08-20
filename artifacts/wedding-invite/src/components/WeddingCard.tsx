@@ -655,7 +655,7 @@ const CARD_TEXT = {
     days: "Days",
     hours: "HRS",
     minutes: "MIN",
-    seconds: "SECA",
+    seconds: "SEC",
     footerTextDefault: "Get your digital card at:",
   },
 };
