@@ -1462,7 +1462,7 @@ export default function EditorPage({
             paidPackageIdRef.current = loadedInv.packageId;
           }
 
-          // Display package: URL param > paid/saved package > Signature for new invitations.
+          // Display package: URL param > paid/saved package > Premium for new invitations.
           const pkgId = urlPackage
             ? parseInt(urlPackage, 10)
             : isPaidOrCustomer
@@ -1476,7 +1476,7 @@ export default function EditorPage({
               : null) ||
             (!urlPackage
               ? loadedPackages.find(
-                  (p) => p.isActive && p.name.trim().toLowerCase() === "signature",
+                  (p) => p.isActive && p.name.trim().toLowerCase() === "premium",
                 ) || loadedPackages.find((p) => p.isActive)
               : null);
           setActivePackageId(resolvedPkg?.id ?? null);
