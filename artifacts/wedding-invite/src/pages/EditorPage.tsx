@@ -347,6 +347,11 @@ function formatTime12h(time24: string): string {
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
+function getAutomaticEventTime(startTime: string, endTime: string): string {
+  if (!startTime || !endTime) return "";
+  return `${formatTime12h(startTime)} – ${formatTime12h(endTime)}`;
+}
+
 const eventDateMonths: Record<string, number> = {
   january: 1,
   february: 2,
@@ -526,6 +531,10 @@ export default function EditorPage({
   // Tracks the locked paid/assigned package so saves always use it even when
   // the editor is previewing a different package via ?package= URL param.
   const paidPackageIdRef = useRef<number | null>(null);
+  // Keep manually edited Time (Text) values from being overwritten when the
+  // start/end time pickers change. The auto value is still the default.
+  const eventTimeCustomRef = useRef(false);
+  const eventTimeAutoValueRef = useRef("11:00 pagi – 4:00 petang");
 
   const activePackage = packages.find((p) => p.id === activePackageId);
   const activeFeatureNames = useMemo(
@@ -926,6 +935,22 @@ export default function EditorPage({
             return;
           }
           const d = loadedInv;
+          const loadedStartTime =
+            typeof d?.eventStartTime === "string" ? d.eventStartTime : "";
+          const loadedEndTime =
+            typeof d?.eventEndTime === "string" ? d.eventEndTime : "";
+          const loadedEventTime =
+            typeof d?.eventTime === "string" ? d.eventTime : "";
+          const loadedAutoEventTime = getAutomaticEventTime(
+            loadedStartTime,
+            loadedEndTime,
+          );
+          eventTimeAutoValueRef.current =
+            loadedAutoEventTime || eventTimeAutoValueRef.current;
+          eventTimeCustomRef.current =
+            Boolean(loadedEventTime) &&
+            (!loadedAutoEventTime ||
+              loadedEventTime !== loadedAutoEventTime);
           let isCustomerOrder = false;
           if (mode === "business" && d?.id) {
             const clientsRes = await fetch(`${BASE}/api/business/clients`, {
@@ -1472,8 +1497,15 @@ export default function EditorPage({
       if (p.eventDate) {
         next.eventDay = getDayName(p.eventDate, p.language);
       }
-      if (p.eventStartTime && p.eventEndTime) {
-        next.eventTime = `${formatTime12h(p.eventStartTime)} – ${formatTime12h(p.eventEndTime)}`;
+       const autoEventTime = getAutomaticEventTime(
+         p.eventStartTime,
+         p.eventEndTime,
+       );
+       if (autoEventTime) {
+         eventTimeAutoValueRef.current = autoEventTime;
+         if (!eventTimeCustomRef.current) {
+           next.eventTime = autoEventTime;
+         }
       }
       return next;
     });
@@ -2545,7 +2577,12 @@ export default function EditorPage({
                   <input
                     className={inputCls}
                     value={inv.eventTime}
-                    readOnly
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      eventTimeCustomRef.current =
+                        value !== eventTimeAutoValueRef.current;
+                      setI("eventTime")(value);
+                    }}
                     placeholder={t("placeholders.timeFromStartEnd")}
                   />
                 </Field>
