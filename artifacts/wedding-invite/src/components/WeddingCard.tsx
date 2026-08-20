@@ -653,9 +653,9 @@ const CARD_TEXT = {
     contactLabel: "Contact",
     viewOnMap: "Open in Google Maps",
     days: "Days",
-    hours: "Hours",
-    minutes: "Minutes",
-    seconds: "Seconds",
+    hours: "HRS",
+    minutes: "MIN",
+    seconds: "SECA",
     footerTextDefault: "Get your digital card at:",
   },
 };
