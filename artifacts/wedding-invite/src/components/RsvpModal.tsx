@@ -51,8 +51,16 @@ export function RsvpModal({ isOpen, onClose, onSubmitted, cardFontVars, invitati
 
   const enabled = inv?.rsvpEnabled === true;
   const deadline = (inv?.rsvpDeadline as string | undefined) ? new Date(inv?.rsvpDeadline as string) : null;
-  const introText = (inv?.rsvpIntroText as string | undefined) ?? "";
   const language = inv?.language === "en" ? "en" : "ms";
+  const storedIntroText = (inv?.rsvpIntroText as string | undefined) ?? "";
+  const isLegacyMalayDefaultIntro =
+    storedIntroText
+      .trim()
+      .replace(/[.!…]+$/u, "")
+      .trim()
+      .toLowerCase() === "sila sahkan kehadiran anda";
+  const introText =
+    language === "en" && isLegacyMalayDefaultIntro ? "" : storedIntroText;
   const copy = language === "en"
     ? {
         title: "Attendance Confirmation",
