@@ -37,6 +37,7 @@ import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
 import HowToUsePage from "@/pages/HowToUsePage";
 import TermsPage from "@/pages/TermsPage";
+import { trackPageView } from "@/lib/analytics";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -97,6 +98,16 @@ function ScrollToTop() {
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
   }, []);
+
+  return null;
+}
+
+function AnalyticsTracker() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    trackPageView(location);
+  }, [location]);
 
   return null;
 }
@@ -191,6 +202,7 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "") }>
+              <AnalyticsTracker />
               <Router />
             </WouterRouter>
             <Toaster position="top-center" />

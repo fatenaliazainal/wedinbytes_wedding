@@ -61,6 +61,7 @@ app.use(
                 "'self'",
                 "https://www.youtube.com",
                 "https://www.youtube-nocookie.com",
+                 "https://www.googletagmanager.com",
                 // protect.js is an external file served via 'self', so no hash needed.
               ],
               styleSrc: [
@@ -72,7 +73,12 @@ app.use(
               imgSrc: ["'self'", "data:", "blob:"],
               // Audio/video URLs are user-supplied (music links) — must allow any source.
               mediaSrc: ["'self'", "blob:", "*"],
-              connectSrc: ["'self'"],
+              connectSrc: [
+                "'self'",
+                "https://www.google-analytics.com",
+                "https://analytics.google.com",
+                "https://region1.google-analytics.com",
+              ],
               objectSrc: ["'none'"],
               frameAncestors: ["'none'"],
               // YouTube music embeds — without this, iframes fall back to defaultSrc:self
