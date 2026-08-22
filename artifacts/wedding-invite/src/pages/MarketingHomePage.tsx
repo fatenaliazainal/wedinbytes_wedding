@@ -301,7 +301,7 @@ export default function MarketingHomePage() {
                 {carouselSlides.map((slide, slideIndex) => (
                   <div
                     key={slideIndex === collectionSlides.length ? "collection-loop" : `collection-${slideIndex}`}
-                    className="min-w-full grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5"
+                    className="w-full shrink-0 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5"
                     aria-hidden={slideIndex === collectionSlides.length}
                   >
                     {slide.map((design) => (
