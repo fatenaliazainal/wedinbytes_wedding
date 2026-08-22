@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Gift, Heart, Images, LayoutGrid, MapPin, MessageCircle, Music, Palette, PenLine, Phone, QrCode, Send, Share2, Shirt, Smartphone, Timer, User, UserCheck, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -117,7 +117,61 @@ export default function MarketingHomePage() {
       .catch(() => setCollaborations([]));
   }, []);
 
-  const previewCards = designs.slice(0, 5);
+  const previewCards = useMemo(() => designs.slice(0, 20), [designs]);
+  const collectionSlides = useMemo(
+    () =>
+      Array.from(
+        { length: Math.ceil(previewCards.length / 5) },
+        (_, index) => previewCards.slice(index * 5, index * 5 + 5),
+      ),
+    [previewCards],
+  );
+  const carouselSlides = useMemo(
+    () =>
+      collectionSlides.length > 1
+        ? [...collectionSlides, collectionSlides[0]]
+        : collectionSlides,
+    [collectionSlides],
+  );
+  const [collectionSlide, setCollectionSlide] = useState(0);
+  const [collectionCarouselPaused, setCollectionCarouselPaused] = useState(false);
+  const [collectionTransitionEnabled, setCollectionTransitionEnabled] = useState(true);
+  const collectionCarouselPausedRef = useRef(false);
+
+  const setCollectionPaused = (paused: boolean) => {
+    collectionCarouselPausedRef.current = paused;
+    setCollectionCarouselPaused(paused);
+  };
+
+  useEffect(() => {
+    setCollectionTransitionEnabled(false);
+    setCollectionSlide(0);
+    const animationFrame = window.requestAnimationFrame(() => {
+      setCollectionTransitionEnabled(true);
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [collectionSlides.length]);
+
+  useEffect(() => {
+    if (collectionCarouselPaused || collectionSlides.length < 2) return;
+    const timer = window.setInterval(() => {
+      if (!collectionCarouselPausedRef.current) {
+        setCollectionSlide((current) => current + 1);
+      }
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [collectionCarouselPaused, collectionSlides.length]);
+
+  const handleCollectionSlideEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || collectionSlide !== collectionSlides.length) return;
+
+    setCollectionTransitionEnabled(false);
+    setCollectionSlide(0);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setCollectionTransitionEnabled(true));
+    });
+  };
+
   const logoCollaborations = collaborations.filter((business) => business.logoUrl);
   const [businessSlide, setBusinessSlide] = useState(0);
   const [businessCarouselPaused, setBusinessCarouselPaused] = useState(false);
@@ -227,15 +281,40 @@ export default function MarketingHomePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-              {previewCards.map((design) => (
-                <CatalogDesignCard
-                  key={design.id}
-                  design={design}
-                  onPreview={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
-                  onOrder={() => goToEditor(design.designCode ?? undefined)}
-                />
-              ))}
+            <div
+              className="overflow-hidden"
+              aria-label="Featured wedding card collection"
+              onPointerEnter={() => setCollectionPaused(true)}
+              onPointerLeave={() => setCollectionPaused(false)}
+              onFocusCapture={() => setCollectionPaused(true)}
+              onBlurCapture={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setCollectionPaused(false);
+                }
+              }}
+            >
+              <div
+                className={`flex ${collectionTransitionEnabled ? "transition-transform duration-700 ease-in-out" : ""}`}
+                style={{ transform: `translateX(-${collectionSlide * 100}%)` }}
+                onTransitionEnd={handleCollectionSlideEnd}
+              >
+                {carouselSlides.map((slide, slideIndex) => (
+                  <div
+                    key={slideIndex === collectionSlides.length ? "collection-loop" : `collection-${slideIndex}`}
+                    className="min-w-full grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5"
+                    aria-hidden={slideIndex === collectionSlides.length}
+                  >
+                    {slide.map((design) => (
+                      <CatalogDesignCard
+                        key={`${slideIndex}-${design.id}`}
+                        design={design}
+                        onPreview={() => navigate(`/invite/demo?designCode=${encodeURIComponent(design.designCode ?? "")}`)}
+                        onOrder={() => goToEditor(design.designCode ?? undefined)}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
