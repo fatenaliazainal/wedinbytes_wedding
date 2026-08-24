@@ -188,6 +188,9 @@ function buildAdminBlastHtml(payload: AdminEmailBlastPayload) {
         </td></tr>
         <tr><td style="background:#f7f7f5;padding:20px 32px;text-align:center;">
           <p style="margin:0;font-size:12px;color:#999;">Wedinstudio · Digital Wedding Invitations</p>
+          <p style="margin:10px 0 0;font-size:12px;">
+            <a href="${SITE_URL}" style="color:#3d5a3e;text-decoration:underline;">Visit wedinstudio.com</a>
+          </p>
           <p style="margin:12px 0 0;font-size:11px;color:#999;">
             Don’t want to receive announcement emails? <a href="${esc(unsubscribeUrl)}" style="color:#3d5a3e;text-decoration:underline;">Unsubscribe</a>
           </p>
@@ -215,7 +218,7 @@ export async function sendAdminEmailBlast(payload: AdminEmailBlastPayload): Prom
     to: [payload.to],
     subject: payload.subject,
     html: buildAdminBlastHtml({ ...payload, imageUrl }),
-    text: `${payload.content}\n\n—\nWedinstudio · Digital Wedding Invitations\nUnsubscribe from announcement emails: ${getAdminEmailBlastUnsubscribeUrl(payload.userId)}`,
+    text: `${payload.content}\n\n—\nWedinstudio · Digital Wedding Invitations\nVisit wedinstudio.com: ${SITE_URL}\nUnsubscribe from announcement emails: ${getAdminEmailBlastUnsubscribeUrl(payload.userId)}`,
   });
   if (error) {
     throw new Error(error.message || "Resend rejected the email.");
