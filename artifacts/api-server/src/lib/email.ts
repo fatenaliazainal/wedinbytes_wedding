@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 interface RsvpNotificationPayload {
   to: string;
@@ -157,6 +158,7 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
 }
 
 export interface AdminEmailBlastPayload {
+  userId: number;
   to: string;
   subject: string;
   content: string;
@@ -168,6 +170,7 @@ function buildAdminBlastHtml(payload: AdminEmailBlastPayload) {
     ? `<img src="${esc(payload.imageUrl)}" alt="" style="display:block;width:100%;max-width:600px;height:auto;margin:0 auto 28px;border-radius:8px;" />`
     : "";
   const content = esc(payload.content).replace(/\r?\n/g, "<br />");
+  const unsubscribeUrl = getAdminEmailBlastUnsubscribeUrl(payload.userId);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -185,6 +188,9 @@ function buildAdminBlastHtml(payload: AdminEmailBlastPayload) {
         </td></tr>
         <tr><td style="background:#f7f7f5;padding:20px 32px;text-align:center;">
           <p style="margin:0;font-size:12px;color:#999;">Wedinstudio · Digital Wedding Invitations</p>
+          <p style="margin:12px 0 0;font-size:11px;color:#999;">
+            Don’t want to receive announcement emails? <a href="${esc(unsubscribeUrl)}" style="color:#3d5a3e;text-decoration:underline;">Unsubscribe</a>
+          </p>
         </td></tr>
       </table>
     </td></tr>
@@ -209,10 +215,52 @@ export async function sendAdminEmailBlast(payload: AdminEmailBlastPayload): Prom
     to: [payload.to],
     subject: payload.subject,
     html: buildAdminBlastHtml({ ...payload, imageUrl }),
-    text: payload.content,
+    text: `${payload.content}\n\n—\nWedinstudio · Digital Wedding Invitations\nUnsubscribe from announcement emails: ${getAdminEmailBlastUnsubscribeUrl(payload.userId)}`,
   });
   if (error) {
     throw new Error(error.message || "Resend rejected the email.");
+  }
+}
+
+type UnsubscribeTokenPayload = { userId: number };
+
+function getUnsubscribeSecret() {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET is not configured.");
+  return secret;
+}
+
+function signUnsubscribePayload(encodedPayload: string) {
+  return createHmac("sha256", getUnsubscribeSecret())
+    .update(encodedPayload)
+    .digest("base64url");
+}
+
+export function getAdminEmailBlastUnsubscribeUrl(userId: number) {
+  const payload = Buffer.from(JSON.stringify({ userId })).toString("base64url");
+  const signature = signUnsubscribePayload(payload);
+  return `${SITE_URL}/api/email-blast/unsubscribe?token=${encodeURIComponent(`${payload}.${signature}`)}`;
+}
+
+export function verifyAdminEmailBlastUnsubscribeToken(token: string): UnsubscribeTokenPayload | null {
+  const [payload, signature, ...rest] = token.split(".");
+  if (!payload || !signature || rest.length) return null;
+
+  const expected = signUnsubscribePayload(payload);
+  const actualBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length || !timingSafeEqual(actualBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  try {
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as UnsubscribeTokenPayload;
+    if (!Number.isInteger(decoded.userId) || decoded.userId < 1) {
+      return null;
+    }
+    return { userId: decoded.userId };
+  } catch {
+    return null;
   }
 }
 

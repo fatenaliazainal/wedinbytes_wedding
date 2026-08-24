@@ -30,7 +30,7 @@ export const pool = new Pool({
 pool.on("error", (err) => {
   // Ignore benign connection termination codes; rethrow anything unexpected.
   const benign = ["57P01", "ECONNRESET", "EPIPE"];
-  if (!benign.some((code) => String((err as NodeJS.ErrnoException).code ?? (err as Record<string,unknown>).code).includes(code))) {
+  if (!benign.some((code) => String((err as NodeJS.ErrnoException).code ?? (err as unknown as Record<string,unknown>).code).includes(code))) {
     console.error("[pg-pool] unexpected pool error:", err);
   }
 });

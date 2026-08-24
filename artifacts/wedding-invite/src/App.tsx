@@ -37,6 +37,7 @@ import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
 import HowToUsePage from "@/pages/HowToUsePage";
 import TermsPage from "@/pages/TermsPage";
+import UnsubscribePage from "@/pages/UnsubscribePage";
 import { trackPageView } from "@/lib/analytics";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -187,6 +188,7 @@ function Router() {
       <Route path="/contact" component={ContactPage} />
       <Route path="/how-to-use" component={HowToUsePage} />
       <Route path="/terms" component={TermsPage} />
+      <Route path="/unsubscribe" component={UnsubscribePage} />
       <Route path="/business/:slug" component={PublicBusinessProfilePage} />
       <Route component={NotFound} />
     </Switch>

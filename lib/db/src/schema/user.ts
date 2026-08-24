@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar, json } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, varchar, json, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,6 +10,7 @@ export const userTable = pgTable("user", {
   passwordResetExpiresAt: timestamp("password_reset_expires_at"),
   name: text("name").notNull(),
   role: text("role").notNull().default("buyer"),
+  emailMarketingEnabled: boolean("email_marketing_enabled").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

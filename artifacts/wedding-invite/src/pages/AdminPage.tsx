@@ -2629,11 +2629,20 @@ function UsersTab() {
 }
 
 function EmailBlastTab() {
+  type EmailBlastRecipient = {
+    id: number;
+    name: string;
+    email: string;
+    subscribed: boolean;
+  };
+
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [recipientCount, setRecipientCount] = useState<number | null>(null);
+  const [recipients, setRecipients] = useState<EmailBlastRecipient[]>([]);
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<number[]>([]);
+  const [recipientSearch, setRecipientSearch] = useState("");
   const [loadingRecipients, setLoadingRecipients] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [sending, setSending] = useState(false);
@@ -2644,10 +2653,42 @@ function EmailBlastTab() {
       cache: "no-store",
     })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error()))
-      .then((data) => setRecipientCount(Number(data.count) || 0))
-      .catch(() => toast.error("Failed to count email recipients."))
+      .then((data) => {
+        const loaded: EmailBlastRecipient[] = Array.isArray(data.recipients)
+          ? data.recipients.filter((recipient: unknown): recipient is EmailBlastRecipient => {
+              if (!recipient || typeof recipient !== "object") return false;
+              const value = recipient as Record<string, unknown>;
+              return Number.isInteger(value.id)
+                && typeof value.name === "string"
+                && typeof value.email === "string"
+                && typeof value.subscribed === "boolean";
+            })
+          : [];
+        setRecipients(loaded);
+        setSelectedRecipientIds(loaded.filter((recipient) => recipient.subscribed).map((recipient) => recipient.id));
+      })
+      .catch(() => toast.error("Failed to load email recipients."))
       .finally(() => setLoadingRecipients(false));
   }, []);
+
+  const subscribedRecipients = useMemo(
+    () => recipients.filter((recipient) => recipient.subscribed),
+    [recipients],
+  );
+  const visibleRecipients = useMemo(() => {
+    const query = recipientSearch.trim().toLowerCase();
+    if (!query) return recipients;
+    return recipients.filter((recipient) =>
+      recipient.name.toLowerCase().includes(query) || recipient.email.toLowerCase().includes(query),
+    );
+  }, [recipientSearch, recipients]);
+
+  const toggleRecipient = (recipient: EmailBlastRecipient) => {
+    if (!recipient.subscribed) return;
+    setSelectedRecipientIds((selected) => selected.includes(recipient.id)
+      ? selected.filter((id) => id !== recipient.id)
+      : [...selected, recipient.id]);
+  };
 
   const handleImageUpload = async (file: File) => {
     setUploadingImage(true);
@@ -2679,11 +2720,11 @@ function EmailBlastTab() {
       toast.error("Content is required.");
       return;
     }
-    if (!recipientCount) {
-      toast.error("There are no eligible registered users.");
+    if (!selectedRecipientIds.length) {
+      toast.error("Select at least one subscribed recipient.");
       return;
     }
-    if (!window.confirm(`Send this email to ${recipientCount} registered user${recipientCount === 1 ? "" : "s"}?`)) {
+    if (!window.confirm(`Send this email to ${selectedRecipientIds.length} selected recipient${selectedRecipientIds.length === 1 ? "" : "s"}?`)) {
       return;
     }
 
@@ -2693,7 +2734,7 @@ function EmailBlastTab() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ subject, content, imageUrl }),
+        body: JSON.stringify({ subject, content, imageUrl, recipientIds: selectedRecipientIds }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Email blast failed.");
@@ -2713,15 +2754,15 @@ function EmailBlastTab() {
           Email Blast
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Send an announcement to registered Buyer and Business Account users.
+          Send an announcement to selected Buyer and Business Account users.
         </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="mb-4 rounded-lg bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
           {loadingRecipients
-            ? "Counting eligible recipients…"
-            : `${recipientCount} registered recipient${recipientCount === 1 ? "" : "s"} will receive this email.`}
+            ? "Loading registered recipients…"
+            : `${selectedRecipientIds.length} of ${subscribedRecipients.length} subscribed recipient${subscribedRecipients.length === 1 ? "" : "s"} selected.`}
         </div>
 
         <div className="space-y-4">
@@ -2798,11 +2839,92 @@ function EmailBlastTab() {
             <p className="mt-1 text-[10px] text-muted-foreground">{content.length}/10,000 · Line breaks will be preserved.</p>
           </div>
 
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <label className="block text-xs font-medium">Recipients *</label>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Unsubscribed users cannot be selected for announcement emails.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRecipientIds(subscribedRecipients.map((recipient) => recipient.id))}
+                  disabled={loadingRecipients || !subscribedRecipients.length}
+                  className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRecipientIds([])}
+                  disabled={loadingRecipients || !selectedRecipientIds.length}
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div className="relative mt-3">
+              <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={recipientSearch}
+                onChange={(event) => setRecipientSearch(event.target.value)}
+                placeholder="Search name or email"
+                className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-xs outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border border-border">
+              {loadingRecipients ? (
+                <div className="flex items-center justify-center gap-2 px-3 py-8 text-xs text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin" />
+                  Loading recipients…
+                </div>
+              ) : visibleRecipients.length ? (
+                visibleRecipients.map((recipient) => {
+                  const selected = selectedRecipientIds.includes(recipient.id);
+                  return (
+                    <label
+                      key={recipient.id}
+                      className={`flex cursor-pointer items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0 ${
+                        recipient.subscribed ? "hover:bg-muted/40" : "cursor-not-allowed bg-muted/20 opacity-60"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        disabled={!recipient.subscribed}
+                        onChange={() => toggleRecipient(recipient)}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium">{recipient.name}</span>
+                        <span className="block truncate text-[11px] text-muted-foreground">{recipient.email}</span>
+                      </span>
+                      {!recipient.subscribed && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          Unsubscribed
+                        </span>
+                      )}
+                    </label>
+                  );
+                })
+              ) : (
+                <p className="px-3 py-8 text-center text-xs text-muted-foreground">
+                  {recipients.length ? "No recipients match your search." : "No registered recipients found."}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center justify-end border-t border-border pt-4">
             <button
               type="button"
               onClick={() => void handleSend()}
-              disabled={sending || uploadingImage || loadingRecipients || !recipientCount}
+              disabled={sending || uploadingImage || loadingRecipients || !selectedRecipientIds.length}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {sending ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
