@@ -9,7 +9,8 @@
  *   4. gzip     → /tmp/wedinstudio-db-<timestamp>.sql.gz
  *   5. Upload   → R2 private bucket / db-backups/weekly/<filename>
  *   6. Delete local temp files  (only after successful upload)
- *   7. Retention cleanup        (keep latest 8; only after successful upload)
+ *   7. Verify the uploaded object
+ *   8. Retention cleanup        (keep latest 30; only after successful upload)
  *
  * Run via:
  *   pnpm --filter @workspace/api-server run backup:db
@@ -28,6 +29,7 @@ import { tmpdir } from "node:os";
 import {
   S3Client,
   PutObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
@@ -55,7 +57,7 @@ const REQUIRED_VARS = [
 const missing = REQUIRED_VARS.filter((k) => !process.env[k]);
 if (missing.length > 0) {
   console.error(
-    `[backup] Aborted: missing required env vars: ${missing.join(", ")}`
+    `[backup] Aborted: missing required env vars: ${missing.join(", ")}`,
   );
   process.exit(1);
 }
@@ -68,23 +70,28 @@ const SECRET_KEY = process.env.CF_R2_SECRET_ACCESS_KEY!;
 const BACKUP_BUCKET = process.env.CF_R2_BACKUP_BUCKET_NAME!;
 
 const BACKUP_PREFIX = "db-backups/weekly/";
-const KEEP_COUNT = 8;
+const KEEP_COUNT = 30;
 
 // ─── Timestamp ────────────────────────────────────────────────────────────────
-// Format: YYYY-MM-DD-HHmm (UTC), e.g. 2026-08-07-0400
+// Format: YYYY-MM-DD-HHmm (Malaysia time), e.g. 2026-08-07-1200
 // Lexicographic sort of this format is chronological order.
 
-function utcTimestamp(): string {
-  const now = new Date();
+function malaysiaTimestamp(): string {
+  // Malaysia is UTC+8 year-round. Using a shifted UTC date keeps the
+  // filename aligned with the user's 5:00 AM Malaysia schedule.
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000);
   const p = (n: number) => String(n).padStart(2, "0");
-  return [
-    now.getUTCFullYear(),
-    p(now.getUTCMonth() + 1),
-    p(now.getUTCDate()),
-  ].join("-") + "-" + p(now.getUTCHours()) + p(now.getUTCMinutes());
+  return (
+    [now.getUTCFullYear(), p(now.getUTCMonth() + 1), p(now.getUTCDate())].join(
+      "-",
+    ) +
+    "-" +
+    p(now.getUTCHours()) +
+    p(now.getUTCMinutes())
+  );
 }
 
-const timestamp = utcTimestamp();
+const timestamp = malaysiaTimestamp();
 const sqlFilename = `wedinstudio-db-${timestamp}.sql`;
 const gzFilename = `${sqlFilename}.gz`;
 const objectKey = `${BACKUP_PREFIX}wedinstudio-db-${timestamp}.sql.gz`;
@@ -121,7 +128,9 @@ function abort(message: string, code = 1): never {
 }
 
 // ─── Step 1: pg_dump ─────────────────────────────────────────────────────────
-// READ-ONLY dump only: --no-owner --no-acl --format=plain
+// READ-ONLY dump only: --no-owner --no-acl --format=plain.
+// Session and rate-limit rows are disposable runtime state and are excluded
+// so the backup does not preserve active login sessions or stale throttles.
 // DATABASE_URL is passed as an argv argument to avoid shell injection.
 // It is never logged.
 
@@ -129,8 +138,15 @@ console.log(`[backup] Running pg_dump...`);
 
 const dump = spawnSync(
   "pg_dump",
-  ["--no-owner", "--no-acl", "--format=plain", DATABASE_URL],
-  { stdio: ["ignore", "pipe", "pipe"], encoding: "buffer" }
+  [
+    "--no-owner",
+    "--no-acl",
+    "--format=plain",
+    "--exclude-table=public.session",
+    "--exclude-table=public.rate_limit_hits",
+    DATABASE_URL,
+  ],
+  { stdio: ["ignore", "pipe", "pipe"], encoding: "buffer" },
 );
 
 if (dump.error) {
@@ -141,11 +157,15 @@ if (dump.status !== 0) {
   abort(`pg_dump exited with non-zero status: ${dump.status}`);
 }
 if (!dump.stdout || dump.stdout.length === 0) {
-  abort("pg_dump produced empty output — aborting to avoid uploading a blank backup.");
+  abort(
+    "pg_dump produced empty output — aborting to avoid uploading a blank backup.",
+  );
 }
 
 writeFileSync(tmpSql, dump.stdout);
-console.log(`[backup] pg_dump complete (${dump.stdout.length} bytes uncompressed).`);
+console.log(
+  `[backup] pg_dump complete (${dump.stdout.length} bytes uncompressed).`,
+);
 
 // ─── Step 2: gzip ────────────────────────────────────────────────────────────
 // gzip replaces tmpSql with tmpSql.gz in-place.
@@ -161,11 +181,15 @@ if (!existsSync(tmpGz)) {
 }
 
 const compressedSize = statSync(tmpGz).size;
-console.log(`[backup] Compression complete (${compressedSize} bytes compressed).`);
+console.log(
+  `[backup] Compression complete (${compressedSize} bytes compressed).`,
+);
 
 // ─── Step 3: Upload to R2 ────────────────────────────────────────────────────
 
-console.log(`[backup] Uploading to bucket "${BACKUP_BUCKET}" key "${objectKey}"...`);
+console.log(
+  `[backup] Uploading to bucket "${BACKUP_BUCKET}" key "${objectKey}"...`,
+);
 
 const fileBuffer = readFileSync(tmpGz);
 
@@ -182,7 +206,7 @@ try {
         "backup-system": "wedinstudio-db-backup",
         "backup-source": "api-server-scripts",
       },
-    })
+    }),
   );
 } catch (err) {
   abort(`R2 upload failed: ${(err as Error).message}`);
@@ -190,20 +214,38 @@ try {
 
 console.log(`[backup] Upload succeeded: ${objectKey}`);
 
-// ─── Step 4: Delete temp files (ONLY after successful upload) ────────────────
+// ─── Step 4: Verify the uploaded object ──────────────────────────────────────
+
+try {
+  const uploaded = await s3.send(
+    new HeadObjectCommand({ Bucket: BACKUP_BUCKET, Key: objectKey }),
+  );
+  if (uploaded.ContentLength !== compressedSize) {
+    abort(
+      `Uploaded backup size mismatch: expected ${compressedSize}, got ${uploaded.ContentLength ?? "unknown"}`,
+    );
+  }
+  console.log(`[backup] Upload verified (${uploaded.ContentLength} bytes).`);
+} catch (err) {
+  abort(`Uploaded backup verification failed: ${(err as Error).message}`);
+}
+
+// ─── Step 5: Delete temp files (ONLY after successful verification) ──────────
 
 deleteTempFiles();
 console.log("[backup] Local temp files deleted.");
 
-// ─── Step 5: Retention cleanup — keep latest 8 ───────────────────────────────
+// ─── Step 6: Retention cleanup — keep latest 30 ──────────────────────────────
 // Only runs after the new backup has been confirmed uploaded.
 // If listing or deletion fails it is non-fatal: the backup was still created.
 
-console.log(`[backup] Running retention cleanup (keep ${KEEP_COUNT} most recent)...`);
+console.log(
+  `[backup] Running retention cleanup (keep ${KEEP_COUNT} most recent)...`,
+);
 
 try {
   const list = await s3.send(
-    new ListObjectsV2Command({ Bucket: BACKUP_BUCKET, Prefix: BACKUP_PREFIX })
+    new ListObjectsV2Command({ Bucket: BACKUP_BUCKET, Prefix: BACKUP_PREFIX }),
   );
 
   const backups = (list.Contents ?? [])
@@ -211,7 +253,7 @@ try {
       (obj) =>
         obj.Key?.startsWith(BACKUP_PREFIX) &&
         obj.Key.endsWith(".sql.gz") &&
-        obj.Key.includes("wedinstudio-db-")
+        obj.Key.includes("wedinstudio-db-"),
     )
     // Lexicographic sort on YYYY-MM-DD-HHmm filenames = chronological order
     .sort((a, b) => (a.Key! < b.Key! ? -1 : 1));
@@ -223,22 +265,22 @@ try {
     console.log(`[backup] Deleting ${toDelete.length} expired backup(s)...`);
     for (const obj of toDelete) {
       await s3.send(
-        new DeleteObjectCommand({ Bucket: BACKUP_BUCKET, Key: obj.Key! })
+        new DeleteObjectCommand({ Bucket: BACKUP_BUCKET, Key: obj.Key! }),
       );
       console.log(`[backup] Deleted: ${obj.Key}`);
     }
   } else {
     console.log(
-      `[backup] Retention limit not reached. No old backups deleted.`
+      `[backup] Retention limit not reached. No old backups deleted.`,
     );
   }
 } catch (err) {
   // Warn but do NOT exit non-zero — the backup itself succeeded.
   console.warn(
-    `[backup] WARNING: Retention cleanup encountered an error: ${(err as Error).message}`
+    `[backup] WARNING: Retention cleanup encountered an error: ${(err as Error).message}`,
   );
   console.warn(
-    "[backup] The new backup was successfully uploaded. Review R2 manually to remove old files."
+    "[backup] The new backup was successfully uploaded. Review R2 manually to remove old files.",
   );
 }
 

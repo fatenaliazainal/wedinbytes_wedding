@@ -20,7 +20,8 @@ Script ini:
 3. Menghasilkan SQL plain-text dan memampatkannya dengan gzip.
 4. Upload fail `.sql.gz` ke private Cloudflare R2.
 5. Memadam fail sementara selepas upload berjaya.
-6. Menyimpan 8 backup terbaru di R2 dan membersihkan backup lama.
+6. Verify saiz object selepas upload.
+7. Menyimpan 30 backup terbaru di R2 dan membersihkan backup lama.
 
 Backup R2 disimpan di bawah prefix:
 
@@ -36,14 +37,17 @@ akan berhenti tanpa menghasilkan fail separa.
 
 Perkara berikut belum aktif:
 
-- GitHub Actions setiap hari pada 9:00 pagi waktu Malaysia.
-- GitHub `workflow_dispatch` untuk menjalankan backup secara manual.
+- GitHub Secrets production belum dimasukkan ke repository GitHub.
+- Manual run pertama dan restore test ke temporary database belum dibuat.
 - Fail `backups/backup-YYYY-MM-DD.sql` dalam repository.
 - Backup berasingan untuk fail media di R2.
 - Restore catalog secara satu klik.
 
-Maksudnya, sekarang backup boleh dijalankan secara manual melalui script
-production, tetapi ia belum berjalan automatik setiap hari.
+Workflow GitHub sudah ditambah dalam `.github/workflows/database-backup.yml`.
+Ia hanya akan berjalan selepas workflow berada di default branch dan semua
+GitHub Secrets yang diperlukan telah dikonfigurasi. Buat masa ini backup
+boleh dijalankan melalui script production atau manual workflow selepas
+konfigurasi tersebut lengkap.
 
 ## Apa yang diliputi oleh backup PostgreSQL
 
@@ -62,10 +66,9 @@ production, tetapi ia belum berjalan automatik setiap hari.
 - Site settings dan payment method configuration
 - Indexes, constraints, defaults dan sequence ID
 
-Backup semasa turut mengambil table operasi seperti `session` dan
-`rate_limit_hits` kerana script sekarang menggunakan full `pg_dump`.
-Kedua-duanya tidak diperlukan untuk pemulihan biasa dan boleh dikecualikan
-dalam penambahbaikan akan datang.
+Table operasi `session` dan `rate_limit_hits` dikecualikan kerana kedua-duanya
+ialah data sementara. User boleh login semula selepas restore dan rate limit
+counter tidak perlu dipulihkan.
 
 ## Apa yang tidak diliputi
 
@@ -177,18 +180,35 @@ Catalog-only restore yang lebih mudah boleh ditambah kemudian sebagai
 export/import khusus, tetapi ia mesti mengambil kira foreign key, sequence
 ID, serta hubungan antara design dan fail media R2.
 
-## GitHub Actions yang dirancang
+## GitHub Actions
 
-Jika automation GitHub ditambah kemudian, jadual Malaysia 9:00 pagi ialah:
+Automation GitHub menggunakan jadual Malaysia 5:00 pagi:
 
 ```yaml
 schedule:
-  - cron: "0 1 * * *"
+  - cron: "0 21 * * *"
 ```
 
-GitHub Actions boleh turut menyediakan `workflow_dispatch` untuk manual
-run. Namun, GitHub Actions schedule boleh lewat sedikit dan tidak patut
+Workflow juga menyediakan `workflow_dispatch` untuk manual run. Scheduled
+workflow perlu berada di default branch repository GitHub sebelum jadual
+automatiknya aktif. GitHub Actions boleh lewat sedikit dan tidak patut
 dianggap sebagai satu-satunya salinan backup.
+
+GitHub Actions memerlukan GitHub Secrets berikut:
+
+- `PRODUCTION_DATABASE_URL`
+- `CF_R2_ACCOUNT_ID`
+- `CF_R2_ACCESS_KEY_ID`
+- `CF_R2_SECRET_ACCESS_KEY`
+- `CF_R2_BACKUP_BUCKET_NAME`
+
+Secret production database perlu menunjuk ke database production yang betul,
+bukan development database.
+
+Gunakan database role khas yang hanya boleh membaca data backup dan tidak
+mempunyai hak `INSERT`, `UPDATE`, `DELETE`, `CREATE`, atau `DROP`. R2 access
+key untuk workflow perlu dihadkan kepada private backup bucket dan hanya
+mempunyai hak list, upload, read metadata, serta delete untuk prefix backup.
 
 Backup yang mengandungi data sebenar tidak patut disimpan sebagai SQL
 plain-text dalam Git history. Jika GitHub perlu digunakan:
@@ -201,4 +221,5 @@ plain-text dalam Git history. Jika GitHub perlu digunakan:
 - Tetapkan retention supaya repository tidak membesar tanpa had.
 
 Private R2 dengan encryption dan retention kekal lebih sesuai untuk fail
-backup sebenar; GitHub boleh digunakan untuk automation dan rekod backup.
+backup sebenar; GitHub digunakan untuk automation dan rekod run, bukan
+menyimpan SQL customer secara plain-text dalam Git history.
