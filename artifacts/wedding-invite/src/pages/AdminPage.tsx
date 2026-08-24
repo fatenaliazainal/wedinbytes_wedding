@@ -10,7 +10,7 @@ import {
   PaintBucket, Plus, CheckCircle2, Circle, Trash2, X, Upload,
   Pencil, Copy, Check, Star, MessageSquare,
   Search, ExternalLink, Ban, UserRound, DollarSign, ShoppingBag, Home, LogOut,
-  BarChart3, TrendingUp, CalendarDays, UserPlus, Shield, KeyRound, Users,
+  BarChart3, TrendingUp, CalendarDays, UserPlus, Shield, KeyRound, Users, Mail,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetActiveDesignQueryKey, getListDesignsQueryKey } from "@workspace/api-client-react";
@@ -27,7 +27,7 @@ import { resolveImageUrl } from "@/lib/r2-url";
 import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
 import { MusicUrlInput } from "@/components/MusicUrlInput";
 
-type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users" | "website";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users" | "emailblast" | "website";
 
 type RawCard = {
   id: number;
@@ -2628,6 +2628,193 @@ function UsersTab() {
   );
 }
 
+function EmailBlastTab() {
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [recipientCount, setRecipientCount] = useState<number | null>(null);
+  const [loadingRecipients, setLoadingRecipients] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BASE}/api/admin/email-blast/recipients`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error()))
+      .then((data) => setRecipientCount(Number(data.count) || 0))
+      .catch(() => toast.error("Failed to count email recipients."))
+      .finally(() => setLoadingRecipients(false));
+  }, []);
+
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${BASE}/api/admin/email-blast/image`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Image upload failed.");
+      setImageUrl(data.url);
+      toast.success("Image uploaded.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!subject.trim()) {
+      toast.error("Subject is required.");
+      return;
+    }
+    if (!content.trim()) {
+      toast.error("Content is required.");
+      return;
+    }
+    if (!recipientCount) {
+      toast.error("There are no eligible registered users.");
+      return;
+    }
+    if (!window.confirm(`Send this email to ${recipientCount} registered user${recipientCount === 1 ? "" : "s"}?`)) {
+      return;
+    }
+
+    setSending(true);
+    try {
+      const response = await fetch(`${BASE}/api/admin/email-blast/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ subject, content, imageUrl }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Email blast failed.");
+      toast.success(`Email blast complete: ${data.sent} sent, ${data.failed} failed.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Email blast failed.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl space-y-4">
+      <div>
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <Mail size={16} />
+          Email Blast
+        </h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Send an announcement to registered Buyer and Business Account users.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="mb-4 rounded-lg bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+          {loadingRecipients
+            ? "Counting eligible recipients…"
+            : `${recipientCount} registered recipient${recipientCount === 1 ? "" : "s"} will receive this email.`}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="email-blast-subject" className="mb-1 block text-xs font-medium">Subject *</label>
+            <input
+              id="email-blast-subject"
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              maxLength={200}
+              placeholder="e.g. New features at Wedinstudio"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">{subject.length}/200</p>
+          </div>
+
+          <div>
+            <label htmlFor="email-blast-image" className="mb-1 block text-xs font-medium">Image (optional)</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+              >
+                <Upload size={13} />
+                {uploadingImage ? "Uploading…" : "Choose File"}
+              </button>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void handleImageUpload(file);
+                  event.target.value = "";
+                }}
+              />
+              <input
+                id="email-blast-image"
+                value={imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                placeholder="or paste an https:// image URL"
+                className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            {imageUrl && (
+              <div className="relative mt-3 h-32 overflow-hidden rounded-lg border border-border bg-muted">
+                <img src={imageUrl} alt="Email banner preview" className="h-full w-full object-contain" />
+                <button
+                  type="button"
+                  onClick={() => setImageUrl("")}
+                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
+                  aria-label="Remove image"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="email-blast-content" className="mb-1 block text-xs font-medium">Content *</label>
+            <textarea
+              id="email-blast-content"
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              maxLength={10_000}
+              rows={10}
+              placeholder="Write your announcement here…"
+              className="w-full resize-y rounded-lg border border-border bg-background px-3 py-2.5 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">{content.length}/10,000 · Line breaks will be preserved.</p>
+          </div>
+
+          <div className="flex items-center justify-end border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={() => void handleSend()}
+              disabled={sending || uploadingImage || loadingRecipients || !recipientCount}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {sending ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+              {sending ? "Sending…" : "Send Email Blast"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CustomersTab() {
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [search, setSearch] = useState("");
@@ -3370,7 +3557,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["website", "Website"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["emailblast", "Email Blast"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["website", "Website"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -3394,6 +3581,7 @@ export default function AdminPage() {
       {tab === "orders" && <OrdersTab />}
       {tab === "revenue" && <RevenueTab />}
       {tab === "users" && <UsersTab />}
+      {tab === "emailblast" && <EmailBlastTab />}
       {tab === "website" && <SiteSettingsTab />}
       </div>
     </div>

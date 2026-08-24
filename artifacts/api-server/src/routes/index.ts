@@ -16,6 +16,7 @@ import giftRegistryRouter from "./gift-registry";
 import siteSettingsRouter from "./site-settings";
 import ogImageRouter from "./og-image";
 import musicRouter from "./music";
+import emailBlastRouter from "./email-blast";
 
 const router: IRouter = Router();
 
@@ -36,5 +37,6 @@ router.use(giftRegistryRouter);
 router.use(siteSettingsRouter);
 router.use(ogImageRouter);
 router.use(musicRouter);
+router.use(emailBlastRouter);
 
 export default router;

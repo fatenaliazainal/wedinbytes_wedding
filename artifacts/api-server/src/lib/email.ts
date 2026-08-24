@@ -142,7 +142,7 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
   try {
     const { error } = await resend.emails.send({
       from: "Wedinstudio <noreply@wedinstudio.com>",
-      reply_to: "noreply@wedinstudio.com",
+      replyTo: "noreply@wedinstudio.com",
       to: [to],
       subject: `You've Received a New RSVP — ${guestName}`,
       html: htmlBody,
@@ -153,6 +153,66 @@ export async function sendRsvpNotification(payload: RsvpNotificationPayload): Pr
     }
   } catch (err) {
     console.error("[email] Failed to send RSVP notification:", err);
+  }
+}
+
+export interface AdminEmailBlastPayload {
+  to: string;
+  subject: string;
+  content: string;
+  imageUrl?: string | null;
+}
+
+function buildAdminBlastHtml(payload: AdminEmailBlastPayload) {
+  const image = payload.imageUrl
+    ? `<img src="${esc(payload.imageUrl)}" alt="" style="display:block;width:100%;max-width:600px;height:auto;margin:0 auto 28px;border-radius:8px;" />`
+    : "";
+  const content = esc(payload.content).replace(/\r?\n/g, "<br />");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 0;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td style="background:#3d5a3e;padding:28px 32px;">
+          <p style="margin:0;font-size:11px;letter-spacing:2px;color:#a8c5a0;text-transform:uppercase;">Wedinstudio</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          ${image}
+          <div style="font-size:16px;line-height:1.7;color:#333;">${content}</div>
+        </td></tr>
+        <tr><td style="background:#f7f7f5;padding:20px 32px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#999;">Wedinstudio · Digital Wedding Invitations</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendAdminEmailBlast(payload: AdminEmailBlastPayload): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
+
+  const imageUrl = payload.imageUrl
+    ? payload.imageUrl.startsWith("/")
+      ? `${SITE_URL}${payload.imageUrl}`
+      : payload.imageUrl
+    : null;
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: "Wedinstudio <noreply@wedinstudio.com>",
+    replyTo: "noreply@wedinstudio.com",
+    to: [payload.to],
+    subject: payload.subject,
+    html: buildAdminBlastHtml({ ...payload, imageUrl }),
+    text: payload.content,
+  });
+  if (error) {
+    throw new Error(error.message || "Resend rejected the email.");
   }
 }
 
