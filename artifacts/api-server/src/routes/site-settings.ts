@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, siteSettingsTable } from "@workspace/db";
-import type { QuickLink, SocialLink, FaqCategory, TermsSection } from "@workspace/db";
+import type { QuickLink, SocialLink, FaqCategory, FreebieCategory, TermsSection } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "../lib/security";
 
@@ -111,6 +111,33 @@ const DEFAULT_CONTACT = {
   contactHours:    "Monday – Friday, 9:00 AM – 6:00 PM",
 };
 
+const MAX_FREEBIE_CATEGORIES = 20;
+const MAX_FREEBIES_PER_CATEGORY = 30;
+const MAX_FREEBIE_CATEGORY_LENGTH = 120;
+const MAX_FREEBIE_TITLE_LENGTH = 200;
+const MAX_FREEBIE_TEXT_LENGTH = 10_000;
+
+function isValidFreebieItems(value: unknown): value is FreebieCategory[] {
+  return Array.isArray(value)
+    && value.length <= MAX_FREEBIE_CATEGORIES
+    && value.every((category) =>
+      typeof category === "object"
+      && category !== null
+      && typeof category.category === "string"
+      && category.category.length <= MAX_FREEBIE_CATEGORY_LENGTH
+      && Array.isArray(category.items)
+      && category.items.length <= MAX_FREEBIES_PER_CATEGORY
+      && category.items.every((item) =>
+        typeof item === "object"
+        && item !== null
+        && typeof item.title === "string"
+        && item.title.length <= MAX_FREEBIE_TITLE_LENGTH
+        && typeof item.text === "string"
+        && item.text.length <= MAX_FREEBIE_TEXT_LENGTH,
+      ),
+    );
+}
+
 async function getOrCreate() {
   const rows = await db.select().from(siteSettingsTable).limit(1);
   if (rows.length === 0) {
@@ -120,6 +147,7 @@ async function getOrCreate() {
         quickLinks:    DEFAULT_QUICK_LINKS,
         socialLinks:   DEFAULT_SOCIAL_LINKS,
         faqItems:      DEFAULT_FAQ_ITEMS,
+        freebieItems:  [],
         termsSections: DEFAULT_TERMS_SECTIONS,
         ...DEFAULT_CONTACT,
       })
@@ -132,6 +160,7 @@ async function getOrCreate() {
   if (!row.quickLinks?.length)    patch.quickLinks    = DEFAULT_QUICK_LINKS;
   if (!row.socialLinks?.length)   patch.socialLinks   = DEFAULT_SOCIAL_LINKS;
   if (!row.faqItems?.length)      patch.faqItems      = DEFAULT_FAQ_ITEMS;
+  if (!isValidFreebieItems(row.freebieItems)) patch.freebieItems = [];
   if (!row.termsSections?.length) patch.termsSections = DEFAULT_TERMS_SECTIONS;
   if (!row.contactWhatsapp)       patch.contactWhatsapp = DEFAULT_CONTACT.contactWhatsapp;
   if (!row.contactEmail)          patch.contactEmail    = DEFAULT_CONTACT.contactEmail;
@@ -151,7 +180,10 @@ async function getOrCreate() {
 router.get("/site-settings", async (_req, res) => {
   try {
     const settings = await getOrCreate();
-    res.json(settings);
+    res.json({
+      ...settings,
+      freebieItems: isValidFreebieItems(settings.freebieItems) ? settings.freebieItems : [],
+    });
   } catch {
     res.status(500).json({ error: "Failed to load site settings" });
   }
@@ -161,12 +193,13 @@ router.get("/site-settings", async (_req, res) => {
 router.patch("/site-settings", requireAdmin, async (req, res) => {
   try {
     const {
-      quickLinks, socialLinks, faqItems, termsSections,
+      quickLinks, socialLinks, faqItems, freebieItems, termsSections,
       contactWhatsapp, contactEmail, contactCompany, contactRegNo, contactHours,
     } = req.body as {
       quickLinks?:       QuickLink[];
       socialLinks?:      SocialLink[];
       faqItems?:         FaqCategory[];
+      freebieItems?:     FreebieCategory[];
       termsSections?:    TermsSection[];
       contactWhatsapp?:  string;
       contactEmail?:     string;
@@ -174,11 +207,16 @@ router.patch("/site-settings", requireAdmin, async (req, res) => {
       contactRegNo?:     string;
       contactHours?:     string;
     };
+    if (freebieItems !== undefined && !isValidFreebieItems(freebieItems)) {
+      res.status(400).json({ error: "Invalid FREEBIES content" });
+      return;
+    }
     const settings = await getOrCreate();
     const patch: Record<string, unknown> = { updatedAt: new Date() };
     if (quickLinks        !== undefined) patch.quickLinks        = quickLinks;
     if (socialLinks       !== undefined) patch.socialLinks       = socialLinks;
     if (faqItems          !== undefined) patch.faqItems          = faqItems;
+    if (freebieItems      !== undefined) patch.freebieItems      = freebieItems;
     if (termsSections     !== undefined) patch.termsSections     = termsSections;
     if (contactWhatsapp   !== undefined) patch.contactWhatsapp   = contactWhatsapp;
     if (contactEmail      !== undefined) patch.contactEmail      = contactEmail;

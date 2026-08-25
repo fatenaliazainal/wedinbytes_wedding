@@ -3335,14 +3335,17 @@ type QuickLink    = { label: string; url: string };
 type SocialLink   = { platform: string; icon: string; url: string; enabled: boolean };
 type FaqItem      = { question: string; answer: string };
 type FaqCategory  = { category: string; items: FaqItem[] };
+  type FreebieItem  = { title: string; text: string };
+  type FreebieCategory = { category: string; items: FreebieItem[] };
 type TermsSection = { title: string; body: string };
-type SiteSection  = "links" | "faq" | "terms" | "contact";
+  type SiteSection  = "links" | "faq" | "freebies" | "terms" | "contact";
 
 function SiteSettingsTab() {
   const [section, setSection] = useState<SiteSection>("links");
   const [quickLinks,        setQuickLinks]        = useState<QuickLink[]>([]);
   const [socialLinks,       setSocialLinks]       = useState<SocialLink[]>([]);
   const [faqItems,          setFaqItems]          = useState<FaqCategory[]>([]);
+  const [freebieItems,      setFreebieItems]      = useState<FreebieCategory[]>([]);
   const [termsSections,     setTermsSections]     = useState<TermsSection[]>([]);
   const [contactWhatsapp,   setContactWhatsapp]   = useState("");
   const [contactEmail,      setContactEmail]      = useState("");
@@ -3359,13 +3362,14 @@ function SiteSettingsTab() {
       if (r.ok) {
         const d = await r.json() as {
           quickLinks: QuickLink[]; socialLinks: SocialLink[];
-          faqItems: FaqCategory[]; termsSections: TermsSection[];
+          faqItems: FaqCategory[]; freebieItems: FreebieCategory[]; termsSections: TermsSection[];
           contactWhatsapp: string; contactEmail: string;
           contactCompany: string; contactRegNo: string; contactHours: string;
         };
         setQuickLinks(d.quickLinks ?? []);
         setSocialLinks(d.socialLinks ?? []);
         setFaqItems(d.faqItems ?? []);
+        setFreebieItems(d.freebieItems ?? []);
         setTermsSections(d.termsSections ?? []);
         setContactWhatsapp(d.contactWhatsapp ?? "");
         setContactEmail(d.contactEmail ?? "");
@@ -3384,7 +3388,7 @@ function SiteSettingsTab() {
       const r = await fetch(`${BASE}/api/site-settings`, {
         method: "PATCH", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quickLinks, socialLinks, faqItems, termsSections, contactWhatsapp, contactEmail, contactCompany, contactRegNo, contactHours }),
+        body: JSON.stringify({ quickLinks, socialLinks, faqItems, freebieItems, termsSections, contactWhatsapp, contactEmail, contactCompany, contactRegNo, contactHours }),
       });
       if (r.ok) toast.success("Site settings saved");
       else toast.error("Failed to save settings");
@@ -3415,6 +3419,20 @@ function SiteSettingsTab() {
   const removeFaqItem     = (ci: number, ii: number) =>
     setFaqItems(p => p.map((c, i) => i === ci ? { ...c, items: c.items.filter((_, j) => j !== ii) } : c));
 
+  // ── FREEBIES helpers ────────────────────────────────────────────────────────
+  const addFreebieCategory    = () => setFreebieItems(p => [...p, { category: "New Category", items: [] }]);
+  const updateFreebieCategory = (ci: number, v: string) =>
+    setFreebieItems(p => p.map((c, i) => i === ci ? { ...c, category: v } : c));
+  const removeFreebieCategory = (ci: number) => setFreebieItems(p => p.filter((_, i) => i !== ci));
+  const addFreebieItem        = (ci: number) =>
+    setFreebieItems(p => p.map((c, i) => i === ci ? { ...c, items: [...c.items, { title: "", text: "" }] } : c));
+  const updateFreebieItem     = (ci: number, ii: number, f: keyof FreebieItem, v: string) =>
+    setFreebieItems(p => p.map((c, i) => i === ci
+      ? { ...c, items: c.items.map((item, j) => j === ii ? { ...item, [f]: v } : item) }
+      : c));
+  const removeFreebieItem     = (ci: number, ii: number) =>
+    setFreebieItems(p => p.map((c, i) => i === ci ? { ...c, items: c.items.filter((_, j) => j !== ii) } : c));
+
   // ── Terms helpers ────────────────────────────────────────────────────────────
   const addTermsSection    = () => setTermsSections(p => [...p, { title: "", body: "" }]);
   const updateTermsSection = (i: number, f: keyof TermsSection, v: string) =>
@@ -3438,6 +3456,7 @@ function SiteSettingsTab() {
       <div className="flex gap-2">
         <button className={subBtnCls(section === "links")}   onClick={() => setSection("links")}>Footer Links</button>
         <button className={subBtnCls(section === "faq")}     onClick={() => setSection("faq")}>FAQ</button>
+        <button className={subBtnCls(section === "freebies")} onClick={() => setSection("freebies")}>FREEBIES</button>
         <button className={subBtnCls(section === "terms")}   onClick={() => setSection("terms")}>Terms &amp; Conditions</button>
         <button className={subBtnCls(section === "contact")} onClick={() => setSection("contact")}>Contact Us</button>
       </div>
@@ -3529,6 +3548,48 @@ function SiteSettingsTab() {
             </div>
           ))}
           {faqItems.length === 0 && <p className="text-xs text-muted-foreground">No FAQ categories yet. Click "Add category" to start.</p>}
+        </div>
+      )}
+
+      {/* ── FREEBIES section ─────────────────────────────────────────────────── */}
+      {section === "freebies" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Share free content such as invitation wording and template ideas. Changes appear on the public FREEBIES page after saving.</p>
+            <button onClick={addFreebieCategory} className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0 ml-4">
+              <Plus size={13} /> Add category
+            </button>
+          </div>
+          {freebieItems.map((cat, ci) => (
+            <div key={ci} className="border border-border rounded-lg p-4 space-y-3">
+              <div className="flex gap-2 items-center">
+                <input value={cat.category} onChange={e => updateFreebieCategory(ci, e.target.value)}
+                  placeholder="Category name (e.g. Ayat Jemputan)"
+                  className={`flex-1 font-semibold ${inputCls}`} />
+                <button onClick={() => removeFreebieCategory(ci)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={14} /></button>
+              </div>
+              <div className="space-y-3 pl-2 border-l-2 border-border ml-1">
+                {cat.items.map((item, ii) => (
+                  <div key={ii} className="space-y-1.5">
+                    <div className="flex gap-2 items-center">
+                      <input value={item.title} onChange={e => updateFreebieItem(ci, ii, "title", e.target.value)}
+                        placeholder="Freebie title"
+                        className={`flex-1 ${inputCls}`} />
+                      <button onClick={() => removeFreebieItem(ci, ii)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 size={13} /></button>
+                    </div>
+                    <textarea value={item.text} onChange={e => updateFreebieItem(ci, ii, "text", e.target.value)}
+                      placeholder="Freebie text (use new lines for longer wording)"
+                      rows={4}
+                      className={`resize-y ${inputCls}`} />
+                  </div>
+                ))}
+                <button onClick={() => addFreebieItem(ci)} className="flex items-center gap-1 text-xs text-primary hover:underline">
+                  <Plus size={12} /> Add freebie
+                </button>
+              </div>
+            </div>
+          ))}
+          {freebieItems.length === 0 && <p className="text-xs text-muted-foreground">No freebies yet. Click "Add category" to start.</p>}
         </div>
       )}
 

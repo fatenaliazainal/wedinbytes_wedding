@@ -4,6 +4,8 @@ export type QuickLink    = { label: string; url: string };
 export type SocialLink   = { platform: string; icon: string; url: string; enabled: boolean };
 export type FaqItem      = { question: string; answer: string };
 export type FaqCategory  = { category: string; items: FaqItem[] };
+export type FreebieItem     = { title: string; text: string };
+export type FreebieCategory = { category: string; items: FreebieItem[] };
 export type TermsSection = { title: string; body: string };
 
 export const siteSettingsTable = pgTable("site_settings", {
@@ -11,6 +13,7 @@ export const siteSettingsTable = pgTable("site_settings", {
   quickLinks:       json("quick_links").$type<QuickLink[]>().notNull().default([]),
   socialLinks:      json("social_links").$type<SocialLink[]>().notNull().default([]),
   faqItems:         json("faq_items").$type<FaqCategory[]>().notNull().default([]),
+  freebieItems:     json("freebie_items").$type<FreebieCategory[]>().notNull().default([]),
   termsSections:    json("terms_sections").$type<TermsSection[]>().notNull().default([]),
   contactWhatsapp:  text("contact_whatsapp").notNull().default(""),
   contactEmail:     text("contact_email").notNull().default(""),

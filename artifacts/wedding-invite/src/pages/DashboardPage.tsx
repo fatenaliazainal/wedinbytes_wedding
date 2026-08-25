@@ -758,6 +758,7 @@ export default function DashboardPage() {
     { label: "FAQs",       href: "/faq" },
     { label: "REVIEWS",    href: "/reviews" },
     { label: "FOR BUSINESS", href: "/for-business" },
+    { label: "FREEBIES", href: "/freebies" },
   ];
 
   const hasPaidInvitation = invitations.some(i => i.isPurchased);

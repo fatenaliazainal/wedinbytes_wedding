@@ -23,6 +23,7 @@ import RsvpPublicPage from "@/pages/RsvpPublicPage";
 import MarketingHomePage from "@/pages/MarketingHomePage";
 import PriceListPage from "@/pages/PriceListPage";
 import FaqPage from "@/pages/FaqPage";
+import FreebiesPage from "@/pages/FreebiesPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 import Page2DesignGuidePage from "@/pages/Page2DesignGuidePage";
 import BusinessDashboardPage from "@/pages/BusinessDashboardPage";
@@ -160,6 +161,7 @@ function Router() {
       <Route path="/weddingcards/home/:slug" component={WeddingCardDetailPage} />
       <Route path="/pricing" component={PriceListPage} />
       <Route path="/faq" component={FaqPage} />
+      <Route path="/freebies" component={FreebiesPage} />
       <Route path="/reviews" component={ReviewsPage} />
       <Route path="/page-2-design-guide" component={Page2DesignGuidePage} />
       <Route path="/invite/:dateCode/:slug" component={PublicInvitationRoute} />
