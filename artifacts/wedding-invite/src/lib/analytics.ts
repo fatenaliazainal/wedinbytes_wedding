@@ -6,6 +6,7 @@ declare global {
   interface Window {
     dataLayer: unknown[];
     gtag?: Gtag;
+    __ga4Configured?: boolean;
   }
 }
 
@@ -29,8 +30,11 @@ export function initGoogleAnalytics() {
     document.head.appendChild(script);
   }
 
-  window.gtag("js", new Date());
-  window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
+  if (!window.__ga4Configured) {
+    window.gtag("js", new Date());
+    window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
+    window.__ga4Configured = true;
+  }
   initialized = true;
 }
 
