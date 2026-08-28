@@ -56,6 +56,7 @@ import { extractYouTubeId } from "@/lib/youtube";
 export default function InvitationPage() {
   const { token, dateCode, slug } = useParams<{ token?: string; dateCode?: string; slug?: string }>();
   const [, navigate] = useLocation();
+  const initialsImageCacheBust = useRef(Date.now()).current;
   const [publicToken, setPublicToken] = useState<string | null>(null);
   const isPublicPath = Boolean(dateCode && slug);
   useEffect(() => {
@@ -598,7 +599,10 @@ export default function InvitationPage() {
     : "A & H";
   const envelopeInitials = (invitationRecord?.envelopeInitials as string | undefined)?.trim() || "";
   const envelopeInitialsSize = (invitationRecord?.envelopeInitialsSize as string | undefined)?.trim() || "";
-  const initialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
+  const resolvedInitialsImageUrl = resolveImageUrl((invitationRecord?.initialsImageUrl as string | undefined) || "");
+  const initialsImageUrl = resolvedInitialsImageUrl
+    ? `${resolvedInitialsImageUrl}&t=${initialsImageCacheBust}`
+    : "";
 
   const initialsImageScale = Number(invitationRecord?.initialsImageScale) || 100;
 
