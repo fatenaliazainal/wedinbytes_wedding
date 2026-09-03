@@ -908,7 +908,6 @@ export function WeddingCard({ invitation, cardImageUrl, envelopeImageUrl, cardMa
               {invitation.venueAddress && (
                 <p className="text-xs text-foreground/70 leading-relaxed" style={{ fontFamily: bodyFontFamily }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation.venueAddress) }} />
               )}
-              <p className="text-xs text-foreground/60" style={{ fontFamily: bodyFontFamily }}>{invitation.venueCity}, {invitation.venueState}</p>
             </div>
           </div>
           </RevealOnScroll>

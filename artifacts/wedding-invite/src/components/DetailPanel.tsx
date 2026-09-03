@@ -191,9 +191,6 @@ function LokasiPanel({ invitation }: { invitation?: Invitation }) {
         <p className="text-[11px] text-primary/70" style={{ fontFamily: bodyFont }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(invitation?.venueAddress) }}
         />
-        <p className="text-[11px] text-primary/70" style={{ fontFamily: bodyFont }}>
-          {invitation?.venueCity}, {invitation?.venueState}
-        </p>
       </div>
       {(mapsUrl || wazeUrl) && (
         <div className="flex items-center justify-center gap-2.5 pt-1">
