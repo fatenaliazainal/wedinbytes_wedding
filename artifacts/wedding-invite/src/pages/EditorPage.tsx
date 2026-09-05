@@ -2730,7 +2730,13 @@ export default function EditorPage({
                   <input
                     className={inputCls}
                     value={inv.dresscodeTheme}
-                    onChange={(e) => setI("dresscodeTheme")(e.target.value)}
+                    onChange={(e) =>
+                      setInv((current) => ({
+                        ...current,
+                        dresscode: "",
+                        dresscodeTheme: e.target.value,
+                      }))
+                    }
                     placeholder="Contoh: Melayu Klasik, Corporate"
                     maxLength={120}
                     data-testid="input-dresscode-theme"

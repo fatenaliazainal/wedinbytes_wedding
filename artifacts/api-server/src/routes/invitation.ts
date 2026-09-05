@@ -410,6 +410,7 @@ router.patch("/invitation/:token", async (req, res) => {
     const requestedPackageId = "packageId" in body
       ? (body.packageId == null || body.packageId === "" ? null : Number(body.packageId))
       : (rows[0].packageId ?? null);
+    const currentPackageId = rows[0].packageId ?? null;
     const effectivePackage = { packageId: requestedPackageId };
     if ("dresscodeTheme" in body) {
       if (body.dresscodeTheme != null && (typeof body.dresscodeTheme !== "string" || body.dresscodeTheme.trim().length > 120)) {
@@ -474,7 +475,6 @@ router.patch("/invitation/:token", async (req, res) => {
       && req.session.role !== "admin"
       && "packageId" in body
     ) {
-      const currentPackageId = rows[0].packageId ?? null;
       if (!Number.isInteger(requestedPackageId) || requestedPackageId !== currentPackageId) {
         res.status(409).json({
           error: isPaid
@@ -486,6 +486,12 @@ router.patch("/invitation/:token", async (req, res) => {
         return;
       }
     }
+    const shouldClearDressCodeForPackageDowngrade =
+      req.session.role !== "admin"
+      && "packageId" in body
+      && requestedPackageId !== currentPackageId
+      && await invitationHasFeature({ packageId: currentPackageId }, "Dress Code")
+      && !(await invitationHasFeature(effectivePackage, "Dress Code"));
 
     // Build update object from allowed fields only
     const update: Record<string, unknown> = {};
@@ -511,6 +517,11 @@ router.patch("/invitation/:token", async (req, res) => {
         }
         update[field] = value;
       }
+    }
+    if (shouldClearDressCodeForPackageDowngrade) {
+      update.dresscode = null;
+      update.dresscodeTheme = null;
+      update.dresscodeColors = [];
     }
 
     if (Object.keys(update).length === 0) {
