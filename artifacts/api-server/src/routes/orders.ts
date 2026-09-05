@@ -512,6 +512,53 @@ router.patch("/admin/users/:id/role", async (req, res) => {
   res.json(updated);
 });
 
+router.get("/admin/pending-websites", async (req, res) => {
+  if (!adminGuard(req, res)) return;
+  try {
+    const [users, invitations, orders] = await Promise.all([
+      db
+        .select({ id: userTable.id, name: userTable.name, email: userTable.email, role: userTable.role })
+        .from(userTable),
+      db.select().from(invitationTable),
+      db.select({ invitationId: orderTable.invitationId, paymentStatus: orderTable.paymentStatus }).from(orderTable),
+    ]);
+    const buyersById = new Map(
+      users
+        .filter((user) => user.role === "buyer")
+        .map((user) => [user.id, user]),
+    );
+    const paidInvitationIds = new Set(
+      orders
+        .filter((order) => order.paymentStatus === "PAID" && order.invitationId !== null)
+        .map((order) => order.invitationId as number),
+    );
+    const pendingWebsites = invitations
+      .filter((invitation) =>
+        invitation.userId !== null
+        && buyersById.has(invitation.userId)
+        && !invitation.isPurchased
+        && !paidInvitationIds.has(invitation.id)
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map((invitation) => ({
+        id: invitation.id,
+        token: invitation.token,
+        eventDate: invitation.eventDate,
+        groomName: invitation.groomName,
+        brideName: invitation.brideName,
+        coverGroomName: invitation.coverGroomName,
+        coverBrideName: invitation.coverBrideName,
+        lockedSlug: invitation.lockedSlug,
+        lockedDateCode: invitation.lockedDateCode,
+        user: buyersById.get(invitation.userId as number),
+      }));
+    res.json(pendingWebsites);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list pending Buyer websites");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ── Admin user management ────────────────────────────────────────────────────
 
 router.get("/admin/users", async (req, res) => {

@@ -27,7 +27,7 @@ import { resolveImageUrl } from "@/lib/r2-url";
 import { DESIGN_COLORS, DESIGN_CATEGORIES } from "@/lib/design-filter-constants";
 import { MusicUrlInput } from "@/components/MusicUrlInput";
 
-type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "customers" | "revenue" | "waxseals" | "users" | "emailblast" | "website";
+type Tab = "designs" | "reviews" | "demo" | "pricing" | "orders" | "pending" | "customers" | "revenue" | "waxseals" | "users" | "emailblast" | "website";
 
 type RawCard = {
   id: number;
@@ -96,6 +96,19 @@ type AdminCustomer = {
   totalOrders: number;
   totalPaid: number;
   websites: Array<{ id: number; token: string; websiteStatus: string; brideName: string; groomName: string }>;
+};
+
+type PendingWebsite = {
+  id: number;
+  token: string;
+  eventDate: string;
+  groomName: string;
+  brideName: string;
+  coverGroomName?: string | null;
+  coverBrideName?: string | null;
+  lockedSlug?: string | null;
+  lockedDateCode?: string | null;
+  user: { id: number; name: string; email: string };
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -2453,6 +2466,86 @@ function OrdersTab() {
   );
 }
 
+function PendingTab() {
+  const [websites, setWebsites] = useState<PendingWebsite[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${BASE}/api/admin/pending-websites`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setWebsites)
+      .catch(() => toast.error("Failed to load pending websites."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      {loading ? (
+        <div className="py-16 text-center text-sm text-muted-foreground">Loading pending websites…</div>
+      ) : websites.length === 0 ? (
+        <div className="py-16 text-center">
+          <ExternalLink size={28} className="mx-auto mb-3 text-muted-foreground/50" />
+          <p className="text-sm font-medium">No unpaid Buyer websites</p>
+        </div>
+      ) : (
+        <table className="w-full min-w-[720px] text-left text-xs">
+          <thead className="border-b border-border bg-muted/40 text-[10px] text-muted-foreground">
+            <tr>
+              {["User", "Website Link", "Event Date"].map((heading) => (
+                <th key={heading} className="px-3 py-2 font-medium">{heading}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {websites.map((website) => {
+              const websitePath = publicInvitePathOrToken(website);
+              const coupleName = [
+                website.coverGroomName || website.groomName,
+                website.coverBrideName || website.brideName,
+              ].filter(Boolean).join(" & ");
+              return (
+                <tr key={website.id} className="hover:bg-muted/40">
+                  <td className="px-3 py-2.5">
+                    <p className="font-medium">{website.user.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{website.user.email}</p>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    {websitePath ? (
+                      <a
+                        href={websitePath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                      >
+                        {coupleName || "Open website"}
+                        <ExternalLink size={11} />
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">Link unavailable</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">
+                    {website.eventDate
+                      ? new Date(`${website.eventDate}T00:00:00`).toLocaleDateString("ms-MY", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "Not set"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 function UsersTab() {
   type UserRow = { id: number; name: string; email: string; role: string; createdAt: string; totalOrders: number; totalPaid: number; websites: number };
   type FormState = { name: string; email: string; role: string; password: string };
@@ -3740,7 +3833,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border overflow-x-auto">
-        {([["orders", "Orders"], ["revenue", "Revenue"], ["users", "Users"], ["emailblast", "Email Blast"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["website", "Website"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
+        {([["orders", "Orders"], ["pending", "PENDING"], ["revenue", "Revenue"], ["users", "Users"], ["emailblast", "Email Blast"], ["designs", "Card Designs"], ["waxseals", "Wax Seals"], ["reviews", "Reviews"], ["pricing", "Pricing"], ["website", "Website"], ["demo", "Live Demo"]] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -3762,6 +3855,7 @@ export default function AdminPage() {
       {tab === "reviews" && <ReviewsTab />}
       {tab === "pricing" && <PricingTab />}
       {tab === "orders" && <OrdersTab />}
+      {tab === "pending" && <PendingTab />}
       {tab === "revenue" && <RevenueTab />}
       {tab === "users" && <UsersTab />}
       {tab === "emailblast" && <EmailBlastTab />}
