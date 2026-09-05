@@ -184,6 +184,56 @@ router.get("/rsvp/public/:token", tokenLookupRateLimit, async (req, res) => {
   }
 });
 
+router.delete("/rsvp/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      res.status(400).json({ error: "Invalid RSVP response." });
+      return;
+    }
+
+    const [rsvp] = await db
+      .select()
+      .from(rsvpTable)
+      .where(eq(rsvpTable.id, id))
+      .limit(1);
+    if (!rsvp) {
+      res.status(404).json({ error: "RSVP response not found." });
+      return;
+    }
+
+    const [invitation] = await db
+      .select()
+      .from(invitationTable)
+      .where(eq(invitationTable.token, rsvp.invitationToken))
+      .limit(1);
+    if (!invitation) {
+      res.status(404).json({ error: "Invitation not found." });
+      return;
+    }
+    if (!(await canManageInvitation(req, invitation))) {
+      res.status(403).json({ error: "You cannot delete this RSVP response." });
+      return;
+    }
+
+    await db
+      .delete(rsvpTable)
+      .where(and(
+        eq(rsvpTable.id, id),
+        eq(rsvpTable.invitationToken, invitation.token),
+      ));
+
+    auditEvent(req, "rsvp.delete", {
+      invitationTokenHint: invitation.token.slice(0, 4) + "…",
+      rsvpId: id,
+    });
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete RSVP");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/rsvp", rsvpSubmitRateLimit, async (req, res) => {
   try {
     const body = CreateRsvpBody.safeParse(req.body);

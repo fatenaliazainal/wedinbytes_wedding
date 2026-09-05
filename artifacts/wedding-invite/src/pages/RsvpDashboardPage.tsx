@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Download, LogOut, Users } from "lucide-react";
+import { ArrowLeft, Download, LogOut, Trash2, Users } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -35,6 +35,7 @@ export default function RsvpDashboardPage() {
   const [selectedToken, setSelectedToken] = useState("");
   const [loading, setLoading] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
+  const [deletingRsvpId, setDeletingRsvpId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -81,6 +82,32 @@ export default function RsvpDashboardPage() {
     link.download = `rsvp-${selectedCard.groomName}-${selectedCard.brideName}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const deleteRsvp = async (rsvp: Rsvp) => {
+    if (!selectedCard || !window.confirm(`Delete RSVP response from ${rsvp.name}? This cannot be undone.`)) {
+      return;
+    }
+    setDeletingRsvpId(rsvp.id);
+    try {
+      const response = await fetch(`${BASE}/api/rsvp/${rsvp.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(result?.error || "Failed to delete RSVP response.");
+      }
+      setCards((current) => current.map((card) =>
+        card.token === selectedCard.token
+          ? { ...card, rsvps: card.rsvps.filter((item) => item.id !== rsvp.id) }
+          : card
+      ));
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete RSVP response.");
+    } finally {
+      setDeletingRsvpId(null);
+    }
   };
 
   const navItems: SiteNavItem[] = [
@@ -132,7 +159,7 @@ export default function RsvpDashboardPage() {
                 <Users size={20} className="text-gray-400" />
               </div>
               <div className="grid grid-cols-3 gap-2 py-5 text-center text-sm"><div><b>{totals.attending}</b><p className="text-xs text-gray-500">Attending</p></div><div><b>{totals.notAttending}</b><p className="text-xs text-gray-500">Not attending</p></div><div><b>{totals.guests}</b><p className="text-xs text-gray-500">Total guests</p></div></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b text-xs text-gray-500"><th className="py-2">Guest</th><th>Status</th><th>Guests</th><th>Message</th></tr></thead><tbody>{selectedCard?.rsvps.map((rsvp) => <tr key={rsvp.id} className="border-b border-gray-50"><td className="py-3 font-medium">{rsvp.name}</td><td>{rsvp.attending ? "Attending" : "Not attending"}</td><td>{rsvp.numberOfGuests}</td><td className="max-w-[220px] truncate">{rsvp.message || "—"}</td></tr>)}</tbody></table>{selectedCard?.rsvps.length === 0 && <p className="py-8 text-center text-sm text-gray-400">No RSVP responses yet.</p>}</div>
+              <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead><tr className="border-b text-xs text-gray-500"><th className="py-2">Guest</th><th>Status</th><th>Guests</th><th>Message</th><th className="text-right">Action</th></tr></thead><tbody>{selectedCard?.rsvps.map((rsvp) => <tr key={rsvp.id} className="border-b border-gray-50"><td className="py-3 font-medium">{rsvp.name}</td><td>{rsvp.attending ? "Attending" : "Not attending"}</td><td>{rsvp.numberOfGuests}</td><td className="max-w-[220px] truncate">{rsvp.message || "—"}</td><td className="text-right"><button type="button" onClick={() => deleteRsvp(rsvp)} disabled={deletingRsvpId === rsvp.id} className="inline-flex items-center justify-center rounded p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" aria-label={`Delete RSVP from ${rsvp.name}`} title="Delete RSVP"><Trash2 size={16} /></button></td></tr>)}</tbody></table>{selectedCard?.rsvps.length === 0 && <p className="py-8 text-center text-sm text-gray-400">No RSVP responses yet.</p>}</div>
             </section>
           </div>
         )}
