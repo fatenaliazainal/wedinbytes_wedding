@@ -19,5 +19,10 @@ Use `autoplay: 1, mute: 1` in YT.Player playerVars, then call `unMute()` + `setV
 - `onReady` with tap pending → same `unMute()` + `setVolume(100)` + `playVideo()`
 - `YTPlayerInstance` interface must include `setVolume(volume: number): void`
 - No separate iOS mini-player needed
+- The global `onYouTubeIframeAPIReady` callback must belong only to the current invitation; never chain a previous invitation callback, and remove it on cleanup if still current.
+
+**Why:** When navigation changes invitations while the YouTube API is still loading, chaining callbacks lets the old invitation create the shared player first; the new invitation then skips initialization and plays the wrong song.
+
+**How to apply:** Clear the prior public invitation token while resolving a new slug, replace the global callback with the current video’s callback, and retain the existing player teardown when the video ID changes.
 
 **What was removed:** The iOS detection (`isIOSSafari` useRef), `iosPlayerVisible` state, the 🎵 toggle button, and the visible mini-player iframe fallback.

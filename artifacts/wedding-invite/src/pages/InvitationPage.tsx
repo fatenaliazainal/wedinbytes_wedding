@@ -61,6 +61,7 @@ export default function InvitationPage() {
   const isPublicPath = Boolean(dateCode && slug);
   useEffect(() => {
     if (!isPublicPath) return;
+    setPublicToken(null);
     let cancelled = false;
     fetch(`/api/invitation/public/${encodeURIComponent(dateCode!)}/${encodeURIComponent(slug!)}`)
       .then((response) => {
@@ -441,13 +442,14 @@ export default function InvitationPage() {
     setYtStatus("loading");
     console.log("[music] YT: setting up for video", youtubeVideoId);
 
-    // Chain any pre-existing global callback so we don't overwrite it.
-    const prevCb = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      prevCb?.();
+    // Only the current invitation may initialize the shared YouTube player.
+    // Chaining a callback from the previous invitation can initialize its song
+    // first, causing this invitation's init to be skipped because a player exists.
+    const onYouTubeIframeAPIReady = () => {
       console.log("[music] YT IFrame API ready (global callback)");
       initYtPlayer(youtubeVideoId);
     };
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
     // API might already be present from a previous load (e.g. HMR / re-render).
     if (window.YT?.Player) {
@@ -462,6 +464,9 @@ export default function InvitationPage() {
     }
 
     return () => {
+      if (window.onYouTubeIframeAPIReady === onYouTubeIframeAPIReady) {
+        window.onYouTubeIframeAPIReady = undefined;
+      }
       // Tear down the player when the component unmounts or the video ID changes.
       if (ytPlayerRef.current) {
         try { ytPlayerRef.current.destroy(); } catch { /* ignore */ }
