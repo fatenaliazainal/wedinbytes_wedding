@@ -1,0 +1,84 @@
+TASK:
+ Fix an issue where a buyer owns 2 websites, but the music/song configured for  websites is incorrectly played on the other website after opening or replaying the websites.  
+
+CURRENT BEHAVIOUR:
+
+Buyer has purchased 2 separate websites.
+
+Website A is configured with one specific song.
+
+Website B is configured with another specific song.
+
+When the website is opened and the music is played for the first time, the website may play the wrong song (Song C) instead of the song configured for that website.
+
+When the website is opened for the second time, it may correctly play the configured song (Song D).
+
+When the website is opened for the third time, it may switch back and play Song C again.
+
+It happens the same behavior within the 2 websites
+
+EXPECTED BEHAVIOUR:
+
+Each website must always play only the song configured for that specific website.
+
+Website A must always play Website A's configured song.
+
+Website B must always play Website B's configured song.
+
+Opening, refreshing, closing, or reopening either website must not cause it to use the song configured for the other website.
+
+The music selection must remain correctly associated with the individual website/invitation being viewed.
+
+The behaviour must be consistent regardless of whether it is the 1st, 2nd, 3rd, or subsequent time the website is opened.
+
+SCOPE:
+
+Only fix the issue described above.
+
+DO NOT:
+
+
+
+Refactor unrelated code
+
+Change unrelated features
+
+Change UI/UX unless explicitly stated
+
+Change database/schema
+
+Change existing business logic
+
+Rename existing components/functions/variables
+
+Modify unrelated files
+
+Fix other issues discovered during investigation
+
+
+
+FIRST:
+
+Investigate the issue WITHOUT changing any code.
+
+Report:
+
+
+
+Root cause
+
+Exact files involved
+
+Exact code/logic that needs to change
+
+Potential regression risks
+
+What will remain untouched
+
+
+
+DO NOT IMPLEMENT UNTIL THE INVESTIGATION IS COMPLETE.
+
+After I approve the proposed change, implement the SMALLEST POSSIBLE FIX.
+
+After implementation, verify that the requested issue is fixed and that existing behaviour remains unchanged.
