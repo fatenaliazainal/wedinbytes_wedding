@@ -22,6 +22,7 @@ import type {
 import type {
   BusinessClient,
   BusinessClientInvitationResult,
+  BusinessCollaborator,
   BusinessFormShare,
   BusinessInvitation,
   BusinessProfile,
@@ -35,6 +36,7 @@ import type {
   GetRsvpCountParams,
   HealthStatus,
   Invitation,
+  ListDesignsParams,
   PricingFeature,
   PricingPackage,
   PublicBusinessProfile,
@@ -505,6 +507,83 @@ export const useUpdateMyBusinessProfile = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateMyBusinessProfileMutationOptions(options));
     }
+
+export const getListPublicBusinessCollaboratorsUrl = () => {
+
+
+
+
+  return `/api/public/business-collaborators`
+}
+
+/**
+ * @summary List active Business Account collaborators for external public display
+ */
+export const listPublicBusinessCollaborators = async ( options?: RequestInit): Promise<BusinessCollaborator[]> => {
+
+  return customFetch<BusinessCollaborator[]>(getListPublicBusinessCollaboratorsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPublicBusinessCollaboratorsQueryKey = () => {
+    return [
+    `/api/public/business-collaborators`
+    ] as const;
+    }
+
+
+export const getListPublicBusinessCollaboratorsQueryOptions = <TData = Awaited<ReturnType<typeof listPublicBusinessCollaborators>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicBusinessCollaborators>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPublicBusinessCollaboratorsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPublicBusinessCollaborators>>> = ({ signal }) => listPublicBusinessCollaborators({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPublicBusinessCollaborators>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPublicBusinessCollaboratorsQueryResult = NonNullable<Awaited<ReturnType<typeof listPublicBusinessCollaborators>>>
+export type ListPublicBusinessCollaboratorsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List active Business Account collaborators for external public display
+ */
+
+export function useListPublicBusinessCollaborators<TData = Awaited<ReturnType<typeof listPublicBusinessCollaborators>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicBusinessCollaborators>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPublicBusinessCollaboratorsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getListBusinessClientsUrl = () => {
 
@@ -1628,38 +1707,42 @@ export function useGetActiveDesign<TData = Awaited<ReturnType<typeof getActiveDe
 
 
 
-export type ListDesignsParams = {
-  search?: string;
-  color?: string;
-  category?: string;
-};
+export const getListDesignsUrl = (params?: ListDesignsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
-export const getListDesignsUrl = (params?: ListDesignsParams) => {
-  const sp = new URLSearchParams();
-  if (params?.search) sp.set('search', params.search);
-  if (params?.color) sp.set('color', params.color);
-  if (params?.category) sp.set('category', params.category);
-  const qs = sp.toString();
-  return `/api/design${qs ? `?${qs}` : ''}`;
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/design?${stringifiedParams}` : `/api/design`
 }
 
 /**
  * @summary List all card designs
  */
 export const listDesigns = async (params?: ListDesignsParams, options?: RequestInit): Promise<CardDesign[]> => {
-  return customFetch<CardDesign[]>(getListDesignsUrl(params), {
+
+  return customFetch<CardDesign[]>(getListDesignsUrl(params),
+  {
     ...options,
     method: 'GET'
-  });
-}
+
+
+  }
+);}
 
 
 
 
 
-export const getListDesignsQueryKey = () => {
+export const getListDesignsQueryKey = (params?: ListDesignsParams,) => {
     return [
-    `/api/design`
+    `/api/design`, ...(params ? [params] : [])
     ] as const;
     }
 
@@ -1669,8 +1752,7 @@ export const getListDesignsQueryOptions = <TData = Awaited<ReturnType<typeof lis
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const hasParams = params && Object.values(params).some(v => !!v);
-  const queryKey = queryOptions?.queryKey ?? (hasParams ? [...getListDesignsQueryKey(), params] : getListDesignsQueryKey());
+  const queryKey =  queryOptions?.queryKey ?? getListDesignsQueryKey(params);
 
 
 
@@ -1692,12 +1774,11 @@ export type ListDesignsQueryError = ErrorType<unknown>
  */
 
 export function useListDesigns<TData = Awaited<ReturnType<typeof listDesigns>>, TError = ErrorType<unknown>>(
-  params?: ListDesignsParams,
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDesigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: ListDesignsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDesigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListDesignsQueryOptions(params, options)
+  const queryOptions = getListDesignsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

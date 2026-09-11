@@ -19,6 +19,7 @@ import { isR2Configured, uploadImage } from "../services/cloudflare/r2-storage-a
 import { hasPngAlphaChannel, inspectImage, type SupportedImageMime } from "../lib/image-validation";
 
 const router: IRouter = Router();
+const PUBLIC_SITE_URL = "https://wedinstudio.com";
 const customerGalleryUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -192,6 +193,25 @@ function publicBusiness(profile: typeof businessProfileTable.$inferSelect, invit
     ...safe
   } = profile;
   return invitationCount === undefined ? safe : { ...safe, invitationCount };
+}
+
+function publicLogoUrl(value: string | null): string | null {
+  const logoUrl = value?.trim();
+  if (!logoUrl) return null;
+  if (/^https?:\/\//i.test(logoUrl)) return logoUrl;
+  if (logoUrl.startsWith("/")) return `${PUBLIC_SITE_URL}${logoUrl}`;
+  return `${PUBLIC_SITE_URL}/api/r2?key=${encodeURIComponent(logoUrl)}`;
+}
+
+function publicBusinessLink(value: string | null): string | null {
+  const link = value?.trim();
+  if (!link) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(link) ? link : `https://${link}`);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function requireBusiness(req: { session: { role?: string; userId?: number } }, res: any): req is typeof req & { session: { userId: number } } {
@@ -827,6 +847,37 @@ router.get("/business/collaborations", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to list business collaborations");
     res.status(500).json({ error: "Unable to load collaborations." });
+  }
+});
+
+router.get("/public/business-collaborators", async (req, res) => {
+  try {
+    const rows = await db
+      .select({
+        businessName: businessProfileTable.businessName,
+        displayName: businessProfileTable.displayName,
+        logoUrl: businessProfileTable.logoUrl,
+        website: businessProfileTable.website,
+      })
+      .from(businessProfileTable)
+      .where(eq(businessProfileTable.isActive, true))
+      .orderBy(businessProfileTable.businessName);
+
+    res.json(rows.flatMap((profile) => {
+      const name = profile.displayName.trim() || profile.businessName.trim();
+      const logoUrl = publicLogoUrl(profile.logoUrl);
+      if (!name || !logoUrl) return [];
+      return [{
+        name,
+        logoUrl,
+        links: {
+          business: publicBusinessLink(profile.website),
+        },
+      }];
+    }));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list public business collaborators");
+    res.status(500).json({ error: "Unable to load business collaborators." });
   }
 });
 

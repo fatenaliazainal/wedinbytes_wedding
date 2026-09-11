@@ -153,6 +153,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/BusinessProfile"
 
+  /public/business-collaborators:
+    get:
+      operationId: listPublicBusinessCollaborators
+      tags: [business]
+      summary: List active Business Account collaborators for external public display
+      responses:
+        "200":
+          description: Public Business Account collaborators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BusinessCollaborator"
+
   /business/clients:
     get:
       operationId: listBusinessClients
@@ -464,6 +479,22 @@ paths:
       operationId: listDesigns
       tags: [design]
       summary: List all card designs
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: color
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: All available designs
@@ -987,6 +1018,31 @@ components:
         - displayName
         - slug
 
+    BusinessCollaborator:
+      type: object
+      properties:
+        name:
+          type: string
+        logoUrl:
+          type: string
+          format: uri
+        links:
+          $ref: "#/components/schemas/BusinessCollaboratorLinks"
+      required:
+        - name
+        - logoUrl
+        - links
+
+    BusinessCollaboratorLinks:
+      type: object
+      properties:
+        business:
+          type: string
+          format: uri
+          nullable: true
+      required:
+        - business
+
     UpdateBusinessProfileBody:
       type: object
       properties:
@@ -1316,6 +1372,14 @@ components:
         waxSealId:
           type: integer
           nullable: true
+        colors:
+          type: array
+          nullable: true
+          items:
+            type: string
+        category:
+          type: string
+          nullable: true
       required:
         - id
         - name
@@ -1359,6 +1423,17 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PricingFeature"
+        promoPrice:
+          type: string
+          nullable: true
+        promoStartDate:
+          type: string
+          nullable: true
+        promoEndDate:
+          type: string
+          nullable: true
+        isPromoActive:
+          type: boolean
         createdAt:
           type: string
         updatedAt:

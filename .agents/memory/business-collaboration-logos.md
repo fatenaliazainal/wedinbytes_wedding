@@ -20,3 +20,9 @@ Public customer form headers also show the business logo when one has been uploa
 **Why:** Customers should immediately recognize which business sent the form, while businesses that have not uploaded branding should not get unnecessary blank space.
 
 **How to apply:** Include the safe public `logoUrl` in the form-share response and render it through the same-origin R2 resolver only when present.
+
+External collaborator feeds expose only the Business Account display name, a browser-ready absolute logo URL, and the single configured business website link. Cross-origin browser access is restricted to the dedicated feed and approved consumer domains.
+
+**Why:** External brand sites need reusable collaborator data without receiving full public profiles or gaining CORS access to unrelated APIs.
+
+**How to apply:** Keep the feed public and read-only, include active profiles with logos, normalize website links to HTTP(S), and scope CORS by endpoint rather than globally.

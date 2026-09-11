@@ -27,8 +27,16 @@ export interface Invitation {
   /** @maxItems 4 */
   contacts?: InvitationContactsItem[];
   dresscode?: string;
+  /**
+     * Customer-entered dress-code theme, such as Melayu Klasik or Corporate
+     * @maxLength 120
+     */
   dresscodeTheme?: string;
-  /** Up to four dress-code palette colours */
+  /**
+     * Up to four dress-code palette colours
+     * @maxItems 4
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
   dresscodeColors?: string[];
   message?: string;
   coverTitle?: string;

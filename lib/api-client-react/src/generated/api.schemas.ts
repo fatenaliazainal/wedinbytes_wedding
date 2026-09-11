@@ -45,8 +45,16 @@ export interface Invitation {
   /** @maxItems 4 */
   contacts?: InvitationContactsItem[];
   dresscode?: string;
+  /**
+     * Customer-entered dress-code theme, such as Melayu Klasik or Corporate
+     * @maxLength 120
+     */
   dresscodeTheme?: string;
-  /** Up to four dress-code palette colours */
+  /**
+     * Up to four dress-code palette colours
+     * @maxItems 4
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
   dresscodeColors?: string[];
   message?: string;
   coverTitle?: string;
@@ -113,6 +121,16 @@ export interface PublicBusinessProfile {
   businessHours?: string | null;
   isVerified: boolean;
   invitationCount?: number;
+}
+
+export interface BusinessCollaboratorLinks {
+  business: string | null;
+}
+
+export interface BusinessCollaborator {
+  name: string;
+  logoUrl: string;
+  links: BusinessCollaboratorLinks;
 }
 
 export interface UpdateBusinessProfileBody {
@@ -273,22 +291,17 @@ export interface CardDesign {
   nameFontSize?: string;
   badgeFontSize?: string;
   nameColor?: string;
-  colorForeground?: string;
   fontHeading?: string;
   fontBody?: string;
   cardMaxWidth?: string;
   openButtonText?: string;
   /** Animation pattern key e.g. "doors" or "envelope" */
   openingAnimation?: string;
-  /** Hex colour for the translucent overlay on content sections e.g. "#FFFFFF" */
+  colorForeground?: string;
   contentOverlayColor?: string;
-  /** Opacity 0–100 for the content overlay e.g. "55" */
   contentOverlayOpacity?: string;
-  /** ID of the default wax seal for this design (null = initials circle) */
   waxSealId?: number | null;
-  /** Catalog filter color tags e.g. ["Burgundy", "Gold"] */
   colors?: string[] | null;
-  /** Catalog filter category e.g. "Floral" */
   category?: string | null;
 }
 
@@ -387,5 +400,11 @@ q?: string;
 
 export type GetRsvpCountParams = {
 invitationToken?: string;
+};
+
+export type ListDesignsParams = {
+search?: string;
+color?: string;
+category?: string;
 };
 

@@ -9,6 +9,8 @@
 export * from './businessClient';
 export * from './businessClientCustomerData';
 export * from './businessClientInvitationResult';
+export * from './businessCollaborator';
+export * from './businessCollaboratorLinks';
 export * from './businessFormShare';
 export * from './businessInvitation';
 export * from './businessInvitationSummary';
@@ -26,6 +28,7 @@ export * from './getRsvpCountParams';
 export * from './healthStatus';
 export * from './invitation';
 export * from './invitationContactsItem';
+export * from './listDesignsParams';
 export * from './pricingFeature';
 export * from './pricingPackage';
 export * from './pricingPackageFormConfig';

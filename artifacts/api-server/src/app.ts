@@ -110,24 +110,32 @@ app.use(
   }),
 );
 
-app.use(
-  cors({
-    origin: configuredCorsOrigins.length
-      ? (origin, callback) => {
-          if (!origin) {
-            // No Origin header — server-to-server request (e.g. payment callbacks).
-            // Pass through without setting CORS headers; browsers always send Origin.
-            callback(null, false);
-          } else if (configuredCorsOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error("Origin is not allowed by CORS."));
-          }
+const defaultCors = cors({
+  origin: configuredCorsOrigins.length
+    ? (origin, callback) => {
+        if (!origin) {
+          // No Origin header — server-to-server request (e.g. payment callbacks).
+          // Pass through without setting CORS headers; browsers always send Origin.
+          callback(null, false);
+        } else if (configuredCorsOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Origin is not allowed by CORS."));
         }
-      : process.env.NODE_ENV === "production" ? false : true,
-    credentials: true,
-  }),
-);
+      }
+    : process.env.NODE_ENV === "production" ? false : true,
+  credentials: true,
+});
+const publicCollaboratorsCors = cors({
+  origin: ["https://wedinbytes.com", "https://www.wedinbytes.com"],
+  methods: ["GET", "OPTIONS"],
+});
+app.use((req, res, next) => {
+  const corsMiddleware = req.path === "/api/public/business-collaborators"
+    ? publicCollaboratorsCors
+    : defaultCors;
+  corsMiddleware(req, res, next);
+});
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));

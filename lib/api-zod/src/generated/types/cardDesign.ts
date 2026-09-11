@@ -35,6 +35,7 @@ export interface CardDesign {
   colorForeground?: string;
   contentOverlayColor?: string;
   contentOverlayOpacity?: string;
-  /** ID of the default wax seal for this design (null = initials circle) */
   waxSealId?: number | null;
+  colors?: string[] | null;
+  category?: string | null;
 }

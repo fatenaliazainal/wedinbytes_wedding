@@ -25,6 +25,11 @@ export const GetInvitationParams = zod.object({
 
 export const getInvitationResponseContactsMax = 4;
 
+export const getInvitationResponseDresscodeThemeMax = 120;
+
+export const getInvitationResponseDresscodeColorsItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getInvitationResponseDresscodeColorsMax = 4;
+
 export const getInvitationResponseGiftQrCodesMax = 2;
 
 export const getInvitationResponseLanguageDefault = `ms`;
@@ -50,8 +55,8 @@ export const GetInvitationResponse = zod.object({
   "phone": zod.string()
 })).max(getInvitationResponseContactsMax).optional(),
   "dresscode": zod.string().optional(),
-  "dresscodeTheme": zod.string().max(120).optional(),
-  "dresscodeColors": zod.array(zod.string().regex(/^#[0-9A-Fa-f]{6}$/)).max(4).optional().describe('Up to four dress-code palette colours'),
+  "dresscodeTheme": zod.string().max(getInvitationResponseDresscodeThemeMax).optional().describe('Customer-entered dress-code theme, such as Melayu Klasik or Corporate'),
+  "dresscodeColors": zod.array(zod.string().regex(getInvitationResponseDresscodeColorsItemRegExp)).max(getInvitationResponseDresscodeColorsMax).optional().describe('Up to four dress-code palette colours'),
   "message": zod.string().optional(),
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),
@@ -182,6 +187,19 @@ export const UpdateMyBusinessProfileResponse = zod.object({
   "isVerified": zod.boolean(),
   "invitationCount": zod.number().optional()
 })
+
+
+/**
+ * @summary List active Business Account collaborators for external public display
+ */
+export const ListPublicBusinessCollaboratorsResponseItem = zod.object({
+  "name": zod.string(),
+  "logoUrl": zod.string().url(),
+  "links": zod.object({
+  "business": zod.string().url().nullable()
+})
+})
+export const ListPublicBusinessCollaboratorsResponse = zod.array(ListPublicBusinessCollaboratorsResponseItem)
 
 
 /**
@@ -338,6 +356,11 @@ export const CreateInvitationForBusinessClientResponse = zod.object({
  */
 export const listBusinessInvitationsResponseOneContactsMax = 4;
 
+export const listBusinessInvitationsResponseOneDresscodeThemeMax = 120;
+
+export const listBusinessInvitationsResponseOneDresscodeColorsItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const listBusinessInvitationsResponseOneDresscodeColorsMax = 4;
+
 export const listBusinessInvitationsResponseOneGiftQrCodesMax = 2;
 
 export const listBusinessInvitationsResponseOneLanguageDefault = `ms`;
@@ -363,8 +386,8 @@ export const ListBusinessInvitationsResponseItem = zod.object({
   "phone": zod.string()
 })).max(listBusinessInvitationsResponseOneContactsMax).optional(),
   "dresscode": zod.string().optional(),
-  "dresscodeTheme": zod.string().max(120).optional(),
-  "dresscodeColors": zod.array(zod.string().regex(/^#[0-9A-Fa-f]{6}$/)).max(4).optional().describe('Up to four dress-code palette colours'),
+  "dresscodeTheme": zod.string().max(listBusinessInvitationsResponseOneDresscodeThemeMax).optional().describe('Customer-entered dress-code theme, such as Melayu Klasik or Corporate'),
+  "dresscodeColors": zod.array(zod.string().regex(listBusinessInvitationsResponseOneDresscodeColorsItemRegExp)).max(listBusinessInvitationsResponseOneDresscodeColorsMax).optional().describe('Up to four dress-code palette colours'),
   "message": zod.string().optional(),
   "coverTitle": zod.string().optional(),
   "hashtag": zod.string().optional(),
@@ -528,13 +551,21 @@ export const GetActiveDesignResponse = zod.object({
   "colorForeground": zod.string().optional(),
   "contentOverlayColor": zod.string().optional(),
   "contentOverlayOpacity": zod.string().optional(),
-  "waxSealId": zod.number().nullable().optional()
+  "waxSealId": zod.number().nullish(),
+  "colors": zod.array(zod.string()).nullish(),
+  "category": zod.string().nullish()
 })
 
 
 /**
  * @summary List all card designs
  */
+export const ListDesignsQueryParams = zod.object({
+  "search": zod.coerce.string().optional(),
+  "color": zod.coerce.string().optional(),
+  "category": zod.coerce.string().optional()
+})
+
 export const ListDesignsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -563,9 +594,9 @@ export const ListDesignsResponseItem = zod.object({
   "colorForeground": zod.string().optional(),
   "contentOverlayColor": zod.string().optional(),
   "contentOverlayOpacity": zod.string().optional(),
-  "waxSealId": zod.number().nullable().optional(),
-  "colors": zod.array(zod.string()).nullable().optional(),
-  "category": zod.string().nullable().optional(),
+  "waxSealId": zod.number().nullish(),
+  "colors": zod.array(zod.string()).nullish(),
+  "category": zod.string().nullish()
 })
 export const ListDesignsResponse = zod.array(ListDesignsResponseItem)
 
@@ -601,7 +632,13 @@ export const ActivateDesignResponse = zod.object({
   "fontBody": zod.string().optional(),
   "cardMaxWidth": zod.string().optional(),
   "openButtonText": zod.string().optional(),
-  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"')
+  "openingAnimation": zod.string().optional().describe('Animation pattern key e.g. \"doors\" or \"envelope\"'),
+  "colorForeground": zod.string().optional(),
+  "contentOverlayColor": zod.string().optional(),
+  "contentOverlayOpacity": zod.string().optional(),
+  "waxSealId": zod.number().nullish(),
+  "colors": zod.array(zod.string()).nullish(),
+  "category": zod.string().nullish()
 })
 
 
@@ -628,6 +665,10 @@ export const ListPricingResponseItem = zod.object({
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
+  "promoPrice": zod.string().nullish(),
+  "promoStartDate": zod.string().nullish(),
+  "promoEndDate": zod.string().nullish(),
+  "isPromoActive": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -657,6 +698,10 @@ export const ListAdminPricingResponseItem = zod.object({
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
+  "promoPrice": zod.string().nullish(),
+  "promoStartDate": zod.string().nullish(),
+  "promoEndDate": zod.string().nullish(),
+  "isPromoActive": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -717,6 +762,10 @@ export const UpdatePricingPackageResponse = zod.object({
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
+  "promoPrice": zod.string().nullish(),
+  "promoStartDate": zod.string().nullish(),
+  "promoEndDate": zod.string().nullish(),
+  "isPromoActive": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
